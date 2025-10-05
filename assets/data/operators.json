@@ -1,0 +1,22 @@
+﻿[
+  {
+    "id": "exusiai",
+    "name": "Exusiai",
+    "class": "sniper",
+    "rarity": 6,
+    "portrait": "operators/Exusiai.png",
+    "skills": [
+      { "id": "exu-s3", "name": "Overloading Mode", "icon": "icons/exu_s3.png" }
+    ]
+  },
+  {
+    "id": "nightingale",
+    "name": "Nightingale",
+    "class": "medic",
+    "rarity": 6,
+    "portrait": "operators/Nightingale.png",
+    "skills": [
+      { "id": "ng-s3", "name": "Sanctuary", "icon": "icons/ng_s3.png" }
+    ]
+  }
+]

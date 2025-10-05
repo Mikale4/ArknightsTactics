@@ -1,0 +1,12 @@
+﻿{
+  "classes": [
+    { "id": "vanguard", "name": "Vanguard" },
+    { "id": "guard",    "name": "Guard" },
+    { "id": "defender", "name": "Defender" },
+    { "id": "sniper",   "name": "Sniper" },
+    { "id": "caster",   "name": "Caster" },
+    { "id": "medic",    "name": "Medic" },
+    { "id": "supporter","name": "Supporter" },
+    { "id": "specialist","name": "Specialist" }
+  ]
+}
