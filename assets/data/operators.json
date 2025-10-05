@@ -1,22 +1,1914 @@
 ﻿[
-  {
-    "id": "exusiai",
-    "name": "Exusiai",
-    "class": "sniper",
-    "rarity": 6,
-    "portrait": "operators/Exusiai.png",
-    "skills": [
-      { "id": "exu-s3", "name": "Overloading Mode", "icon": "icons/exu_s3.png" }
-    ]
-  },
-  {
-    "id": "nightingale",
-    "name": "Nightingale",
-    "class": "medic",
-    "rarity": 6,
-    "portrait": "operators/Nightingale.png",
-    "skills": [
-      { "id": "ng-s3", "name": "Sanctuary", "icon": "icons/ng_s3.png" }
-    ]
-  }
+    {
+        "id":  "12f",
+        "name":  "12F",
+        "icon":  "icons/12F.png",
+        "portrait":  "operators/12F.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "absinthe",
+        "name":  "Absinthe",
+        "icon":  "icons/Absinthe.png",
+        "portrait":  "operators/Absinthe.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "adnachiel",
+        "name":  "Adnachiel",
+        "icon":  "icons/Adnachiel.png",
+        "portrait":  "operators/Adnachiel.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "akafuyu",
+        "name":  "Akafuyu",
+        "icon":  "icons/Akafuyu.png",
+        "portrait":  "operators/Akafuyu.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "ambriel",
+        "name":  "Ambriel",
+        "icon":  "icons/Ambriel.png",
+        "portrait":  "operators/Ambriel.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "amiya",
+        "name":  "Amiya",
+        "icon":  "icons/Amiya.png",
+        "portrait":  "operators/Amiya.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "angelina",
+        "name":  "Angelina",
+        "icon":  "icons/Angelina.png",
+        "portrait":  "operators/Angelina.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "ansel",
+        "name":  "Ansel",
+        "icon":  "icons/Ansel.png",
+        "portrait":  "operators/Ansel.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "april",
+        "name":  "April",
+        "icon":  "icons/April.png",
+        "portrait":  "operators/April.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "archetto",
+        "name":  "Archetto",
+        "icon":  "icons/Archetto.png",
+        "portrait":  "operators/Archetto.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "arene",
+        "name":  "Arene",
+        "icon":  "icons/Arene.png",
+        "portrait":  "operators/Arene.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "aroma",
+        "name":  "Aroma",
+        "icon":  "icons/Aroma.png",
+        "portrait":  "operators/Aroma.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "asbestos",
+        "name":  "Asbestos",
+        "icon":  "icons/Asbestos.png",
+        "portrait":  "operators/Asbestos.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "ash",
+        "name":  "Ash",
+        "icon":  "icons/Ash.png",
+        "portrait":  "operators/Ash.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "ashlock",
+        "name":  "Ashlock",
+        "icon":  "icons/Ashlock.png",
+        "portrait":  "operators/Ashlock.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "astesia",
+        "name":  "Astesia",
+        "icon":  "icons/Astesia.png",
+        "portrait":  "operators/Astesia.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "astgenne",
+        "name":  "Astgenne",
+        "icon":  "icons/Astgenne.png",
+        "portrait":  "operators/Astgenne.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "aurora",
+        "name":  "Aurora",
+        "icon":  "icons/Aurora.png",
+        "portrait":  "operators/Aurora.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "ayerscarpe",
+        "name":  "Ayerscarpe",
+        "icon":  "icons/Ayerscarpe.png",
+        "portrait":  "operators/Ayerscarpe.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "bagpipe",
+        "name":  "Bagpipe",
+        "icon":  "icons/Bagpipe.png",
+        "portrait":  "operators/Bagpipe.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "beagle",
+        "name":  "Beagle",
+        "icon":  "icons/Beagle.png",
+        "portrait":  "operators/Beagle.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "beanstalk",
+        "name":  "Beanstalk",
+        "icon":  "icons/Beanstalk.png",
+        "portrait":  "operators/Beanstalk.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "beehunter",
+        "name":  "Beehunter",
+        "icon":  "icons/Beehunter.png",
+        "portrait":  "operators/Beehunter.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "beeswax",
+        "name":  "Beeswax",
+        "icon":  "icons/Beeswax.png",
+        "portrait":  "operators/Beeswax.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "bena",
+        "name":  "Bena",
+        "icon":  "icons/Bena.png",
+        "portrait":  "operators/Bena.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "bibeak",
+        "name":  "Bibeak",
+        "icon":  "icons/Bibeak.png",
+        "portrait":  "operators/Bibeak.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "bison",
+        "name":  "Bison",
+        "icon":  "icons/Bison.png",
+        "portrait":  "operators/Bison.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "blaze",
+        "name":  "Blaze",
+        "icon":  "icons/Blaze.png",
+        "portrait":  "operators/Blaze.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "blemishine",
+        "name":  "Blemishine",
+        "icon":  "icons/Blemishine.png",
+        "portrait":  "operators/Blemishine.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "blitz",
+        "name":  "Blitz",
+        "icon":  "icons/Blitz.png",
+        "portrait":  "operators/Blitz.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "bluepoison",
+        "name":  "Blue Poison",
+        "icon":  "icons/Blue Poison.png",
+        "portrait":  "operators/Blue Poison.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "breeze",
+        "name":  "Breeze",
+        "icon":  "icons/Breeze.png",
+        "portrait":  "operators/Breeze.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "broca",
+        "name":  "Broca",
+        "icon":  "icons/Broca.png",
+        "portrait":  "operators/Broca.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "bryophyta",
+        "name":  "Bryophyta",
+        "icon":  "icons/Bryophyta.png",
+        "portrait":  "operators/Bryophyta.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "bubble",
+        "name":  "Bubble",
+        "icon":  "icons/Bubble.png",
+        "portrait":  "operators/Bubble.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "cantabile",
+        "name":  "Cantabile",
+        "icon":  "icons/Cantabile.png",
+        "portrait":  "operators/Cantabile.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "cardigan",
+        "name":  "Cardigan",
+        "icon":  "icons/Cardigan.png",
+        "portrait":  "operators/Cardigan.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "castle3",
+        "name":  "Castle-3",
+        "icon":  "icons/Castle-3.png",
+        "portrait":  "operators/Castle-3.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "cement",
+        "name":  "Cement",
+        "icon":  "icons/Cement.png",
+        "portrait":  "operators/Cement.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "ceobe",
+        "name":  "Ceobe",
+        "icon":  "icons/Ceobe.png",
+        "portrait":  "operators/Ceobe.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "ceylon",
+        "name":  "Ceylon",
+        "icon":  "icons/Ceylon.png",
+        "portrait":  "operators/Ceylon.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "chiave",
+        "name":  "Chiave",
+        "icon":  "icons/Chiave.png",
+        "portrait":  "operators/Chiave.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "chongyue",
+        "name":  "Chongyue",
+        "icon":  "icons/Chongyue.png",
+        "portrait":  "operators/Chongyue.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "click",
+        "name":  "Click",
+        "icon":  "icons/Click.png",
+        "portrait":  "operators/Click.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "cliffheart",
+        "name":  "Cliffheart",
+        "icon":  "icons/Cliffheart.png",
+        "portrait":  "operators/Cliffheart.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "conviction",
+        "name":  "Conviction",
+        "icon":  "icons/Conviction.png",
+        "portrait":  "operators/Conviction.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "corroserum",
+        "name":  "Corroserum",
+        "icon":  "icons/Corroserum.png",
+        "portrait":  "operators/Corroserum.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "courier",
+        "name":  "Courier",
+        "icon":  "icons/Courier.png",
+        "portrait":  "operators/Courier.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "croissant",
+        "name":  "Croissant",
+        "icon":  "icons/Croissant.png",
+        "portrait":  "operators/Croissant.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "cuora",
+        "name":  "Cuora",
+        "icon":  "icons/Cuora.png",
+        "portrait":  "operators/Cuora.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "cutter",
+        "name":  "Cutter",
+        "icon":  "icons/Cutter.png",
+        "portrait":  "operators/Cutter.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "czerny",
+        "name":  "Czerny",
+        "icon":  "icons/Czerny.png",
+        "portrait":  "operators/Czerny.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "dagda",
+        "name":  "Dagda",
+        "icon":  "icons/Dagda.png",
+        "portrait":  "operators/Dagda.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "deepcolor",
+        "name":  "Deepcolor",
+        "icon":  "icons/Deepcolor.png",
+        "portrait":  "operators/Deepcolor.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "delphine",
+        "name":  "Delphine",
+        "icon":  "icons/Delphine.png",
+        "portrait":  "operators/Delphine.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "diamante",
+        "name":  "Diamante",
+        "icon":  "icons/Diamante.png",
+        "portrait":  "operators/Diamante.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "durin",
+        "name":  "Durin",
+        "icon":  "icons/Durin.png",
+        "portrait":  "operators/Durin.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "durnar",
+        "name":  "Dur-nar",
+        "icon":  "icons/Dur-nar.png",
+        "portrait":  "operators/Dur-nar.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "dusk",
+        "name":  "Dusk",
+        "icon":  "icons/Dusk.png",
+        "portrait":  "operators/Dusk.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "earthspirit",
+        "name":  "Earthspirit",
+        "icon":  "icons/Earthspirit.png",
+        "portrait":  "operators/Earthspirit.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "ebenholz",
+        "name":  "Ebenholz",
+        "icon":  "icons/Ebenholz.png",
+        "portrait":  "operators/Ebenholz.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "elysium",
+        "name":  "Elysium",
+        "icon":  "icons/Elysium.png",
+        "portrait":  "operators/Elysium.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "estelle",
+        "name":  "Estelle",
+        "icon":  "icons/Estelle.png",
+        "portrait":  "operators/Estelle.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "ethan",
+        "name":  "Ethan",
+        "icon":  "icons/Ethan.png",
+        "portrait":  "operators/Ethan.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "eunectes",
+        "name":  "Eunectes",
+        "icon":  "icons/Eunectes.png",
+        "portrait":  "operators/Eunectes.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "executor",
+        "name":  "Executor",
+        "icon":  "icons/Executor.png",
+        "portrait":  "operators/Executor.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "exusiai",
+        "name":  "Exusiai",
+        "icon":  "icons/Exusiai.png",
+        "portrait":  "operators/Exusiai.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "eyjafjalla",
+        "name":  "Eyjafjalla",
+        "icon":  "icons/Eyjafjalla.png",
+        "portrait":  "operators/Eyjafjalla.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "fang",
+        "name":  "Fang",
+        "icon":  "icons/Fang.png",
+        "portrait":  "operators/Fang.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "fartooth",
+        "name":  "Fartooth",
+        "icon":  "icons/Fartooth.png",
+        "portrait":  "operators/Fartooth.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "feater",
+        "name":  "FEater",
+        "icon":  "icons/FEater.png",
+        "portrait":  "operators/FEater.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "firewatch",
+        "name":  "Firewatch",
+        "icon":  "icons/Firewatch.png",
+        "portrait":  "operators/Firewatch.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "firewhistle",
+        "name":  "Firewhistle",
+        "icon":  "icons/Firewhistle.png",
+        "portrait":  "operators/Firewhistle.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "flamebringer",
+        "name":  "Flamebringer",
+        "icon":  "icons/Flamebringer.png",
+        "portrait":  "operators/Flamebringer.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "flametail",
+        "name":  "Flametail",
+        "icon":  "icons/Flametail.png",
+        "portrait":  "operators/Flametail.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "flint",
+        "name":  "Flint",
+        "icon":  "icons/Flint.png",
+        "portrait":  "operators/Flint.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "folinic",
+        "name":  "Folinic",
+        "icon":  "icons/Folinic.png",
+        "portrait":  "operators/Folinic.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "franka",
+        "name":  "Franka",
+        "icon":  "icons/Franka.png",
+        "portrait":  "operators/Franka.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "friston3",
+        "name":  "Friston-3",
+        "icon":  "icons/Friston-3.png",
+        "portrait":  "operators/Friston-3.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "frost",
+        "name":  "Frost",
+        "icon":  "icons/Frost.png",
+        "portrait":  "operators/Frost.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "frostleaf",
+        "name":  "Frostleaf",
+        "icon":  "icons/Frostleaf.png",
+        "portrait":  "operators/Frostleaf.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "gavial",
+        "name":  "Gavial",
+        "icon":  "icons/Gavial.png",
+        "portrait":  "operators/Gavial.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "gitano",
+        "name":  "Gitano",
+        "icon":  "icons/Gitano.png",
+        "portrait":  "operators/Gitano.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "gladiia",
+        "name":  "Gladiia",
+        "icon":  "icons/Gladiia.png",
+        "portrait":  "operators/Gladiia.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "glaucus",
+        "name":  "Glaucus",
+        "icon":  "icons/Glaucus.png",
+        "portrait":  "operators/Glaucus.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "gnosis",
+        "name":  "Gnosis",
+        "icon":  "icons/Gnosis.png",
+        "portrait":  "operators/Gnosis.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "goldenglow",
+        "name":  "Goldenglow",
+        "icon":  "icons/Goldenglow.png",
+        "portrait":  "operators/Goldenglow.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "grani",
+        "name":  "Grani",
+        "icon":  "icons/Grani.png",
+        "portrait":  "operators/Grani.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "gravel",
+        "name":  "Gravel",
+        "icon":  "icons/Gravel.png",
+        "portrait":  "operators/Gravel.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "greythroat",
+        "name":  "GreyThroat",
+        "icon":  "icons/GreyThroat.png",
+        "portrait":  "operators/GreyThroat.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "greyy",
+        "name":  "Greyy",
+        "icon":  "icons/Greyy.png",
+        "portrait":  "operators/Greyy.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "gummy",
+        "name":  "Gummy",
+        "icon":  "icons/Gummy.png",
+        "portrait":  "operators/Gummy.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "harmonie",
+        "name":  "Harmonie",
+        "icon":  "icons/Harmonie.png",
+        "portrait":  "operators/Harmonie.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "haze",
+        "name":  "Haze",
+        "icon":  "icons/Haze.png",
+        "portrait":  "operators/Haze.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "heavyrain",
+        "name":  "Heavyrain",
+        "icon":  "icons/Heavyrain.png",
+        "portrait":  "operators/Heavyrain.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "heidi",
+        "name":  "Heidi",
+        "icon":  "icons/Heidi.png",
+        "portrait":  "operators/Heidi.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "hellagur",
+        "name":  "Hellagur",
+        "icon":  "icons/Hellagur.png",
+        "portrait":  "operators/Hellagur.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "hibiscus",
+        "name":  "Hibiscus",
+        "icon":  "icons/Hibiscus.png",
+        "portrait":  "operators/Hibiscus.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "highmore",
+        "name":  "Highmore",
+        "icon":  "icons/Highmore.png",
+        "portrait":  "operators/Highmore.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "honeyberry",
+        "name":  "Honeyberry",
+        "icon":  "icons/Honeyberry.png",
+        "portrait":  "operators/Honeyberry.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "horn",
+        "name":  "Horn",
+        "icon":  "icons/Horn.png",
+        "portrait":  "operators/Horn.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "hoshiguma",
+        "name":  "Hoshiguma",
+        "icon":  "icons/Hoshiguma.png",
+        "portrait":  "operators/Hoshiguma.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "hung",
+        "name":  "Hung",
+        "icon":  "icons/Hung.png",
+        "portrait":  "operators/Hung.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "ifrit",
+        "name":  "Ifrit",
+        "icon":  "icons/Ifrit.png",
+        "portrait":  "operators/Ifrit.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "indigo",
+        "name":  "Indigo",
+        "icon":  "icons/Indigo.png",
+        "portrait":  "operators/Indigo.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "indra",
+        "name":  "Indra",
+        "icon":  "icons/Indra.png",
+        "portrait":  "operators/Indra.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "ines",
+        "name":  "Ines",
+        "icon":  "icons/Ines.png",
+        "portrait":  "operators/Ines.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "irene",
+        "name":  "Irene",
+        "icon":  "icons/Irene.png",
+        "portrait":  "operators/Irene.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "iris",
+        "name":  "Iris",
+        "icon":  "icons/Iris.png",
+        "portrait":  "operators/Iris.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "istina",
+        "name":  "Istina",
+        "icon":  "icons/Istina.png",
+        "portrait":  "operators/Istina.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "jackie",
+        "name":  "Jackie",
+        "icon":  "icons/Jackie.png",
+        "portrait":  "operators/Jackie.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "jaye",
+        "name":  "Jaye",
+        "icon":  "icons/Jaye.png",
+        "portrait":  "operators/Jaye.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "jessica",
+        "name":  "Jessica",
+        "icon":  "icons/Jessica.png",
+        "portrait":  "operators/Jessica.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "kafka",
+        "name":  "Kafka",
+        "icon":  "icons/Kafka.png",
+        "portrait":  "operators/Kafka.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "kjera",
+        "name":  "Kjera",
+        "icon":  "icons/Kjera.png",
+        "portrait":  "operators/Kjera.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "kroos",
+        "name":  "Kroos",
+        "icon":  "icons/Kroos.png",
+        "portrait":  "operators/Kroos.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "lapluma",
+        "name":  "La Pluma",
+        "icon":  "icons/La Pluma.png",
+        "portrait":  "operators/La Pluma.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "lancet2",
+        "name":  "Lancet-2",
+        "icon":  "icons/Lancet-2.png",
+        "portrait":  "operators/Lancet-2.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "lappland",
+        "name":  "Lappland",
+        "icon":  "icons/Lappland.png",
+        "portrait":  "operators/Lappland.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "lava",
+        "name":  "Lava",
+        "icon":  "icons/Lava.png",
+        "portrait":  "operators/Lava.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "leizi",
+        "name":  "Leizi",
+        "icon":  "icons/Leizi.png",
+        "portrait":  "operators/Leizi.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "leonhardt",
+        "name":  "Leonhardt",
+        "icon":  "icons/Leonhardt.png",
+        "portrait":  "operators/Leonhardt.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "lin",
+        "name":  "Lin",
+        "icon":  "icons/Lin.png",
+        "portrait":  "operators/Lin.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "ling",
+        "name":  "Ling",
+        "icon":  "icons/Ling.png",
+        "portrait":  "operators/Ling.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "liskarm",
+        "name":  "Liskarm",
+        "icon":  "icons/Liskarm.png",
+        "portrait":  "operators/Liskarm.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "logos",
+        "name":  "Logos",
+        "icon":  "icons/Logos.png",
+        "portrait":  "operators/Logos.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "lumen",
+        "name":  "Lumen",
+        "icon":  "icons/Lumen.png",
+        "portrait":  "operators/Lumen.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "magallan",
+        "name":  "Magallan",
+        "icon":  "icons/Magallan.png",
+        "portrait":  "operators/Magallan.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "manticore",
+        "name":  "Manticore",
+        "icon":  "icons/Manticore.png",
+        "portrait":  "operators/Manticore.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "marcille",
+        "name":  "Marcille",
+        "icon":  "icons/Marcille.png",
+        "portrait":  "operators/Marcille.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "matoimaru",
+        "name":  "Matoimaru",
+        "icon":  "icons/Matoimaru.png",
+        "portrait":  "operators/Matoimaru.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "matterhorn",
+        "name":  "Matterhorn",
+        "icon":  "icons/Matterhorn.png",
+        "portrait":  "operators/Matterhorn.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "may",
+        "name":  "May",
+        "icon":  "icons/May.png",
+        "portrait":  "operators/May.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "melantha",
+        "name":  "Melantha",
+        "icon":  "icons/Melantha.png",
+        "portrait":  "operators/Melantha.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "midnight",
+        "name":  "Midnight",
+        "icon":  "icons/Midnight.png",
+        "portrait":  "operators/Midnight.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "mint",
+        "name":  "Mint",
+        "icon":  "icons/Mint.png",
+        "portrait":  "operators/Mint.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "misschristine",
+        "name":  "Miss Christine",
+        "icon":  "icons/Miss Christine.png",
+        "portrait":  "operators/Miss Christine.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "mizuki",
+        "name":  "Mizuki",
+        "icon":  "icons/Mizuki.png",
+        "portrait":  "operators/Mizuki.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "morgan",
+        "name":  "Morgan",
+        "icon":  "icons/Morgan.png",
+        "portrait":  "operators/Morgan.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "mostima",
+        "name":  "Mostima",
+        "icon":  "icons/Mostima.png",
+        "portrait":  "operators/Mostima.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "mountain",
+        "name":  "Mountain",
+        "icon":  "icons/Mountain.png",
+        "portrait":  "operators/Mountain.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "mrnothing",
+        "name":  "Mr. Nothing",
+        "icon":  "icons/Mr. Nothing.png",
+        "portrait":  "operators/Mr. Nothing.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "mudrock",
+        "name":  "Mudrock",
+        "icon":  "icons/Mudrock.png",
+        "portrait":  "operators/Mudrock.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "muelsyse",
+        "name":  "Muelsyse",
+        "icon":  "icons/Muelsyse.png",
+        "portrait":  "operators/Muelsyse.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "mulberry",
+        "name":  "Mulberry",
+        "icon":  "icons/Mulberry.png",
+        "portrait":  "operators/Mulberry.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "myrrh",
+        "name":  "Myrrh",
+        "icon":  "icons/Myrrh.png",
+        "portrait":  "operators/Myrrh.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "myrtle",
+        "name":  "Myrtle",
+        "icon":  "icons/Myrtle.png",
+        "portrait":  "operators/Myrtle.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "nearl",
+        "name":  "Nearl",
+        "icon":  "icons/Nearl.png",
+        "portrait":  "operators/Nearl.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "necrass",
+        "name":  "Necrass",
+        "icon":  "icons/Necrass.png",
+        "portrait":  "operators/Necrass.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "nian",
+        "name":  "Nian",
+        "icon":  "icons/Nian.png",
+        "portrait":  "operators/Nian.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "nightingale",
+        "name":  "Nightingale",
+        "icon":  "icons/Nightingale.png",
+        "portrait":  "operators/Nightingale.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "nightmare",
+        "name":  "Nightmare",
+        "icon":  "icons/Nightmare.png",
+        "portrait":  "operators/Nightmare.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "ninecoloreddeer",
+        "name":  "Nine-Colored Deer",
+        "icon":  "icons/Nine-Colored Deer.png",
+        "portrait":  "operators/Nine-Colored Deer.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "noircorne",
+        "name":  "Noir Corne",
+        "icon":  "icons/Noir Corne.png",
+        "portrait":  "operators/Noir Corne.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "nymph",
+        "name":  "Nymph",
+        "icon":  "icons/Nymph.png",
+        "portrait":  "operators/Nymph.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "orchid",
+        "name":  "Orchid",
+        "icon":  "icons/Orchid.png",
+        "portrait":  "operators/Orchid.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "pallas",
+        "name":  "Pallas",
+        "icon":  "icons/Pallas.png",
+        "portrait":  "operators/Pallas.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "passenger",
+        "name":  "Passenger",
+        "icon":  "icons/Passenger.png",
+        "portrait":  "operators/Passenger.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "penance",
+        "name":  "Penance",
+        "icon":  "icons/Penance.png",
+        "portrait":  "operators/Penance.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "perfumer",
+        "name":  "Perfumer",
+        "icon":  "icons/Perfumer.png",
+        "portrait":  "operators/Perfumer.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "pith",
+        "name":  "Pith",
+        "icon":  "icons/Pith.png",
+        "portrait":  "operators/Pith.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "platinum",
+        "name":  "Platinum",
+        "icon":  "icons/Platinum.png",
+        "portrait":  "operators/Platinum.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "plume",
+        "name":  "Plume",
+        "icon":  "icons/Plume.png",
+        "portrait":  "operators/Plume.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "podenco",
+        "name":  "Podenco",
+        "icon":  "icons/Podenco.png",
+        "portrait":  "operators/Podenco.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "poncirus",
+        "name":  "Poncirus",
+        "icon":  "icons/Poncirus.png",
+        "portrait":  "operators/Poncirus.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "popukar",
+        "name":  "Popukar",
+        "icon":  "icons/Popukar.png",
+        "portrait":  "operators/Popukar.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "pramanix",
+        "name":  "Pramanix",
+        "icon":  "icons/Pramanix.png",
+        "portrait":  "operators/Pramanix.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "projektred",
+        "name":  "Projekt Red",
+        "icon":  "icons/Projekt Red.png",
+        "portrait":  "operators/Projekt Red.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "provence",
+        "name":  "Provence",
+        "icon":  "icons/Provence.png",
+        "portrait":  "operators/Provence.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "ptilopsis",
+        "name":  "Ptilopsis",
+        "icon":  "icons/Ptilopsis.png",
+        "portrait":  "operators/Ptilopsis.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "pudding",
+        "name":  "Pudding",
+        "icon":  "icons/Pudding.png",
+        "portrait":  "operators/Pudding.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "purestream",
+        "name":  "Purestream",
+        "icon":  "icons/Purestream.png",
+        "portrait":  "operators/Purestream.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "puzzle",
+        "name":  "Puzzle",
+        "icon":  "icons/Puzzle.png",
+        "portrait":  "operators/Puzzle.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "qanipalaat",
+        "name":  "Qanipalaat",
+        "icon":  "icons/Qanipalaat.png",
+        "portrait":  "operators/Qanipalaat.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "qiubai",
+        "name":  "Qiubai",
+        "icon":  "icons/Qiubai.png",
+        "portrait":  "operators/Qiubai.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "quartz",
+        "name":  "Quartz",
+        "icon":  "icons/Quartz.png",
+        "portrait":  "operators/Quartz.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "quercus",
+        "name":  "Quercus",
+        "icon":  "icons/Quercus.png",
+        "portrait":  "operators/Quercus.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "rangers",
+        "name":  "Rangers",
+        "icon":  "icons/Rangers.png",
+        "portrait":  "operators/Rangers.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "rathalossnoircorne",
+        "name":  "Rathalos S Noir Corne",
+        "icon":  "icons/Rathalos S Noir Corne.png",
+        "portrait":  "operators/Rathalos S Noir Corne.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "reed",
+        "name":  "Reed",
+        "icon":  "icons/Reed.png",
+        "portrait":  "operators/Reed.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "roberta",
+        "name":  "Roberta",
+        "icon":  "icons/Roberta.png",
+        "portrait":  "operators/Roberta.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "robin",
+        "name":  "Robin",
+        "icon":  "icons/Robin.png",
+        "portrait":  "operators/Robin.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "rockrock",
+        "name":  "Rockrock",
+        "icon":  "icons/Rockrock.png",
+        "portrait":  "operators/Rockrock.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "rope",
+        "name":  "Rope",
+        "icon":  "icons/Rope.png",
+        "portrait":  "operators/Rope.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "rosa",
+        "name":  "Rosa",
+        "icon":  "icons/Rosa.png",
+        "portrait":  "operators/Rosa.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "saga",
+        "name":  "Saga",
+        "icon":  "icons/Saga.png",
+        "portrait":  "operators/Saga.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "saileach",
+        "name":  "Saileach",
+        "icon":  "icons/Saileach.png",
+        "portrait":  "operators/Saileach.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "santalla",
+        "name":  "Santalla",
+        "icon":  "icons/Santalla.png",
+        "portrait":  "operators/Santalla.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "saria",
+        "name":  "Saria",
+        "icon":  "icons/Saria.png",
+        "portrait":  "operators/Saria.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "savage",
+        "name":  "Savage",
+        "icon":  "icons/Savage.png",
+        "portrait":  "operators/Savage.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "scavenger",
+        "name":  "Scavenger",
+        "icon":  "icons/Scavenger.png",
+        "portrait":  "operators/Scavenger.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "scene",
+        "name":  "Scene",
+        "icon":  "icons/Scene.png",
+        "portrait":  "operators/Scene.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "schwarz",
+        "name":  "Schwarz",
+        "icon":  "icons/Schwarz.png",
+        "portrait":  "operators/Schwarz.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "shalem",
+        "name":  "Shalem",
+        "icon":  "icons/Shalem.png",
+        "portrait":  "operators/Shalem.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "sharp",
+        "name":  "Sharp",
+        "icon":  "icons/Sharp.png",
+        "portrait":  "operators/Sharp.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "shirayuki",
+        "name":  "Shirayuki",
+        "icon":  "icons/Shirayuki.png",
+        "portrait":  "operators/Shirayuki.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "sideroca",
+        "name":  "Sideroca",
+        "icon":  "icons/Sideroca.png",
+        "portrait":  "operators/Sideroca.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "siege",
+        "name":  "Siege",
+        "icon":  "icons/Siege.png",
+        "portrait":  "operators/Siege.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "silence",
+        "name":  "Silence",
+        "icon":  "icons/Silence.png",
+        "portrait":  "operators/Silence.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "silverash",
+        "name":  "SilverAsh",
+        "icon":  "icons/SilverAsh.png",
+        "portrait":  "operators/SilverAsh.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "skadi",
+        "name":  "Skadi",
+        "icon":  "icons/Skadi.png",
+        "portrait":  "operators/Skadi.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "skyfire",
+        "name":  "Skyfire",
+        "icon":  "icons/Skyfire.png",
+        "portrait":  "operators/Skyfire.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "snowsant",
+        "name":  "Snowsant",
+        "icon":  "icons/Snowsant.png",
+        "portrait":  "operators/Snowsant.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "sora",
+        "name":  "Sora",
+        "icon":  "icons/Sora.png",
+        "portrait":  "operators/Sora.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "specter",
+        "name":  "Specter",
+        "icon":  "icons/Specter.png",
+        "portrait":  "operators/Specter.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "spot",
+        "name":  "Spot",
+        "icon":  "icons/Spot.png",
+        "portrait":  "operators/Spot.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "stainless",
+        "name":  "Stainless",
+        "icon":  "icons/Stainless.png",
+        "portrait":  "operators/Stainless.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "steward",
+        "name":  "Steward",
+        "icon":  "icons/Steward.png",
+        "portrait":  "operators/Steward.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "surtr",
+        "name":  "Surtr",
+        "icon":  "icons/Surtr.png",
+        "portrait":  "operators/Surtr.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "suzuran",
+        "name":  "Suzuran",
+        "icon":  "icons/Suzuran.png",
+        "portrait":  "operators/Suzuran.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "swire",
+        "name":  "Swire",
+        "icon":  "icons/Swire.png",
+        "portrait":  "operators/Swire.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "tachanka",
+        "name":  "Tachanka",
+        "icon":  "icons/Tachanka.png",
+        "portrait":  "operators/Tachanka.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "tecno",
+        "name":  "Tecno",
+        "icon":  "icons/Tecno.png",
+        "portrait":  "operators/Tecno.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "tequila",
+        "name":  "Tequila",
+        "icon":  "icons/Tequila.png",
+        "portrait":  "operators/Tequila.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "texas",
+        "name":  "Texas",
+        "icon":  "icons/Texas.png",
+        "portrait":  "operators/Texas.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "thorns",
+        "name":  "Thorns",
+        "icon":  "icons/Thorns.png",
+        "portrait":  "operators/Thorns.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "thrmex",
+        "name":  "THRM-EX",
+        "icon":  "icons/THRM-EX.png",
+        "portrait":  "operators/THRM-EX.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "togawasakiko",
+        "name":  "Togawa Sakiko",
+        "icon":  "icons/Togawa Sakiko.png",
+        "portrait":  "operators/Togawa Sakiko.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "tomimi",
+        "name":  "Tomimi",
+        "icon":  "icons/Tomimi.png",
+        "portrait":  "operators/Tomimi.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "tsukinogi",
+        "name":  "Tsukinogi",
+        "icon":  "icons/Tsukinogi.png",
+        "portrait":  "operators/Tsukinogi.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "tulip",
+        "name":  "Tulip",
+        "icon":  "icons/Tulip.png",
+        "portrait":  "operators/Tulip.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "utage",
+        "name":  "Utage",
+        "icon":  "icons/Utage.png",
+        "portrait":  "operators/Utage.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "vanilla",
+        "name":  "Vanilla",
+        "icon":  "icons/Vanilla.png",
+        "portrait":  "operators/Vanilla.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "vermeil",
+        "name":  "Vermeil",
+        "icon":  "icons/Vermeil.png",
+        "portrait":  "operators/Vermeil.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "vigil",
+        "name":  "Vigil",
+        "icon":  "icons/Vigil.png",
+        "portrait":  "operators/Vigil.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "vigna",
+        "name":  "Vigna",
+        "icon":  "icons/Vigna.png",
+        "portrait":  "operators/Vigna.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "vivianadroste",
+        "name":  "Viviana Droste",
+        "icon":  "icons/Viviana Droste.png",
+        "portrait":  "operators/Viviana Droste.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "vulcan",
+        "name":  "Vulcan",
+        "icon":  "icons/Vulcan.png",
+        "portrait":  "operators/Vulcan.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "waaifu",
+        "name":  "Waai Fu",
+        "icon":  "icons/Waai Fu.png",
+        "portrait":  "operators/Waai Fu.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "warfarin",
+        "name":  "Warfarin",
+        "icon":  "icons/Warfarin.png",
+        "portrait":  "operators/Warfarin.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "warmy",
+        "name":  "Warmy",
+        "icon":  "icons/Warmy.png",
+        "portrait":  "operators/Warmy.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "weedy",
+        "name":  "Weedy",
+        "icon":  "icons/Weedy.png",
+        "portrait":  "operators/Weedy.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "whislash",
+        "name":  "Whislash",
+        "icon":  "icons/Whislash.png",
+        "portrait":  "operators/Whislash.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "whisperain",
+        "name":  "Whisperain",
+        "icon":  "icons/Whisperain.png",
+        "portrait":  "operators/Whisperain.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "wildmane",
+        "name":  "Wild Mane",
+        "icon":  "icons/Wild Mane.png",
+        "portrait":  "operators/Wild Mane.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "windchimes",
+        "name":  "Wind Chimes",
+        "icon":  "icons/Wind Chimes.png",
+        "portrait":  "operators/Wind Chimes.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "windflit",
+        "name":  "Windflit",
+        "icon":  "icons/Windflit.png",
+        "portrait":  "operators/Windflit.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "yato",
+        "name":  "Yato",
+        "icon":  "icons/Yato.png",
+        "portrait":  "operators/Yato.png",
+        "class":  "",
+        "rarity":  ""
+    },
+    {
+        "id":  "zima",
+        "name":  "Zima",
+        "icon":  "icons/Zima.png",
+        "portrait":  "operators/Zima.png",
+        "class":  "",
+        "rarity":  ""
+    }
 ]
