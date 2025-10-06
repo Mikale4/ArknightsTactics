@@ -1,0 +1,9 @@
+﻿# OS/editor
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+node_modules/
+# Builds
+dist/
+build/

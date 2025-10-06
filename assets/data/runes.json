@@ -1,0 +1,16 @@
+﻿[
+  {
+    "id": "immunity",
+    "name": "Immunity",
+    "desc": "Target cannot receive negative status effects for N turns.",
+    "icon": "icons/rune_immunity.png",
+    "stack": false
+  },
+  {
+    "id": "hot",
+    "name": "Heal Over Time",
+    "desc": "Restore HP each turn for N turns.",
+    "icon": "icons/rune_hot.png",
+    "stack": true
+  }
+]
