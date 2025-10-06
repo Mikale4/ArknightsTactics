@@ -1,0 +1,3104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Arknights Tactics</title>
+<style>
+  :root{
+    --bg:#0e1116;
+    --panel:#171b22;
+    --soft:#1d2330;
+    --text:#e7edf4;
+    --muted:#aeb5bf;
+    --accent:#6fd3ff;
+    --good:#77e49a;
+    --bad:#ff6b6b;
+    --warn:#ffd166;
+    --fire:#ff695e;
+    --water:#5ea2ff;
+    --wind:#7fd37a;
+    --light:#ffd76b;
+    --dark:#c39bff;
+    --pulse:#6fd3ff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:linear-gradient(180deg,#0e1116 0%,#121620 70%) fixed;color:var(--text);font-family:system-ui,Segoe UI,Roboto,Inter,Arial}
+  a{color:var(--accent)}
+  .wrap{max-width:1240px;margin:24px auto;padding:0 16px}
+  h1{font-size:28px;margin:0 0 8px 0;letter-spacing:.3px}
+  .sub{color:var(--muted);margin:0 0 18px 0}
+  .muted{color:var(--muted)}
+
+  /* Panels */
+  .setup{display:grid;grid-template-columns: 1.2fr .8fr;gap:16px}
+  .panel{background:var(--panel);border:1px solid #212735;border-radius:12px;box-shadow:0 8px 16px rgba(0,0,0,.35)}
+  .panel > .head{padding:12px 16px;border-bottom:1px solid #232938;font-weight:600}
+  .panel > .body{padding:12px 12px 16px 12px}
+
+  /* Roster */
+  .roster{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .card{
+    position:relative;background:var(--soft);border:1px solid #22293a;border-radius:10px;padding:10px;cursor:pointer;
+    transition:transform .08s ease, box-shadow .08s ease, border-color .08s ease;
+  }
+  .card:hover{transform:translateY(-2px);box-shadow:0 8px 14px rgba(0,0,0,.35)}
+  .card.selected{outline:2px solid var(--accent);border-color:var(--accent)}
+  .card.covered{box-shadow:0 0 0 2px rgba(111,211,255,.3) inset}
+  .name{font-weight:700;margin-bottom:2px;font-size:14px}
+  .el{display:inline-block;font-weight:700;border-radius:6px;padding:2px 8px;font-size:11px;margin-left:6px;vertical-align:1px}
+  .el.Fire{background:rgba(255,105,94,.15);color:var(--fire);border:1px solid rgba(255,105,94,.35)}
+  .el.Water{background:rgba(94,162,255,.15);color:var(--water);border:1px solid rgba(94,162,255,.35)}
+  .el.Wind{background:rgba(127,211,122,.15);color:var(--wind);border:1px solid rgba(127,211,122,.35)}
+  .el.Light{background:rgba(255,215,107,.12);color:var(--light);border:1px solid rgba(255,215,107,.35)}
+  .el.Dark{background:rgba(195,155,255,.12);color:var(--dark);border:1px solid rgba(195,155,255,.35)}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .statline{display:flex;gap:8px;font-size:11px;color:var(--muted)}
+  .tiny{font-size:11px;color:var(--muted)}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  button{
+    background:#1b2230;border:1px solid #2b3344;color:var(--text);padding:8px 12px;border-radius:8px;cursor:pointer;
+    transition:filter .1s ease, transform .06s ease; font-weight:600
+  }
+  button:hover{filter:brightness(1.1)}
+  button:active{transform:translateY(1px)}
+  .cta{background:linear-gradient(180deg,#1c2a3f,#192437);border-color:#33415a}
+  .accent{background:linear-gradient(180deg,#0d3b52,#0b2f41);border-color:#195a7a}
+  .danger{background:linear-gradient(180deg,#462329,#381b21);border-color:#68343f}
+  .pill{padding:6px 10px;border-radius:999px;font-size:12px}
+  .switch{display:flex;align-items:center;gap:8px}
+  input[type=checkbox]{transform:scale(1.2)}
+
+  /* Battle layout */
+  .battle{display:none;grid-template-columns: 1fr 300px;gap:14px;margin-top:16px}
+  .board{background:var(--panel);border:1px solid #232938;border-radius:12px;overflow:hidden}
+  .board .zone{padding:10px 10px 14px;border-bottom:1px solid #232938}
+  .zone:last-child{border-bottom:none}
+  .side{display:flex;gap:10px;justify-content:space-between}
+  .unit{
+    position:relative;flex:1;min-width:0;background:var(--soft);border:1px solid #22293a;border-radius:10px;padding:8px;
+    display:flex;flex-direction:column;gap:6px;opacity:1;transition:opacity .2s ease, transform .1s ease, box-shadow .2s ease;
+  }
+  .dead{opacity:.35;filter:grayscale(.7)}
+  .hpbar{position:relative;height:12px;background:#1a2331;border-radius:8px;overflow:hidden;border:1px solid #2b3445}
+  .hpbar > .fill{position:absolute;left:0;top:0;height:100%;background:linear-gradient(90deg,#34c759,#2ebd69)}
+  .hpnum{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;}
+  .buffs,.debuffs{display:flex;gap:6px;flex-wrap:wrap;min-height:18px}
+  .tag{font-size:10px;border-radius:6px;padding:2px 6px;border:1px solid #2a3345}
+  .tag.buff{background:rgba(126,214,137,.12);border-color:rgba(126,214,137,.35)}
+  .tag.debuff{background:rgba(255,120,120,.1);border-color:rgba(255,120,120,.35)}
+  .atag{font-weight:700;padding:2px 6px;border-radius:6px;border:1px solid #2a3345}
+  .turnbar{display:flex;gap:6px;flex-wrap:wrap}
+  .turnpill{border:1px solid #2a3345;background:#172233;border-radius:999px;padding:4px 8px;font-size:11px}
+  .turnpill.me{border-color:#2f7ab4}
+  .turnpill.en{border-color:#7a2fb4}
+  .you{outline:2px solid #2f7ab4}
+  .them{outline:2px solid #7a2fb4}
+  .acting{transform:translateY(-2px);box-shadow:0 8px 16px rgba(0,0,0,.35)}
+  /* Pulsating outline to make the acting unit much more noticeable */
+  .actingPulse{
+    outline:3px solid var(--pulse);
+    animation:pulseOutline 1100ms ease-in-out infinite;
+    box-shadow:0 0 0 5px rgba(111,211,255,.28), 0 0 32px rgba(111,211,255,.45) inset;
+  }
+  @keyframes pulseOutline{
+    0%,100%{box-shadow:0 0 0 5px rgba(111,211,255,.28), 0 0 32px rgba(111,211,255,.45) inset}
+    50%{box-shadow:0 0 0 9px rgba(111,211,255,.15), 0 0 24px rgba(111,211,255,.25) inset}
+  }
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .skills{display:flex;gap:8px;flex-wrap:wrap}
+  .skill{
+    position:relative;background:#1a2231;border:1px solid #2b3445;border-radius:10px;padding:8px 10px;min-width:190px;cursor:pointer
+  }
+  .skill.disabled{opacity:.5;cursor:not-allowed;filter:grayscale(.6)}
+  .cool{position:absolute;right:10px;top:8px;font-weight:800;color:var(--muted)}
+  .tip{display:inline-flex;align-items:center;gap:6px;margin-left:6px;color:var(--muted);font-size:12px}
+  .tip .i{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;border:1px solid #2a3345}
+  .tipbox{
+    display:none;position:absolute;z-index:20;top:36px;left:0;right:0;background:#0f1520;border:1px solid #2a3345;border-radius:10px;padding:8px 10px;
+    font-size:12px;box-shadow:0 10px 18px rgba(0,0,0,.4)
+  }
+  .skill:hover .tipbox{display:block}
+  .overlay{position:fixed;inset:0;background:rgba(6,9,12,.66);display:none;align-items:center;justify-content:center;z-index:50}
+  .picker{background:#0f1520;border:1px solid #2a3345;border-radius:14px;padding:14px;max-width:800px;width:95%}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .dn{display:none}
+  .log{font-family:ui-monospace,Consolas,Menlo,monospace;font-size:12px;line-height:1.35;background:#0f1520;border-left:1px solid #2b3445;height:700px;overflow:auto;padding:10px}
+  .log strong{color:var(--accent)}
+  .log.closed{display:none}
+  .float-dmg{
+    position:absolute;left:50%;top:8px;transform:translateX(-50%);pointer-events:none;font-weight:800;
+    text-shadow:0 2px 0 rgba(0,0,0,.5);animation:float 900ms ease forwards
+  }
+  @keyframes float{0%{opacity:0;transform:translate(-50%,-6px)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-28px)}}
+  .win{font-size:18px;font-weight:800;padding:10px 12px;border-radius:10px;background:linear-gradient(180deg,#16362a,#10251d);border:1px solid #2a7252;color:var(--good)}
+  .loss{font-size:18px;font-weight:800;padding:10px 12px;border-radius:10px;background:linear-gradient(180deg,#3b1f24,#2a161a);border:1px solid #7d3a45;color:var(--bad)}
+  .small{font-size:12px;color:var(--muted)}
+  .sep{height:1px;background:#232938;margin:8px 0}
+
+  /* ATB bar */
+  .atbbar{position:relative;height:8px;background:#141b26;border:1px solid #2b3445;border-radius:8px;overflow:hidden}
+  .atbbar > .abfill{position:absolute;left:0;top:0;height:100%;background:linear-gradient(90deg,#6fd3ff,#3aa0ff);width:0}
+  .atbbar .atbnum{position:absolute;right:6px;top:-16px;font-size:10px;color:var(--muted)}
+
+  /* Loadout Editor */
+  .editor{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .box{background:#111722;border:1px solid #263044;border-radius:10px;padding:10px}
+  .kvs{display:grid;grid-template-columns:120px 1fr;gap:8px;align-items:center}
+  select, input[type=number]{background:#0f1520;border:1px solid #2a3345;border-radius:8px;color:var(--text);padding:6px 8px}
+  .statpreview{font-family:ui-monospace,Consolas,Menlo,monospace;font-size:12px;line-height:1.35;white-space:pre-wrap}
+
+  @media (max-width:1100px){
+    .setup{grid-template-columns:1fr}
+    .battle{grid-template-columns:1fr}
+    .log{height:320px}
+  }
+
+  /* Title Screen */
+  #titleScreen{
+    position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(1200px 800px at 50% 30%, rgba(60,90,130,0.25), rgba(10,15,22,0.95)), linear-gradient(180deg,#0e1116,#0c111a);
+    z-index:1000;
+  }
+  .ts-card{
+    width:min(760px,92%); background:rgba(18,26,40,0.9); border:1px solid #2a3448; border-radius:16px; padding:24px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.55);
+  }
+  .ts-title{font-size:36px;font-weight:900;letter-spacing:.6px;margin:0 0 10px 0}
+  .ts-sub{color:var(--muted);margin:0 0 16px 0}
+  .ts-buttons{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+  .ts-buttons button{font-size:16px;padding:12px;border-radius:12px}
+  .ts-footer{display:flex;justify-content:space-between;align-items:center;margin-top:12px;color:var(--muted);font-size:12px}
+  .ts-disabled{opacity:.5;cursor:not-allowed;pointer-events:none}
+  .ts-disabled:hover{filter:none;transform:none}
+  /* Options modal */
+  #optionsModal{position:fixed;inset:0;background:rgba(6,9,12,.66);display:none;align-items:center;justify-content:center;z-index:1100}
+  .opt-card{background:#0f1520;border:1px solid #2a3345;border-radius:14px;padding:16px;width:min(520px,92%)}
+  .opt-grid{display:grid;grid-template-columns:210px 1fr;gap:10px;align-items:center}
+
+
+  /* Shake effects */
+  @keyframes shakeUnit { 
+    0%{transform:translate(0,0)} 
+    20%{transform:translate(-2px,0)} 
+    40%{transform:translate(2px,0)} 
+    60%{transform:translate(-1px,0)} 
+    80%{transform:translate(1px,0)} 
+    100%{transform:translate(0,0)} 
+  }
+  .shake { animation: shakeUnit 280ms ease; }
+  .float-dmg.shakeNum { animation: float 900ms ease forwards, shakeUnit 280ms ease; }
+  @keyframes screenShake { 
+    0%{transform:translate(0,0)} 
+    25%{transform:translate(3px,-2px)} 
+    50%{transform:translate(-3px,2px)} 
+    75%{transform:translate(2px,2px)} 
+    100%{transform:translate(0,0)} 
+  }
+  .screen-shake { animation: screenShake 250ms ease; }
+
+
+  /* Shield bar (separate visual under HP) */
+  .shieldbar{position:relative;height:6px;background:#0f1824;border-radius:6px;overflow:hidden;border:1px solid #223144;margin-top:4px}
+  .shieldbar .sfill{position:absolute;left:0;top:0;height:100%;background:linear-gradient(90deg,#7fd37a,#a6f0b0)}
+  .shieldnum{position:absolute;right:6px;top:-14px;font-size:10px;color:#7fd37a}
+
+
+  .lunge{ transition: transform 160ms ease; }
+  .centerstage{ position:relative; z-index:5; }
+
+
+  /* Log styling */
+  .log .me{color:#6fd3ff;font-weight:700}
+  .log .en{color:#b07aff;font-weight:700}
+  .log .pulse-status{animation:pulseStatus 1s ease-in-out infinite; display:inline-block}
+  .log .pulse-skill{animation:pulseStatus 1s ease-in-out infinite; display:inline-block; font-style:italic}
+  @keyframes pulseStatus{
+    0%,100%{transform:scale(1);opacity:.95}
+    50%{transform:scale(1.08);opacity:1}
+  }
+
+
+/* --- PATCH: chips & critical hp --- */
+@keyframes chipPulse{0%,100%{transform:scale(1);opacity:.95}50%{transform:scale(1.06);opacity:1}}
+.tag.buff,.tag.debuff{animation:chipPulse 1.2s ease-in-out infinite}
+.hpbar.critical .fill{background:linear-gradient(90deg,#ff4d4f,#ff7a7d)!important;animation:hpPulse .9s ease-in-out infinite}
+@keyframes hpPulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.25)}}
+
+
+  /* --- Battle card visuals (large art) --- */
+  .bcard{
+    position:relative;
+    width:100%;
+    aspect-ratio: 3 / 4; /* portrait card: width:height = 3:4 */
+    border-radius:10px; overflow:hidden; border:1px solid #283345; background:#0f1520;
+  }
+  .bcard img.op{
+    width:100%; height:100%;
+    object-fit:contain;         /* show full image, no clipping */
+    object-position: 50% 0%;    /* bias to top (heads/upper bodies) */
+    image-rendering:auto; display:block;
+  }
+  .bmeta{position:absolute;left:8px;right:8px;bottom:8px;display:flex;gap:8px;align-items:center;justify-content:space-between}
+  .bname{font-weight:800;text-shadow:0 2px 6px rgba(0,0,0,.7), 0 0 2px #000}
+        
+  /* === 3D Battle Cards + Pop-out Art === */
+  .unit{
+    perspective: 900px;
+    transform-style: preserve-3d;
+  }
+  .unit:hover{ transform: translateY(-2px) rotateX(3deg); }
+  .bcard{
+    position:relative;
+    width:100%;
+    aspect-ratio: 3 / 4;
+    border-radius:14px;
+    overflow:visible; /* allow pop-out art */
+    border:1px solid #273246;
+    background: linear-gradient(180deg,#121a28,#0d141f);
+    box-shadow:
+      0 8px 20px rgba(0,0,0,.45),
+      inset 0 0 0 1px rgba(255,255,255,.04);
+    transform-style: preserve-3d;
+  }
+  .bcard::before{
+    content:"";
+    position:absolute; inset:0;
+    border-radius:14px;
+    background: radial-gradient(120% 80% at 50% 10%, rgba(111,211,255,.10), transparent 60%);
+    transform: translateZ(1px);
+    pointer-events:none;
+  }
+  .bcard img.op{
+    position:absolute; left:50%; top:0;
+    transform: translate(-50%, -6px) translateZ(28px);
+    width:110%; height:110%;
+    object-fit: contain;
+    object-position: 50% 10%;
+    image-rendering:auto;
+    will-change: transform, filter;
+    filter: drop-shadow(0 10px 18px rgba(0,0,0,.45)) drop-shadow(0 2px 6px rgba(0,0,0,.4));
+    animation: floatPop 2600ms ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes floatPop{
+    0%,100%{ transform: translate(-50%, -6px) translateZ(28px); }
+    50%    { transform: translate(-50%, -10px) translateZ(34px); }
+  }
+  .unit:hover .bcard img.op{
+    animation-duration: 2000ms;
+    filter: drop-shadow(0 14px 22px rgba(0,0,0,.55)) drop-shadow(0 3px 8px rgba(0,0,0,.45));
+  }
+  .bmeta{
+    position:absolute; left:10px; right:10px; bottom:10px;
+    display:flex; gap:8px; align-items:center; justify-content:space-between;
+    transform: translateZ(30px);
+    padding:4px 6px;
+    border-radius:10px;
+    background: linear-gradient(180deg, rgba(15,21,32,.65), rgba(15,21,32,.35));
+    box-shadow: 0 6px 16px rgba(0,0,0,.35);
+  }
+  .bname{ font-weight:900; text-shadow:0 2px 6px rgba(0,0,0,.7), 0 0 2px #000; }
+
+
+  /* === 3D Plinth base for stats/bars === */
+  .plinth-wrap{position:relative; margin-top:10px; transform-style:preserve-3d;}
+  .plinth{
+    position:relative;
+    background: linear-gradient(180deg,#111825,#0c121d);
+    border:1px solid #273246;
+    border-radius:12px;
+    padding:10px 10px 8px 10px;
+    box-shadow:
+      0 12px 24px rgba(0,0,0,.45),
+      inset 0 0 0 1px rgba(255,255,255,.03);
+    transform: perspective(900px) rotateX(14deg) translateZ(0);
+    transform-origin: top center;
+  }
+  .plinth::before{
+    content:"";
+    position:absolute; left:0; right:0; top:-8px; height:10px;
+    background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.00));
+    border-top-left-radius:12px; border-top-right-radius:12px;
+    filter: blur(.2px);
+  }
+  .plinth-head{
+    display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px;
+  }
+  .plinth-name{ font-weight:900; text-shadow:0 1px 2px rgba(0,0,0,.6); }
+  .plinth .hpbar{ height:12px; }
+  .plinth .shieldbar{ height:6px; margin-top:4px; }
+  .plinth .atbbar{ height:8px; margin-top:6px; }
+  .plinth .buffs, .plinth .debuffs{ margin-top:6px; }
+  /* keep element chip looking elevated on the base */
+  .plinth .el{ box-shadow:0 2px 6px rgba(0,0,0,.35); }
+
+
+  /* Element background & optional foreground layers */
+  .bcard .bglayer,
+  .bcard .fglayer{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:cover;              /* fills the frame */
+    pointer-events:none;
+  }
+  .bcard .bglayer{ z-index: 0; opacity: .9 }   /* behind operator art */
+  .bcard img.op{ z-index: 2; }                    /* existing operator image stays above */
+  .bcard .fglayer{ z-index: 3; opacity: .85 }  /* optional foreground FX, later */
+
+
+  /* Clipping frame so background respects the card's rounded corners */
+  .bcard .bframe{
+    position:absolute; inset:0;
+    border-radius:14px; overflow:hidden; z-index:0;
+    pointer-events:none;
+  }
+  .bcard .bframe .bglayer{
+    position:absolute; inset:0; width:100%; height:100%;
+    object-fit:cover; /* fill the card frame */
+  }
+  /* Ensure operator art floats above the clipped background, still within .bcard */
+  .bcard img.op{ z-index:2; }
+
+
+  /* Hover Parallax (lightweight) */
+  @media (prefers-reduced-motion: no-preference){
+    .bcard .bframe, .bcard img.op{ will-change: transform; transition: transform 140ms ease; }
+    
+    
+  }
+  @media (prefers-reduced-motion: reduce){
+    .bcard .bframe, .bcard img.op{ transition: none !important; }
+  }
+
+
+  /* === Resolution scaling & battle-only layout === */
+  
+  :root{ --uiScale: 1; --uiZoom: 1; --logW: 340px;  /* a bit more room for the board */ --boardNudgeY: 0px; }
+
+  .board{ zoom: 0.64; }  /* slightly larger cards */  /* fixed scale to prevent any zoom-in */
+  body.battleOnly .wrap{ max-width: 1600px; padding: 0 12px; }
+  body.battleOnly .wrap > h1,
+  body.battleOnly .wrap > p.sub,
+  body.battleOnly .wrap > section:not(#battle){ display:none !important; }
+  body.battleOnly #battle{ display:grid; }
+  
+  /* overridden by center-fit rules above */
+
+
+/* === Battle-only centering & no-scroll === */
+body.battleOnly{ overflow:hidden; }
+body.battleOnly #battle{
+  grid-template-columns: minmax(0,1fr) var(--logW);
+  align-items: center;
+  height: var(--vh);
+}
+body.battleOnly .board{
+  height: auto;                /* let content define natural size; we scale it */
+  overflow: visible;           /* no inner scroll */
+  place-self: center;          /* center inside its grid cell */
+  
+}
+body.battleOnly #battle > .panel{
+  height: calc(100vh - 40px);  /* match the board area */
+  display: flex; flex-direction: column;
+}
+body.battleOnly #battle > .panel .log{
+  flex: 1; height: auto; overflow: auto;  /* scrolling only inside the log box */
+}
+
+
+  /* --- Zoom preview (in Options) --- */
+
+
+/* --- Full-height battle layout overrides --- */
+body.battleOnly .wrap{ margin:0 auto; max-width:1600px; padding:0 12px; }
+
+
+
+
+/* Popup full-height using custom --vh from innerHeight */
+body.battleOnly #battle{ height: var(--vh); }
+body.battleOnly .log{ height: var(--vh); }
+
+
+/* Fullscreen battle: fill viewport, no page scroll */
+body.battleOnly{ overflow:hidden; }
+
+
+
+
+html.battleOnly, body.battleOnly{ overflow:hidden !important; }
+
+</style>
+</head>
+<body>
+
+<!-- Title Screen -->
+<div id="titleScreen">
+  <div class="ts-card">
+    <div class="ts-title">Arknights Tactics</div>
+    <div class="ts-sub">A Summoners War–style tactics sandbox. Pick operators, equip runes, and fight!</div>
+    <div class="ts-buttons">
+      <button id="btnCampaign" class="pill ts-disabled" disabled title="Coming soon">Campaign Mode</button>
+      <button id="btnFreeBattle" class="cta">Free Battle</button>
+      <button id="btnOptions" class="accent">Options</button>
+      <button id="btnExit" class="danger">Exit</button>
+    </div>
+    <div class="ts-footer">
+  
+</div>
+  </div>
+</div>
+
+<!-- Options Modal -->
+
+<!-- Status Glossary Modal -->
+<div id="glossaryModal" class="overlay">
+  <div class="picker" style="max-width:720px">
+    <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div style="font-weight:800">Status Glossary</div>
+      <button id="glossaryClose" class="pill">Close</button>
+    </div>
+    <div class="tiny" style="margin-bottom:8px">
+      <b>Rules:</b> Harmful effects can be <i>resisted</i> (base 15% + RES−ACC, capped at 85%).
+      <br>Durations tick down at the <i>end</i> of the unit's turn. DoTs/HoTs tick at <i>start</i> of turn.
+    </div>
+    <div class="grid">
+      <div><b>IMMUNITY</b><br><span class="tiny">Blocks new debuffs while active.</span></div>
+      <div><b>HOT</b><br><span class="tiny">Heals 5% Max HP at start of turn (stacks).</span></div>
+      <div><b>SHIELD</b><br><span class="tiny">Absorbs damage before HP. Fades if value hits 0.</span></div>
+      <div><b>DEF BREAK</b><br><span class="tiny">Lowers DEF (~40% less effective DEF).</span></div>
+      <div><b>BRAND</b><br><span class="tiny">Takes extra damage (~25%).</span></div>
+      <div><b>SLOW</b><br><span class="tiny">~30% less ATB speed.</span></div>
+      <div><b>GLANCING</b><br><span class="tiny">Higher chance to glance (reduced damage, no crit).</span></div>
+      <div><b>HEAL BLOCK</b><br><span class="tiny">Prevents healing.</span></div>
+      <div><b>STUN</b><br><span class="tiny">Lose the turn.</span></div>
+      <div><b>PROVOKE</b><br><span class="tiny">Forces S1 vs. provoker on turn.</span></div>
+      <div><b>TAUNT</b><br><span class="tiny">Single-target attacks must target the taunter.</span></div>
+      <div><b>STEALTH</b><br><span class="tiny">Cannot be targeted by single-target skills.</span></div>
+    </div>
+  </div>
+</div>
+
+<div id="optionsModal">
+  <div class="opt-card">
+    <div style="font-weight:700;font-size:18px;margin-bottom:8px">Options</div>
+    <div class="opt-grid">
+      <div>Turn Inspector (AI preview)</div>
+      <div><input type="checkbox" id="optInspector"></div>
+
+      <div>Damage Shake (units)</div>
+      <div><input type="checkbox" id="optShakeUnit"></div>
+      <div>Damage Number Shake</div>
+      <div><input type="checkbox" id="optShakeNum"></div>
+      <div>AOE Screen Shake</div>
+      <div><input type="checkbox" id="optShakeScreen"></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
+      <button id="optClose" class="pill">Close</button>
+      <button id="optSave" class="cta">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <h1>Arknights Tactics</h1>
+  <p class="sub">Now with a speed toggle (slow by default), a live Rune editor, Nemesis/Endure sets, passives (including revive-on-death), more operators, a scripted PvE Boss wave, and clearer turn highlighting. Also fixes single‑ally healing, self shields, target selection, and syntax issues.</p>
+
+  <section class="setup">
+    <div class="panel">
+      <div class="head">Select your Operators</div>
+      <div class="body">
+
+        <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div class="actions">
+            <button id="prevPage" class="pill">◀ Prev</button>
+            <span id="pageInfo" class="tiny">Page 1</span>
+            <button id="nextPage" class="pill">Next ▶</button>
+          </div>
+          <div class="tiny">12 per page</div>
+        </div>
+        <div class="sep"></div>
+<div class="row" style="gap:6px;align-items:center;flex-wrap:wrap">
+  <input id="searchInput" placeholder="Search name..." class="pill" style="min-width:160px">
+  <select id="fElement" class="pill"><option value="">All Elements</option><option>Fire</option><option>Water</option><option>Wind</option><option>Light</option><option>Dark</option></select>
+  <select id="fClass" class="pill"><option value="">All Classes</option><option>Vanguard</option><option>Guard</option><option>Defender</option><option>Sniper</option><option>Caster</option><option>Medic</option><option>Supporter</option><option>Specialist</option></select>
+  <select id="fRune" class="pill"><option value="">All Runes</option><option>Swift</option><option>Fatal</option><option>Blade</option><option>Focus</option><option>Energy</option><option>Guard</option><option>Rage</option><option>Despair</option><option>Revenge</option><option>Violent</option><option>Will</option><option>Shield</option><option>Nemesis</option><option>Endure</option></select>
+  <input id="fBuff" placeholder="Buff contains..." class="pill" style="min-width:160px">
+  <input id="fDebuff" placeholder="Debuff contains..." class="pill" style="min-width:160px">
+  <button id="fClear" class="pill">Clear Filters</button>
+</div>
+<div id="roster" class="roster"></div>
+
+        <div class="sep"></div>
+        <div class="actions">
+          <button id="random4" class="pill">Random 4</button>
+          <button id="clearSel" class="pill">Clear</button>
+          <label class="switch"><input type="checkbox" id="hiliteLeader"><span>Highlight current leader coverage</span></label>
+<span id="coverageCount" class="tiny" style="margin-left:6px"></span>
+        </div>
+<div class="sep"></div>
+<div class="actions">
+  <label class="tiny">Presets:</label>
+  <select id="presetSlot" class="pill"></select>
+  <button id="presetSave" class="pill">Save</button>
+  <button id="presetLoad" class="pill">Load</button>
+  <label class="switch"><input type="checkbox" id="presetLock"> <span>Lock runes</span></label>
+</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="head">Match Settings</div>
+      <div class="body">
+        <div class="row" style="justify-content:space-between;margin-bottom:10px">
+          </div>
+
+        <div class="row" style="align-items:center;gap:8px;margin:6px 0">
+          <label class="tiny" for="fieldSelect"><strong>Elemental Field:</strong></label>
+          <select id="fieldSelect" class="pill"><option value="">None</option><option>Wind</option><option>Fire</option><option>Water</option><option>Light</option><option>Dark</option></select>
+          <label class="tiny" for="leaderSelect"><strong>Leader (your team):</strong></label>
+          <select id="leaderSelect" class="pill"></select>
+        </div>
+
+        
+
+        
+        <div class="actions" style="margin-top:8px">
+          <button id="startBtn" class="cta">Start Battle</button>
+          <button id="randEnemy" class="accent">Randomize Enemy Team</button>
+          <button id="resetBtn" class="danger">Reset</button>
+        </div>
+
+        <p class="tiny" style="margin-top:10px">Element chain: <b class="el Fire">Fire</b> ▶ <b class="el Wind">Wind</b> ▶ <b class="el Water">Water</b> ▶ <b class="el Fire">Fire</b> • <b class="el Light">Light</b> ⇄ <b class="el Dark">Dark</b>. Disadvantage has a 50% glancing chance; advantage gets +15% Crit and +15% damage.</p>
+      
+        <div class="sep"></div>
+        <div id="unitDetails" class="box">
+          <div class="tiny">Click a unit to see its stats, passives, and skill descriptions here.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" style="margin-top:14px">
+    <div class="head">Loadout Editor (Runes)</div>
+    <div class="body">
+      <div class="editor">
+        <div class="box">
+          <div class="kvs">
+            <div>Unit to edit</div>
+            <select id="editSelect"></select>
+
+            <div>Rune slot A</div>
+            <select id="runeA"></select>
+
+            <div>Rune slot B</div>
+            <select id="runeB"></select>
+          </div>
+          <div class="tiny" style="margin-top:6px">
+            <b>Sets:</b> Swift, Fatal, Blade, Focus, Energy, Guard, Rage, Despair, Revenge, Violent, Will, Shield, <b>Nemesis</b>, <b>Endure</b>.<br>
+            Endure: +20% RES. Nemesis: Gain ATB when taking damage (scales with HP lost).
+          </div>
+        </div>
+        <div class="box">
+          <div style="font-weight:700;margin-bottom:6px">Preview (live)</div>
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><button id="prevPreview" class="pill">◀</button><span id="previewPage" class="tiny" data-page="1">Runes</span><button id="nextPreview" class="pill">▶</button></div><div id="preview" class="statpreview"></div>
+<div class="sep"></div>
+<div id="advisor" class="tiny"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="battle" class="battle">
+    <div class="board">
+      <div class="zone">
+        <div class="row" style="justify-content:space-between;align-items:center">
+          <div class="row">
+            <span id="resultBadge" class="dn"></span>
+            <span id="modeBadge" class="chip"></span>
+          </div>
+          <div class="turnbar" id="turnbar"></div>
+        </div>
+        <div id="turnInspector" class="tiny" style="display:none;margin-top:6px;padding:6px;border-top:1px solid #232938"></div>
+      </div>
+
+      <div class="zone">
+        <div class="side" id="enemyRow"></div>
+      </div>
+
+      <div class="zone">
+        <div class="controls"><button id="autoBtn" class="pill">Auto: OFF</button>
+<select id="aiStyle" class="pill">
+  <option value="balanced" selected>AI: Balanced</option>
+  <option value="aggressive">AI: Aggressive</option>
+  <option value="safe">AI: Safe</option>
+</select>
+<select id="logMode" class="pill">
+  <option value="simple" selected>Log: Simple</option>
+  <option value="mini">Log: Mini</option>
+  <option value="detailed">Log: Detailed</option>
+  <option value="close">Log: Close</option>
+</select>
+
+
+
+          <div id="actingLabel" class="small"></div>
+          <div class="skills" id="skills"></div>
+        </div>
+      </div>
+
+      <div class="zone">
+        <div class="side" id="playerRow"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="head">Combat Log <button id="btnGlossary" class="pill" title="Status Glossary">?</button></div>
+      <div id="log" class="log"></div>
+    </div>
+  </section>
+</div>
+
+<!-- Target picker overlay -->
+<div id="overlay" class="overlay">
+  <div class="picker">
+    <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div style="font-weight:700">Select a target</div>
+      <button id="cancelPick" class="pill">Cancel</button>
+    </div>
+    <div id="pickGrid" class="grid"></div>
+  </div>
+</div>
+
+<script>
+/* ----------------------------------------------
+   Arknights Tactics Engine
+   ---------------------------------------------- */
+
+const RNG = () => Math.random();
+
+/* ============== Data: Units (Awakened 5★) ============== */
+/* Note: every operator has unique skill names and loadouts. */
+const UnitsDB = [
+  /* 1 */{
+    key:'exusiai', name:'Exusiai', element:'Wind', role:'Marksman',
+    leader:{ stat:'ATK', amount:0.24, scope:'Element', element:'Wind' },
+    runes:['Swift','Blade'],
+    stats:{ hp:9000, atk:820, def:420, spd:118, cr:0.15, cd:0.50, acc:0.25, res:0.15 },
+    passives:[],
+    skills:[
+      {slot:1,name:"Angel's Volley",cd:0,target:'enemy',hits:3,mult:1.3,ignoreDef:0,
+       effects:[{on:'target', type:'atkbar-', chance:0.5, amount:0.10}],
+       desc:"3 hits (130% ATK). Each hit 50% chance to reduce target ATB by 10%."
+      },
+      {slot:2,name:'Reload',cd:3,target:'self',hits:0,mult:0,
+       effects:[
+         {on:'self', type:'buff', what:'CRIT_RATE_UP', turns:2},
+         {on:'self', type:'buff', what:'ATK_UP', turns:2},
+         {on:'self', type:'atkbar+', amount:0.30}
+       ],
+       desc:"Self: ATK↑ & Crit Rate↑ (2T) and +30% ATB."
+      },
+      {slot:3,name:'Heavenly Barrage',cd:4,target:'enemy',hits:5,mult:0.7,ignoreDef:0.2,
+       effects:[{on:'self', type:'atkbar+', amount:0.05, perCrit:true}],
+       desc:"5 hits (70% ATK), ignore 20% DEF. Gain +5% ATB per crit."
+      }
+    ]
+  },
+  /* 2 */{
+    key:'silverash', name:'SilverAsh', element:'Light', role:'Leader',
+    leader:{ stat:'CR', amount:0.24, scope:'All' },
+    runes:['Violent','Will'],
+    stats:{ hp:9800, atk:750, def:550, spd:112, cr:0.15, cd:0.50, acc:0.25, res:0.15 },
+    passives:[],
+    skills:[
+      {slot:1,name:'Falcon Slash',cd:0,target:'enemy',hits:1,mult:3.6,ignoreDef:0,
+       effects:[{on:'target', type:'debuff', what:'DEF_BREAK', chance:0.5, turns:2}],
+       desc:"(360% ATK). 50% to apply DEF Break (2T)."
+      },
+      {slot:2,name:'Eagle Eye',cd:3,target:'self',hits:0,mult:0,
+       effects:[
+         {on:'self', type:'buff', what:'ATK_UP', turns:2},
+         {on:'self', type:'buff', what:'CRIT_RATE_UP', turns:2},
+         {on:'self', type:'buff', what:'COUNTER', turns:2}
+       ],
+       desc:"Gain ATK↑, Crit Rate↑ and Counter (2T)."
+      },
+      {slot:3,name:'Truesilver Slash',cd:4,target:'aoe_enemies',hits:3,mult:1.1,ignoreDef:0,
+       effects:[
+         {on:'target', type:'strip', amount:2, chance:1.0},
+         {on:'target', type:'debuff', what:'DEF_BREAK', chance:0.6, turns:2}
+       ],
+       desc:"AOE 3 hits (110% each), strip 2 buffs (100%), then 60% to DEF Break (2T)."
+      }
+    ]
+  },
+  /* 3 */{
+    key:'surtr', name:'Surtr', element:'Fire', role:'Nuker',
+    leader:{ stat:'ATK', amount:0.33, scope:'Element', element:'Fire' },
+    runes:['Rage','Will'],
+    stats:{ hp:9200, atk:880, def:400, spd:109, cr:0.15, cd:0.50, acc:0.20, res:0.15 },
+    passives:[{id:'REVIVE_ONCE', amount:0.30, buff:'INVINCIBLE', turns:1, text:'Last Embers: Revive on death once (30% HP) and gain 1T Invincibility.'}],
+    skills:[
+      {slot:1,name:'Ember Edge',cd:0,target:'enemy',hits:1,mult:3.4,ignoreDef:0,
+       effects:[
+         {on:'target', type:'debuff', what:'DOT', chance:0.3, turns:2},
+         {on:'self', type:'healPct', chance:0.3, amount:0.15}
+       ],
+       desc:"(340% ATK). 30% to Burn (DoT 2T) and 30% to heal self 15%."
+      },
+      {slot:2,name:'Incinerate',cd:3,target:'self',hits:0,mult:0,
+       effects:[
+         {on:'self', type:'buff', what:'IMMUNITY', turns:1},
+         {on:'self', type:'buff', what:'HOT', turns:2},
+         {on:'self', type:'atkbar+', amount:0.20}
+       ],
+       desc:"Gain Immunity (1T), HoT (2T), and +20% ATB."
+      },
+      {slot:3,name:'Eternal Flame',cd:4,target:'enemy',hits:1,mult:4.0,ignoreDef:0.3,
+       effects:[
+         {on:'self', type:'buff', what:'INVINCIBLE', turns:1, onKill:true},
+         {on:'self', type:'resetSelfCD', skill:3, onKill:true}
+       ],
+       desc:"(400% ATK), ignore 30% DEF. If it kills: 1T Invincibility & reset this skill."
+      }
+    ]
+  },
+  /* 4 */{
+    key:'saria', name:'Saria', element:'Water', role:'Warden',
+    leader:{ stat:'HP', amount:0.33, scope:'All' },
+    runes:['Energy','Shield'],
+    stats:{ hp:10500, atk:650, def:650, spd:104, cr:0.15, cd:0.50, acc:0.25, res:0.20 },
+    passives:[],
+    skills:[
+      {slot:1,name:'Restraint',cd:0,target:'enemy',hits:1,mult:2.6,ignoreDef:0,
+       effects:[{on:'target', type:'debuff', what:'PROVOKE', chance:0.5, turns:1}],
+       desc:"(260% ATK). 50% to Provoke (1T)."
+      },
+      {slot:2,name:'Calcification',cd:3,target:'aoe_allies',hits:0,mult:0,
+       effects:[
+         {on:'ally', type:'healFlatCasterHP', amount:0.20},
+         {on:'ally', type:'buff', what:'DEF_UP', turns:2}
+       ],
+       desc:"Heal allies for 20% of Saria's Max HP and grant DEF↑ (2T)."
+      },
+      {slot:3,name:'Order Restoration',cd:4,target:'team',hits:0,mult:0,
+       effects:[
+         {on:'ally', type:'cleanse', amount:2},
+         {on:'ally', type:'buff', what:'IMMUNITY', turns:1},
+         {on:'ally', type:'shieldCasterHP', amount:0.20, turns:2}
+       ],
+       desc:"Cleanse 2 debuffs, grant Immunity (1T) and Shield (20% of Saria HP, 2T) to all allies."
+      }
+    ]
+  },
+  /* 5 */{
+    key:'ifrit', name:'Ifrit', element:'Fire', role:'Debuffer',
+    leader:{ stat:'ACC', amount:0.40, scope:'All' },
+    runes:['Focus','Despair'],
+    stats:{ hp:8800, atk:840, def:480, spd:106, cr:0.15, cd:0.50, acc:0.30, res:0.15 },
+    passives:[],
+    skills:[
+      {slot:1,name:'Heat Ray',cd:0,target:'enemy',hits:1,mult:3.3,ignoreDef:0,
+       effects:[{on:'target', type:'debuff', what:'BRAND', chance:0.5, turns:2}],
+       desc:"(330% ATK). 50% to Brand (2T)."
+      },
+      {slot:2,name:'Toxic Flame',cd:3,target:'aoe_enemies',hits:2,mult:1.5,ignoreDef:0,
+       effects:[{on:'target', type:'debuff', what:'DOT', chance:0.5, turns:2}],
+       desc:"AOE 2 hits (150% each). 50% per hit to add DoT (2T)."
+      },
+      {slot:3,name:'Scorched Earth',cd:4,target:'aoe_enemies',hits:1,mult:3.8,ignoreDef:0,
+       effects:[
+         {on:'target', type:'atkbar-', amount:0.20},
+         {on:'target', type:'debuff', what:'HEAL_BLOCK', chance:1.0, turns:2}
+       ],
+       desc:"AOE (380% ATK), -20% ATB & Heal Block (2T)."
+      }
+    ]
+  },
+  /* 6 */{
+    key:'skadi', name:'Skadi', element:'Water', role:'Assassin',
+    leader:{ stat:'CD', amount:0.33, scope:'Element', element:'Water' },
+    runes:['Fatal','Blade'],
+    stats:{ hp:8700, atk:860, def:450, spd:115, cr:0.15, cd:0.50, acc:0.25, res:0.15 },
+    passives:[],
+    skills:[
+      {slot:1,name:'Tidal Rush',cd:0,target:'enemy',hits:2,mult:1.4,ignoreDef:0,
+       effects:[{on:'target', type:'debuff', what:'SLOW', chance:0.4, turns:2}],
+       desc:"2 hits (140% each). 40% to Slow (2T)."
+      },
+      {slot:2,name:'Deep Hunt',cd:3,target:'self',hits:0,mult:0,
+       effects:[
+         {on:'self', type:'buff', what:'ATK_UP', turns:2},
+         {on:'self', type:'buff', what:'CRIT_RATE_UP', turns:2},
+         {on:'self', type:'atkbar+', amount:0.20}
+       ],
+       desc:"Self: ATK↑ & Crit Rate↑ (2T) and +20% ATB."
+      },
+      {slot:3,name:'Abyssal Strike',cd:4,target:'enemy',hits:1,mult:4.2,ignoreDef:0,
+       effects:[{on:'target', type:'bonusPerDebuff', cap:0.50, per:0.10}],
+       desc:"(420% ATK). +10% damage per debuff on target (cap +50%)."
+      }
+    ]
+  },
+  /* 7 */{
+    key:'nightingale', name:'Nightingale', element:'Light', role:'Healer',
+    leader:{ stat:'RES', amount:0.41, scope:'All' },
+    runes:['Swift','Will'],
+    stats:{ hp:10200, atk:620, def:630, spd:112, cr:0.15, cd:0.50, acc:0.20, res:0.25 },
+    passives:[],
+    skills:[
+      {slot:1,name:'Hymn',cd:0,target:'enemy',hits:1,mult:2.2,ignoreDef:0,
+       effects:[{on:'target', type:'debuff', what:'GLANCING', chance:0.5, turns:2}],
+       desc:"(220% ATK). 50% to inflict Glancing (2T)."
+      },
+      {slot:2,name:'Purifying Choir',cd:3,target:'ally_single',hits:0,mult:0,
+       effects:[
+         {on:'ally', type:'cleanse', amount:2},
+         {on:'ally', type:'healPctTarget', amount:0.25}
+       ],
+       desc:"Cleanse 2 debuffs & heal target ally by 25% Max HP."
+      },
+      {slot:3,name:'Sanctuary',cd:5,target:'team',hits:0,mult:0,
+       effects:[
+         {on:'ally', type:'reviveOne', amount:0.30},
+         {on:'ally', type:'buff', what:'IMMUNITY', turns:2},
+         {on:'ally', type:'buff', what:'HOT', turns:2},
+         {on:'ally', type:'shieldCasterHP', amount:0.15, turns:2}
+       ],
+       desc:"Revive one dead ally (30% HP). Then teamwide Immunity & HoT (2T) and Shield (15% of Nightingale HP, 2T)."
+      }
+    ]
+  },
+  /* 8 */{
+    key:'angelina', name:'Angelina', element:'Wind', role:'Controller',
+    leader:{ stat:'SPD', amount:0.24, scope:'All' },
+    runes:['Despair','Focus'],
+    stats:{ hp:9300, atk:700, def:520, spd:120, cr:0.15, cd:0.50, acc:0.30, res:0.15 },
+    passives:[],
+    skills:[
+      {slot:1,name:'Gravity Well',cd:0,target:'enemy',hits:1,mult:2.6,ignoreDef:0,
+       effects:[{on:'target', type:'atkbar-', chance:0.5, amount:0.15}],
+       desc:"(260% ATK). 50% to reduce ATB by 15%."
+      },
+      {slot:2,name:'Time Dilation',cd:3,target:'team',hits:0,mult:0,
+       effects:[
+         {on:'ally', type:'buff', what:'SPD_UP', turns:2},
+         {on:'self', type:'atkbar+', amount:0.25}
+       ],
+       desc:"Team SPD↑ (2T). Angelina gains +25% ATB."
+      },
+      {slot:3,name:'Chrono Collapse',cd:4,target:'aoe_enemies',hits:1,mult:3.2,ignoreDef:0,
+       effects:[
+         {on:'target', type:'debuff', what:'SLOW', chance:0.6, turns:2},
+         {on:'target', type:'atkbar-', amount:0.20}
+       ],
+       desc:"AOE (320% ATK). 60% to Slow (2T) and -20% ATB."
+      }
+    ]
+  },
+  /* 9 */{
+    key:'chen', name:"Ch'en", element:'Water', role:'Striker',
+    leader:{ stat:'ATK', amount:0.24, scope:'Element', element:'Water' },
+    runes:['Violent','Blade'],
+    stats:{ hp:8800, atk:820, def:500, spd:116, cr:0.15, cd:0.50, acc:0.25, res:0.15 },
+    passives:[],
+    skills:[
+      {slot:1,name:'Flash Cut',cd:0,target:'enemy',hits:1,mult:3.0,ignoreDef:0,
+       effects:[{on:'target', type:'debuff', what:'BRAND', chance:0.5, turns:2}],
+       desc:"(300% ATK). 50% to Brand (2T)."
+      },
+      {slot:2,name:"Dragon's Roar",cd:3,target:'enemy',hits:2,mult:1.5,ignoreDef:0,
+       effects:[
+         {on:'target', type:'strip', amount:2, chance:1.0},
+         {on:'target', type:'debuff', what:'STUN', chance:0.5, turns:1}
+       ],
+       desc:"2 hits (150% each), strip 2 buffs (100%), then 50% to Stun (1T)."
+      },
+      {slot:3,name:'Chi Xiao Style',cd:4,target:'enemy',hits:1,mult:4.0,ignoreDef:0.25,
+       effects:[ {on:'self', type:'bonusIf', cond:'BRAND', bonusCrit:0.25, bonusDmg:0.20} ],
+       desc:"(400% ATK), ignore 25% DEF. If target is Branded: +25% Crit Rate & +20% damage."
+      }
+    ]
+  },
+  /* 10 */{
+    key:'lappland', name:'Lappland', element:'Dark', role:'Disruptor',
+    leader:{ stat:'ATK', amount:0.33, scope:'Element', element:'Dark' },
+    runes:['Revenge','Will'],
+    stats:{ hp:9100, atk:780, def:500, spd:115, cr:0.15, cd:0.50, acc:0.25, res:0.15 },
+    passives:[],
+    skills:[
+      {slot:1,name:'Rending',cd:0,target:'enemy',hits:2,mult:1.5,ignoreDef:0,
+       effects:[{on:'target', type:'debuff', what:'HEAL_BLOCK', chance:0.5, turns:2}],
+       desc:"2 hits (150% each). 50% to Heal Block (2T)."
+      },
+      {slot:2,name:'Savage Lunge',cd:3,target:'aoe_enemies',hits:1,mult:2.2,ignoreDef:0,
+       effects:[{on:'target', type:'debuff', what:'SILENCE', chance:0.6, turns:1}],
+       desc:"AOE (220% ATK). 60% to Silence (1T)."
+      },
+      {slot:3,name:'Lupine Execution',cd:4,target:'enemy',hits:1,mult:4.0,ignoreDef:0,
+       effects:[{on:'self', type:'bonusIf', cond:'HEAL_BLOCK', bonusDmg:0.30}],
+       desc:"(400% ATK). +30% damage if target has Heal Block."
+      }
+    ]
+  },
+  /* 11 */{
+    key:'blaze', name:'Blaze', element:'Fire', role:'Bruiser',
+    leader:{ stat:'DEF', amount:0.33, scope:'Element', element:'Fire' },
+    runes:['Guard','Revenge'],
+    stats:{ hp:9900, atk:740, def:570, spd:111, cr:0.15, cd:0.50, acc:0.25, res:0.20 },
+    passives:[],
+    skills:[
+      {slot:1,name:'Burning Drive',cd:0,target:'enemy',hits:1,mult:3.0,ignoreDef:0,
+       effects:[{on:'target', type:'debuff', what:'ATK_DOWN', chance:0.5, turns:2}],
+       desc:"(300% ATK). 50% to apply ATK Down (2T)."
+      },
+      {slot:2,name:'Overheat',cd:3,target:'self',hits:0,mult:0,
+       effects:[
+         {on:'self', type:'buff', what:'ATK_UP', turns:2},
+         {on:'self', type:'shieldCasterHP', amount:0.20, turns:2},
+         {on:'self', type:'buff', what:'COUNTER', turns:2}
+       ],
+       desc:"Self: ATK↑ (2T), Shield (20% of Blaze HP, 2T) and Counter (2T)."
+      },
+      {slot:3,name:'Flame Cyclone',cd:4,target:'aoe_enemies',hits:1,mult:3.4,ignoreDef:0,
+       effects:[{on:'target', type:'debuff', what:'DEF_BREAK', chance:0.5, turns:2}],
+       desc:"AOE (340% ATK). 50% to DEF Break (2T)."
+      }
+    ]
+  },
+  /* 12 */{
+    key:'schwarz', name:'Schwarz', element:'Dark', role:'Sniper',
+    leader:{ stat:'CR', amount:0.24, scope:'Element', element:'Dark' },
+    runes:['Fatal','Rage'],
+    stats:{ hp:8600, atk:900, def:430, spd:112, cr:0.15, cd:0.50, acc:0.25, res:0.15 },
+    passives:[],
+    skills:[
+      {slot:1,name:'Piercing Shot',cd:0,target:'enemy',hits:1,mult:3.5,ignoreDef:0,
+       effects:[{on:'target', type:'debuff', what:'SLOW', chance:0.4, turns:2}],
+       desc:"(350% ATK). 40% to Slow (2T)."
+      },
+      {slot:2,name:'Target Weakness',cd:3,target:'enemy',hits:1,mult:2.6,ignoreDef:0,
+       effects:[
+         {on:'target', type:'debuff', what:'BRAND', chance:1.0, turns:2},
+         {on:'target', type:'debuff', what:'DEF_BREAK', chance:0.5, turns:2}
+       ],
+       desc:"(260% ATK). Always Brand (2T). 50% to DEF Break (2T)."
+      },
+      {slot:3,name:'Fatal Shot',cd:4,target:'enemy',hits:1,mult:5.0,ignoreDef:0.25,
+       effects:[ {on:'self', type:'bonusIf', cond:'BRAND', bonusDmg:0.30} ],
+       desc:"(500% ATK), ignore 25% DEF. +30% damage if target is Branded."
+      }
+    ]
+  },
+
+  /* ------ New Operators (auto‑generated to reach 44 total) ------ */
+];
+
+
+/* ===== External Roster Loader (operators.json) ===== */
+async function loadExternalOperators(){
+  const url = `${BASE_ASSETS}/data/operators.json?v=${Date.now()}`;
+  try{
+    const res = await fetch(url, {mode:'cors'});
+    if(!res.ok){ console.warn('operators.json not found:', url, res.status); return; }
+    const list = await res.json();
+    // Build allowed set from operators.json (names that have BOTH icon & battlecard)
+    const allowed = new Set(list.map(x => (typeof x === 'string' ? x : (x.name||'')).trim()).filter(Boolean));
+    // Prune any pre-seeded units not in allowed (e.g., legacy entries without assets like "Ch'en")
+    for (let i = UnitsDB.length - 1; i >= 0; i--) {
+      if (!allowed.has(UnitsDB[i].name)) UnitsDB.splice(i, 1);
+    }
+
+    if(!Array.isArray(list)){ console.warn('operators.json is not an array'); return; }
+    const haveKeys = new Set(UnitsDB.map(u=>u.key));
+    const classMap = new Set(['Vanguard','Guard','Defender','Sniper','Caster','Medic','Supporter','Specialist']);
+    const elemList = ['Fire','Water','Wind','Light','Dark'];
+
+    function pickElement(name){
+      // deterministic element by hashing the name
+      let h=0; for(let i=0;i<name.length;i++){ h = (h*31 + name.charCodeAt(i))>>>0; }
+      return elemList[h % elemList.length];
+    }
+    function normalizeKey(name){ return (name||'').toLowerCase().replace(/[^a-z0-9]+/g,''); }
+
+    function defaultRunesFor(role){
+      const picks = {
+        Sniper:['Fatal','Blade'],
+        Caster:['Focus','Rage'],
+        Guard:['Fatal','Blade'],
+        Defender:['Guard','Energy'],
+        Medic:['Energy','Will'],
+        Supporter:['Energy','Will'],
+        Vanguard:['Swift','Energy'],
+        Specialist:['Swift','Blade']
+      }[role] || ['Energy','Will'];
+      return picks;
+    }
+
+    function defaultStats(role){
+      // lightweight defaults by role
+      const base = {
+        Vanguard:{hp:9500, atk:720, def:520, spd:112},
+        Guard:{hp:9200, atk:820, def:500, spd:112},
+        Defender:{hp:10500, atk:650, def:650, spd:104},
+        Sniper:{hp:8600, atk:900, def:430, spd:114},
+        Caster:{hp:8800, atk:840, def:480, spd:108},
+        Medic:{hp:10200, atk:620, def:630, spd:110},
+        Supporter:{hp:9300, atk:700, def:520, spd:112},
+        Specialist:{hp:9000, atk:780, def:480, spd:116}
+      }[role] || {hp:9200, atk:820, def:500, spd:112};
+      return { ...base, cr:0.15, cd:0.50, acc:0.25, res:0.15 };
+    }
+
+    let added = 0;
+    for(const op of list){
+      const name = op?.name || op;
+      if(!name || typeof name !== 'string') continue;
+      const key = normalizeKey(op.id || name);
+      if(haveKeys.has(key)) continue; // already defined with full kit
+
+      const role = (op.role || op.class || '').trim();
+      const roleFinal = classMap.has(role) ? role : 'Guard';
+      const element = (op.element || pickElement(name));
+      const runes = defaultRunesFor(roleFinal);
+      const stats = defaultStats(roleFinal);
+      const leader = { stat:'ATK', amount:0.24, scope:'Element', element };
+
+      // Generic but sensible 3-skill kit
+      const s1 = {slot:1,name:`${name} Technique`,cd:0,target:'enemy',hits:1,mult:3.0,ignoreDef:0,
+                  effects:[{on:'target',type:'debuff',what:'DEF_BREAK',chance:0.4,turns:2}],
+                  desc:'Basic strike with a chance to DEF Break (2T).'};
+      const s2 = {slot:2,name:`${name} Focus`,cd:3,target:'self',hits:0,mult:0,
+                  effects:[{on:'self',type:'buff',what:'ATK_UP',turns:2},{on:'self',type:'atkbar+',amount:0.20}],
+                  desc:'Self-buffs: ATK Up (2T) and +20% ATB.'};
+      const s3 = {slot:3,name:`${name} Signature`,cd:4,
+                  target: Math.random()<0.5 ? 'enemy' : 'aoe_enemies',
+                  hits: Math.random()<0.5 ? 1 : 3,
+                  mult:  Math.random()<0.5 ? 4.0 : 1.2,
+                  ignoreDef: Math.random()<0.5 ? 0.25 : 0,
+                  effects:[{on:'target', type:'debuff', what:'HEAL_BLOCK', chance:0.5, turns:2}],
+                  desc:'Signature move with offensive utility.'};
+
+      UnitsDB.push({
+        key, name, element, role: roleFinal, leader, runes, stats, passives:[], skills:[s1,s2,s3]
+      });
+      haveKeys.add(key);
+      added++;
+    }
+    console.log('External operators loaded:', list.length, 'Added to UnitsDB:', added, 'Total now:', UnitsDB.length);
+  }catch(e){
+    console.warn('Failed to load operators.json', e);
+  }
+}
+
+/* ===== Helpers ===== */
+const EL = ['Fire','Wind','Water','Light','Dark'];
+const elColor = el => ({Fire:'var(--fire)',Water:'var(--water)',Wind:'var(--wind)',Light:'var(--light)',Dark:'var(--dark)'})[el];
+const clamp = (v,min,max)=>Math.max(min,Math.min(max,v));
+const pct = v => Math.round(v*100);
+const SpeedMap = { slow:1100 };;
+const PAGE_SIZE = 12;
+// === Asset base for icons served from GitHub Pages ===
+const BASE_ASSETS = "https://mikale4.github.io/ArknightsTactics/assets";
+const iconURL = (name) => `${BASE_ASSETS}/icons/${encodeURIComponent(name)}.png`;
+const battlecardURL = (name) => `${BASE_ASSETS}/battlecards/${encodeURIComponent(name)}.png`;
+const bcbgURL = (el) => `${BASE_ASSETS}/bcbg/${encodeURIComponent(el)}.png`;
+
+
+/* Element relation */
+function elementRel(att, tar){
+  if(att===tar) return 'neu';
+  if(att==='Light' && tar==='Dark') return 'adv';
+  if(att==='Dark' && tar==='Light') return 'adv';
+  if(att==='Fire' && tar==='Wind') return 'adv';
+  if(att==='Wind' && tar==='Water') return 'adv';
+  if(att==='Water' && tar==='Fire') return 'adv';
+  if(att==='Wind' && tar==='Fire') return 'dis';
+  if(att==='Water' && tar==='Wind') return 'dis';
+  if(att==='Fire' && tar==='Water') return 'dis';
+  return 'neu';
+}
+
+/* ======= Runtime Unit model ======= */
+let uidCounter = 1;
+class Unit {
+  constructor(base, team){
+    this.id = 'u'+(uidCounter++);
+    this.base = base;
+    this.name = base.name;
+    this.key = base.key;
+    this.el = base.element;
+    this.role = base.role;
+    const s = base.stats;
+    this.maxhp = s.hp; this.hp = s.hp;
+    this.atk = s.atk; this.def = s.def; this.spd = s.spd;
+    this.cr = s.cr; this.cdmg = s.cd; this.acc = s.acc; this.res = s.res;
+    this.runes = base.runes ? [...base.runes] : [];
+    this.leader = base.leader || null;
+    this.skills = base.skills.map(x=>({...x}));
+    this.passives = base.passives ? base.passives.map(x=>({...x})) : [];
+    this.flags = {}; // passive state
+    this.cool = {}; this.skills.forEach(k=>this.cool[k.slot]=0);
+    this.atb = 0; this.team = team; this.alive = true;
+    this.buffs=[]; this.debuffs=[];
+    this.shield=0;
+    this.provokedBy=null;
+    this.dom = null;
+
+    this.applyRuneStats();
+  }
+  applyRuneStats(){
+    const r = new Set(this.runes);
+    if(r.has('Swift')) this.spd = Math.round(this.spd * 1.25);
+    if(r.has('Fatal')) this.atk = Math.round(this.atk * 1.35);
+    if(r.has('Blade')) this.cr = clamp(this.cr + 0.12, 0, 1);
+    if(r.has('Focus')) this.acc = clamp(this.acc + 0.20, 0, 1);
+    if(r.has('Energy')) this.maxhp = Math.round(this.maxhp * 1.15), this.hp = this.maxhp;
+    if(r.has('Guard')) this.def = Math.round(this.def * 1.15);
+    if(r.has('Rage')) this.cdmg = this.cdmg + 0.40;
+    if(r.has('Endure')) this.res = clamp(this.res + 0.20, 0, 1);
+    // Will/Shield/Revenge/Violent/Despair/Nemesis handled dynamically
+  }
+  get spdMult(){
+    let mult=1;
+    if(this.hasBuff('SPD_UP')) mult*=1.3;
+    if(this.hasDebuff('SLOW')) mult*=0.7;
+    if((GS.field||'')==='Wind' && this.el==='Wind') mult*=1.10;
+    return mult;
+  }
+  get effSpd(){ return Math.max(1, Math.floor(this.spd * this.spdMult)); }
+  get effAtk(){
+    let m=1;
+    if(this.hasBuff('ATK_UP')) m*=1.5;
+    if(this.hasDebuff('ATK_DOWN')) m*=0.7;
+    return Math.floor(this.atk*m);
+  }
+  get effDef(){
+    let m=1;
+    if(this.hasBuff('DEF_UP')) m*=1.5;
+    if(this.hasDebuff('DEF_DOWN')||this.hasDebuff('DEF_BREAK')) m*=0.6;
+    return Math.floor(this.def*m);
+  }
+  get effCR(){
+    let b=this.cr;
+    if(this.hasBuff('CRIT_RATE_UP')) b+=0.30;
+    return clamp(b,0,1);
+  }
+  hasBuff(name){ return this.buffs.some(b=>b.what===name); }
+  hasDebuff(name){ return this.debuffs.some(d=>d.what===name); }
+  addBuff(what, turns, from=null){
+    this.buffs.push({ what, turns, from });
+  }
+  addDebuff(what, turns, from=null){
+    this.debuffs.push({ what, turns, from });
+    if(what==='PROVOKE') this.provokedBy = from||null;
+  }
+  removeBuff(what){ this.buffs = this.buffs.filter(b=>b.what!==what); }
+  strip(n){
+    const removable = this.buffs.filter(b=>b.what!=='INVINCIBLE');
+    for(let i=0;i<n && removable.length;i++){
+      const idx = Math.floor(RNG()*removable.length);
+      const b = removable.splice(idx,1)[0];
+      this.buffs = this.buffs.filter(x=>x!==b);
+      if(b.what==='SHIELD'){ this.shield=0; }
+    }
+  }
+  cleanse(n){
+    for(let i=0;i<n && this.debuffs.length;i++){
+      const idx = Math.floor(RNG()*this.debuffs.length);
+      const d = this.debuffs.splice(idx,1)[0];
+      if(d.what==='PROVOKE') this.provokedBy=null;
+    }
+  }
+  tickStartOfTurn(){
+    // DoT tick
+    const dots = this.debuffs.filter(d=>d.what==='DOT').length;
+    if(dots>0){
+      let total = Math.max(1, Math.floor(this.maxhp * 0.05 * dots));
+      applyDamage(null, this, total, {trueDamage:true, label:`${dots}×DoT`});
+    }
+    // HoT tick
+    const hots = this.buffs.filter(b=>b.what==='HOT').length;
+    if(hots>0 && !this.hasDebuff('HEAL_BLOCK')){
+      const heal = Math.round(this.maxhp * 0.05 * hots);
+      this.hp = clamp(this.hp + heal, 0, this.maxhp);
+      log(`${this.name} recovers ${heal} from HoT.`);
+      damageFloat(this, `+${heal}`, 'var(--good)');
+    }
+  }
+  endTurnTick(){
+    const decr = arr => {
+      arr.forEach(x=>x.turns--);
+      return arr.filter(x=>x.turns>0);
+    };
+    this.buffs = decr(this.buffs);
+    this.debuffs = decr(this.debuffs);
+    if(!this.hasBuff('SHIELD')) this.shield=0;
+    for(const k of Object.keys(this.cool)){
+      if(this.cool[k]>0) this.cool[k]--;
+    }
+  }
+}
+
+/* ======= Game state ======= */
+const GS = {
+  roster:[], you:[], foe:[], units:[], started:false, auto:false, fast:false /*removed*/,
+  acting:null, actionLock:false, log:[], pve:null, youLeader:null, foeLeader:null,
+  speedKey:'slow', loadouts:{}, page:1, editKey:null, shakeUnit:true, shakeNum:true, shakeScreen:true
+};
+
+/* ======= UI Builders ======= */
+const rosterEl = document.getElementById('roster');
+const prevPageBtn = document.getElementById('prevPage');
+const nextPageBtn = document.getElementById('nextPage');
+const pageInfo = document.getElementById('pageInfo');
+const unitDetails = document.getElementById('unitDetails');
+const playerRow = document.getElementById('playerRow');
+const enemyRow = document.getElementById('enemyRow');
+const logEl = document.getElementById('log');
+const battleSec = document.getElementById('battle');
+const turnbarEl = document.getElementById('turnbar');
+const actingLabel = document.getElementById('actingLabel');
+const skillsEl = document.getElementById('skills');
+const resultBadge = document.getElementById('resultBadge');
+const modeBadge = document.getElementById('modeBadge');
+const overlay = document.getElementById('overlay');
+const pickGrid = document.getElementById('pickGrid');
+const leaderSelect = document.getElementById('leaderSelect');
+const hiliteLeader = document.getElementById('hiliteLeader');
+
+/* Rune editor elements */
+const editSelect = document.getElementById('editSelect');
+const runeA = document.getElementById('runeA');
+const runeB = document.getElementById('runeB');
+const previewEl = document.getElementById('preview');
+const AllRunes = ['Swift','Fatal','Blade','Focus','Energy','Guard','Rage','Despair','Revenge','Violent','Will','Shield','Nemesis','Endure'];
+
+/* ===== Roster & editor setup ===== */
+
+// === Auto-generate extra operators to reach 44 total ===
+(function(){
+  const want = 44;
+  const have = UnitsDB.length;
+  const need = want - have;
+  if(need <= 0) return;
+  const names = [
+    "Amiya","Kaltsit","Specter","Elysium","Siege","Ptilopsis","Warfarin","Eyjafjalla",
+    "Mostima","Glaucus","Weedy","Phantom","Ash","Rosmontis","Archetto","W",
+    "Saga","Saileach","Horn","Carnelian","Irene","Mizuki","Ling","Lee",
+    "Nian","Shining","Hoshiguma","Nearl","Ceobe","Blemishine","Sutralt","Cliffheart"
+  ];
+  const elems = ["Fire","Water","Wind","Light","Dark"];
+  const classes = ["Vanguard","Guard","Defender","Sniper","Caster","Medic","Supporter","Specialist"];
+  const leaders = [
+    {stat:"ATK",amount:0.24,scope:"All"},
+    {stat:"HP",amount:0.33,scope:"All"},
+    {stat:"DEF",amount:0.24,scope:"All"},
+    {stat:"SPD",amount:0.19,scope:"All"},
+    {stat:"CR",amount:0.24,scope:"Element"},
+    {stat:"CD",amount:0.33,scope:"Element"},
+    {stat:"ACC",amount:0.40,scope:"All"},
+    {stat:"RES",amount:0.41,scope:"All"}
+  ];
+  const runeChoices = ["Swift","Fatal","Blade","Focus","Energy","Guard","Rage","Despair","Revenge","Violent","Will","Shield","Nemesis","Endure"];
+
+  function rnd(a){ return a[Math.floor(Math.random()*a.length)]; }
+  function statIn(base, spread){ return Math.round(base + (Math.random()*spread - spread/2)); }
+
+  let i=0, used = new Set(UnitsDB.map(u=>u.key));
+  while(UnitsDB.length < want && i < names.length){
+    const name = names[i];
+    const key = name.toLowerCase().replace(/[^a-z0-9]+/g,'');
+    i++;
+    if(used.has(key)) continue;
+    used.add(key);
+    const element = rnd(elems);
+    const role = rnd(classes);
+    const leader = {...rnd(leaders)};
+    if(leader.scope==="Element") leader.element = element;
+
+    const stats = {
+      hp: statIn(9200, 2400),
+      atk: statIn(820, 160),
+      def: statIn(500, 160),
+      spd: statIn(112, 12),
+      cr: 0.15, cd: 0.50, acc: 0.25, res: 0.15
+    };
+    const runes = [rnd(runeChoices), rnd(runeChoices)];
+    if(runes[1]===runes[0]) runes[1] = rnd(runeChoices.filter(x=>x!==runes[0]));
+
+    const s1 = {
+      slot:1, name:`${name} Technique`, cd:0, target:'enemy', hits: (Math.random()<0.5?2:1),
+      mult: (Math.random()<0.5?1.5:3.2), ignoreDef: (Math.random()<0.5?0.0:0.15),
+      effects: Math.random()<0.5 ? [{on:'target', type:'debuff', what:rnd(['DEF_BREAK','SLOW','ATK_DOWN','GLANCING','HEAL_BLOCK']), chance:0.5, turns:2}] : [{on:'target', type:'atkbar-', chance:0.5, amount:0.10}],
+      desc: "Unique S1 with either debuff or ATB down."
+    };
+    const s2 = Math.random()<0.5 ?
+      {slot:2, name:`${name} Support`, cd:3, target:'team', hits:0, mult:0,
+        effects:[{on:'ally', type:'buff', what:rnd(['SPD_UP','ATK_UP','DEF_UP']), turns:2},{on:'ally', type:'atkbar+', amount:0.10}],
+        desc:"Teamwide buff +10% ATB."
+      } :
+      {slot:2, name:`${name} Focus`, cd:3, target:'self', hits:0, mult:0,
+        effects:[{on:'self', type:'buff', what:rnd(['CRIT_RATE_UP','ATK_UP','IMMUNITY']), turns:2},{on:'self', type:'atkbar+', amount:0.20}],
+        desc:"Self buffs plus +20% ATB."
+      };
+
+    const s3 = (Math.random()<0.5) ?
+      {slot:3, name:`${name} Ultimate`, cd:4, target:'aoe_enemies', hits:1, mult:3.2, ignoreDef:(Math.random()<0.5?0.0:0.15),
+       effects:[{on:'target', type:'debuff', what:rnd(['SLOW','HEAL_BLOCK','DEF_BREAK']), chance:0.6, turns:2},{on:'target', type:'atkbar-', amount:0.20}],
+       desc:"AOE with control debuff and ATB reduction."
+      } :
+      {slot:3, name:`${name} Finisher`, cd:4, target:'enemy', hits:1, mult:4.2, ignoreDef:(Math.random()<0.5?0.25:0.0),
+       effects:[{on:'target', type:'bonusPerDebuff', per:0.10, cap:0.50}],
+       desc:"Single-target nuke with bonus vs debuffs."
+      };
+
+    const passives = [];
+    if(Math.random()<0.25) passives.push({id:'LIFESTEAL', amount:0.20, text:'Heals 20% of damage dealt.'});
+    if(Math.random()<0.20) passives.push({id:'TEAM_ATB_START', amount:0.10, text:'Allies gain +10% ATB at start.'});
+    if(Math.random()<0.15) passives.push({id:'REVIVE_ONCE', amount:0.30, buff:'INVINCIBLE', turns:1, text:'Revive on death once (30% HP), gain 1T Invincibility.'});
+    if(Math.random()<0.10) passives.push({id:'IMMUNE_LIST', list:['STUN','SILENCE'], text:'Immune to Stun & Silence.'});
+
+    UnitsDB.push({
+      key, name, element, role, leader, runes, stats, passives, skills:[s1,s2,s3]
+    });
+  }
+})();
+
+function makeRoster(){
+  document.getElementById('fClear')?.addEventListener('click',()=>{['searchInput','fElement','fClass','fBuff','fDebuff','fRune'].forEach(id=>{const el=document.getElementById(id); if(!el) return; if(el.tagName==='SELECT') el.value=''; else el.value='';}); GS.page=1; renderRosterPage();});
+  ['searchInput','fElement','fClass','fBuff','fDebuff','fRune'].forEach(id=>{const el=document.getElementById(id); if(el) el.addEventListener('input', ()=>{GS.page=1; renderRosterPage();});});
+  GS.roster = UnitsDB.map(x=>({...x}));
+  // ensure only Arknights classes are shown for roles if any stray names exist
+  const classMap = ['Vanguard','Guard','Defender','Sniper','Caster','Medic','Supporter','Specialist'];
+  GS.roster.forEach(u=>{
+    if(!classMap.includes(u.role)){
+      const fallback = {
+        exusiai:'Sniper', silverash:'Guard', surtr:'Guard', saria:'Defender', ifrit:'Caster',
+        skadi:'Guard', nightingale:'Medic', angelina:'Supporter', chen:'Guard', lappland:'Guard',
+        blaze:'Guard', schwarz:'Sniper'
+      }[u.key];
+      u.role = fallback || 'Guard';
+    }
+  });
+
+  // Saved selection
+  const saved = JSON.parse(localStorage.getItem('AT_sel')||'[]');
+  GS.you = [];
+  saved.forEach(k=>{
+    const u = GS.roster.find(x=>x.key===k);
+    if(u && GS.you.length<4) GS.you.push(u);
+  });
+
+  renderRosterPage();
+  updateLeaderDropdown();
+  refreshEditorDropdown();
+  applyLeaderHighlight();
+  showUnitDetails(GS.you[0] || GS.roster[0]);
+}
+
+function renderRosterPage(){
+  const q = (document.getElementById('searchInput')?.value||'').toLowerCase();
+  const elv = document.getElementById('fElement')?.value||'';
+  const clv = document.getElementById('fClass')?.value||'';
+  const runePick = document.getElementById('fRune')?.value || '';
+  const buffIncl = (document.getElementById('fBuff')?.value||'').toLowerCase();
+  const debuffIncl = (document.getElementById('fDebuff')?.value||'').toLowerCase();
+
+  let pool = GS.roster.slice();
+  pool = pool.filter(u=> (!q || u.name.toLowerCase().includes(q)) && (!elv || u.element===elv) && (!clv || u.role===clv));
+  if(runePick) pool = pool.filter(u=> (u.runes||[]).includes(runePick));
+  if(buffIncl) pool = pool.filter(u=> (u.skills||[]).some(s=> (s.effects||[]).some(e=> e.type==='buff')   && JSON.stringify(s.effects||[]).toLowerCase().includes(buffIncl)));
+  if(debuffIncl) pool = pool.filter(u=> (u.skills||[]).some(s=> (s.effects||[]).some(e=> e.type==='debuff') && JSON.stringify(s.effects||[]).toLowerCase().includes(debuffIncl)));
+
+  const total = pool.length;
+  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  if(GS.page<1) GS.page=1;
+  if(GS.page>pages) GS.page=pages;
+  const start = (GS.page-1)*PAGE_SIZE;
+  const items = pool.slice(start, start+PAGE_SIZE);
+
+  rosterEl.innerHTML = '';
+  items.forEach(u=>{
+    const div = document.createElement('div');
+    div.className='card';
+    div.dataset.key=u.key;
+    const selected = GS.you.some(k=>k.key===u.key);
+    if(selected) div.classList.add('selected');
+    div.innerHTML = `
+      
+      <div class="row" style="align-items:center; gap:8px">
+        <img src="${iconURL(u.name)}" alt="${u.name}" width="36" height="36"
+             style="border-radius:8px; object-fit:cover; border:1px solid #283345"
+             onerror="this.style.display='none'">
+        <div>
+          <div class="name">${u.name}<span class="el ${u.element}">${u.element}</span></div>
+          <div class="tiny">${u.role}</div>
+        </div>
+      </div>
+      <div class="statline">
+        <span>HP ${u.stats.hp}</span>
+        <span>ATK ${u.stats.atk}</span>
+        <span>DEF ${u.stats.def}</span>
+        <span>SPD ${u.stats.spd}</span>
+      </div>
+
+    `;
+    div.addEventListener('click',()=>{
+      // Toggle selection up to 4
+      const idx = GS.you.findIndex(k=>k.key===u.key);
+      if(idx>=0){
+        GS.you.splice(idx,1);
+        div.classList.remove('selected');
+      }else{
+        if(GS.you.length>=4){ flash(div); return; }
+        GS.you.push(u);
+        div.classList.add('selected');
+      }
+      saveSel();
+      showUnitDetails(u);
+      updateLeaderDropdown();
+      refreshEditorDropdown();
+      applyLeaderHighlight();
+    });
+    div.addEventListener('mouseenter',()=>showUnitDetails(u));
+    rosterEl.appendChild(div);
+  });
+  pageInfo.textContent = `Page ${GS.page} / ${Math.max(1,Math.ceil(total/PAGE_SIZE))}`;
+  applyLeaderHighlight();
+}
+
+function updateLeaderDropdown(){
+  leaderSelect.innerHTML = '';
+  GS.you.forEach((u,i)=>{
+    const opt = document.createElement('option');
+    opt.value = u.key;
+    opt.textContent = `${u.name} — Leader: ${leaderText(u.leader)}`;
+    if(i===0) opt.selected = true;
+    leaderSelect.appendChild(opt);
+  });
+}
+
+function leaderText(l){
+  if(!l) return '—';
+  const sym = {ATK:'ATK',HP:'HP',DEF:'DEF',SPD:'SPD',CR:'Crit Rate',CD:'Crit Dmg',ACC:'Accuracy',RES:'Resistance'}[l.stat]||l.stat;
+  const scope = l.scope==='All'?'All Allies':(l.scope==='Element'?`${l.element} Allies`:'Allies');
+  return `${sym} +${Math.round(l.amount*100)}% (${scope})`;
+}
+
+function saveSel(){
+  localStorage.setItem('AT_sel', JSON.stringify(GS.you.map(x=>x.key)));
+}
+
+function showUnitDetails(u){
+  if(!u){ unitDetails.innerHTML = '<div class="tiny">Click a unit to see its stats, passives, and skill descriptions here.</div>'; return; }
+  const ltext = u.leader ? `${u.leader.stat} +${Math.round(u.leader.amount*100)}% (${u.leader.scope==='All'?'All Allies':(u.leader.scope==='Element'?u.leader.element+' Allies':'Allies')})` : '—';
+  const pass = (u.passives||[]).length ? u.passives.map(p=>`• ${p.text || p.id}`).join('<br>') : '—';
+  const skills = (u.skills||[]).map(s=>`<div style="margin:6px 0"><b>${s.name}</b> ${s.cd>0?`<span class="tiny">(CD ${s.cd})</span>`:''}<br><span class="tiny">${s.desc||''}</span></div>`).join('');
+  unitDetails.innerHTML = `
+    <div style="font-weight:700;margin-bottom:6px">${u.name} <span class="el ${u.element}">${u.element}</span> <span class="atag">${u.role}</span></div>
+    <div class="tiny">HP ${u.stats.hp} • ATK ${u.stats.atk} • DEF ${u.stats.def} • SPD ${u.stats.spd} • CR ${Math.round((u.stats.cr||0)*100)}% • CD ${Math.round((u.stats.cd||0)*100)}% • ACC ${Math.round((u.stats.acc||0)*100)}% • RES ${Math.round((u.stats.res||0)*100)}%</div>
+    <div class="sep"></div>
+    <div><b>Leader:</b> <span class="tiny">${ltext}</span></div>
+    <div style="margin-top:6px"><b>Passives</b><br><span class="tiny">${pass}</span></div>
+    <div class="sep"></div>
+    <div><b>Skills</b>${skills}</div>
+  `;
+}
+
+function flash(el){
+  el.animate([{transform:'translateY(0)'},{transform:'translateY(-4px)'},{transform:'translateY(0)'}],{duration:200});
+}
+
+/* ===== Loadout editor ===== */
+function refreshEditorDropdown(){
+  editSelect.innerHTML='';
+  if(GS.you.length===0){
+    const opt = document.createElement('option');
+    opt.textContent = 'Pick your 4 operators above to edit loadouts';
+    editSelect.appendChild(opt);
+    return;
+  }
+  GS.you.forEach((u,i)=>{
+    const opt = document.createElement('option');
+    opt.value = u.key;
+    opt.textContent = `${u.name}`;
+    if(i===0) opt.selected = true;
+    editSelect.appendChild(opt);
+  });
+  GS.editKey = editSelect.value;
+  syncLoadoutUI();
+}
+
+function populateRuneSelects(){
+  [runeA, runeB].forEach(sel=>{
+    sel.innerHTML='';
+    AllRunes.forEach(rn=>{
+      const o=document.createElement('option'); o.value=rn; o.textContent=rn; sel.appendChild(o);
+    });
+  });
+}
+
+function syncLoadoutUI(){
+  const u = GS.you.find(x=>x.key===GS.editKey);
+  if(!u) { previewEl.textContent=''; return; }
+  const load = GS.loadouts[u.key] || { runes:[...u.runes] };
+  if(!GS.loadouts[u.key]) GS.loadouts[u.key]=load;
+  runeA.value = load.runes[0] || 'Swift';
+  runeB.value = load.runes[1] || 'Blade';
+  renderPreview(u, load);
+  renderAdvisor(u);
+}
+
+function renderPreview(u, load){
+  const sim = JSON.parse(JSON.stringify(u));
+  sim.runes = [load.runes[0], load.runes[1]].filter(Boolean);
+  const temp = new Unit(sim, 'you');
+  const pageEl = document.getElementById('previewPage');
+  const prevBtn = document.getElementById('prevPreview');
+  const nextBtn = document.getElementById('nextPreview');
+  let page = (pageEl && pageEl.dataset.page) ? parseInt(pageEl.dataset.page,10) : 1;
+
+  function render(){
+    if(!pageEl) return;
+    if(page===1){
+      pageEl.textContent='Runes'; pageEl.dataset.page='1';
+      const lines=[
+        `${sim.element} ${u.name}`,
+        `${u.role}`,
+        `Runes:`
+      ];
+      if(sim.runes.length===0){
+        lines.push('—');
+      }else{
+        sim.runes.forEach(r=> lines.push(`${r} - ${runeInfo[r]||''}`));
+      }
+      document.getElementById('preview').textContent = lines.join('\n');
+    }else{
+      pageEl.textContent='Stats'; pageEl.dataset.page='2';
+      const lines=[
+        `HP: ${temp.maxhp}`,
+        `ATK: ${temp.atk}`,
+        `DEF: ${temp.def}`,
+        `SPD: ${temp.spd}`,
+        `CR: ${pct(temp.cr)}%`,
+        `CD: ${pct(temp.cdmg)}%`,
+        `ACC: ${pct(temp.acc)}%`,
+        `RES: ${pct(temp.res)}%`
+      ];
+      document.getElementById('preview').textContent = lines.join('\n');
+    }
+  }
+  if(prevBtn && nextBtn){
+    prevBtn.onclick=()=>{ page=(page===1?2:page-1); render(); };
+    nextBtn.onclick=()=>{ page=(page===2?1:page+1); render(); };
+  }
+  render();
+}
+
+/* Leader coverage highlight */
+hiliteLeader.addEventListener('change', applyLeaderHighlight);
+leaderSelect.addEventListener('change', applyLeaderHighlight);
+
+function applyLeaderHighlight(){
+  document.querySelectorAll('#roster .card').forEach(c=>c.classList.remove('covered'));
+  const counter = document.getElementById('coverageCount');
+  if(counter) counter.textContent='';
+  if(!hiliteLeader.checked) return;
+  const leaderKey = leaderSelect.value || GS.you[0]?.key;
+  const leaderUnit = GS.you.find(u=>u.key===leaderKey);
+  if(!leaderUnit || !leaderUnit.leader) return;
+  const L = leaderUnit.leader;
+  const covered = GS.roster.filter(r=> (L.scope==='All') || (L.scope==='Element' && r.element===L.element));
+  covered.forEach(r=>{
+    rosterEl.querySelector(`.card[data-key="${r.key}"]`)?.classList.add('covered');
+  });
+  if(counter){
+    const total = GS.roster.length;
+    counter.textContent = `Covered: ${covered.length}/${total}`;
+  }
+}
+
+
+/* ===== Battle board ===== */
+
+/* --- Hover Parallax: background + operator (respect reduced motion) --- */
+function enableParallaxFor(unitEl){
+  if(!unitEl) return;
+  // Skip on coarse pointers (touch) or reduced motion
+  const mediaReduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const mediaCoarse = window.matchMedia('(pointer: coarse)');
+  if(mediaReduce.matches || mediaCoarse.matches) return;
+
+  const card = unitEl.querySelector('.bcard');
+  if(!card) return;
+  const bg   = card.querySelector('.bframe');
+  const art  = card.querySelector('img.op');
+  if(!bg || !art) return;
+
+  let raf = null;
+  let targetTxBg = 0, targetTyBg = 0, targetTxOp = 0, targetTyOp = 0;
+
+  function onMove(ev){
+    const r = card.getBoundingClientRect();
+    const cx = r.left + r.width/2;
+    const cy = r.top + r.height/2;
+    const x = ((ev.clientX - cx) / (r.width/2));  // -1 .. 1
+    const y = ((ev.clientY - cy) / (r.height/2)); // -1 .. 1
+    const clamp1 = (v)=>Math.max(-1, Math.min(1, v));
+
+    const nx = clamp1(x), ny = clamp1(y);
+
+    // Background moves with cursor (max ~6px)
+    const bgMax = 6;
+    targetTxBg = Math.round(nx * bgMax);
+    targetTyBg = Math.round(ny * bgMax);
+
+    // Operator moves opposite direction (max ~3px)
+    const opMax = 3;
+    targetTxOp = Math.round(-nx * opMax);
+    targetTyOp = Math.round(-ny * opMax);
+
+    if(!raf){
+      raf = requestAnimationFrame(()=>{
+        raf = null;
+        bg.style.transform  = `translate(${targetTxBg}px, ${targetTyBg}px)`;
+        art.style.transform = `translate(calc(-50% + ${targetTxOp}px), calc(-6px + ${targetTyOp}px)) translateZ(28px)`;
+      });
+    }
+  }
+  function onLeave(){
+    bg.style.transform = 'translate(0,0)';
+    // Keep original translateZ and baseline translate on operator
+    art.style.transform = 'translate(-50%, -6px) translateZ(28px)';
+  }
+  unitEl.addEventListener('mousemove', onMove);
+  unitEl.addEventListener('mouseleave', onLeave);
+}
+
+function drawBoard(){
+  playerRow.innerHTML='';
+  enemyRow.innerHTML='';
+  GS.youUnits.forEach(u=>{
+    playerRow.appendChild(unitCard(u,true));
+    enableParallaxFor(playerRow.lastElementChild);
+    updateCard(u); // render existing buffs (e.g., Will Immunity) immediately
+  });
+  GS.foeUnits.forEach(u=>{
+    enemyRow.appendChild(unitCard(u,false));
+    enableParallaxFor(enemyRow.lastElementChild);
+    updateCard(u); // render existing buffs
+  });
+  updateTurnbar();
+  updateATBUI(0); // keep bars at 0% at start (unless passives modified them)
+  
+}
+
+function unitCard(u, isYou){
+  const d = document.createElement('div');
+  d.className='unit ' + (isYou?'you':'them');
+  d.id = u.id;
+  d.innerHTML = `
+    <div class="bcard">
+  <div class="bframe">
+    <img class="bglayer" src="${bcbgURL(u.el)}" alt="${u.el} background" onerror="this.style.display='none'">
+  </div>
+  <img class="op" src="${battlecardURL(u.name)}" alt="${u.name}" onerror="this.style.display='none'">
+</div>
+    <div class="plinth-wrap">
+      <div class="plinth">
+        <div class="plinth-head">
+          <div class="plinth-name">${u.name}</div>
+          <span class="el ${u.el}">${u.el}</span>
+        </div>
+        <div class="hpbar"><div class="fill" style="width:${pct(u.hp/u.maxhp)}%"></div><div class="hpnum">${Math.round((u.hp/u.maxhp)*100)}%</div></div>
+        <div class="shieldbar"><div class="sfill" style="width:${Math.min(100, Math.round((u.shield/u.maxhp)*100))}%"></div><div class="shieldnum"></div></div>
+        <div class="atbbar"><div class="abfill" style="width:${u.atb}%"></div><div class="atbnum">ATB ${Math.round(u.atb)}%</div></div>
+        <div class="buffs"></div>
+        <div class="debuffs"></div>
+      </div>
+    </div>
+    `;
+  u.dom = d;
+  return d;
+}
+
+function updateCard(u){
+  if(!u.dom) return;
+  const fill = u.dom.querySelector('.fill');
+  const hpnum = u.dom.querySelector('.hpnum');
+  const buffs = u.dom.querySelector('.buffs');
+  const debuffs = u.dom.querySelector('.debuffs');
+  const bar = clamp(u.hp/u.maxhp,0,1);
+  fill.style.width = (bar*100)+'%';
+  const hpbar = u.dom.querySelector('.hpbar'); if(hpbar){ hpbar.classList.toggle('critical', (u.hp/u.maxhp)<=0.20); } const hpPct=Math.round((Math.max(0,u.hp)/u.maxhp)*100); hpnum.textContent=`${hpPct}%`;
+  buffs.innerHTML = '';
+  u.buffs.forEach(b=>{
+    const t=document.createElement('span');
+    t.className='tag buff';
+    t.textContent=niceStatusText(b.what); t.title=`${niceStatusText(b.what)} ${b.turns||1}T`;
+    buffs.appendChild(t);
+  });
+  if(u.shield>0 && !u.hasBuff('SHIELD')){
+    const t=document.createElement('span');
+    t.className='tag buff'; t.textContent=`SHIELD ${u.shield}`;
+    buffs.appendChild(t);
+  }
+  debuffs.innerHTML='';
+  u.debuffs.forEach(d=>{
+    const t=document.createElement('span');
+    t.className='tag debuff';
+    t.textContent=niceStatusText(d.what); t.title=`${niceStatusText(d.what)} ${d.turns||1}T`;
+    debuffs.appendChild(t);
+  });
+
+  const sbar = u.dom.querySelector('.shieldbar .sfill');
+  const snum = u.dom.querySelector('.shieldnum');
+  if(sbar){
+    const sw = Math.max(0, Math.min(100, Math.round((u.shield / u.maxhp)*100)));
+    sbar.style.width = sw + '%';
+  }
+  if(snum){
+    snum.textContent = u.shield>0 ? ('+' + u.shield + ' Shield') : '';
+  }
+
+  u.dom.classList.toggle('dead', !u.alive);
+}
+
+function updateATBUI(durationMs=0){
+  GS.units.forEach(u=>{
+    if(!u.dom) return;
+    const ab = u.dom.querySelector('.abfill');
+    const num = u.dom.querySelector('.atbnum');
+    if(durationMs>=0){
+      ab.style.transition = `width ${durationMs}ms linear`;
+    }else{
+      ab.style.transition = 'none';
+    }
+    ab.style.width = `${clamp(u.atb,0,100)}%`;
+    if(num) num.textContent = `ATB ${Math.round(clamp(u.atb,0,100))}%`;
+  });
+}
+
+function scrollLog(){ logEl.scrollTop = logEl.scrollHeight; }
+function log(line){ const e = document.createElement('div'); e.innerHTML = line; logEl.appendChild(e); scrollLog(); }
+function damageFloat(u, txt, color){
+  const f = document.createElement('div');
+  f.className='float-dmg' + (GS.shakeNum ? ' shakeNum':'');
+  f.style.color = color || 'white'; f.textContent=txt;
+  u.dom.appendChild(f); setTimeout(()=>f.remove(),900);
+}
+
+/* ============== Battle bootstrap ============== */
+
+/* === Auto-fit battle board to viewport (no scrolling) === */
+
+let __fitLockScale = null;
+function fitBoardToViewport(){ /* no-op: fixed 60% zoom */ }
+
+
+
+
+async function startBattle(){
+  if(GS.you.length!==4){ alert('Pick exactly 4 operators.'); return; }
+  GS.auto = !!GS.auto;
+  GS.field = document.getElementById('fieldSelect')?.value || '';
+  GS.speedKey = 'slow';
+
+  logEl.innerHTML='';
+  resultBadge.className='dn';
+  modeBadge.textContent = '';
+  await enterFullscreen();
+  document.body.classList.add('battleOnly');
+  battleSec.style.display='grid';
+  window.scrollTo(0,0);
+
+  // Build units; apply UI loadouts
+  GS.youUnits = GS.you.map(u=>{
+    const load = GS.loadouts[u.key] || { runes:[...u.runes] };
+    const copy = {...u, runes:[...load.runes]};
+    return new Unit(copy, 'you');
+  });
+
+  // Enemy selection (PvP or PvE)
+  const pool = GS.roster.filter(x=>!GS.you.some(y=>y.key===x.key));
+  const isPvE = false; GS.pve = null; GS.foe = shuffle(pool).slice(0,4);
+  GS.foeUnits = GS.foe.map(u=>new Unit(u,'foe'));
+  GS.units = [...GS.youUnits, ...GS.foeUnits];
+
+  // Random starting ATB
+  GS.units.forEach(u=>u.atb = 0);
+
+  // Apply Leaders
+  const leaderKey = leaderSelect.value || GS.you[0].key;
+  GS.youLeader = GS.youUnits.find(x=>x.key===leaderKey) || GS.youUnits[0];
+  applyLeader(GS.youLeader, GS.youUnits);
+  GS.foeLeader = GS.foeUnits[Math.floor(RNG()*GS.foeUnits.length)];
+  applyLeader(GS.foeLeader, GS.foeUnits, true);
+
+  // Rune start effects (Will & Shield) and passives at start
+  applyStartOfBattleRunes('you');
+  applyStartOfBattleRunes('foe');
+  applyStartOfBattlePassives('you');
+  applyStartOfBattlePassives('foe');
+
+  drawBoard();
+  log(`<strong>Battle Start!</strong> Your team: ${GS.you.map(x=>x.name).join(', ')} vs. ${GS.foe.map(x=>x.name).join(', ')}.`);
+  GS.started=true;
+  loopTurn();
+}
+
+function randomizeEnemy(){
+  const pool = GS.roster.filter(x=>!GS.you.some(y=>y.key===x.key));
+  GS.foe = shuffle(pool).slice(0,4);
+  alert('Enemy team randomized. Start the battle to see them.');
+}
+
+function resetAll(){
+  GS.you = [];
+  GS.loadouts = {};
+  document.querySelectorAll('#roster .card').forEach(c=>c.classList.remove('selected'));
+  localStorage.removeItem('AT_sel');
+  battleSec.style.display='none';
+  logEl.innerHTML='';
+  resultBadge.className='dn';
+  modeBadge.textContent = '';
+  leaderSelect.innerHTML='';
+  refreshEditorDropdown();
+}
+
+/* ===== Leaders & Auras ===== */
+function applyLeader(leaderUnit, allies, isEnemy=false){
+  if(!leaderUnit || !leaderUnit.leader) return;
+  const L = leaderUnit.leader;
+  const targets = allies.filter(a=> L.scope==='All' ? true : (L.scope==='Element' ? a.el===L.element : true));
+  targets.forEach(t=>{
+    switch(L.stat){
+      case 'HP': t.maxhp = Math.round(t.maxhp*(1+L.amount)); t.hp = t.maxhp; break;
+      case 'ATK': t.atk = Math.round(t.atk*(1+L.amount)); break;
+      case 'DEF': t.def = Math.round(t.def*(1+L.amount)); break;
+      case 'SPD': t.spd = Math.round(t.spd*(1+L.amount)); break;
+      case 'CR': t.cr = clamp(t.cr + L.amount, 0, 1); break;
+      case 'CD': t.cdmg = t.cdmg + L.amount; break;
+      case 'ACC': t.acc = clamp(t.acc + L.amount, 0, 1); break;
+      case 'RES': t.res = clamp(t.res + L.amount, 0, 1); break;
+    }
+  });
+  log(`${isEnemy?'Enemy':'Your'} Leader: <strong>${nameSpan(leaderUnit)}</strong> — ${leaderText(L)}`);
+}
+
+function applyBossAuraToFoes(){
+  const auras = [
+    {stat:'SPD', amount:0.20, text:'Boss Aura: Enemies SPD +20%'},
+    {stat:'ATK', amount:0.25, text:'Boss Aura: Enemies ATK +25%'},
+    {stat:'RES', amount:0.30, text:'Boss Aura: Enemies RES +30%'},
+  ];
+  const aura = auras[Math.floor(RNG()*auras.length)];
+  GS.foeUnits.forEach(t=>{
+    if(aura.stat==='SPD') t.spd = Math.round(t.spd*(1+aura.amount));
+    if(aura.stat==='ATK') t.atk = Math.round(t.atk*(1+aura.amount));
+    if(aura.stat==='RES') t.res = clamp(t.res + aura.amount, 0, 1);
+  });
+  GS.pve.bossAura = aura.text;
+  log(`<strong>${aura.text}</strong>`);
+}
+
+/* ===== Start-of-battle rune effects & passives ===== */
+function applyStartOfBattleRunes(side){
+  const arr = side==='you' ? GS.youUnits : GS.foeUnits;
+  const mates = arr;
+  arr.forEach(caster=>{
+    const r = new Set(caster.runes);
+    if(r.has('Will')){
+      caster.addBuff('IMMUNITY', 1);
+      updateCard(caster);
+      log(`${nameSpan(caster)} (Will): gains ${statusSpan('IMMUNITY')} 1T at start.`);
+      floatStatus(caster, 'immunity', '#77e49a');
+    }
+    if(r.has('Shield')){
+      const v = Math.round(caster.maxhp * 0.15);
+      mates.forEach(ally=>{
+        ally.shield += v; ally.addBuff('SHIELD', 3); floatStatus(ally, 'shield', '#77e49a'); updateCard(ally);
+      });
+      log(`${nameSpan(caster)} (Shield): team gains ${statusSpan('SHIELD')} ${v} for 3T.`);
+    }
+  });
+}
+
+function applyStartOfBattlePassives(side){
+  const arr = side==='you' ? GS.youUnits : GS.foeUnits;
+  arr.forEach(u=>{
+    const p = (u.passives||[]).map(x=>x.id);
+    if(p.includes('TEAM_ATB_START')){
+      const amt = u.passives.find(x=>x.id==='TEAM_ATB_START').amount||0.1;
+      const allies = side==='you'?GS.youUnits:GS.foeUnits;
+      allies.forEach(a=>{ a.atb = clamp(a.atb + amt*100, 0, 100); });
+      log(`${u.name} (Start Dash): Team ATB +${Math.round(amt*100)}%`);
+    }
+  });
+}
+
+/* ============== Core loop: ATB/Turns with speed toggle ============== */
+function aliveUnits(team){ return GS.units.filter(u=>u.alive && (!team || u.team===team)); }
+
+function loopTurn(){
+  if(checkEnd()) return;
+  const {actor, dt} = nextActor();
+  GS.acting = actor;
+  updateTurnbar();
+
+  const animMs = Math.max(200, Math.round(dt * SpeedMap['slow'] )); // speed mapping
+  updateATBUI(animMs);
+
+  setTimeout(()=>{
+    highlightActing(actor);
+    if(!actor.alive){ return loopTurn(); }
+    actor.tickStartOfTurn();
+    if(!actor.alive){ return loopTurn(); }
+
+    if(actor.hasDebuff('STUN')){ log(`<strong>${nameSpan(actor)}</strong> is ${statusSpan('STUN')} and loses the turn.`); GS.actionLock=false; actor.atb = 0; actor.endTurnTick(); updateCard(actor); return setTimeout(loopTurn,200);}
+
+    if(actor.hasDebuff('PROVOKE')){
+      // force S1; target the provoker if alive, else default enemy
+      const s1 = actor.skills.find(s=>s.slot===1);
+      const t = (actor.provokedBy && actor.provokedBy.alive) ? actor.provokedBy : defaultTargetFor(actor, s1);
+      return useSkill(actor, s1, t);
+    }
+
+    if(actor.team==='you' && !GS.auto){
+      showPlayerControls(actor);
+    } else {
+      const {skill, target} = aiChoose(actor);
+      useSkill(actor, skill, target);
+    }
+  }, animMs + 30);
+}
+
+function nextActor(){
+  let minTime = Infinity; let actor=null;
+  const alive = GS.units.filter(u=>u.alive);
+  alive.forEach(u=>{
+    const time = (100 - u.atb) / u.effSpd;
+    if(time < minTime){ minTime=time; actor = u; }
+  });
+  alive.forEach(u=>{ u.atb = clamp(u.atb + u.effSpd*minTime, 0, 100); });
+  actor.atb = 100;
+  return {actor, dt:minTime};
+}
+
+function afterAction(actor){
+  actor.endTurnTick();
+  updateCard(actor);
+  if(checkEnd()) return;
+  setTimeout(loopTurn, 200);
+}
+
+function checkEnd(){
+  const youAlive = aliveUnits('you').length;
+  const foeAlive = aliveUnits('foe').length;
+  if(youAlive===0 || foeAlive===0){
+    resultBadge.className = youAlive>0 ? 'win' : 'loss';
+    resultBadge.textContent = youAlive>0 ? 'Victory!' : 'Defeat';
+    log(`<strong>${youAlive>0?'Victory!':'Defeat.'}</strong>`);
+    GS.started=false;
+    return true;
+  }
+  return false;
+}
+
+
+
+
+function updateTurnbar(){
+  const snapshot = GS.units.filter(u=>u.alive).map(u=>({ u, atb:u.atb, spd:u.effSpd }));
+  const order = [];
+  const etas = [];
+  let tAccum = 0;
+  for(let i=0;i<8 && snapshot.length;i++){
+    let next = snapshot.reduce((a,b)=> ((100-b.atb)/b.spd < (100-a.atb)/a.spd ? b : a), snapshot[0]);
+    const dt = (100 - next.atb)/next.spd;
+    tAccum += dt;
+    order.push(next.u);
+    etas.push(tAccum);
+    snapshot.forEach(s=>{ s.atb = clamp(s.atb + s.spd*dt, 0, 100); });
+    next.atb = 0;
+  }
+  turnbarEl.innerHTML='';
+  order.forEach(u=>{
+    const pill = document.createElement('span');
+    pill.className='turnpill ' + (u.team==='you'?'me':'en');
+    pill.textContent = `${u.name.split(' ')[0]} ${u.team==='you'?'▲':'▼'}`;
+    turnbarEl.appendChild(pill);
+  });
+
+  // Turn Inspector (toggleable)
+  const ins = document.getElementById('turnInspector');
+  if(!ins) return;
+  ins.style.display = GS.showInspector ? 'block' : 'none';
+  if(!GS.showInspector){ ins.innerHTML=''; return; }
+
+  let html = '<b>Turn Details</b> — next 8:';
+  html += '<div style="display:grid;grid-template-columns:46px 1fr;gap:6px;margin-top:6px">';
+  order.forEach((u, idx)=>{
+    const etaSec = Math.max(0, (etas[idx] * (SpeedMap['slow']||1100)) / 1000).toFixed(2);
+    let sk = null, tg = null;
+    try{ const r = aiChoose(u); sk = r?.skill || null; tg = r?.target || null; }catch(e){}
+    const skillName = sk? sk.name : '—';
+    const expB = (u.buffs||[]).filter(x=> (x.turns||0) <= 1).map(x=>niceStatusText(x.what)).slice(0,3);
+    const expD = (u.debuffs||[]).filter(x=> (x.turns||0) <= 1).map(x=>niceStatusText(x.what)).slice(0,3);
+    const expBits = [];
+    if(expB.length) expBits.push(`<span style="color:var(--good)">${expB.join(', ')}</span>`);
+    if(expD.length) expBits.push(`<span style="color:var(--bad)">${expD.join(', ')}</span>`);
+    const expTxt = expBits.length? (' — expiring: ' + expBits.join(' | ')) : '';
+    html += `<div class="tiny" style="opacity:.8">${etaSec}s</div><div>${nameSpan(u)} ⇒ <i>${escapeHTML(skillName)}</i>${expTxt}</div>`;
+  });
+  html += '</div>';
+  ins.innerHTML = html;
+}
+
+function highlightActing(u){
+  document.querySelectorAll('.unit').forEach(x=>x.classList.remove('acting','actingPulse'));
+  u.dom?.classList.add('acting','actingPulse');
+  actingLabel.textContent = `Acting: ${u.name} (${u.el}) — ATB 100`;
+  try{ /* keep framing fixed; no scroll jumps */ }catch(e){}
+}
+
+function highlightActing(u){
+  document.querySelectorAll('.unit').forEach(x=>x.classList.remove('acting','actingPulse'));
+  u.dom?.classList.add('acting','actingPulse');
+  actingLabel.textContent = `Acting: ${u.name} (${u.el}) — ATB 100`;
+
+
+  try{
+    // scrolling disabled in battleOnly; keep framing fixed
+  }catch(e){ /* ignore */ }
+
+}
+
+/* ============== Player controls ============== */
+function showPlayerControls(u){
+  skillsEl.innerHTML='';
+  u.skills.forEach(s=>{
+    const estLabelId = `est-${u.id}-${s.slot}`;
+    const el = document.createElement('div');
+    const cdLeft = u.cool[s.slot]||0;
+    let disabled=false;
+    if(cdLeft>0){ disabled=true; }
+    if(s.slot!==1 && u.hasDebuff('SILENCE')){ disabled=true; }
+    el.className='skill' + (disabled?' disabled':'');
+    el.innerHTML = `
+      <div style="font-weight:700">${s.name} <span class="cool">${cdLeft>0?cdLeft+'T':''}</span></div>
+      <div class="tiny">${targetLabel(s.target)} • ${ (s.hits>0 ? (s.hits + " hit" + (s.hits>1?"s":"")) : "Utility") }</div>
+      <div class="tip"><span class="i">ℹ️</span> details
+        <div class="tipbox">${escapeHTML(s.desc)}<br><span class="tiny">Scale: ${s.mult?`${(s.mult*100).toFixed(0)}% ATK × ${s.hits||1}${s.ignoreDef?`, ignore ${pct(s.ignoreDef)}% DEF`:''}`:'—'}</span><br><span class="tiny" id="est-${u.id}-${s.slot}">Est: —</span></div>
+      </div>
+    `;
+    if(!disabled){
+      const targ = (s.target==='enemy'||s.target==='aoe_enemies')? defaultTargetFor(u,s) : (s.target==='ally_single'? aliveUnits(u.team).sort((a,b)=>(a.hp/a.maxhp)-(b.hp/b.maxhp))[0] : u);
+      const est = estimateDamage(u, targ, s);
+      setTimeout(()=>{ const lbl=document.getElementById(estLabelId); if(lbl) lbl.textContent = `Est: ${est}`; }, 0);
+      el.addEventListener('click',()=>{
+        prepareSkillUse(u,s);
+      });
+    }
+    skillsEl.appendChild(el);
+  });
+}
+
+function targetLabel(t){
+  return ({
+    'enemy':'Single Enemy','ally_single':'Single Ally','self':'Self','team':'All Allies',
+    'aoe_enemies':'All Enemies','aoe_allies':'All Allies'
+  })[t] || '—';
+}
+
+
+
+
+function targetCandidates(actor, skill){
+  const enemies = aliveUnits(actor.team==='you'?'foe':'you');
+  const allies  = aliveUnits(actor.team);
+  function singleTargetables(arr){
+    const nonStealth = arr.filter(x=>!x.hasBuff('STEALTH'));
+    return nonStealth.length ? nonStealth : arr;
+  }
+  if(skill.target==='enemy'){
+    return singleTargetables(enemies);
+  } else if(skill.target==='ally_single'){
+    return singleTargetables(allies);
+  } else if(skill.target==='self'){
+    return [actor];
+  }
+  return [];
+}
+
+
+function prepareSkillUse(actor, skill){
+  if(skill.target==='self' || skill.target==='team' || skill.target==='aoe_enemies' || skill.target==='aoe_allies'){
+    const targ = (skill.target==='enemy' || skill.target==='ally_single') ? defaultTargetFor(actor, skill) : actor;
+    useSkill(actor, skill, targ);
+    return;
+  }
+  overlay.style.display='flex';
+  pickGrid.innerHTML='';
+  const candidates = targetCandidates(actor, skill);
+  candidates.forEach(t=>{
+    const div = document.createElement('div'); div.className='unit';
+    div.innerHTML = `
+      <div class="row" style="align-items:center; gap:6px"><img src="${battlecardURL(t.name)}" alt="${t.name}" width="24" height="24" style="border-radius:6px;object-fit:cover;border:1px solid #283345" onerror="this.style.display='none'"><div style="font-weight:800">${t.name} <span class="el ${t.el}">${t.el}</span></div></div>
+      <div class="hpbar"><div class="fill" style="width:${pct(t.hp/t.maxhp)}%"></div><div class="hpnum">${Math.round((t.hp/t.maxhp)*100)}%</div></div>
+      <div class="tiny">${t.team==='you'?'Ally':'Enemy'}</div>
+    `;
+    div.addEventListener('click',()=>{
+      overlay.style.display='none';
+      useSkill(actor, skill, t);
+    });
+    pickGrid.appendChild(div);
+  });
+}
+
+document.getElementById('cancelPick').onclick=()=>overlay.style.display='none';
+const btnGlossary = document.getElementById('btnGlossary'); const glossaryModal=document.getElementById('glossaryModal'); const glossaryClose=document.getElementById('glossaryClose');
+if(btnGlossary){ btnGlossary.onclick=()=>{ glossaryModal.style.display='flex'; }; }
+if(glossaryClose){ glossaryClose.onclick=()=>{ glossaryModal.style.display='none'; }; }
+if(glossaryModal){ glossaryModal.addEventListener('click',(e)=>{ if(e.target===glossaryModal) glossaryModal.style.display='none'; }); }
+
+
+/* ============== AI ============== */
+
+function aiChoose(u){
+  const can = s => (u.cool[s.slot]||0)===0 && !(s.slot!==1 && u.hasDebuff('SILENCE'));
+  const enemies = aliveUnits(u.team==='you'?'foe':'you');
+  const allies  = aliveUnits(u.team);
+
+  const s1 = u.skills.find(s=>s.slot===1);
+  const s2 = u.skills.find(s=>s.slot===2);
+  const s3 = u.skills.find(s=>s.slot===3);
+
+  const utilScore = (s)=> (s?.effects||[]).some(e=>{
+    return (e.on==='ally' || e.on==='team' || e.on==='aoe_allies' || e.on==='self') && (
+      e.type==='cleanse' || e.type==='shieldCasterHP' || e.type==='buff' || e.type==='atkbar+' || e.type==='reviveOne' || e.type==='healPct' || e.type==='healPctTarget' || e.type==='healFlatCasterHP'
+    );
+  });
+
+  const lowestTTKTarget = (s)=>{
+    let best=null, bestTtk=Infinity;
+    for(const t of enemies){
+      const dmg = expectedDamage(u,t,s);
+      const ttk = dmg>0 ? (t.hp/dmg) : Infinity;
+      if(ttk < bestTtk) { best=t; bestTtk=ttk; }
+    }
+    return best || enemies[0];
+  };
+
+  const highestThreat = ()=>{
+    return enemies.slice().sort((a,b)=>{
+      const A=a.effAtk*a.effSpd + a.atb*2, B=b.effAtk*b.effSpd + b.atb*2;
+      return B-A;
+    })[0];
+  };
+
+  switch(GS.aiStyle){
+    case 'aggressive': {
+      const skill = [s3,s2,s1].find(s=>s && can(s)) || s1;
+      const target = (skill?.target==='enemy' || skill?.target==='aoe_enemies')
+        ? lowestTTKTarget(skill)
+        : (skill?.target==='ally_single' ? allies.sort((a,b)=>(a.hp/a.maxhp)-(b.hp/b.maxhp))[0] : u);
+      return {skill, target};
+    }
+    case 'safe': {
+      const util = [s2,s3,s1].find(s=> s && can(s) && utilScore(s));
+      if(util){
+        let target;
+        if(util.target==='ally_single'){
+          target = allies.slice().sort((a,b)=>(a.hp/a.maxhp)-(b.hp/b.maxhp))[0] || u;
+        }else if(util.target==='team' || util.target==='aoe_allies'){ target = u; }
+        else if(util.target==='self'){ target = u; }
+        else if(util.target==='enemy' || util.target==='aoe_enemies'){ target = highestThreat(); }
+        else target = u;
+        return {skill:util, target};
+      }
+      const atk = [s3,s2,s1].find(s=>s && can(s)) || s1;
+      const target = (atk?.target==='enemy' || atk?.target==='aoe_enemies') ? highestThreat() : u;
+      return {skill:atk, target};
+    }
+    default: { // balanced
+      let skill = u.skills.find(s=>s.slot===3 && can(s)) || u.skills.find(s=>s.slot===2 && can(s)) || u.skills.find(s=>s.slot===1);
+      const debuffed = enemies.filter(t=> t.hasDebuff('DEF_BREAK') || t.hasDebuff('BRAND'));
+      const target = (skill.target==='enemy' || skill.target==='aoe_enemies')
+        ? (debuffed[0] || enemies.slice().sort((a,b)=>(a.hp/a.maxhp)-(b.hp/b.maxhp))[0])
+        : (skill.target==='ally_single' ? allies.slice().sort((a,b)=>(a.hp/a.maxhp)-(b.hp/b.maxhp))[0] : u);
+      return {skill, target};
+    }
+  }
+}
+
+
+
+
+
+function defaultTargetFor(u, skill){
+  const enemies = aliveUnits(u.team==='you'?'foe':'you');
+  const allies  = aliveUnits(u.team);
+
+  function singleTargetables(arr){
+    const nonStealth = arr.filter(x=>!x.hasBuff('STEALTH'));
+    return nonStealth.length ? nonStealth : arr;
+  }
+  function tauntTarget(arr){
+    const ts = arr.filter(x=>x.hasBuff('TAUNT'));
+    return ts.length ? ts[0] : null;
+  }
+  function hasKeyDebuff(t){ return t.hasDebuff('DEF_BREAK') || t.hasDebuff('BRAND') || t.hasDebuff('HEAL_BLOCK'); }
+
+  switch(skill.target){
+    case 'enemy': {
+      const foes = singleTargetables(enemies);
+      const tTaunt = tauntTarget(foes);
+      if(tTaunt) return tTaunt;
+      const pref = foes.slice().sort((a,b)=>{
+        const ascore = (a.hp/a.maxhp) + (hasKeyDebuff(a)?-0.3:0);
+        const bscore = (b.hp/b.maxhp) + (hasKeyDebuff(b)?-0.3:0);
+        return ascore - bscore;
+      });
+      return pref[0];
+    }
+    case 'ally_single': {
+      const cand = singleTargetables(allies);
+      return cand.slice().sort((a,b)=>(a.hp/a.maxhp) - (b.hp/b.maxhp))[0];
+    }
+    case 'self': return u;
+    case 'team': return u;
+    case 'aoe_enemies': return enemies[0];
+    case 'aoe_allies': return allies[0];
+  }
+  return u;
+}
+
+
+/* ============== Skill Resolution ============== */
+async function useSkill(actor, skill, primaryTarget){
+  if(GS.actionLock) return;
+  GS.actionLock=true;
+
+  // Actor acts; ATB resets now
+  actor.atb = 0;
+  updateATBUI(120);
+
+  logSimpleSkillUse(actor, skill);
+
+  const targets = [];
+  if(skill.target==='enemy'){
+    if(primaryTarget && primaryTarget.alive) targets.push(primaryTarget);
+    else targets.push(defaultTargetFor(actor, skill));
+  } else if(skill.target==='ally_single'){
+    if(primaryTarget && primaryTarget.alive && primaryTarget.team===actor.team) targets.push(primaryTarget);
+    else targets.push(defaultTargetFor(actor, skill));
+  } else if(skill.target==='self'){
+    targets.push(actor);
+  } else if(skill.target==='team' || skill.target==='aoe_allies'){
+    targets.push(...aliveUnits(actor.team));
+  } else if(skill.target==='aoe_enemies'){
+    targets.push(...aliveUnits(actor.team==='you'?'foe':'you'));
+  }
+
+  const isAOE = (skill.target==='aoe_enemies' || skill.target==='aoe_allies');
+  await animateApproach(actor, targets, isAOE);
+  if((skill.mult||0)>0){
+    for(const t of targets){
+      for(let h=0; h<(skill.hits||1); h++){
+        if(!t.alive) continue;
+        attackOnce(actor, t, skill);
+      }
+    }
+  }
+  animateRetreat(actor);
+
+  // Utility effects (buffs, cleanse, heals, shields, atb, strips) for non-damaging or global parts
+  skill.effects?.forEach(e=> applyEffectObject(actor, targets, e, skill));
+
+  if(skill.target==='aoe_enemies'){
+    screenShake();
+  }
+
+  // Set cooldown of used skill
+  if(skill.cd>0){ actor.cool[skill.slot] = skill.cd; }
+
+  // Violent rune: 22% chance extra turn
+  if(actor.runes.includes('Violent') && RNG()<0.22){
+    log(`${actor.name}'s Violent rune grants an extra turn!`);
+    actor.atb = 100;
+  }
+
+  setTimeout(()=>{ GS.actionLock=false; afterAction(actor); }, 250);
+}
+
+/* ---------- Single hit damage & on-hit effects ---------- */
+function attackOnce(att, tar, skill){
+  if(!att.alive || !tar.alive) return;
+
+  const rel = elementRel(att.el, tar.el);
+  let glance=false;
+  if(rel==='dis' && RNG()<0.50) glance=true;
+  if(att.hasDebuff('GLANCING') && RNG()<0.50) glance=true;
+
+  let critChance = att.effCR + (rel==='adv'?0.15:0);
+  if(glance) critChance = 0;
+  const didCrit = RNG() < critChance;
+  const brandMult = tar.hasDebuff('BRAND') ? 1.25 : 1.0;
+
+  let bonusDmg = 0;
+  const bonusEffect = (skill.effects||[]).find(e=>e.type==='bonusIf');
+  if(bonusEffect && bonusEffect.cond && tar.hasDebuff(bonusEffect.cond)){
+    bonusDmg += (bonusEffect.bonusDmg||0);
+    if(bonusEffect.bonusCrit) critChance += bonusEffect.bonusCrit;
+  }
+  const perDebuff = (skill.effects||[]).find(e=>e.type==='bonusPerDebuff');
+  if(perDebuff){
+    const n = tar.debuffs.length;
+    bonusDmg += Math.min(perDebuff.cap||0, n * (perDebuff.per||0));
+  }
+
+  const advDmg = (rel==='adv') ? 0.15 : 0;
+  const glancePenalty = glance ? -0.30 : 0;
+
+  const defIgnored = (skill.ignoreDef||0);
+  const effectiveDef = Math.max(0, tar.effDef * (1 - defIgnored));
+  const mitigation = 1000 / (1000 + effectiveDef);
+
+  let base = att.effAtk * (skill.mult||1);
+  let dmg = base * mitigation;
+  if(didCrit) dmg *= (1 + att.cdmg);
+  dmg = dmg * (1 + advDmg + glancePenalty + bonusDmg) * brandMult;
+  dmg = Math.max(1, Math.round(dmg));
+
+  applyDamage(att, tar, dmg, {crit:didCrit, glance, label:skill.name});
+
+  // Despair: 25% Stun per damaging hit
+  if(att.runes.includes('Despair') && tar.alive && (skill.mult||0)>0){
+    if(!tar.hasBuff('IMMUNITY') && RNG()<0.25){
+      if(!resisted(att, tar, true)){
+        tar.addDebuff('STUN', 1);
+        log(`${tar.name} ⇢ <span style="color:var(--bad);font-weight:700">STUN</span> 1T (Despair)`);
+      } else log(`${tar.name} resisted Despair stun.`);
+    }
+  }
+
+  // On-hit effect batch (per hit)
+  (skill.effects||[]).forEach(e=>{
+    if(e.on==='target' || e.on==='enemy'){
+      if(e.type==='debuff'){
+        tryApplyDebuff(att, tar, e.what, e.turns||1, e.chance??1);
+      } else if(e.type==='atkbar-'){
+        if(e.chance==null || RNG()<e.chance){
+          addATB(tar, -(e.amount||0)); logSimpleATB(tar, -(e.amount||0));
+        }
+      } else if(e.type==='strip'){
+        if((e.chance??1)>=1 || RNG()<e.chance){
+          const n=e.amount||1; const before = tar.buffs.length;
+          tar.strip(n);
+          const removed = Math.max(0,before - tar.buffs.length);
+          if(removed>0) log(`${tar.name} had ${removed} buff(s) stripped!`);
+        }
+      }
+    } else if(e.on==='self'){
+      if(e.type==='atkbar+' && (e.perCrit? (didCrit):true)){
+        addATB(att, e.amount||0); logSimpleATB(att, (e.amount||0));
+      }
+    }
+  });
+
+  // Counter checks: COUNTER buff (30%) and/or Revenge (15%)
+  if(tar.alive){
+    let countered = false;
+    if(tar.hasBuff('COUNTER') && RNG()<0.30) countered = true;
+    if(!countered && tar.runes.includes('Revenge') && RNG()<0.15) countered = true;
+    if(countered){
+      log(`${tar.name} counters!`);
+      const s1 = tar.skills.find(s=>s.slot===1);
+      attackOnce(tar, att, s1);
+    }
+  }
+
+  // Lifesteal passive
+  const ls = att.passives?.find(p=>p.id==='LIFESTEAL');
+  if(ls){
+    const heal = Math.round(dmg * (ls.amount||0.2));
+    if(!att.hasDebuff('HEAL_BLOCK')){
+      att.hp = clamp(att.hp + heal, 0, att.maxhp);
+      damageFloat(att, `+${heal}`, 'var(--good)');
+      log(`${att.name} heals ${heal} (Lifesteal).`);
+    }
+  }
+
+  updateCard(tar); updateCard(att);
+
+  // On-kill effects (skill-level and passives)
+  if(!tar.alive){
+    // Skill onKill flags (e.g., Surtr S3)
+    (skill.effects||[]).filter(e=>e.onKill).forEach(e=>{
+      if(e.on==='self'){
+        if(e.type==='buff'){ att.addBuff(e.what, e.turns||1); log(`${att.name} gains ${e.what} (${e.turns||1}T) on kill.`); }
+        if(e.type==='resetSelfCD' && typeof e.skill==='number'){ att.cool[e.skill] = 0; log(`${att.name}'s skill ${e.skill} cooldown reset.`); }
+      }
+    });
+    onKill(att, tar);
+  }
+}
+
+function onKill(att, tar){
+  // Bagpipe passive: team ATB +10% on kill
+  if(att.passives?.some(p=>p.id==='TEAM_ATB_ON_KILL')){
+    const amt = att.passives.find(p=>p.id==='TEAM_ATB_ON_KILL').amount || 0.10;
+    const team = aliveUnits(att.team);
+    team.forEach(a=> addATB(a, amt));
+    log(`${att.name} (Tactical Uplift): Team ATB +${pct(amt)}%`);
+  }
+}
+
+/* Damage & healing */
+function applyDamage(att, tar, dmg, meta){
+  if(!tar.alive) return;
+  if(tar.hasBuff('INVINCIBLE')){ damageFloat(tar, '0 (Invincible)', 'var(--warn)'); log(`${tar.name} is Invincible — damage prevented.`); return; }
+  let dealt = dmg;
+  if(tar.shield>0){
+    const soak = Math.min(tar.shield, dealt);
+    tar.shield -= soak; dealt -= soak;
+    if(soak>0){ damageFloat(tar, `-${soak} (Shield)`, '#7fd37a'); }
+    if(tar.shield<=0) tar.removeBuff('SHIELD');
+  }
+  if(meta?.trueDamage){ dealt = dmg; }
+  tar.hp -= dealt;
+  unitShake(tar);
+  const color = meta?.crit ? '#ffd166' : (meta?.glance?'#9bb3c6':'#ff9090');
+  damageFloat(tar, `-${dealt}${meta?.label?'':''}`, color);
+  if(att){ logSimpleDamage(att, tar, dealt, meta||{}); }
+
+  // Nemesis rune: ATB gain based on HP lost
+  if(tar.runes.includes('Nemesis')){
+    const lostFrac = dealt / tar.maxhp;
+    const atbGain = lostFrac * (0.04/0.07); // ~4% per 7% HP lost
+    if(atbGain>0){ addATB(tar, atbGain); logSimpleATB(tar, atbGain); }
+  }
+
+  // Passive revives on death
+  if(tar.hp<=0){
+    const rev = tar.passives?.find(p=>p.id==='REVIVE_ONCE');
+    if(rev && !tar.flags.revivedOnce){
+      tar.flags.revivedOnce = true;
+      tar.alive = true;
+      tar.hp = Math.max(1, Math.round(tar.maxhp * (rev.amount||0.3)));
+      tar.addBuff(rev.buff||'INVINCIBLE', rev.turns||1);
+      if(tar.dom) tar.dom.classList.remove('dead');
+      updateCard(tar);
+      log(`<strong>${tar.name} revives!</strong> (${Math.round((rev.amount||0.3)*100)}% HP) and gains ${rev.buff||'INVINCIBLE'} ${rev.turns||1}T.`);
+      return; // do not proceed to death
+    }
+    tar.hp = 0; tar.alive=false;
+    tar.dom?.classList.add('dead');
+    log(`<strong>${tar.name} is defeated.</strong>`);
+  }
+}
+
+function revive(target, pct){
+  if(!target || target.alive) return;
+  target.alive = true;
+  target.hp = Math.max(1, Math.round(target.maxhp * (pct||0.3)));
+  target.debuffs = [];
+  target.removeBuff('INVINCIBLE');
+  target.dom?.classList.remove('dead');
+  updateCard(target);
+}
+
+/* ---------- Effects / Debuffs & Buffs ---------- */
+function resisted(att, tar, harmful){
+  if(!harmful) return false;
+  // Passive immunity lists
+  const imm = tar.passives?.find(p=>p.id==='IMMUNE_LIST');
+  if(imm && imm.list && harmful && imm.list.includes('ANY')) return true;
+  if(imm && imm.list && imm.list.includes('STUN') && 'STUN'===harmful) return true;
+  if(tar.hasBuff('IMMUNITY')) return true;
+  const base = 0.15;
+  const extra = Math.max(0, tar.res - att.acc);
+  const chance = Math.min(0.85, base + extra);
+  return RNG()<chance;
+}
+
+function tryApplyDebuff(att, tar, what, turns, chance=1){
+  const imm = tar.passives?.find(p=>p.id==='IMMUNE_LIST');
+  if(imm && imm.list && imm.list.includes(what)){
+    log(`${tar.name} is immune to ${what}.`);
+    return;
+  }
+  if(RNG()>=chance){ return log(`${tar.name} resisted (chance).`); }
+  if(resisted(att, tar, true)){ return log(`${tar.name} resisted ${niceStatusText(what)}.`); }
+  tar.addDebuff(what, turns, att);
+  log(`${nameSpan(tar)} ⇢ ${statusSpan(what)} ${turns}T`); floatStatus(tar, what.replace('_',' ').toLowerCase(), '#ff6b6b');
+}
+
+function addATB(u, amount){ if(!u.alive) return; u.atb = clamp(u.atb + amount*100, 0, 100); updateATBUI(160); }
+
+function applyEffectObject(actor, targets, e, skill){
+  const allies = aliveUnits(actor.team);
+  const foes = aliveUnits(actor.team==='you'?'foe':'you');
+  const applyTo = (arr, fn) => arr.forEach(x=>fn(x));
+
+  switch(e.on){
+    case 'self':
+      if(e.type==='buff'){ actor.addBuff(e.what, e.turns||1); updateCard(actor); log(`${nameSpan(actor)} gains ${statusSpan(e.what)} ${e.turns||1}T.`); floatStatus(actor, e.what.replace('_',' ').toLowerCase(), '#77e49a'); }
+      if(e.type==='taunt'){ actor.addBuff('TAUNT', e.turns||1); updateCard(actor); log(`${nameSpan(actor)} gains ${statusSpan('TAUNT')} ${e.turns||1}T.`); }
+      if(e.type==='atkbar+') { addATB(actor, e.amount||0); log(`${actor.name} ATB +${pct(e.amount||0)}%`); }
+      if(e.type==='healPct'){ if(!actor.hasDebuff('HEAL_BLOCK')){ const heal = Math.round(actor.maxhp*(e.amount||0)); const before = actor.hp; actor.hp = clamp(actor.hp+heal,0,actor.maxhp); const gained = actor.hp - before; updateCard(actor); log(`${nameSpan(actor)} healed ${gained} (of ${heal}).`); damageFloat(actor, `+${gained}`, 'var(--good)'); } else { log(`${actor.name} cannot heal (Heal Block).`); } }
+      if(e.type==='cleanse'){ if(actor.debuffs.length>0){ actor.cleanse(e.amount||1); log(`${actor.name} cleansed debuffs.`);} }
+      if(e.type==='shieldCasterHP'){ const v = Math.round(actor.maxhp*(e.amount||0)); actor.shield += v; actor.addBuff('SHIELD', e.turns||2); updateCard(actor); log(`${nameSpan(actor)} gains ${statusSpan('SHIELD')} ${v} (${e.turns||2}T).`); }
+      break;
+
+    case 'ally': // single-ally utilities
+      applyTo(targets, ally=>{
+        if(ally.team!==actor.team) return;
+        if(e.type==='healPctTarget'){ if(!ally.hasDebuff('HEAL_BLOCK')){ const heal = Math.round(ally.maxhp*(e.amount||0)); const before = ally.hp; ally.hp = clamp(ally.hp+heal,0,ally.maxhp); const gained = ally.hp - before; updateCard(ally); log(`${nameSpan(ally)} healed ${gained} (of ${heal}).`); damageFloat(ally, `+${gained}`, 'var(--good)'); } }
+        if(e.type==='cleanse'){ if(ally.debuffs.length>0){ ally.cleanse(e.amount||1); log(`${ally.name} cleansed debuffs.`);} }
+        if(e.type==='buff'){ ally.addBuff(e.what, e.turns||1); updateCard(ally); log(`${nameSpan(ally)} gains ${statusSpan(e.what)} ${e.turns||1}T.`); floatStatus(ally, e.what.replace('_',' ').toLowerCase(), '#77e49a'); }
+        if(e.type==='taunt'){ ally.addBuff('TAUNT', e.turns||1); updateCard(ally); log(`${nameSpan(ally)} gains ${statusSpan('TAUNT')} ${e.turns||1}T.`); }
+        if(e.type==='shieldCasterHP'){ const v = Math.round(actor.maxhp*(e.amount||0)); ally.shield += v; ally.addBuff('SHIELD', e.turns||2); updateCard(ally); log(`${nameSpan(ally)} gains ${statusSpan('SHIELD')} ${v} (${e.turns||2}T).`); }
+        if(e.type==='atkbar+') { addATB(ally, e.amount||0); }
+      
+        if(e.type==='healFlatCasterHP'){
+          if(!ally.hasDebuff('HEAL_BLOCK')){
+            const heal = Math.round(actor.maxhp*(e.amount||0));
+            const before = ally.hp;
+            ally.hp = clamp(ally.hp+heal,0,ally.maxhp);
+            const gained = ally.hp - before;
+            updateCard(ally);
+            log(`${nameSpan(ally)} healed ${gained} (of ${heal}).`);
+            damageFloat(ally, `+${gained}`, 'var(--good)');
+          } else {
+            log(`${nameSpan(ally)} cannot heal (Heal Block).`);
+          }
+        }  });
+      break;
+
+    case 'team':
+    case 'aoe_allies': {
+      // First: revive dead allies
+      if (e.type==='reviveOne') {
+        const dead = GS.units.filter(u=>u.team===actor.team && !u.alive);
+        if(dead.length){
+          const target = dead[dead.length-1];
+          revive(target, e.amount||0.3);
+          log(`<strong>${nameSpan(target)} is revived by ${nameSpan(actor)}!</strong>`);
+        }
+      }
+      applyTo(aliveUnits(actor.team), ally=>{if(e.type==='buff'){ ally.addBuff(e.what, e.turns||1); updateCard(ally); log(`${nameSpan(ally)} gains ${statusSpan(e.what)} ${e.turns||1}T.`); floatStatus(ally, e.what.replace('_',' ').toLowerCase(), '#77e49a'); }
+        if(e.type==='taunt'){ ally.addBuff('TAUNT', e.turns||1); updateCard(ally); log(`${nameSpan(ally)} gains ${statusSpan('TAUNT')} ${e.turns||1}T.`); }
+        if(e.type==='taunt'){ ally.addBuff('TAUNT', e.turns||1); updateCard(ally); log(`${nameSpan(ally)} gains ${statusSpan('TAUNT')} ${e.turns||1}T.`); }
+        if(e.type==='shieldCasterHP'){ const v = Math.round(actor.maxhp*(e.amount||0)); ally.shield += v; ally.addBuff('SHIELD', e.turns||2); updateCard(ally); log(`${nameSpan(ally)} gains ${statusSpan('SHIELD')} ${v} (${e.turns||2}T).`); }
+        if(e.type==='healFlatCasterHP'){ if(!ally.hasDebuff('HEAL_BLOCK')){ const heal = Math.round(actor.maxhp*(e.amount||0)); const before = ally.hp; ally.hp = clamp(ally.hp+heal,0,ally.maxhp); const gained = ally.hp - before; updateCard(ally); log(`${nameSpan(ally)} healed ${gained} (of ${heal}).`); damageFloat(ally, `+${gained}`, 'var(--good)'); } }
+        if(e.type==='cleanse'){ if(ally.debuffs.length>0){ ally.cleanse(e.amount||1); log(`${ally.name} cleansed debuffs.`);} }
+        if(e.type==='atkbar+'){ addATB(ally, e.amount||0); }  });
+      break;
+    }
+
+    case 'aoe_enemies':
+      applyTo(foes, foe=>{
+        if(e.type==='atkbar-'){ addATB(foe, -(e.amount||0)); }
+        if(e.type==='debuff'){ tryApplyDebuff(actor, foe, e.what, e.turns||1, e.chance??1); }  });
+      break;
+  }
+}
+/* ===== Boss unit (scripted) ===== */
+function makeBossUnit(){
+  const bossBase = {
+    key:'patriot', name:'Patriot (Boss)', element:'Dark', role:'Boss',
+    runes:['Endure','Rage'],
+    stats:{ hp:16000, atk:900, def:700, spd:105, cr:0.15, cd:0.60, acc:0.30, res:0.30 },
+    passives:[{id:'IMMUNE_LIST', list:['STUN','SILENCE','PROVOKE'], text:'Unshakable: Immune to Stun, Silence, Provoke.'}],
+    skills:[
+      {slot:1,name:'Spear of Duty',cd:0,target:'enemy',hits:1,mult:3.4,ignoreDef:0.15, effects:[{on:'target', type:'debuff', what:'BRAND', chance:0.5, turns:2}], desc:'(340% ATK) ignore 15% DEF. 50% to Brand (2T).'},
+      {slot:2,name:'Shieldwall March',cd:3,target:'team',hits:0,mult:0, effects:[{on:'ally', type:'buff', what:'DEF_UP', turns:2},{on:'ally', type:'buff', what:'IMMUNITY', turns:1}], desc:'Boss team gains DEF Up (2T) & Immunity (1T).'},
+      {slot:3,name:'Judgment Pike',cd:3,target:'aoe_enemies',hits:1,mult:3.2,ignoreDef:0.15, effects:[{on:'target', type:'debuff', what:'SLOW', chance:0.6, turns:2},{on:'target', type:'atkbar-', amount:0.20}], desc:'AOE (320% ATK), ignore 15% DEF. 60% to Slow (2T) & -20% ATB.'}
+    ]
+  };
+  const b = new Unit(bossBase, 'foe');
+  b.isBoss = true;
+  b.turnCounter = 0;
+  b.chooseSkill = function(){
+    this.turnCounter++;
+    const order = [1,3,2];
+    const slot = order[(this.turnCounter-1)%order.length];
+    return this.skills.find(s=>s.slot===slot);
+  };
+  return b;
+}
+
+/* ============== DOM events ============== */
+document.getElementById('startBtn').onclick=()=>{ startBattle(); };
+prevPageBtn.onclick=()=>{ GS.page = Math.max(1, GS.page-1); renderRosterPage(); applyLeaderHighlight(); showUnitDetails(GS.you[0] || GS.roster[0]); };
+nextPageBtn.onclick=()=>{ GS.page = GS.page+1; renderRosterPage(); applyLeaderHighlight(); showUnitDetails(GS.you[0] || GS.roster[0]); };
+document.getElementById('randEnemy').onclick=randomizeEnemy;
+document.getElementById('resetBtn').onclick=resetAll;
+document.getElementById('random4').onclick=()=>{
+  document.querySelectorAll('#roster .card').forEach(c=>c.classList.remove('selected'));
+  GS.you = shuffle(UnitsDB).slice(0,4).map(u=> GS.roster.find(r=>r.key===u.key) || u);
+  GS.you.forEach(u=>{
+    document.querySelector(`#roster .card[data-key="${u.key}"]`)?.classList.add('selected');
+    GS.loadouts[u.key] = { runes:[...u.runes] };
+  });
+  saveSel();
+  updateLeaderDropdown();
+  refreshEditorDropdown();
+  applyLeaderHighlight();
+  showUnitDetails(GS.you[0] || GS.roster[0]);
+};
+document.getElementById('clearSel').onclick=()=>{
+  GS.you = [];
+  GS.loadouts = {};
+  document.querySelectorAll('#roster .card').forEach(c=>c.classList.remove('selected'));
+  saveSel();
+  updateLeaderDropdown();
+  refreshEditorDropdown();
+  applyLeaderHighlight();
+  showUnitDetails(GS.you[0] || GS.roster[0]);
+};
+editSelect.onchange = (e)=>{ GS.editKey = e.target.value; syncLoadoutUI(); };
+runeA.onchange = ()=>{
+  const u = GS.you.find(x=>x.key===GS.editKey); if(!u) return;
+  const load = GS.loadouts[u.key]; load.runes[0] = runeA.value; renderPreview(u, load);
+  renderAdvisor(u);
+};
+runeB.onchange = ()=>{
+  const u = GS.you.find(x=>x.key===GS.editKey); if(!u) return;
+  const load = GS.loadouts[u.key]; load.runes[1] = runeB.value; renderPreview(u, load);
+  renderAdvisor(u);
+};
+
+
+function unitShake(u){
+  if(!u || !u.dom || !GS.shakeUnit) return;
+  u.dom.classList.add('shake');
+  setTimeout(()=>u.dom && u.dom.classList.remove('shake'), 300);
+}
+function screenShake(){
+  if(!GS.shakeScreen) return;
+  const root = document.querySelector('.wrap') || document.body;
+  root.classList.add('screen-shake');
+  setTimeout(()=>root.classList.remove('screen-shake'), 260);
+}
+
+
+function floatStatus(u, txt, color){
+  if(!u || !u.dom) return;
+  const f = document.createElement('div');
+  f.className = 'float-dmg'; f.style.top = '4px';
+  f.style.color = color || '#aee2ff';
+  f.textContent = txt;
+  u.dom.appendChild(f);
+  setTimeout(()=>f.remove(), 800);
+}
+
+
+function findUnitByName(name){
+  return GS.units.find(u=>u.name===name) || GS.youUnits.find(u=>u.name===name) || GS.foeUnits.find(u=>u.name===name) || null;
+}
+function nameSpan(unitOrName){
+  let u = (typeof unitOrName==='string') ? findUnitByName(unitOrName) : unitOrName;
+  if(!u) return `<b>${typeof unitOrName==='string'?unitOrName:'?'}</b>`;
+  const cls = (u.team==='you') ? 'me' : 'en';
+  return `<span class="${cls}">${u.name}</span>`;
+}
+function statusSpan(txt){
+  const pretty = String(txt||'').replace(/_/g,' ');
+  const up = String(txt||'').toUpperCase();
+  const isDeb = __DEBUFF_NAMES.has(up);
+  const isBuf = __BUFF_NAMES.has(up);
+  const color = isDeb ? 'var(--bad)' : (isBuf ? 'var(--good)' : 'var(--text)');
+  return `<span class="pulse-status" style="color:${color}">${pretty}</span>`;
+}
+function logSimpleSkillUse(actor, skill){ log(`${nameSpan(actor)} used <em class="pulse-skill" title="${escapeHTML(skill.desc||'')}">${escapeHTML(skill.name)}</em>.`); }
+function logSimpleDamage(att, tar, dealt, meta){
+  const pctOnly = Math.max(0, Math.round((dealt / Math.max(1, tar.maxhp)) * 100));
+  const crit = meta && meta.crit ? ' <span class="pulse-status">CRIT</span>' : '';
+  const gl   = meta && meta.glance ? ' (glancing)' : '';
+  log(`${nameSpan(att)} did <b>${pctOnly}%</b> damage to ${nameSpan(tar)}.${crit}${gl}`);
+}
+function logSimpleATB(u, delta){
+  const n = Math.round(delta*100);
+  log(`${nameSpan(u)} ATB ${n>0?'+':''}${n}%`);
+}
+
+function niceStatusText(s){return String(s||'').replace(/_/g,' ').toUpperCase();}
+const __BUFF_NAMES = new Set(['IMMUNITY','HOT','SHIELD','ATK_UP','DEF_UP','CRIT_RATE_UP','SPD_UP','INVINCIBLE','COUNTER','TAUNT','STEALTH']);
+const __DEBUFF_NAMES = new Set(['DEF_BREAK','DEF_DOWN','BRAND','HEAL_BLOCK','STUN','SLOW','GLANCING','ATK_DOWN','DOT','PROVOKE']);
+const runeInfo={Swift:'+25% SPD',Fatal:'+35% ATK',Blade:'+12% CR',Focus:'+20% ACC',Energy:'+15% HP',Guard:'+15% DEF',Rage:'+40% CD',Despair:'25% Stun on hit',Revenge:'15% Counter',Violent:'22% Extra turn after skill',Will:'Immunity 1T at start',Shield:'Team Shield 15% HP at start',Nemesis:'ATB up when damaged',Endure:'+20% RES'};
+function estimateDamage(att, tar, s){
+  if(!tar) return '—';
+  if(s.mult && s.mult>0){
+    const rel = elementRel(att.el, tar.el);
+    const mit = 1000 / (1000 + Math.max(0, tar.effDef * (1 - (s.ignoreDef||0))));
+    const base = att.effAtk * (s.mult||1);
+    const adv = (rel==='adv')?0.15:0; const gl = (rel==='dis')?-0.30:0;
+    const brand = tar.hasDebuff('BRAND') ? 1.25 : 1.0;
+    const nonCrit = Math.max(1, Math.round(base*mit*(1+adv+gl)*brand)) * (s.hits||1);
+    const crit    = Math.max(1, Math.round(base*mit*(1+att.cdmg+adv+gl)*brand)) * (s.hits||1);
+    return `${Math.round((nonCrit/tar.maxhp)*100)}–${Math.round((crit/tar.maxhp)*100)}%`;
+  } else if(s.effects){
+    const e = s.effects.find(x=>x.type==='healPctTarget' || x.type==='healFlatCasterHP' || x.type==='healPct');
+    if(e?.type==='healPctTarget')    return `${Math.round((e.amount||0)*100)}% of target HP`;
+    if(e?.type==='healPct')          return `${Math.round((e.amount||0)*100)}% of self HP`;
+    if(e?.type==='healFlatCasterHP') return `${Math.round((e.amount||0)*100)}% of caster HP`;
+  }
+
+
+function expectedDamage(att, tar, s){
+  if(!s || !(s.mult>0) || !tar?.alive) return 0;
+  const rel = elementRel(att.el, tar.el);
+  const adv = (rel==='adv')?0.15:0, glPen = (rel==='dis')?-0.30:0;
+  const defIgnored = (s.ignoreDef||0);
+  const effectiveDef = Math.max(0, tar.effDef * (1 - defIgnored));
+  const mit = 1000 / (1000 + effectiveDef);
+  const base = att.effAtk * (s.mult||1);
+  const brand = tar.hasDebuff('BRAND') ? 1.25 : 1.0;
+  const glanceChance = (rel==='dis') ? 0.50 : 0.0;
+  const pCrit = Math.max(0, Math.min(1, att.effCR + (rel==='adv'?0.15:0)));
+  const dmgNonCrit = base*mit*(1+adv+glPen)*brand;
+  const dmgCrit    = base*mit*(1+att.cdmg+adv+glPen)*brand;
+  const perHitEV   = (1-glanceChance)*((1-pCrit)*dmgNonCrit + pCrit*dmgCrit) + glanceChance*dmgNonCrit*0.70;
+  return Math.max(1, Math.round(perHitEV)) * (s.hits||1);
+}
+
+
+  return '—';
+}
+/* ============== Utilities ============== */
+function shuffle(a){ return a.map(x=>[Math.random(),x]).sort((A,B)=>A[0]-B[0]).map(x=>x[1]); }
+function escapeHTML(s){ return s.replace(/[&<>\"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+
+
+/* === Popup Battle Helpers === */
+function isPopupMode(){
+  try{
+    const q = new URLSearchParams(location.search);
+    return q.get('popup') === '1';
+  }catch(e){ return false; }
+}
+function openBattlePopup(){
+  // Persist current selection (already saved by saveSel when you click)
+  try{ saveSel(); }catch(e){}
+  const url = location.href.split('?')[0] + '?popup=1';
+  const w  = screen.availWidth  || window.innerWidth;
+  const h  = screen.availHeight || window.innerHeight;
+  const feats = `popup=yes,width=${w},height=${h},left=0,top=0,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=no`;
+  const win = window.open(url, '_blank', feats);
+  if(!win) alert('Popup blocked. Please allow popups for this page.');
+}
+
+
+/* === Fullscreen + Lock Zoom/Scroll in battle === */
+async function enterFullscreen(){
+  try{
+    const el = document.documentElement;
+    if(!document.fullscreenElement){
+      await el.requestFullscreen();
+      if(screen.orientation && screen.orientation.lock){
+        try{ await screen.orientation.lock('landscape'); }catch(_e){}
+      }
+    }
+  }catch(e){}
+}
+function lockZoomAndScroll(){
+  try{
+    const blocker = (e)=>{ 
+      // prevent zoom via ctrl+wheel
+      if(e.ctrlKey){ e.preventDefault(); e.stopPropagation(); }
+    };
+    // Wheel zoom
+    window.addEventListener('wheel', blocker, {passive:false});
+    // Keyboard zoom (Ctrl + / - / 0)
+    window.addEventListener('keydown', (e)=>{
+      if(e.ctrlKey && ['Equal','NumpadAdd','Minus','NumpadSubtract','Digit0','Numpad0'].includes(e.code)){
+        e.preventDefault(); e.stopPropagation();
+      }
+    }, {passive:false});
+    // Safari pinch
+    window.addEventListener('gesturestart', (e)=>{ e.preventDefault(); }, {passive:false});
+    // Page scroll lock (wheel and space/arrow keys)
+    window.addEventListener('wheel', (e)=>{ if(document.body.classList.contains('battleOnly')){ e.preventDefault(); } }, {passive:false});
+    window.addEventListener('keydown', (e)=>{
+      if(document.body.classList.contains('battleOnly') && ['Space','ArrowDown','ArrowUp','PageDown','PageUp','Home','End'].includes(e.code)){
+        e.preventDefault();
+      }
+    }, {passive:false});
+  }catch(e){}
+}
+
+/* ===== Title Screen & Options ===== */
+const titleScreen = document.getElementById('titleScreen');
+const btnCampaign = document.getElementById('btnCampaign');
+const btnFreeBattle = document.getElementById('btnFreeBattle');
+const btnOptions  = document.getElementById('btnOptions');
+const btnExit     = document.getElementById('btnExit');
+
+const optionsModal = document.getElementById('optionsModal');
+const optSpeed = document.getElementById('optSpeed');
+const optAuto  = document.getElementById('optAuto');
+const optSave  = document.getElementById('optSave');
+const optClose = document.getElementById('optClose');
+const optShakeUnit = document.getElementById('optShakeUnit');
+const optShakeNum  = document.getElementById('optShakeNum');
+const optShakeScreen = document.getElementById('optShakeScreen');
+const optInspector = document.getElementById('optInspector');
+
+
+function applySavedOptionsToUI() {
+  try{
+    // Only shake toggles
+    optShakeUnit.checked = (localStorage.getItem('AT_opt_shake_unit')!=='0');
+    optShakeNum.checked  = (localStorage.getItem('AT_opt_shake_num')!=='0');
+    optShakeScreen.checked = (localStorage.getItem('AT_opt_shake_screen')!=='0');
+    GS.shakeUnit = optShakeUnit.checked; GS.shakeNum = optShakeNum.checked; GS.shakeScreen = optShakeScreen.checked;
+    optInspector.checked = (localStorage.getItem('AT_opt_inspector')!=='0');
+    GS.showInspector = optInspector.checked; document.getElementById('turnInspector').style.display = GS.showInspector?'block':'none';
+    const ab = document.getElementById('autoBtn'); if(ab){ ab.textContent = 'Auto: ' + (GS.auto?'ON':'OFF'); }
+
+    
+  }catch(e){}
+}
+
+
+
+function showOptions(open=true){
+  optionsModal.style.display = open ? 'flex' : 'none';
+  if(open) applySavedOptionsToUI();
+lockZoomAndScroll();
+
+// Set --vh for consistent viewport height (handles browser UI rows)
+(function(){
+  function setVH(){ document.documentElement.style.setProperty('--vh', window.innerHeight + 'px'); }
+  setVH();
+  window.addEventListener('resize', setVH);
+})();
+
+}
+
+if(btnFreeBattle){ btnFreeBattle.addEventListener('click', ()=>{
+  titleScreen.style.display = 'none';
+  // Ensure options are applied on entry
+  applySavedOptionsToUI();
+lockZoomAndScroll();
+
+// Set --vh for consistent viewport height (handles browser UI rows)
+(function(){
+  function setVH(){ document.documentElement.style.setProperty('--vh', window.innerHeight + 'px'); }
+  setVH();
+  window.addEventListener('resize', setVH);
+})();
+
+}); }
+
+if(btnOptions){ btnOptions.addEventListener('click', ()=> showOptions(true)); }
+optClose.addEventListener('click', ()=> showOptions(false));
+optSave.addEventListener('click', ()=>{
+  localStorage.setItem('AT_opt_shake_unit',  optShakeUnit.checked ? '1':'0');
+  localStorage.setItem('AT_opt_shake_num',   optShakeNum.checked ? '1':'0');
+  localStorage.setItem('AT_opt_shake_screen',optShakeScreen.checked ? '1':'0');
+  localStorage.setItem('AT_opt_inspector', optInspector.checked ? '1':'0');
+  showOptions(false);
+  applySavedOptionsToUI();
+lockZoomAndScroll();
+
+// Set --vh for consistent viewport height (handles browser UI rows)
+(function(){
+  function setVH(){ document.documentElement.style.setProperty('--vh', window.innerHeight + 'px'); }
+  setVH();
+  window.addEventListener('resize', setVH);
+})();
+
+});
+
+btnCampaign.addEventListener('click', ()=>{
+  alert('Campaign Mode is coming soon! For now, use Free Battle.');
+});
+
+if(btnExit){ btnExit.addEventListener('click', ()=>{
+  try{
+    window.close();
+  }catch(e){}
+  alert('Use your browser/tab controls to exit.');
+}); }
+
+// Show title on startup & preload options to controls even if user cancels
+titleScreen.style.display = 'flex';
+applySavedOptionsToUI();
+lockZoomAndScroll();
+
+// Set --vh for consistent viewport height (handles browser UI rows)
+(function(){
+  function setVH(){ document.documentElement.style.setProperty('--vh', window.innerHeight + 'px'); }
+  setVH();
+  window.addEventListener('resize', setVH);
+})();
+
+/* ===== Title Screen END ===== */
+
+// Immediately try fullscreen in popup to use opener's user gesture
+if(isPopupMode()){
+  try{ enterFullscreen(); }catch(e){}
+}
+
+
+// === Monitor-fit for popup: size to monitor and set CSS --vh ===
+function ___applyVhVar(){
+  const vh = window.innerHeight;
+  document.documentElement.style.setProperty('--vh', vh+'px');
+}
+if(isPopupMode()){
+  try{
+    window.moveTo(0,0);
+    if(screen && screen.availWidth && screen.availHeight){
+      window.resizeTo(screen.availWidth, screen.availHeight);
+    }
+  }catch(e){}
+  ___applyVhVar();
+  window.addEventListener('resize', ()=>{ if(isPopupMode()) ___applyVhVar(); });
+}
+
+
+// Popup mode boot: skip title/setup and auto-start using saved selection
+if(isPopupMode()){
+  try{
+    titleScreen.style.display = 'none';
+    document.body.classList.add('battleOnly');
+    battleSec.style.display='grid';
+    window.scrollTo(0,0);
+  }catch(e){}
+  // Ensure options applied then load roster, then auto-start
+  (async()=>{
+    try{
+      await loadExternalOperators();
+      makeRoster(); // pulls GS.you from localStorage AT_sel
+      // Wait a tick for roster to settle
+      setTimeout(()=>{ 
+        if(GS.you.length===4){ startBattle(); } 
+        else { alert('Pick 4 operators in the main window first, then click Start Battle.'); }
+      }, 80);
+    }catch(e){}
+  })();
+}
+
+
+
+
+function animateApproach(att, targets, isAOE){
+  if(!att.dom) return Promise.resolve();
+  return new Promise(res=>{
+    const el = att.dom;
+    el.classList.add('centerstage','lunge');
+    let dx=0, dy=0;
+    const ar = el.getBoundingClientRect();
+    if(isAOE){
+      const board = document.querySelector('.board') || document.body;
+      const br = board.getBoundingClientRect();
+      const cx = (br.left + br.right)/2;
+      const ux = (ar.left + ar.right)/2;
+      dx = (cx - ux) * 0.55; dy = -8;
+    } else {
+      const t = targets && targets[0];
+      if(t && t.dom){
+        const tr = t.dom.getBoundingClientRect();
+        const tx = (tr.left + tr.right)/2, ty = (tr.top + tr.bottom)/2;
+        const ux = (ar.left + ar.right)/2, uy = (ar.top + ar.bottom)/2;
+        dx = (tx - ux) * 0.60;
+        dy = (ty - uy) * 0.35;
+      }
+    }
+    dx = Math.max(-160, Math.min(160, dx));
+    dy = Math.max(-60, Math.min(30, dy));
+    el.style.transform = `translate(${Math.round(dx)}px, ${Math.round(dy)}px)`;
+    setTimeout(()=>res(), 150);
+  });
+}
+function animateRetreat(att){
+  if(!att.dom) return;
+  const el = att.dom; el.style.transform = 'translate(0,0)';
+  setTimeout(()=>{ el.classList.remove('centerstage','lunge'); }, 140);
+
+}
+
+// Presets (10 slots)
+function presetsInit(){
+  const sel = document.getElementById('presetSlot');
+  if(!sel) return;
+  sel.innerHTML='';
+  for(let i=1;i<=10;i++){ const o=document.createElement('option'); o.value=i; o.textContent='Slot '+i; sel.appendChild(o); }
+  document.getElementById('presetSave').onclick=()=>{
+    const slot = sel.value;
+    const store = JSON.parse(localStorage.getItem('AT_presets')||'{}');
+    store[slot] = { team: GS.you.map(u=>u.key), runes: GS.loadouts, leader: (GS.you[0]&&GS.you[0].key)||null };
+    localStorage.setItem('AT_presets', JSON.stringify(store));
+    alert('Saved to slot '+slot);
+  };
+  document.getElementById('presetLoad').onclick=()=>{
+    const slot = sel.value;
+    const store = JSON.parse(localStorage.getItem('AT_presets')||'{}');
+    const data = store[slot];
+    if(!data){ alert('Empty slot'); return; }
+    GS.you = data.team.map(k=> GS.roster.find(u=>u.key===k)).filter(Boolean).slice(0,4);
+    const lock = document.getElementById('presetLock')?.checked;
+    if(!lock){ GS.loadouts = data.runes || GS.loadouts; }
+    renderRosterPage(); updateLeaderDropdown(); refreshEditorDropdown(); applyLeaderHighlight();
+  };
+}
+function runeAdvisor(role){
+  const map={
+    Sniper:[['Fatal','Blade'],['Rage','Blade'],['Swift','Blade']],
+    Caster:[['Focus','Rage'],['Fatal','Focus'],['Energy','Will']],
+    Guard:[['Fatal','Blade'],['Rage','Blade'],['Guard','Revenge']],
+    Defender:[['Guard','Energy'],['Energy','Will'],['Guard','Shield']],
+    Medic:[['Energy','Will'],['Energy','Focus'],['Swift','Will']],
+    Supporter:[['Energy','Will'],['Swift','Focus'],['Focus','Will']],
+    Vanguard:[['Swift','Energy'],['Swift','Focus'],['Fatal','Blade']],
+    Specialist:[['Swift','Blade'],['Despair','Focus'],['Fatal','Blade']]
+  };
+  return map[role] || [['Energy','Will'],['Fatal','Blade'],['Swift','Blade']];
+}
+function renderAdvisor(u){
+  const adv = document.getElementById('advisor'); if(!adv) return;
+  if(!u){ adv.textContent=''; return; }
+  const picks = runeAdvisor(u.role);
+  adv.innerHTML = '<b>Set advisor</b><br>' + picks.map((p,i)=>`#${i+1}: ${p[0]} + ${p[1]} <button class="pill tiny" onclick="applyAdvisor(\'${u.key}\',[\'${p[0]}\',\'${p[1]}\'])">Apply</button>`).join('<br>');
+}
+window.applyAdvisor = (key, sets)=>{
+  const u = GS.you.find(x=>x.key===key); if(!u) return;
+  GS.loadouts[u.key] = { runes: sets };
+  syncLoadoutUI();
+};
+/* ======= Initialize ======= */
+const autoBtn = document.getElementById('autoBtn');
+if(autoBtn){
+  autoBtn.onclick = ()=>{
+    GS.auto = !GS.auto;
+    autoBtn.textContent = 'Auto: ' + (GS.auto ? 'ON' : 'OFF');
+    // If it's currently our turn, act immediately
+    const a = GS.acting;
+    if(GS.auto && a && a.team==='you' && a.alive && !a.hasDebuff('STUN') && !GS.actionLock){
+      const {skill, target} = aiChoose(a);
+      useSkill(a, skill, target);
+    }
+  };
+}
+
+
+const aiSel=document.getElementById('aiStyle'); if(aiSel){ aiSel.onchange=()=>{ GS.aiStyle=aiSel.value; }; GS.aiStyle=aiSel.value; }
+const logSel=document.getElementById('logMode'); if(logSel){ logSel.onchange=()=>{ GS.logMode=logSel.value; document.getElementById('log').classList.toggle('closed', GS.logMode==='close'); }; }
+
+populateRuneSelects();
+presetsInit();
+(async()=>{ await loadExternalOperators(); makeRoster(); })();
+
+</script>
+</body>
+</html>

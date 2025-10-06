@@ -1,0 +1,119 @@
+Mechanical & Balance (combat systems)
+
+Element auras: battlefield “weather” (e.g., Sandstorm = +20% glancing, Acid Rain = DoTs tick harder).
+
+Damage sharing & link: two allies split incoming damage; targetable link break.
+
+Taunt vs Provoke split: Taunt = target-locked; Provoke = S1-only; adds counterplay depth.
+
+Stacking statuses: e.g., “Frostbite” stacks → converts to STUN at 3 stacks.
+
+Shield types: absorb-only (current), reflect, and “guard” shields (reduce DEF Break duration).
+
+Purify levels: Cleanse 1/2/All vs. “Dispel” (removes buffs first) vs. “Strip %”.
+
+Heal-overflow → shield: friendly overheal converts to temporary shield (capped).
+
+Focused resist: unit can “brace” to trade ATB for +RES and +DEF for one turn.
+
+Fun Modes & Replayability
+
+Draft mode (4× pick/ban): you/AI alternate picks with a ban phase; draft log at start.
+
+Time trials: win in ≤ X turns; rerun with seed; board shows “best” time and team.
+
+Endless tower: ascending waves with mutators every 5 floors.
+
+Scenario puzzles: win in 1–2 turns with fixed hands; daily rotating micro-challenges.
+
+Mirror match: enemies clone your leader/runes (forces different tactics).
+
+Boss rush: back-to-back scripted bosses with limited heals between fights.
+
+Weekly mutators: global rule-of-the-week (e.g., Violent doesn’t proc; Despair chance +10%).
+
+“Hardcore” toggle: deaths persist for 1 battle; resurrect at camp (see Campaign).
+
+Lore & Campaign (lightweight narrative)
+
+Faction arcs: Rhine Lab, Ursus, Victorian threads; unlock nodes via wins.
+
+Dialogue snippets: 1–2 lines pre/post battle; light choice branches (“Help/Ignore”).
+
+Boss personalities: two-skill variants, witty battle barks, combat phases.
+
+Node modifiers: per-story node aura (e.g., “Medicine Ban” = heals reduced 50%).
+
+Camp screen: revive KO’d units, craft 1 buff (once per chapter).
+
+Relic-lite: choose 1 of 3 team passives after key fights (reset per run).
+
+Cut-in vignettes: small portrait + line when S3 used or leader dies.
+
+Codex: unlock short bios/tooltips as you meet units or debuffs.
+
+Options & UX / QoL
+
+In-battle hotkeys: 1/2/3 = skills; A/D cycle targets; Space confirm; Esc cancel.
+
+Log presets: remember Mini/Simple/Detailed per session; icon on board when “Close”.
+
+Buff/Debuff glossary: hover chip → tiny tooltip (stacking rules, dispel level).
+
+Skill queue preview: faint outline shows who you’ll hit before you click.
+
+Compact board view: smaller cards, bigger portraits; toggle in battle.
+
+Post-battle summary: damage dealt/received, healing, top debuff applier.
+
+Replay seed copy button (seed only) for reproducibility (no save/copy share storage).
+
+Accessibility: colorblind palette; font scale slider; reduce motion toggle.
+
+New Features (builders & editors)
+
+Preset manager: rename, duplicate, reorder your 10 squad slots.
+
+Set builder: pick two runes → live preview vs. current; one-click apply to all selected units.
+
+Batch rune apply: apply advisor pick to multiple units by Role/Class filter.
+
+Portrait mapping UI: paste key → URL, store in localStorage; preview in roster.
+
+Remote packs (optional): load UnitsDB/runes from a hosted JSON (live-update without rebuilding).
+
+Sparring range: select any enemy preset (boss script, aura) and fight it repeatedly.
+
+Targeting profiles: save “kill order” and “cleanse first” preferences per preset.
+
+AI & Logging
+
+AI styles deepening:
+
+Aggressive: prefer Brand+DEF Break chains; value kill thresholds.
+
+Safe: value cleanse > S3 nuke; avoid COUNTER+IMMUNITY.
+
+Balanced: current behavior with slight weight to debuffed/low HP.
+
+Explain AI (Detailed log): “Ifrit picked Lee (DEF BREAK + lowest turns-to-kill)”.
+
+Heal logic weights: “heal lowest HP% unless target has Heal Block”.
+
+Skill estimator toggles: assume Crit ON/OFF; ignore Brand; display both.
+
+Progression & Economy (optional, simple & off by default)
+
+Light mastery: play earns tokens to boost one stat by tiny amounts (session only).
+
+Rune crafting (sandbox): randomize two-set outcomes with caps; no inventory grind.
+
+Milestone chests: complete 5 challenges → cosmetic badge in UI.
+
+Polishing the systems you already added
+
+Rune Advisor: let me add a “Why” line (“Sniper → Crit scaling; Blade pairs with Fatal/Rage”).
+
+Skill Impact Preview: show both Non-Crit and Crit % explicitly (“Est: 12–31%”), and recompute when you change the default target in the picker.
+
+Revive clarity: when Sanctuary revives → HP% line + brief sparkle over the revived card; ensure HP% label clamps to ≥1% when alive.
