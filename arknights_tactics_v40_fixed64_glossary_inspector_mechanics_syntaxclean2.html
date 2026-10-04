@@ -2750,7 +2750,8 @@ function estimateDamage(att, tar, s){
     if(e?.type==='healPct')          return `${Math.round((e.amount||0)*100)}% of self HP`;
     if(e?.type==='healFlatCasterHP') return `${Math.round((e.amount||0)*100)}% of caster HP`;
   }
-
+  return '—';
+}
 
 function expectedDamage(att, tar, s){
   if(!s || !(s.mult>0) || !tar?.alive) return 0;
@@ -2767,10 +2768,6 @@ function expectedDamage(att, tar, s){
   const dmgCrit    = base*mit*(1+att.cdmg+adv+glPen)*brand;
   const perHitEV   = (1-glanceChance)*((1-pCrit)*dmgNonCrit + pCrit*dmgCrit) + glanceChance*dmgNonCrit*0.70;
   return Math.max(1, Math.round(perHitEV)) * (s.hits||1);
-}
-
-
-  return '—';
 }
 /* ============== Utilities ============== */
 function shuffle(a){ return a.map(x=>[Math.random(),x]).sort((A,B)=>A[0]-B[0]).map(x=>x[1]); }
