@@ -2,8 +2,9 @@
 
     python mobile/tools/fetch_sd.py
 
-Source: github.com/Aceship/Arknight-Images, spineassets/character/<charId>/{front,back}/<charId>.{skel,atlas,png}
-(default skin only) and spineassets/enemy/<enemyId>.{skel,atlas,png}. Hypergryph game assets, like the rest of assets/.
+Sources: github.com/Aceship/Arknight-Images, spineassets/character/<charId>/{front,back}/<charId>.{skel,atlas,png}
+(default skin only) and spineassets/enemy/<enemyId>.{skel,atlas,png}; then, for newer sprites that mirror lacks, the PRTS wiki
+asset CDN (torappu.prts.wiki, listed in sd_extra.json). Hypergryph game assets, like the rest of assets/.
 Operators come from voice_map.json (slug → charId); enemies from art_manifest.json ("enemies": game key → enemy id).
 Output: assets/sd/char/<charId>/{front,back}/… and assets/sd/enemy/<enemyId>.…, plus the lists of available sprites
 (with each skeleton's Spine version) written into mobile/src/a8d_sd.js (the @sd-* lines). Rebuild afterwards.
@@ -39,6 +40,15 @@ def fetch(rel, dst):
     return dst
 
 
+def fetch_url(url, dst):
+    os.makedirs(os.path.dirname(dst), exist_ok=True)
+    if not os.path.exists(dst) or os.path.getsize(dst) == 0:
+        data = get(url)
+        if data[:15].lower().startswith(b"<!doctype") or data[:6].lower() == b"<html>": raise RuntimeError("got an HTML page instead of " + url)
+        open(dst, "wb").write(data)
+    return dst
+
+
 def version(path):
     m = re.search(rb"([34]\.\d+\.\d+)", open(path, "rb").read(80))
     return m.group(1).decode() if m else "?"
@@ -65,6 +75,28 @@ def main():
             for ext in (".skel", ".atlas", ".png"): fetch("enemy/" + eid + ext, os.path.join(OUT, "enemy", eid + ext))
             ens[key] = [eid, version(os.path.join(OUT, "enemy", eid + ".skel"))]
         except Exception as e: fails.append((key, str(e)))
+    # newer sprites the Aceship mirror doesn't have: PRTS wiki CDN (sd_extra.json)
+    extra = json.load(open(os.path.join(HERE, "sd_extra.json"), encoding="utf-8"))
+    for slug, e in sorted(extra["ops"].items()):
+        if slug in ops: continue
+        cid, views = e["charId"], []
+        for view in ("front", "back"):
+            f = e.get(view)
+            if not f: continue
+            try:
+                for url in [f["skel"], f["atlas"], *f["png"]]: fetch_url(url, os.path.join(OUT, "char", cid, view, url.rsplit("/", 1)[1]))
+                views.append(view)
+            except Exception as ex: fails.append((slug, view, str(ex)))
+        if "front" in views:
+            stem = e["front"]["skel"].rsplit("/", 1)[1][:-5]
+            ops[slug] = [cid, 1 if "back" in views else 0, version(os.path.join(OUT, "char", cid, "front", stem + ".skel"))]
+    for key, e in sorted(extra["enemies"].items()):
+        if key in ens: continue
+        try:
+            for url in [e["skel"], e["atlas"], *e["png"]]: fetch_url(url, os.path.join(OUT, "enemy", url.rsplit("/", 1)[1]))
+            stem = e["skel"].rsplit("/", 1)[1][:-5]
+            ens[key] = [stem, version(os.path.join(OUT, "enemy", stem + ".skel"))]
+        except Exception as ex: fails.append((key, str(ex)))
     js = open(SD_JS, encoding="utf-8").read()
     js = re.sub(r"const SD_OPS = \{.*?\}; // @sd-ops", "const SD_OPS = " + json.dumps(ops, separators=(",", ":")) + "; // @sd-ops", js)
     js = re.sub(r"const SD_EN = \{.*?\}; // @sd-en", "const SD_EN = " + json.dumps(ens, separators=(",", ":")) + "; // @sd-en", js)

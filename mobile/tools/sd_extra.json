@@ -1,0 +1,807 @@
+{
+ "_about": "Sprites missing from Aceship/Arknight-Images, from the PRTS wiki asset CDN (torappu.prts.wiki; wiki content CC BY-NC-SA 4.0, art (c) Hypergryph). fetch_sd.py downloads these after the Aceship set.",
+ "ops": {
+  "aroma": {
+   "charId": "char_446_aroma",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_446_aroma/defaultskin/front/char_446_aroma.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_446_aroma/defaultskin/front/char_446_aroma.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_446_aroma/defaultskin/front/char_446_aroma.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_446_aroma/defaultskin/back/char_446_aroma.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_446_aroma/defaultskin/back/char_446_aroma.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_446_aroma/defaultskin/back/char_446_aroma.png"
+    ]
+   }
+  },
+  "bryophyta": {
+   "charId": "char_4106_bryota",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4106_bryota/defaultskin/front/char_4106_bryota.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4106_bryota/defaultskin/front/char_4106_bryota.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4106_bryota/defaultskin/front/char_4106_bryota.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4106_bryota/defaultskin/back/char_4106_bryota.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4106_bryota/defaultskin/back/char_4106_bryota.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4106_bryota/defaultskin/back/char_4106_bryota.png"
+    ]
+   }
+  },
+  "cement": {
+   "charId": "char_464_cement",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_464_cement/defaultskin/front/char_464_cement.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_464_cement/defaultskin/front/char_464_cement.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_464_cement/defaultskin/front/char_464_cement.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_464_cement/defaultskin/back/char_464_cement.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_464_cement/defaultskin/back/char_464_cement.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_464_cement/defaultskin/back/char_464_cement.png"
+    ]
+   }
+  },
+  "chongyue": {
+   "charId": "char_2024_chyue",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_2024_chyue/defaultskin/front/char_2024_chyue.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_2024_chyue/defaultskin/front/char_2024_chyue.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_2024_chyue/defaultskin/front/char_2024_chyue.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_2024_chyue/defaultskin/back/char_2024_chyue.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_2024_chyue/defaultskin/back/char_2024_chyue.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_2024_chyue/defaultskin/back/char_2024_chyue.png"
+    ]
+   }
+  },
+  "dagda": {
+   "charId": "char_157_dagda",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_157_dagda/defaultskin/front/char_157_dagda.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_157_dagda/defaultskin/front/char_157_dagda.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_157_dagda/defaultskin/front/char_157_dagda.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_157_dagda/defaultskin/back/char_157_dagda.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_157_dagda/defaultskin/back/char_157_dagda.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_157_dagda/defaultskin/back/char_157_dagda.png"
+    ]
+   }
+  },
+  "delphine": {
+   "charId": "char_4110_delphn",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4110_delphn/defaultskin/front/char_4110_delphn.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4110_delphn/defaultskin/front/char_4110_delphn.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4110_delphn/defaultskin/front/char_4110_delphn.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4110_delphn/defaultskin/back/char_4110_delphn.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4110_delphn/defaultskin/back/char_4110_delphn.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4110_delphn/defaultskin/back/char_4110_delphn.png"
+    ]
+   }
+  },
+  "diamante": {
+   "charId": "char_499_kaitou",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_499_kaitou/defaultskin/front/char_499_kaitou.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_499_kaitou/defaultskin/front/char_499_kaitou.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_499_kaitou/defaultskin/front/char_499_kaitou.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_499_kaitou/defaultskin/back/char_499_kaitou.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_499_kaitou/defaultskin/back/char_499_kaitou.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_499_kaitou/defaultskin/back/char_499_kaitou.png"
+    ]
+   }
+  },
+  "firewhistle": {
+   "charId": "char_493_firwhl",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_493_firwhl/defaultskin/front/char_493_firwhl.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_493_firwhl/defaultskin/front/char_493_firwhl.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_493_firwhl/defaultskin/front/char_493_firwhl.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_493_firwhl/defaultskin/back/char_493_firwhl.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_493_firwhl/defaultskin/back/char_493_firwhl.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_493_firwhl/defaultskin/back/char_493_firwhl.png"
+    ]
+   }
+  },
+  "friston-3": {
+   "charId": "char_4093_frston",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4093_frston/defaultskin/front/char_4093_frston.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4093_frston/defaultskin/front/char_4093_frston.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4093_frston/defaultskin/front/char_4093_frston.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4093_frston/defaultskin/back/char_4093_frston.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4093_frston/defaultskin/back/char_4093_frston.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4093_frston/defaultskin/back/char_4093_frston.png"
+    ]
+   }
+  },
+  "harmonie": {
+   "charId": "char_297_hamoni",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_297_hamoni/defaultskin/front/char_297_hamoni.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_297_hamoni/defaultskin/front/char_297_hamoni.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_297_hamoni/defaultskin/front/char_297_hamoni.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_297_hamoni/defaultskin/back/char_297_hamoni.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_297_hamoni/defaultskin/back/char_297_hamoni.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_297_hamoni/defaultskin/back/char_297_hamoni.png"
+    ]
+   }
+  },
+  "highmore": {
+   "charId": "char_4066_highmo",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4066_highmo/defaultskin/front/char_4066_highmo.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4066_highmo/defaultskin/front/char_4066_highmo.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4066_highmo/defaultskin/front/char_4066_highmo.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4066_highmo/defaultskin/back/char_4066_highmo.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4066_highmo/defaultskin/back/char_4066_highmo.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4066_highmo/defaultskin/back/char_4066_highmo.png"
+    ]
+   }
+  },
+  "ines": {
+   "charId": "char_4087_ines",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4087_ines/defaultskin/front/char_4087_ines.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4087_ines/defaultskin/front/char_4087_ines.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4087_ines/defaultskin/front/char_4087_ines.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4087_ines/defaultskin/back/char_4087_ines.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4087_ines/defaultskin/back/char_4087_ines.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4087_ines/defaultskin/back/char_4087_ines.png"
+    ]
+   }
+  },
+  "lin": {
+   "charId": "char_4080_lin",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4080_lin/defaultskin/front/char_4080_lin.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4080_lin/defaultskin/front/char_4080_lin.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4080_lin/defaultskin/front/char_4080_lin.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4080_lin/defaultskin/back/char_4080_lin.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4080_lin/defaultskin/back/char_4080_lin.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4080_lin/defaultskin/back/char_4080_lin.png"
+    ]
+   }
+  },
+  "logos": {
+   "charId": "char_4133_logos",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4133_logos/defaultskin/front/char_4133_logos.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4133_logos/defaultskin/front/char_4133_logos.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4133_logos/defaultskin/front/char_4133_logos.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4133_logos/defaultskin/back/char_4133_logos.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4133_logos/defaultskin/back/char_4133_logos.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4133_logos/defaultskin/back/char_4133_logos.png"
+    ]
+   }
+  },
+  "marcille": {
+   "charId": "char_4141_marcil",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4141_marcil/defaultskin/front/char_4141_marcil.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4141_marcil/defaultskin/front/char_4141_marcil.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4141_marcil/defaultskin/front/char_4141_marcil.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4141_marcil/defaultskin/back/char_4141_marcil.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4141_marcil/defaultskin/back/char_4141_marcil.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4141_marcil/defaultskin/back/char_4141_marcil.png"
+    ]
+   }
+  },
+  "miss-christine": {
+   "charId": "char_4198_christ",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4198_christ/defaultskin/front/char_4198_christ.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4198_christ/defaultskin/front/char_4198_christ.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4198_christ/defaultskin/front/char_4198_christ.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4198_christ/defaultskin/back/char_4198_christ.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4198_christ/defaultskin/back/char_4198_christ.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4198_christ/defaultskin/back/char_4198_christ.png"
+    ]
+   }
+  },
+  "morgan": {
+   "charId": "char_154_morgan",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_154_morgan/defaultskin/front/char_154_morgan.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_154_morgan/defaultskin/front/char_154_morgan.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_154_morgan/defaultskin/front/char_154_morgan.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_154_morgan/defaultskin/back/char_154_morgan.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_154_morgan/defaultskin/back/char_154_morgan.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_154_morgan/defaultskin/back/char_154_morgan.png"
+    ]
+   }
+  },
+  "muelsyse": {
+   "charId": "char_249_mlyss",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_249_mlyss/defaultskin/front/char_249_mlyss.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_249_mlyss/defaultskin/front/char_249_mlyss.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_249_mlyss/defaultskin/front/char_249_mlyss.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_249_mlyss/defaultskin/back/char_249_mlyss.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_249_mlyss/defaultskin/back/char_249_mlyss.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_249_mlyss/defaultskin/back/char_249_mlyss.png"
+    ]
+   }
+  },
+  "necrass": {
+   "charId": "char_450_necras",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_450_necras/defaultskin/front/char_450_necras.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_450_necras/defaultskin/front/char_450_necras.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_450_necras/defaultskin/front/char_450_necras.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_450_necras/defaultskin/back/char_450_necras.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_450_necras/defaultskin/back/char_450_necras.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_450_necras/defaultskin/back/char_450_necras.png"
+    ]
+   }
+  },
+  "nine-colored-deer": {
+   "charId": "char_4019_ncdeer",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4019_ncdeer/defaultskin/front/char_4019_ncdeer.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4019_ncdeer/defaultskin/front/char_4019_ncdeer.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4019_ncdeer/defaultskin/front/char_4019_ncdeer.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4019_ncdeer/defaultskin/back/char_4019_ncdeer.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4019_ncdeer/defaultskin/back/char_4019_ncdeer.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4019_ncdeer/defaultskin/back/char_4019_ncdeer.png"
+    ]
+   }
+  },
+  "nymph": {
+   "charId": "char_4146_nymph",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4146_nymph/defaultskin/front/char_4146_nymph.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4146_nymph/defaultskin/front/char_4146_nymph.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4146_nymph/defaultskin/front/char_4146_nymph.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4146_nymph/defaultskin/back/char_4146_nymph.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4146_nymph/defaultskin/back/char_4146_nymph.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4146_nymph/defaultskin/back/char_4146_nymph.png"
+    ]
+   }
+  },
+  "penance": {
+   "charId": "char_4065_judge",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4065_judge/defaultskin/front/char_4065_judge.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4065_judge/defaultskin/front/char_4065_judge.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4065_judge/defaultskin/front/char_4065_judge.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4065_judge/defaultskin/back/char_4065_judge.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4065_judge/defaultskin/back/char_4065_judge.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4065_judge/defaultskin/back/char_4065_judge.png"
+    ]
+   }
+  },
+  "poncirus": {
+   "charId": "char_488_buildr",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_488_buildr/defaultskin/front/char_488_buildr.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_488_buildr/defaultskin/front/char_488_buildr.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_488_buildr/defaultskin/front/char_488_buildr.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_488_buildr/defaultskin/back/char_488_buildr.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_488_buildr/defaultskin/back/char_488_buildr.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_488_buildr/defaultskin/back/char_488_buildr.png"
+    ]
+   }
+  },
+  "puzzle": {
+   "charId": "char_4017_puzzle",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4017_puzzle/defaultskin/front/char_4017_puzzle.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4017_puzzle/defaultskin/front/char_4017_puzzle.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4017_puzzle/defaultskin/front/char_4017_puzzle.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4017_puzzle/defaultskin/back/char_4017_puzzle.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4017_puzzle/defaultskin/back/char_4017_puzzle.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4017_puzzle/defaultskin/back/char_4017_puzzle.png"
+    ]
+   }
+  },
+  "qanipalaat": {
+   "charId": "char_466_qanik",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_466_qanik/defaultskin/front/char_466_qanik.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_466_qanik/defaultskin/front/char_466_qanik.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_466_qanik/defaultskin/front/char_466_qanik.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_466_qanik/defaultskin/back/char_466_qanik.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_466_qanik/defaultskin/back/char_466_qanik.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_466_qanik/defaultskin/back/char_466_qanik.png"
+    ]
+   }
+  },
+  "qiubai": {
+   "charId": "char_4082_qiubai",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4082_qiubai/defaultskin/front/char_4082_qiubai.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4082_qiubai/defaultskin/front/char_4082_qiubai.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4082_qiubai/defaultskin/front/char_4082_qiubai.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4082_qiubai/defaultskin/back/char_4082_qiubai.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4082_qiubai/defaultskin/back/char_4082_qiubai.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4082_qiubai/defaultskin/back/char_4082_qiubai.png"
+    ]
+   }
+  },
+  "quartz": {
+   "charId": "char_4063_quartz",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4063_quartz/defaultskin/front/char_4063_quartz.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4063_quartz/defaultskin/front/char_4063_quartz.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4063_quartz/defaultskin/front/char_4063_quartz.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4063_quartz/defaultskin/back/char_4063_quartz.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4063_quartz/defaultskin/back/char_4063_quartz.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4063_quartz/defaultskin/back/char_4063_quartz.png"
+    ]
+   }
+  },
+  "rathalos-s-noir-corne": {
+   "charId": "char_1030_noirc2",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_1030_noirc2/defaultskin/front/char_1030_noirc2.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_1030_noirc2/defaultskin/front/char_1030_noirc2.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_1030_noirc2/defaultskin/front/char_1030_noirc2.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_1030_noirc2/defaultskin/back/char_1030_noirc2.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_1030_noirc2/defaultskin/back/char_1030_noirc2.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_1030_noirc2/defaultskin/back/char_1030_noirc2.png"
+    ]
+   }
+  },
+  "santalla": {
+   "charId": "char_341_sntlla",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_341_sntlla/defaultskin/front/char_341_sntlla.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_341_sntlla/defaultskin/front/char_341_sntlla.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_341_sntlla/defaultskin/front/char_341_sntlla.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_341_sntlla/defaultskin/back/char_341_sntlla.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_341_sntlla/defaultskin/back/char_341_sntlla.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_341_sntlla/defaultskin/back/char_341_sntlla.png"
+    ]
+   }
+  },
+  "stainless": {
+   "charId": "char_4072_ironmn",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4072_ironmn/defaultskin/front/char_4072_ironmn.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4072_ironmn/defaultskin/front/char_4072_ironmn.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4072_ironmn/defaultskin/front/char_4072_ironmn.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4072_ironmn/defaultskin/back/char_4072_ironmn.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4072_ironmn/defaultskin/back/char_4072_ironmn.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4072_ironmn/defaultskin/back/char_4072_ironmn.png"
+    ]
+   }
+  },
+  "tecno": {
+   "charId": "char_4164_tecno",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4164_tecno/defaultskin/front/char_4164_tecno.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4164_tecno/defaultskin/front/char_4164_tecno.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4164_tecno/defaultskin/front/char_4164_tecno.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4164_tecno/defaultskin/back/char_4164_tecno.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4164_tecno/defaultskin/back/char_4164_tecno.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4164_tecno/defaultskin/back/char_4164_tecno.png"
+    ]
+   }
+  },
+  "togawa-sakiko": {
+   "charId": "char_4182_oblvns",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4182_oblvns/defaultskin/front/char_4182_oblvns.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4182_oblvns/defaultskin/front/char_4182_oblvns.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4182_oblvns/defaultskin/front/char_4182_oblvns.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4182_oblvns/defaultskin/back/char_4182_oblvns.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4182_oblvns/defaultskin/back/char_4182_oblvns.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4182_oblvns/defaultskin/back/char_4182_oblvns.png"
+    ]
+   }
+  },
+  "tulip": {
+   "charId": "char_513_apionr",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_513_apionr/defaultskin/front/char_513_apionr.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_513_apionr/defaultskin/front/char_513_apionr.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_513_apionr/defaultskin/front/char_513_apionr.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_513_apionr/defaultskin/back/char_513_apionr.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_513_apionr/defaultskin/back/char_513_apionr.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_513_apionr/defaultskin/back/char_513_apionr.png"
+    ]
+   }
+  },
+  "vigil": {
+   "charId": "char_427_vigil",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_427_vigil/defaultskin/front/char_427_vigil.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_427_vigil/defaultskin/front/char_427_vigil.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_427_vigil/defaultskin/front/char_427_vigil.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_427_vigil/defaultskin/back/char_427_vigil.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_427_vigil/defaultskin/back/char_427_vigil.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_427_vigil/defaultskin/back/char_427_vigil.png"
+    ]
+   }
+  },
+  "viviana-droste": {
+   "charId": "char_4098_vvana",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4098_vvana/defaultskin/front/char_4098_vvana.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4098_vvana/defaultskin/front/char_4098_vvana.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4098_vvana/defaultskin/front/char_4098_vvana.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4098_vvana/defaultskin/back/char_4098_vvana.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4098_vvana/defaultskin/back/char_4098_vvana.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4098_vvana/defaultskin/back/char_4098_vvana.png"
+    ]
+   }
+  },
+  "warmy": {
+   "charId": "char_4081_warmy",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4081_warmy/defaultskin/front/char_4081_warmy.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4081_warmy/defaultskin/front/char_4081_warmy.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4081_warmy/defaultskin/front/char_4081_warmy.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4081_warmy/defaultskin/back/char_4081_warmy.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4081_warmy/defaultskin/back/char_4081_warmy.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4081_warmy/defaultskin/back/char_4081_warmy.png"
+    ]
+   }
+  },
+  "wind-chimes": {
+   "charId": "char_4083_chimes",
+   "front": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4083_chimes/defaultskin/front/char_4083_chimes.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4083_chimes/defaultskin/front/char_4083_chimes.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4083_chimes/defaultskin/front/char_4083_chimes.png"
+    ]
+   },
+   "back": {
+    "skel": "https://torappu.prts.wiki/assets/char_spine/char_4083_chimes/defaultskin/back/char_4083_chimes.skel",
+    "atlas": "https://torappu.prts.wiki/assets/char_spine/char_4083_chimes/defaultskin/back/char_4083_chimes.atlas",
+    "png": [
+     "https://torappu.prts.wiki/assets/char_spine/char_4083_chimes/defaultskin/back/char_4083_chimes.png"
+    ]
+   }
+  }
+ },
+ "enemies": {
+  "possessed": {
+   "enemyId": "enemy_1043_zomsbr",
+   "skel": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1043_zomsbr/enemy_1043_zomsabr.skel",
+   "atlas": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1043_zomsbr/enemy_1043_zomsabr.atlas",
+   "png": [
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1043_zomsbr/enemy_1043_zomsabr.png"
+   ]
+  },
+  "specops": {
+   "enemyId": "enemy_1037_lunsbr",
+   "skel": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1037_lunsbr/enemy_1037_lunsabr.skel",
+   "atlas": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1037_lunsbr/enemy_1037_lunsabr.atlas",
+   "png": [
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1037_lunsbr/enemy_1037_lunsabr.png"
+   ]
+  },
+  "vdubinfantry": {
+   "enemyId": "enemy_1169_duphlx",
+   "skel": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1169_duphlx/enemy_1169_duphx.skel",
+   "atlas": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1169_duphlx/enemy_1169_duphx.atlas",
+   "png": [
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1169_duphlx/enemy_1169_duphx.png"
+   ]
+  },
+  "vheirbearer": {
+   "enemyId": "enemy_1222_dpvt",
+   "skel": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1222_dpvt/enemy_1222_dpvt.skel",
+   "atlas": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1222_dpvt/enemy_1222_dpvt.atlas",
+   "png": [
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1222_dpvt/enemy_1222_dpvt.png"
+   ]
+  },
+  "vchaincaster": {
+   "enemyId": "enemy_1225_dkmage",
+   "skel": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1225_dkmage/enemy_1225_dkmage.skel",
+   "atlas": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1225_dkmage/enemy_1225_dkmage.atlas",
+   "png": [
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1225_dkmage/enemy_1225_dkmage.png"
+   ]
+  },
+  "vroyalguard": {
+   "enemyId": "enemy_1229_darmy",
+   "skel": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1229_darmy/enemy_1229_darmy.skel",
+   "atlas": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1229_darmy/enemy_1229_darmy.atlas",
+   "png": [
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1229_darmy/enemy_1229_darmy.png"
+   ]
+  },
+  "vdrone": {
+   "enemyId": "enemy_1227_dair",
+   "skel": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1227_dair/enemy_1227_dair.skel",
+   "atlas": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1227_dair/enemy_1227_dair.atlas",
+   "png": [
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1227_dair/enemy_1227_dair.png"
+   ]
+  },
+  "vartillery": {
+   "enemyId": "enemy_1273_stmgun",
+   "skel": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1273_stmgun/enemy_1273_stmgun.skel",
+   "atlas": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1273_stmgun/enemy_1273_stmgun.atlas",
+   "png": [
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1273_stmgun/enemy_1273_stmgun.png"
+   ]
+  },
+  "vbloodheir": {
+   "enemyId": "enemy_1228_dslime",
+   "skel": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1228_dslime/enemy_1228_dslime.skel",
+   "atlas": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1228_dslime/enemy_1228_dslime.atlas",
+   "png": [
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1228_dslime/enemy_1228_dslime.png"
+   ]
+  },
+  "vwitherer": {
+   "enemyId": "enemy_1268_nhnrs",
+   "skel": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1268_nhnrs/enemy_1268_nhnrs.skel",
+   "atlas": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1268_nhnrs/enemy_1268_nhnrs.atlas",
+   "png": [
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1268_nhnrs/enemy_1268_nhnrs.png"
+   ]
+  },
+  "vtrilby": {
+   "enemyId": "enemy_1322_wdgyht",
+   "skel": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1322_wdgyht/enemy_1322_wdgyht.skel",
+   "atlas": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1322_wdgyht/enemy_1322_wdgyht.atlas",
+   "png": [
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1322_wdgyht/enemy_1322_wdgyht.png"
+   ]
+  },
+  "vspy": {
+   "enemyId": "enemy_1314_wdnjd",
+   "skel": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1314_wdnjd/enemy_1314_wdnjd.skel",
+   "atlas": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1314_wdnjd/enemy_1314_wdnjd.atlas",
+   "png": [
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1314_wdnjd/enemy_1314_wdnjd.png"
+   ]
+  },
+  "vchimera": {
+   "enemyId": "enemy_1425_lrcmra",
+   "skel": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1425_lrcmra/enemy_1425_lrcmra.skel",
+   "atlas": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1425_lrcmra/enemy_1425_lrcmra.atlas",
+   "png": [
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1425_lrcmra/enemy_1425_lrcmra.png"
+   ]
+  },
+  "vsoul": {
+   "enemyId": "enemy_1429_lrwzrd",
+   "skel": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1429_lrwzrd/enemy_1429_lrwzrd.skel",
+   "atlas": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1429_lrwzrd/enemy_1429_lrwzrd.atlas",
+   "png": [
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1429_lrwzrd/enemy_1429_lrwzrd.png"
+   ]
+  },
+  "vmanfred": {
+   "enemyId": "enemy_1528_manfri",
+   "skel": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1528_manfri/enemy_1528_manfri.skel",
+   "atlas": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1528_manfri/enemy_1528_manfri.atlas",
+   "png": [
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1528_manfri/enemy_1528_manfri.png"
+   ]
+  },
+  "vsteamknight": {
+   "enemyId": "enemy_1533_stmkgt",
+   "skel": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1533_stmkgt/enemy_1533_stmkgt.skel",
+   "atlas": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1533_stmkgt/enemy_1533_stmkgt.atlas",
+   "png": [
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1533_stmkgt/enemy_1533_stmkgt.png"
+   ]
+  },
+  "vdamazti": {
+   "enemyId": "enemy_1542_wdslm",
+   "skel": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1542_wdslm/enemy_1542_wdslm.skel",
+   "atlas": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1542_wdslm/enemy_1542_wdslm.atlas",
+   "png": [
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1542_wdslm/enemy_1542_wdslm.png"
+   ]
+  },
+  "vsanguinarch": {
+   "enemyId": "enemy_1547_blord",
+   "skel": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1547_blord/enemy_1547_blord.skel",
+   "atlas": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1547_blord/enemy_1547_blord.atlas",
+   "png": [
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1547_blord/enemy_1547_blord.png"
+   ]
+  },
+  "vrevenant": {
+   "enemyId": "enemy_1553_lrdead",
+   "skel": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1553_lrdead/enemy_1553_lrdead.skel",
+   "atlas": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1553_lrdead/enemy_1553_lrdead.atlas",
+   "png": [
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1553_lrdead/enemy_1553_lrdead.png",
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1553_lrdead/enemy_1553_lrdead2.png",
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1553_lrdead/enemy_1553_lrdead3.png",
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1553_lrdead/enemy_1553_lrdead4.png",
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1553_lrdead/enemy_1553_lrdead5.png",
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1553_lrdead/enemy_1553_lrdead6.png",
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1553_lrdead/enemy_1553_lrdead7.png",
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1553_lrdead/enemy_1553_lrdead8.png",
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1553_lrdead/enemy_1553_lrdead9.png",
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1553_lrdead/enemy_1553_lrdead10.png",
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1553_lrdead/enemy_1553_lrdead11.png",
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1553_lrdead/enemy_1553_lrdead12.png"
+   ]
+  },
+  "vtheresa": {
+   "enemyId": "enemy_1554_lrtsia",
+   "skel": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1554_lrtsia/enemy_1554_lrtsia.skel",
+   "atlas": "https://torappu.prts.wiki/assets/enemy_spine/enemy_1554_lrtsia/enemy_1554_lrtsia.atlas",
+   "png": [
+    "https://torappu.prts.wiki/assets/enemy_spine/enemy_1554_lrtsia/enemy_1554_lrtsia.png"
+   ]
+  }
+ }
+}

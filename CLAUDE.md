@@ -46,9 +46,9 @@ passive → **Talent** · skill rank → **Skill Level** · Arts resistance → 
 Gacha is **Headhunting** (never "summon").
 
 ## Battle look
-Units are the real Arknights SD (battle chibi) Spine sprites where available (`a8d_sd.js`): 202 operators (front + back views)
-and 35 enemies in `assets/sd/` (`python mobile/tools/fetch_sd.py` re-downloads from Aceship/Arknight-Images and writes the
-`@sd-*` lists). Spine 3.5 skeletons go through `mobile/vendor/spine-skeleton-binary.js` + `spine-widget.js` (3.6 runtime), 3.8
+Units are the real Arknights SD (battle chibi) Spine sprites (`a8d_sd.js`): all 239 operators (front + back views; Angelina,
+Heidi and Sora only have a front) and all 55 enemies in `assets/sd/` (`python mobile/tools/fetch_sd.py` re-downloads from Aceship/Arknight-Images, then the newer ones the mirror lacks from
+the PRTS wiki CDN listed in `mobile/tools/sd_extra.json`, and writes the `@sd-*` lists). Spine 3.5 skeletons go through `mobile/vendor/spine-skeleton-binary.js` + `spine-widget.js` (3.6 runtime), 3.8
 ones through `mobile/vendor/spine-webgl-3.8.js`; both are loaded on demand, renamed apart (both use the global `spine`).
 Each unit renders into an offscreen WebGL canvas and is copied into the 2D battle canvas (`sdDraw`), playing Idle / Attack /
 Skill_N / Move / Die / Start to match the battle poses (`sdWant`). Back sprites show when a unit faces away from the camera.

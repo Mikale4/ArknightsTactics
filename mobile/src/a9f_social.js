@@ -283,7 +283,7 @@ SCREENS.settings = () => {
         : `<button class="btn ghost wide" data-act="setResetAsk">Reset progress</button>`}</section>
     <section class="panel stack" style="gap:6px"><h3>About</h3>
       <p class="tiny dim">Arknights Tactics ${GAME_VERSION} · an unofficial, non-commercial fan game. Arknights characters, art, music, sound and voices belong to Hypergryph and Yostar.
-      Audio from the PseudoMon/arknights-audio archive; story and enemy art from the Aceship and ArknightsGameResource mirrors. The Doctors you meet in chat and the Contracts are simulated.</p></section>
+      Audio from the PseudoMon/arknights-audio archive; story and enemy art from the Aceship and ArknightsGameResource mirrors; SD battle sprites from the Aceship mirror and the PRTS wiki (prts.wiki, CC BY-NC-SA 4.0), played with Esoteric Software's Spine runtimes. The Doctors you meet in chat and the Contracts are simulated.</p></section>
   </div>`;
 };
 const RUDE_WORDS = /\b(stupid|idiot|dumb|trash|garbage|moron|shut up|stfu|loser|pathetic|clown|cringe)\b/gi;
