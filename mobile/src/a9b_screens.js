@@ -3,22 +3,22 @@
 //  SCREENS (2/2): Terminal, operators, modules, headhunting, missions, store
 // =====================================================================
 SCREENS.battle = () => {
-  const A = S.arena, payReady = Date.now() - A.payTime >= PAYOUT_MS, nd = nextNode();
+  const L = S.ladder, nd = nextNode();
   return `<div class="stack">
     <h2>Terminal</h2>
     <button class="tile wide ls-t" data-act="go" data-v="story" style="min-height:76px"><span class="ticon" style="color:var(--holo)">${IC.story}</span>
-      <div class="eyebrow">Main Theme</div><h3>${esc(STORY[0].title)}</h3><span class="tsub">${nd ? "Next: " + nd.id + " " + esc(nd.name) : "All episodes cleared"}</span></button>
+      <div class="eyebrow">Main Theme</div><h3>${esc((nd ? nd.ep : STORY[STORY.length - 1]).title)}</h3><span class="tsub">${nd ? "Next: " + nd.id + " " + esc(nd.name) : "All episodes cleared"}</span></button>
     <div class="eyebrow">Supplies · module operations</div>
     ${HUNTS.map(h => {
       const best = (S.hunt && S.hunt[h.id]) || 0, boss = h.waves(1)[1][0].e;
       return `<button class="tile wide" data-act="go" data-v="hunt" data-a="${h.id}" style="min-height:96px;background:linear-gradient(120deg,${mapTheme(h.env === "temple" ? "slums" : h.env).a},var(--hull2) 70%)">
         <span class="ticon" style="width:56px;height:56px;right:10px;top:10px"><img src="${enemyArt(boss).head}" alt="" style="width:100%;border-radius:50%"></span>
         <div class="eyebrow">${h.code}-1 to ${h.code}-6 · ${best ? h.code + "-" + best + " cleared" : "not cleared"}</div><h3>${esc(h.n)}</h3><span class="tsub">${esc(h.sub)}</span>
-        <span class="tsub">Module sets: ${h.sets.join(", ")}</span></button>`;
+        <span class="tsub">Module types: ${h.sets.map(runeSetName).join(", ")}</span></button>`;
     }).join("")}
     <div class="tiles">
       <button class="tile" data-act="go" data-v="tower"><span class="ticon" style="color:var(--holo)">${IC.tower}</span><h3 class="long">Stationary Security Service</h3><span class="tsub">Floor ${Math.min(S.tower + 1, TOWER_FLOORS)}/${TOWER_FLOORS}</span></button>
-      <button class="tile" data-act="go" data-v="arena"><span class="ticon" style="color:var(--gold)">${IC.arena}</span><h3 class="long">Contingency Contract</h3><span class="tsub">Rank #${A.rank} · ${A.attempts}/5${payReady ? " · bounty ready" : ""}</span></button>
+      <button class="tile" data-act="go" data-v="arena"><span class="ticon" style="color:var(--gold)">${IC.arena}</span><h3 class="long">Contingency Contract</h3><span class="tsub">${tierOf(L.pts).n} · ${L.tickets}/${TICKETS_MAX} tickets · Real-Time ${tierOf(S.rta.pts).n}</span></button>
     </div>
   </div>`;
 };
@@ -32,7 +32,7 @@ SCREENS.hunt = id => {
     <div class="chips">${[1, 2, 3, 4, 5, 6].map(k => `<button class="chip ${k === lvl ? "on" : ""}" data-act="huntLv" data-h="${id}" data-l="${k}" ${k <= best + 1 ? "" : "disabled"}>${h.code}-${k}</button>`).join("")}</div>
     ${waves.map((w, k) => `<div><div class="tiny dim" style="margin-bottom:4px">Wave ${k + 1}</div><div class="row wrap">${w.map(s => enHTML(s, ENEMY[s.en].boss ? 56 : 46)).join("")}</div></div>`).join("")}
     <section class="sub stack" style="gap:6px"><div class="small"><b>Module drops</b> <span class="dim">· 2–3 modules per clear</span></div>
-      <div class="chips">${h.sets.map(s => `<span class="chip" title="${esc(RUNE_INFO[s])}">${s}</span>`).join("")}</div>
+      <div class="chips">${h.sets.map(s => `<span class="chip" title="${esc(RUNE_INFO[s])}">${runeSetFull(s)}</span>`).join("")}</div>
       <div class="tiny dim">${HUNT_RAR[lvl - 1].map((p, i) => p ? `${RUNE_RAR[i + 1]} ${Math.round(p * 100)}%` : "").filter(Boolean).join(" · ")}</div></section>
     <div class="row">
       ${best >= lvl ? `<button class="btn ghost" data-act="huntSweep" data-h="${id}" data-l="${lvl}">Auto Deploy ×3</button>` : ""}
@@ -59,28 +59,6 @@ SCREENS.tower = () => {
     }).join("")}
   </div>`;
 };
-SCREENS.arena = () => {
-  tickTimers();
-  if (!S.arena.opps) genOpps();
-  const A = S.arena, now = Date.now(), payReady = now - A.payTime >= PAYOUT_MS, po = payout(A.rank);
-  return `<div class="stack">
-    <div class="spread">${back("go", "Terminal", 'data-v="battle"')}<span class="eyebrow">Contingency Contract</span></div>
-    <section class="panel" style="background:radial-gradient(100% 120% at 100% 0%,#3a2a08,var(--hull) 60%)">
-      <div class="spread"><div><div class="eyebrow" style="color:var(--gold)">Contract rank</div><div style="font:800 44px var(--f-display);line-height:1" class="num gold">#${A.rank}</div></div>
-      <div style="text-align:right" class="small"><div>Attempts <b class="num">${A.attempts}/5</b></div>${A.attempts < 5 ? `<div class="tiny dim num">+1 in <span data-cd="att">${dur(ARENA_MS - (now - A.aTime))}</span></div>` : ""}<div class="row" style="justify-content:flex-end;margin-top:4px"><span class="cost">${IC.tokens}${fmt(S.tokens)}</span></div></div></div>
-      <div class="divider" style="margin:10px 0"></div>
-      <div class="spread small"><span>Bounty: <span class="cost">${IC.orundum}${po.orundum}</span> <span class="cost">${IC.tokens}${po.tokens}</span></span>
-        <button class="btn sm" data-act="payout" ${payReady ? "" : "disabled"}>${payReady ? "Claim" : `<span data-cd="pay">${dur(PAYOUT_MS - (now - A.payTime))}</span>`}</button></div>
-    </section>
-    <div class="spread"><h3>Rival squads</h3><button class="btn ghost sm" data-act="newOpps">Refresh</button></div>
-    ${A.opps.map((o, k) => `<section class="panel stack" style="gap:8px">
-      <div class="spread"><div><b>${esc(o.name)}</b><div class="tiny dim">Rank #${o.rank} · Power <span class="num">${fmtFull(o.pw)}</span></div></div>
-      <button class="btn sm" data-act="arenaGo" data-k="${k}" ${A.attempts > 0 ? "" : "disabled"}>Start</button></div>
-      <div class="row">${o.team.map(u => opHTML(u.op, { s: 48, prog: progForLV(u.op, u.LV) })).join("")}</div></section>`).join("")}
-    <p class="tiny dim">Spend Contract Bounty in the Contract Store.</p>
-  </div>`;
-};
-
 // ---------- operators ----------
 SCREENS.ops = () => {
   let list = UI.all ? OP_KEYS.slice() : Object.keys(S.ops);
@@ -102,23 +80,30 @@ SCREENS.op = key => {
   let body = "";
   if (tab === "info" || !p) body = `<section class="panel"><h3 style="margin-bottom:8px">Stats${p ? "" : " (Lv 1)"}</h3><div class="statgrid">
       <div><span>HP</span><b>${fmtFull(st.hp)}</b></div><div><span>ATK</span><b>${fmtFull(st.atk)}</b></div>
-      <div><span>DEF</span><b>${fmtFull(st.def)}</b></div><div><span>SPD</span><b>${st.spd}</b></div>
+      <div><span>DEF</span><b>${fmtFull(st.def)}</b></div><div><span>RES</span><b>${Math.round(st.ares)}</b></div>
+      <div><span>SPD</span><b>${st.spd}</b></div><div><span>Block</span><b>${st.block}</b></div>
       <div><span>Crit Rate</span><b>${pct(st.cr)}</b></div><div><span>Crit Damage</span><b>${pct(st.cd)}</b></div>
-      <div><span>Accuracy</span><b>${pct(st.acc)}</b></div><div><span>Resistance</span><b>${pct(st.res)}</b></div></div></section>
+      <div><span>Accuracy</span><b>${pct(st.acc)}</b></div><div><span>Status RES</span><b>${pct(st.res)}</b></div></div></section>
     <section class="panel stack" style="gap:8px">
+      <div><b class="gold">Trait · ${esc(op.branchName)}</b><p class="small dim">${esc(op.trait)}</p></div>
       <div><b class="gold">Leader skill</b><p class="small dim">${op.leader ? leaderText(op.leader) : "None"}</p></div>
-      ${op.passives.length ? `<div><b class="gold">Talent</b><p class="small dim">${op.passives.map(x => esc(x.text)).join(" ")}</p></div>` : ""}
-      <div><b class="gold">Recommended modules</b><p class="small dim">${op.runes.map(r => `${r} (${RUNE_INFO[r]})`).join(" · ")}</p></div>
+      <div><b class="gold">Recommended modules</b><p class="small dim">${op.runes.map(r => `${runeSetFull(r)} (${RUNE_INFO[r]})`).join(" · ")}</p></div>
       ${p ? `<div><b class="gold">Potential ${p.pot}/6</b><p class="small dim">+2% to all stats per level. Raised by recruiting duplicates.</p></div>` : `<p class="small dim">Recruit this operator through Headhunting.</p>`}
     </section>`;
-  else if (tab === "skills") body = `<section class="panel stack" style="gap:10px">${op.skills.map((sk, i) => {
-      const r = p.sk[i], c = skillCost(r), lock = r >= 4 && p.elite < 1;
-      return `<div class="ab"><div class="abicon ${i ? "special" : ""}">${skillIcon({ cls: op.cls }, sk)}</div>
-        <div class="stack" style="gap:4px;min-width:0"><div class="spread"><b>S${sk.slot} ${esc(sk.name)}</b><span class="tag">${sk.cd ? "CD " + sk.cd : "Basic"}</span></div>
+  else if (tab === "skills") body = `<section class="panel stack" style="gap:10px">
+      <div class="ab"><div class="abicon">${skillIcon({ cls: op.cls }, op.basic)}</div><div class="stack" style="gap:4px;min-width:0">
+        <div class="spread"><b>${esc(op.basic.name)}</b><span class="tag">Basic · ${esc(op.branchName)}</span></div><p class="small dim">${esc(op.trait)}</p></div></div>
+      ${op.skills.map((sk, i) => {
+      const r = p.sk[i] || 1, c = skillCost(r), locked = sk.elite > p.elite, lvLock = r >= 4 && p.elite < 1;
+      return `<div class="divider"></div><div class="ab"><div class="abicon ${sk.slot >= 2 ? "special" : ""}">${skillIcon({ cls: op.cls }, sk)}</div>
+        <div class="stack" style="gap:4px;min-width:0"><div class="spread"><b>S${sk.slot} ${esc(sk.name)}</b><span class="tag">${locked ? "Elite " + sk.elite : sk.passive ? "Passive" : (sk.auto ? "Auto · " : "") + "CD " + sk.cd}</span></div>
         <p class="small dim">${esc(sk.desc)}</p>
-        <div class="spread"><div class="pips">${[1, 2, 3, 4, 5, 6, 7].map(k => `<i class="${k <= r ? "on" : ""} ${k >= 5 ? "om" : ""}"></i>`).join("")}</div>
-        ${r < 7 ? `<button class="btn sm ghost" data-act="skUp" data-k="${key}" data-i="${i}" ${!lock && S.inv.summ >= c.summ && S.lmd >= c.lmd ? "" : "disabled"}>${lock ? "Needs Elite 1" : `<span class="cost">${IC.summ}${c.summ}</span><span class="cost">${IC.lmd}${fmt(c.lmd)}</span>`}</button>` : '<span class="tiny gold">Skill Level 7</span>'}</div></div></div>`;
-    }).join('<div class="divider"></div>')}<p class="tiny dim">Each skill level adds 6% damage and healing. Skill Level 7 reduces S2 and S3 cooldowns by one turn. Levels 5 to 7 need Elite 1.</p></section>`;
+        ${locked ? `<p class="tiny dim">Unlocks at Elite ${sk.elite}.</p>` : sk.passive ? "" : `<div class="spread"><div class="pips">${[1, 2, 3, 4, 5, 6, 7].map(k => `<i class="${k <= r ? "on" : ""} ${k >= 5 ? "om" : ""}"></i>`).join("")}</div>
+        ${r < 7 ? `<button class="btn sm ghost" data-act="skUp" data-k="${key}" data-i="${i}" ${!lvLock && S.inv.summ >= c.summ && S.lmd >= c.lmd ? "" : "disabled"}>${lvLock ? "Needs Elite 1" : `<span class="cost">${IC.summ}${c.summ}</span><span class="cost">${IC.lmd}${fmt(c.lmd)}</span>`}</button>` : '<span class="tiny gold">Skill Level 7</span>'}</div>`}</div></div>`;
+    }).join("")}
+      ${op.skills.length ? "" : `<p class="small dim">${esc(op.n)} has no skills, as in Arknights.</p>`}
+      <p class="tiny dim">Descriptions show Skill Level 7. Each level below 7 deals 3% less skill damage and healing. Levels 5 to 7 need Elite 1.</p></section>
+    ${op.talents.length ? `<section class="panel stack" style="gap:8px"><h3>Talents</h3>${op.talents.map(t => `<div><b class="gold">${esc(t.name)}</b> <span class="tag">${(t.elite || 0) > p.elite ? "Elite " + t.elite : "Active"}</span><p class="small dim">${esc(t.desc)}</p></div>`).join("")}</section>` : ""}`;
   else if (tab === "upgrade") {
     const cap = LV_CAP[p.elite], need = xpNeed(p.lvl, p.elite), nextE = p.elite + 1, ec = nextE <= op.maxElite ? eliteCost(key, nextE) : null;
     body = `<section class="panel stack" style="gap:8px">
@@ -138,10 +123,10 @@ SCREENS.op = key => {
     const sets = [...new Set(p.runes.map(runeById).filter(Boolean).map(r => r.set))];
     const free = S.runes.filter(r => !r.eq || r.eq.k !== key).sort((a, b) => b.rar - a.rar || b.lvl - a.lvl);
     body = `<section class="panel stack" style="gap:8px"><h3>Module slots</h3>
-      <div class="runeslots">${[0, 1].map(s => { const r = runeById(p.runes[s]); return r ? `<button class="rslot full" data-act="runeSheet" data-id="${r.id}"><b style="color:${RUNE_RC[r.rar]}">${r.set} +${r.lvl}</b><span class="tiny">${runeMainText(r)}</span><span class="tiny dim">${RUNE_INFO[r.set]}</span></button>` : `<div class="rslot"><b>Slot ${s + 1}</b><span class="tiny">Empty</span></div>`; }).join("")}</div>
-      <p class="tiny dim">Active module sets: ${sets.length ? sets.map(s => `${s} (${RUNE_INFO[s]})`).join(" · ") : "none"}</p></section>
+      <div class="runeslots">${[0, 1].map(s => { const r = runeById(p.runes[s]); return r ? `<button class="rslot full" data-act="runeSheet" data-id="${r.id}"><b style="color:${RUNE_RC[r.rar]}">${runeSetName(r.set)} +${r.lvl}</b><span class="tiny">${runeMainText(r)}</span><span class="tiny dim">${RUNE_INFO[r.set]}</span></button>` : `<div class="rslot"><b>Slot ${"XY"[s]}</b><span class="tiny">Empty</span></div>`; }).join("")}</div>
+      <p class="tiny dim">Active module types: ${sets.length ? sets.map(s => `${runeSetFull(s)} (${RUNE_INFO[s]})`).join(" · ") : "none"}</p></section>
       <section class="stack" style="gap:6px"><div class="spread"><h3>Your modules</h3><span class="tiny dim">${S.runes.length} owned</span></div>
-      ${free.length ? free.slice(0, 40).map(r => runeRow(r, `<span class="row"><button class="btn sm ghost" data-act="equip" data-k="${key}" data-s="0" data-id="${r.id}">Slot 1</button><button class="btn sm ghost" data-act="equip" data-k="${key}" data-s="1" data-id="${r.id}">Slot 2</button></span>`)).join("") : '<p class="small dim">No spare modules. Supplies operations in the Terminal drop them.</p>'}</section>`;
+      ${free.length ? free.slice(0, 40).map(r => runeRow(r, `<span class="row"><button class="btn sm ghost" data-act="equip" data-k="${key}" data-s="0" data-id="${r.id}">Slot X</button><button class="btn sm ghost" data-act="equip" data-k="${key}" data-s="1" data-id="${r.id}">Slot Y</button></span>`)).join("") : '<p class="small dim">No spare modules. Supplies operations in the Terminal drop them.</p>'}</section>`;
   }
   return `<div class="stack">
     <div class="spread">${back("go", "Operators", 'data-v="ops"')}${p ? `<button class="btn ghost sm" data-act="assistant" data-k="${key}" ${S.assistant === key ? "disabled" : ""}>${S.assistant === key ? "Assistant" : "Set assistant"}</button>` : ""}</div>
@@ -158,42 +143,47 @@ SCREENS.op = key => {
   </div>`;
 };
 function runeRow(r, right = "") {
-  return `<div class="rune ${r.eq ? "eq" : ""}" style="--rc:${RUNE_RC[r.rar]}"><button class="rg" data-act="runeSheet" data-id="${r.id}" aria-label="${r.set} module">+${r.lvl}</button>
-    <div style="min-width:0"><b>${r.set}</b> <span class="tiny" style="color:${RUNE_RC[r.rar]}">${RUNE_RAR[r.rar]}</span><div class="tiny dim">${runeMainText(r)}${r.eq ? ` · on ${esc(OPS[r.eq.k].n)}` : ""}</div></div>${right}</div>`;
+  return `<div class="rune ${r.eq ? "eq" : ""}" style="--rc:${RUNE_RC[r.rar]}"><button class="rg" data-act="runeSheet" data-id="${r.id}" aria-label="${runeSetName(r.set)} module">+${r.lvl}</button>
+    <div style="min-width:0"><b>${runeSetName(r.set)} Module</b> <span class="tiny" style="color:${RUNE_RC[r.rar]}">${RUNE_RAR[r.rar]}</span><div class="tiny dim">${runeMainText(r)}${r.eq ? ` · on ${esc(OPS[r.eq.k].n)}` : ""}</div></div>${right}</div>`;
 }
 function runeSheet(r) {
   const c = enhanceCost(r);
-  openModal(`<div class="stack"><div class="rune" style="--rc:${RUNE_RC[r.rar]}"><span class="rg">+${r.lvl}</span><div><b>${r.set} Module</b> <span class="tiny" style="color:${RUNE_RC[r.rar]}">${RUNE_RAR[r.rar]}</span><div class="tiny dim">${RUNE_INFO[r.set]}</div></div></div>
+  openModal(`<div class="stack"><div class="rune" style="--rc:${RUNE_RC[r.rar]}"><span class="rg">+${r.lvl}</span><div><b>${runeSetFull(r.set)} Module</b> <span class="tiny" style="color:${RUNE_RC[r.rar]}">${RUNE_RAR[r.rar]}</span><div class="tiny dim">${RUNE_INFO[r.set]}</div></div></div>
     <div class="statgrid"><div><span>Main stat</span><b>${runeMainText(r)}</b></div><div><span>Level</span><b>+${r.lvl} / 15</b></div></div>
     <p class="small dim">${r.eq ? `Equipped on ${esc(OPS[r.eq.k].n)}.` : "Not equipped."} Upgrades always succeed and raise the main stat.</p>
     <div class="row wrap"><button class="btn" data-act="enhance" data-id="${r.id}" ${r.lvl < 15 && S.lmd >= c ? "" : "disabled"}>Upgrade <span class="cost">${IC.lmd}${fmt(c)}</span></button>
       <button class="btn ghost" data-act="enhanceMax" data-id="${r.id}" ${r.lvl < 15 && S.lmd >= c ? "" : "disabled"}>Max level</button>
       ${r.eq ? `<button class="btn ghost" data-act="unequip" data-id="${r.id}">Unequip</button>` : ""}
-      <button class="btn red" data-act="sell" data-id="${r.id}">Sell <span class="cost">${IC.lmd}${fmt(sellValue(r))}</span></button></div>
+      <button class="btn red" data-act="sell" data-id="${r.id}">Disassemble <span class="cost">${IC.lmd}${fmt(sellValue(r))}</span></button></div>
     <button class="btn ghost wide" data-act="closeModal">Close</button></div>`);
 }
 
 // ---------- headhunt ----------
 SCREENS.hh = () => {
-  const B = bannerToday(), std = UI.hhStd, f6 = OPS[B.feat6];
-  const pity = Math.max(0, S.gacha.pity - 49);
+  const list = [...bannersNow(), STD_BANNER], B = list.find(x => x.id === UI.hhB) || list[0];
+  UI.hhB = B.id;
+  const pity = Math.max(0, S.gacha.pity - 49), ten = S.inv.hh10 || 0;
+  const art = B.std ? [OPS.amiya] : B.feat6.map(k => OPS[k]);
   return `<div class="stack">
-    <div class="tabs2"><button class="${std ? "" : "on"}" data-act="hhTab" data-std="0">Featured</button><button class="${std ? "on" : ""}" data-act="hhTab" data-std="1">Standard</button></div>
-    <section class="panel banner-card" style="${std ? "background:radial-gradient(90% 90% at 80% 30%,#14306a,transparent 70%),linear-gradient(160deg,#141c30,#0a1020)" : ""}">
-      ${std ? `<img src="${spriteURL(OPS.amiya)}" alt="">` : `<img src="${spriteURL(f6)}" alt="${esc(f6.n)}">`}
-      <div class="eyebrow">${std ? "Standard Headhunting" : "Featured · rotates daily"}</div>
-      <h2>${std ? "Rhodes Island Recruitment" : esc(f6.n)}</h2>
-      ${std ? `<p class="small" style="max-width:24ch">Every 3★–6★ operator can appear.</p>` : `<div class="row" style="gap:4px">${starRow(6).replace('class="rstars"', 'class="rstars" style="justify-content:flex-start"')}<span class="el ${f6.el}">${f6.el}</span><span class="cls">${f6.cls}</span></div>
-      <p class="small" style="max-width:26ch">50% of 6★ results are ${esc(f6.n)}. Rate-up 5★: ${B.feat5.map(k => esc(OPS[k].n)).join(", ")}.</p>`}
+    <div class="bstrip">${list.map(x => `<button class="bchip ${x.id === B.id ? "on" : ""}" data-act="hhBanner" data-b="${x.id}" style="--bc:${x.col}"><img src="${headURL(OPS[x.std ? "amiya" : x.feat6[0]])}" alt=""><span>${esc(x.std ? "Standard" : x.n)}</span></button>`).join("")}</div>
+    <section class="panel banner-card ${art.length > 1 ? "duo" : ""}" style="background:radial-gradient(90% 90% at 80% 30%,${B.col}55,transparent 70%),linear-gradient(160deg,#141c30,#0a1020)">
+      ${art.map((op, k) => `<img class="b${k}" src="${spriteURL(op)}" alt="${esc(op.n)}">`).join("")}
+      <div class="eyebrow">${esc(B.sub)}${B.std ? "" : ` · ends in ${dur(B.ends - Date.now())}`}</div>
+      <h2>${esc(B.n)}</h2>
+      ${B.std ? `<p class="small" style="max-width:24ch">${esc(B.d)}</p>` : `<div class="stack" style="gap:4px;max-width:26ch">
+        ${B.feat6.map(k => `<div class="row" style="gap:4px">${starRow(6).replace('class="rstars"', 'class="rstars" style="justify-content:flex-start"')}<b class="small">${esc(OPS[k].n)}</b><span class="el ${OPS[k].el}">${OPS[k].el}</span></div>`).join("")}
+        <p class="small" style="margin:0">${B.joint ? "70% of 6★ results are the two featured operators." : `50% of 6★ results are ${esc(OPS[B.feat6[0]].n)}.`}${B.feat5.length ? ` Rate-up 5★: ${B.feat5.map(k => esc(OPS[k].n)).join(", ")}.` : ""}${B.feat4.length ? ` Rate-up 4★: ${B.feat4.map(k => esc(OPS[k].n)).join(", ")}.` : ""}</p>
+        <p class="tiny dim" style="margin:0">${esc(B.d)}</p></div>`}
     </section>
-    <div class="row wrap small dim"><span>6★ 2% · 5★ 8% · 4★ 50% · 3★ 40%</span>${pity ? `<span class="gold">· 6★ rate now ${2 + pity * 2}%</span>` : `<span>· ${50 - S.gacha.pity > 0 ? 50 - S.gacha.pity : 0} pulls until the 6★ rate starts climbing</span>`}</div>
+    <div class="row wrap small dim"><span>6★ 2% · 5★ 8% · 4★ 50% · 3★ 40%</span>${pity ? `<span class="gold">· 6★ rate now ${2 + pity * 2}%</span>` : `<span>· ${Math.max(0, 50 - S.gacha.pity)} pulls until the 6★ rate starts climbing</span>`}</div>
     ${S.gacha.firstTen ? `<div class="hint">${IC.star.replace("<svg", '<svg width="20" height="20"')}<span class="small">Your first ten-pull guarantees at least one 5★ operator.</span></div>` : ""}
+    ${ten ? `<button class="btn wide gold-btn" data-act="pull" data-n="10" data-ten="1">Use a Ten-roll Headhunting Permit<br><span class="cost">${ITEMS.hh10.ic}${ten} owned</span></button>` : ""}
     <div class="row" style="gap:10px">
       <button class="btn ghost" style="flex:1" data-act="pull" data-n="1" ${S.permit >= 1 || S.orundum >= 600 ? "" : "disabled"}>Headhunt ×1<br><span class="cost">${S.permit >= 1 ? IC.permit + "1" : IC.orundum + "600"}</span></button>
       <button class="btn" style="flex:1" data-act="pull" data-n="10" ${S.permit >= 10 || S.orundum >= 6000 ? "" : "disabled"}>Headhunt ×10<br><span class="cost">${S.permit >= 10 ? IC.permit + "10" : IC.orundum + "6,000"}</span></button>
     </div>
-    <div class="mats"><span class="mat">${IC.permit}${S.permit}</span><span class="mat">${IC.orundum}${fmt(S.orundum)}</span><span class="mat">${IC.cert}${S.cert}</span></div>
-    <p class="tiny dim">Duplicates raise Potential (up to 6) and award Distinction Certificates for the Certificate Store.</p>
+    <div class="mats"><span class="mat">${ITEMS.hh10.ic}${ten}</span><span class="mat">${IC.permit}${S.permit}</span><span class="mat">${IC.orundum}${fmt(S.orundum)}</span><span class="mat">${IC.cert}${S.cert}</span></div>
+    <p class="tiny dim">New themed banners every Monday. Collaboration operators only appear on their own banners. Duplicates raise Potential (up to 6) and award Distinction Certificates.</p>
   </div>`;
 };
 function gachaReveal(results) {
@@ -214,14 +204,16 @@ function gachaReveal(results) {
       for (const s of stars) { s.y += s.v; s.x -= s.v * .35; if (s.y > H + 40) { s.y = -40; s.x = R() * W * 1.3; } g.globalAlpha = .5; g.beginPath(); g.moveTo(s.x, s.y); g.lineTo(s.x + s.l * .35, s.y - s.l); g.stroke(); }
       g.globalAlpha = 1; g.globalCompositeOperation = "source-over";
     };
-    loop(); sfx("special");
+    loop(); sfx("ui_whoosh");
     let stage = 0;
     const show = () => {
       stage = 1; $("#gT").hidden = true; const G = $("#gG"); G.hidden = false;
       if (results.length === 1) { G.style.gridTemplateColumns = "1fr"; G.style.maxWidth = "260px"; }
       G.innerHTML = results.map((r, i) => { const op = OPS[r.key]; return `<div class="gcard" style="--rc:${RC[op.rar]};animation-delay:${i * .12}s">${r.isNew ? '<span class="gnew">NEW</span>' : ""}<img src="${spriteURL(op)}" alt="${esc(op.n)}"><span class="gst">${"★".repeat(op.rar)}<br>${esc(op.n)}</span></div>`; }).join("");
-      if (top >= 6) sfx("win"); else sfx("heal");
-      setTimeout(() => { $("#gDone").hidden = false; stage = 2; }, results.length * 120 + 500);
+      if (top >= 6) sfx("ui_win"); else sfx("ui_reward");
+      const star = results.filter(r => r.isNew).sort((a, b) => OPS[b.key].rar - OPS[a.key].rar)[0] || results.slice().sort((a, b) => OPS[b.key].rar - OPS[a.key].rar)[0];
+      if (star) setTimeout(() => voice(star.key, VO.onboard), 700);
+      setTimeout(() => { const d = $("#gDone"); if (d) d.hidden = false; stage = 2; }, results.length * 120 + 500);
     };
     root.onclick = ev => {
       if (ev.target.id === "gDone") { run = false; root.hidden = true; root.innerHTML = ""; resolve(); return; }
@@ -269,9 +261,9 @@ SCREENS.depot = () => {
     <div class="spread">${back("go", "Home", 'data-v="home"')}<span class="eyebrow">Depot</span></div>
     <h2>Depot</h2>
     <div class="tabs2"><button class="${tab === "runes" ? "on" : ""}" data-act="depotTab" data-t="runes">Modules · ${S.runes.length}</button><button class="${tab === "mats" ? "on" : ""}" data-act="depotTab" data-t="mats">Materials</button></div>
-    ${tab === "runes" ? `<div class="filters">${["all", ...RUNE_SETS].map(s => `<button class="chip ${UI.runeSet === s ? "on" : ""}" data-act="runeSetF" data-s="${s}">${s === "all" ? "All sets" : s}</button>`).join("")}</div>
+    ${tab === "runes" ? `<div class="filters">${["all", ...RUNE_SETS].map(s => `<button class="chip ${UI.runeSet === s ? "on" : ""}" data-act="runeSetF" data-s="${s}">${s === "all" ? "All types" : runeSetName(s)}</button>`).join("")}</div>
       ${runes.length ? runes.map(r => runeRow(r, `<button class="btn sm ghost" data-act="runeSheet" data-id="${r.id}">Manage</button>`)).join("") : '<p class="small dim">No modules yet. Clear Supplies operations in the Terminal to collect them.</p>'}
-      ${S.runes.some(r => !r.eq && r.rar <= 2) ? `<button class="btn ghost wide" data-act="sellJunk">Sell all unequipped T1 and T2 modules</button>` : ""}`
+      ${S.runes.some(r => !r.eq && r.rar <= 2) ? `<button class="btn ghost wide" data-act="sellJunk">Disassemble all unequipped T1 and T2 modules</button>` : ""}`
     : `<div class="rewards" style="justify-content:flex-start">${["rec1", "rec2", "rec3", "rec4", "chip", "summ", "permit", "cert", "tokens", "prime", "credit"].map(k => `<div class="rw"><div class="ri" style="width:54px;height:54px">${itemIcon(k)}</div><span class="num">×${fmt(have(k))}</span><span class="tiny dim">${ITEMS[k].n}</span></div>`).join("")}</div>`}
   </div>`;
 };
@@ -280,12 +272,14 @@ function settingsModal(confirmReset) {
     <label class="small dim" for="pname">Doctor name</label>
     <input id="pname" maxlength="16" value="${esc(S.name)}" style="font:600 16px var(--f-body);padding:10px 12px;background:var(--hull2);color:var(--text);border:1px solid var(--line2);border-radius:6px">
     <div class="statgrid small"><div><span>Doctor level</span><b>${S.lvl}</b></div><div><span>Roster power</span><b>${fmtFull(rosterPower())}</b></div><div><span>Battles won</span><b>${S.stats.wins}</b></div><div><span>Headhunts</span><b>${S.gacha.total}</b></div></div>
-    <button class="btn ghost wide" data-act="toggleSound">Sound: ${S.settings.sound ? "On" : "Off"}</button>
+    <div class="stack" style="gap:6px">${[["music", "Music"], ["sfx", "Effects"], ["voice", "Voices"]].map(([k, n]) => `<label class="volrow"><span>${n}</span><input type="range" min="0" max="100" value="${Math.round(audioPrefs()[k] * 100)}" data-act="vol" data-k="${k}"></label>`).join("")}</div>
+    <button class="btn ghost wide" data-act="toggleSound">Sound: ${muted() ? "Off" : "On"}</button>
     <button class="btn ghost wide" data-act="cycleAi">Auto-battle AI: ${S.settings.ai}</button>
     ${confirmReset ? `<div class="sub stack" style="gap:8px;border-color:var(--ds)"><b class="small">Erase all progress?</b><p class="tiny dim">Your operators, modules, story progress and currencies will be deleted from this browser.</p>
       <div class="row"><button class="btn red sm" data-act="doReset">Erase progress</button><button class="btn ghost sm" data-act="settings">Keep playing</button></div></div>`
       : `<button class="btn ghost wide" data-act="askReset">Reset progress</button>`}
-    <p class="tiny dim">Progress saves in this browser. Arknights Tactics is an unofficial, non-commercial fan game. Arknights characters and art belong to Hypergryph and Yostar.</p>
+    <button class="btn ghost wide" data-act="logout">${SESSION && SESSION.id !== "guest" ? "Log out" : "Back to title"}</button>
+    <p class="tiny dim">${SESSION && SESSION.id !== "guest" && SESSION.id !== "hot" ? `Logged in as Dr. ${esc(SESSION.name)}. ` : "Playing as Guest. "}Progress saves in this browser. Arknights Tactics is an unofficial, non-commercial fan game. Arknights characters and art belong to Hypergryph and Yostar.</p>
     <button class="btn wide" data-act="saveName">Done</button></div>`);
 }
 function sanityModal() {

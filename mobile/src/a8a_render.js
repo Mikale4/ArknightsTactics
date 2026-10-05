@@ -56,6 +56,10 @@ const ENVS = {
              bodies: [{ az: .55, el: .3, r: .03, c: "#e8f0ff" }], prop: "#2a3248", ring: "#5fd4ff", city: "#0c1226", lit: "#ffd76b" },
   slums:   { sky: ["#120e16", "#4a3440", "#c8925a"], ground: ["#5a4a3a", "#1c1610"], grid: "#2a2018", gridA: .2, mount: ["#3a2e28", "#241c18"], fog: "#c8925a",
              bodies: [{ az: .2, el: .08, r: .03, c: "#ffd8a0" }], prop: "#4a3a2a", ring: "#f2c14e", city: "#20181a", lit: "#ffb050", low: 1 },
+  victoria:{ sky: ["#070b09", "#26342c", "#8a9a84"], ground: ["#3a3c36", "#121410"], grid: "#c8b06a", gridA: .16, mount: null, fog: "#8a9a84",
+             bodies: [{ az: .4, el: .22, r: .028, c: "#e8e2c8" }], prop: "#2e322a", ring: "#e0c070", city: "#10140f", lit: "#ffcf7a" },
+  core:    { sky: ["#050206", "#24080f", "#8a1e2a"], ground: ["#261a1e", "#0a0607"], grid: "#ff4a6a", gridA: .2, mount: ["#1a0a0e", "#0c0406"], fog: "#8a1e2a", embers: 1,
+             bodies: [], prop: "#2a1a1e", ring: "#ff5a6a", city: "#140a0e", lit: "#ff6a5a", low: 1 },
   arena:   { sky: ["#05030d", "#1a0e36", "#3a1f6a"], ground: ["#2a2240", "#100c1c"], grid: "#b26bff", gridA: .3, mount: null, fog: "#3a1f6a", stars: 1,
              bodies: [{ az: .45, el: .3, r: .1, c: "#8a5ad8", planet: 1 }], prop: "#2e2648", ring: "#f2c14e" },
 };
@@ -397,6 +401,7 @@ function drawFloats(K) {
   g.globalAlpha = 1;
 }
 function floatText(uid, s, cls) {
+  if (S && S.settings.dmgNums === false && /^\+?[\d,.]+[KM]?$/.test(s)) return;
   const recent = BT.floats.filter(f => f.uid === uid && BT.clock - f.t0 < 650).length;
   BT.floats.push({ uid, s, cls, t0: BT.clock, dur: cls === "crit" ? 1300 : 1100, row: recent * 1.25, dx: (recent % 2 ? 1 : -1) * Math.min(recent, 3) * 10 });
 }
@@ -416,7 +421,7 @@ function frame(now) {
   if (BT.orbit) { t.yaw += dt * .00028; }
   const kk = 1 - Math.exp(-dt / 1000 * BT.camK);
   for (const key of ["tx", "ty", "tz", "dist", "fov", "roll", "pitch", "yaw"]) c[key] += (t[key] - c[key]) * kk;
-  BT.shake *= Math.exp(-dt / 1000 * 7); if (BT.shake < .3) BT.shake = 0;
+  BT.shake *= Math.exp(-dt / 1000 * 7); if (BT.shake < .3 || (S && S.settings.shake === false)) BT.shake = 0;
   BT.shx = (R() - .5) * BT.shake; BT.shy = (R() - .5) * BT.shake;
   // bars ease
   for (const vu of BT.vus.values()) { vu.lag += (vu.hp - vu.lag) * (1 - Math.exp(-dt / 350)); vu.tm += (vu.tmT - vu.tm) * (1 - Math.exp(-dt / 120)); }

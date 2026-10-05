@@ -11,11 +11,16 @@ const { chromium } = require('playwright');
   const errs = [];
   page.on('pageerror', e => errs.push('PAGEERR ' + e.message + ' ' + (e.stack || '').split('\n').slice(1, 3).join(' | ')));
   page.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
+  page.on('requestfailed', r => { if (!/ERR_ABORTED/.test(r.failure() && r.failure().errorText)) errs.push('MISSING ' + r.url()); });
   await page.route(/fonts\.(googleapis|gstatic)\.com/, r => r.fulfill({ status: 200, body: '' }));
   await page.goto(PAGE);
   await page.waitForTimeout(700);
   const shot = async n => { await page.screenshot({ path: SH + n + '.png' }); };
   const tap = async (sel, w = 350) => { await page.click(sel, { force: true }); await page.waitForTimeout(w); };
+  // title screen -> login panel -> play as Guest
+  await page.waitForSelector('#tTouch', { timeout: 8000 }); await shot('88_title');
+  await tap('#tTouch', 500); await shot('89_login');
+  await tap('#tGuest', 900);
   await tap('[data-act=introGo]'); await tap('[data-act=startNode]', 500); await tap('#dSkip', 400);
   await page.evaluate(() => closeModal());
   await shot('90_home_map');

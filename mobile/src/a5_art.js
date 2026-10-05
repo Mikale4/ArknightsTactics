@@ -761,5 +761,17 @@ function figArt(id, f) {
   try { fullURL = full.cv.toDataURL("image/png"); headURL = head.cv.toDataURL("image/png"); } catch (e) { /* canvas export blocked */ }
   return (EART[id] = { full: fullURL, head: headURL });
 }
-const enemyArt = key => figArt("e:" + key, ENEMY[key].fig);
+// real Arknights art where it exists (mobile/tools/fetch_art.py writes these lists), drawn figures otherwise
+const ART_STORY = new Set("ace alina allerdale ascalon baird blacksnake cador caster catherine chen closure clovisia crownslayer damazti eblana faust frostnova golding hamilton herd hoederer infected jane kaltsit kashchey mandragora manfred mephisto misha nezzsalem outcast patriot quisartustaj revenant riguard rioperator rosmontis sanguinarch sarkazmerc scout shield shining skullshatterer soldier soldier2 steamknight talulah talulah_late theresa theresis w w_late wei windermere yetisquad".split(" ")); // @art-story
+const ART_ENEMY = new Set("acidslug caster centurion crossbow crownslayer emperorsblade enraged faust frostnova gshield gsniper guerrilla herald hound mephisto mortar patriot possessed queenslug sarkaz sarkazcaster shield siegebreaker singer skullshatterer slug soldier specops striker talulah thrower vartillery vbloodheir vchaincaster vchimera vdamazti vdrone vdubcaster vdubinfantry vevocator vheirbearer vmandragora vmanfred vrevenant vroyalguard vsanguinarch vsoul vspy vsteamknight vtheresa vtrilby vwitherer w wraith yeti".split(" ")); // @art-enemy
+const ENEMY_PORTRAIT = {"wraith":"yetisquad","sarkaz":"sarkazmerc","centurion":"sarkazmerc","vmandragora":"mandragora","vmanfred":"manfred","vsteamknight":"steamknight","vdamazti":"damazti","vsanguinarch":"sanguinarch","vrevenant":"revenant","vtheresa":"theresa","singer":"mephisto","sarkazcaster":"sarkazmerc","gshield":"shield"}; // @art-enemy-portrait
+const storyArtURL = key => ASSET + "story/" + key + ".webp";
+const enemyPortrait = key => { const k = ENEMY[key].portrait || ENEMY_PORTRAIT[key] || key; return ART_STORY.has(k) ? storyArtURL(k) : null; };
+const EART2 = {};
+const enemyArt = key => EART2[key] || (EART2[key] = (() => {
+  const fig = figArt("e:" + key, ENEMY[key].fig);
+  return { full: enemyPortrait(key) || fig.full, head: ART_ENEMY.has(key) ? ASSET + "enemies/" + key + ".webp" : fig.head };
+})());
+// a story speaker's picture: operator art, their own portrait, or their enemy art
+const speakerArt = sp => sp.op ? spriteURL(OPS[sp.op]) : sp.art && ART_STORY.has(sp.art) ? storyArtURL(sp.art) : sp.en && ENEMY[sp.en] ? enemyArt(sp.en).full : null;
 const opArt = key => figArt("o:" + key, OPS[key].fig);

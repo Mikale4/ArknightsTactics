@@ -1,8 +1,10 @@
 
 // =====================================================================
 //  OPERATOR KITS
-//  Skill format follows the original game: {slot, name, cd, target, hits, mult, ignoreDef, effects[], desc}
-//  target: enemy | aoe_enemies | ally_single | self | team | aoe_allies
+//  Every operator uses their real Arknights skills and talents (REAL, a3b_real.js),
+//  translated to turn-based rules (format: mobile/tools/kits/KIT_FORMAT.md).
+//  Slot 0 is the basic attack, which comes from the operator's branch trait (BRANCH);
+//  slots 1-3 are the real S1-S3, unlocked at Elite 0/1/2.
 // =====================================================================
 const CLASS_BASE = {
   Vanguard:   { hp: 9500, atk: 720, def: 520, spd: 114 },
@@ -22,210 +24,122 @@ const CLASS_LEADER = {
   Caster: { stat: "ATK", amount: .24, scope: "Element" }, Medic: { stat: "RES", amount: .3, scope: "All" },
   Supporter: { stat: "ACC", amount: .3, scope: "All" }, Specialist: { stat: "CD", amount: .3, scope: "Element" },
 };
-
-// The original game's twelve hand-built kits (Ch'en is omitted: no art in the asset pack).
+// hand-picked leader skills and recommended module sets
 const FEATURED = {
-  Exusiai: { stats: { hp: 9000, atk: 820, def: 420, spd: 118 }, leader: { stat: "ATK", amount: .24, scope: "Element", element: "Wind" }, runes: ["Swift", "Blade"], skills: [
-    { slot: 1, name: "Angel's Volley", cd: 0, target: "enemy", hits: 3, mult: 1.3, effects: [{ on: "target", type: "atkbar-", chance: .5, amount: .1 }], desc: "3 hits (130% ATK). Each hit has a 50% chance to reduce the target's turn meter by 10%." },
-    { slot: 2, name: "Reload", cd: 3, target: "self", effects: [{ on: "self", type: "buff", what: "CRIT_RATE_UP", turns: 2 }, { on: "self", type: "buff", what: "ATK_UP", turns: 2 }, { on: "self", type: "atkbar+", amount: .3 }], desc: "Gain ATK Up and Crit Rate Up (2T) and 30% turn meter." },
-    { slot: 3, name: "Heavenly Barrage", cd: 4, target: "enemy", hits: 5, mult: .7, ignoreDef: .2, effects: [{ on: "self", type: "atkbar+", amount: .05, perCrit: true }], desc: "5 hits (70% ATK), ignoring 20% DEF. Gain 5% turn meter per critical hit." }] },
-  SilverAsh: { stats: { hp: 9800, atk: 750, def: 550, spd: 112 }, leader: { stat: "CR", amount: .24, scope: "All" }, runes: ["Violent", "Will"], skills: [
-    { slot: 1, name: "Falcon Slash", cd: 0, target: "enemy", hits: 1, mult: 3.6, effects: [{ on: "target", type: "debuff", what: "DEF_BREAK", chance: .5, turns: 2 }], desc: "360% ATK. 50% chance to inflict DEF Break (2T)." },
-    { slot: 2, name: "Eagle Eye", cd: 3, target: "self", effects: [{ on: "self", type: "buff", what: "ATK_UP", turns: 2 }, { on: "self", type: "buff", what: "CRIT_RATE_UP", turns: 2 }, { on: "self", type: "buff", what: "COUNTER", turns: 2 }], desc: "Gain ATK Up, Crit Rate Up and Counter (2T)." },
-    { slot: 3, name: "Truesilver Slash", cd: 4, target: "aoe_enemies", hits: 3, mult: 1.1, effects: [{ on: "target", type: "strip", amount: 2, chance: 1 }, { on: "target", type: "debuff", what: "DEF_BREAK", chance: .6, turns: 2 }], desc: "Hits all enemies 3 times (110% each), removes 2 buffs, then 60% chance of DEF Break (2T)." }] },
-  Surtr: { stats: { hp: 9200, atk: 880, def: 400, spd: 109 }, leader: { stat: "ATK", amount: .33, scope: "Element", element: "Fire" }, runes: ["Rage", "Will"],
-    passives: [{ id: "REVIVE_ONCE", amount: .3, buff: "INVINCIBLE", turns: 1, text: "Last Embers: revives once at 30% HP and gains Invincible (1T)." }], skills: [
-    { slot: 1, name: "Ember Edge", cd: 0, target: "enemy", hits: 1, mult: 3.4, effects: [{ on: "target", type: "debuff", what: "DOT", chance: .3, turns: 2 }, { on: "self", type: "healPct", chance: .3, amount: .15 }], desc: "340% ATK. 30% chance to Burn (2T) and 30% chance to heal 15% HP." },
-    { slot: 2, name: "Incinerate", cd: 3, target: "self", effects: [{ on: "self", type: "buff", what: "IMMUNITY", turns: 1 }, { on: "self", type: "buff", what: "HOT", turns: 2 }, { on: "self", type: "atkbar+", amount: .2 }], desc: "Gain Immunity (1T), Heal over Time (2T) and 20% turn meter." },
-    { slot: 3, name: "Eternal Flame", cd: 4, target: "enemy", hits: 1, mult: 4.0, ignoreDef: .3, effects: [{ on: "self", type: "buff", what: "INVINCIBLE", turns: 1, onKill: true }, { on: "self", type: "resetSelfCD", skill: 3, onKill: true }], desc: "400% ATK, ignoring 30% DEF. On a kill: gain Invincible (1T) and reset this skill." }] },
-  Saria: { stats: { hp: 10500, atk: 650, def: 650, spd: 104 }, leader: { stat: "HP", amount: .33, scope: "All" }, runes: ["Energy", "Shield"], skills: [
-    { slot: 1, name: "Restraint", cd: 0, target: "enemy", hits: 1, mult: 2.6, effects: [{ on: "target", type: "debuff", what: "PROVOKE", chance: .5, turns: 1 }], desc: "260% ATK. 50% chance to Provoke (1T)." },
-    { slot: 2, name: "Calcification", cd: 3, target: "aoe_allies", effects: [{ on: "ally", type: "healFlatCasterHP", amount: .2 }, { on: "ally", type: "buff", what: "DEF_UP", turns: 2 }], desc: "Heal all allies for 20% of Saria's Max HP and grant DEF Up (2T)." },
-    { slot: 3, name: "Order Restoration", cd: 4, target: "team", effects: [{ on: "ally", type: "cleanse", amount: 2 }, { on: "ally", type: "buff", what: "IMMUNITY", turns: 1 }, { on: "ally", type: "shieldCasterHP", amount: .2, turns: 2 }], desc: "Cleanse 2 debuffs and grant Immunity (1T) and a Shield (20% of Saria's HP, 2T) to all allies." }] },
-  Ifrit: { stats: { hp: 8800, atk: 840, def: 480, spd: 106 }, leader: { stat: "ACC", amount: .4, scope: "All" }, runes: ["Focus", "Despair"], skills: [
-    { slot: 1, name: "Heat Ray", cd: 0, target: "enemy", hits: 1, mult: 3.3, effects: [{ on: "target", type: "debuff", what: "BRAND", chance: .5, turns: 2 }], desc: "330% ATK. 50% chance to Brand (2T)." },
-    { slot: 2, name: "Toxic Flame", cd: 3, target: "aoe_enemies", hits: 2, mult: 1.5, effects: [{ on: "target", type: "debuff", what: "DOT", chance: .5, turns: 2 }], desc: "Hits all enemies twice (150% each). Each hit has a 50% chance to Burn (2T)." },
-    { slot: 3, name: "Scorched Earth", cd: 4, target: "aoe_enemies", hits: 1, mult: 3.8, effects: [{ on: "target", type: "atkbar-", amount: .2 }, { on: "target", type: "debuff", what: "HEAL_BLOCK", chance: 1, turns: 2 }], desc: "Hits all enemies (380% ATK), reduces turn meter by 20% and inflicts Heal Block (2T)." }] },
-  Skadi: { stats: { hp: 8700, atk: 860, def: 450, spd: 115 }, leader: { stat: "CD", amount: .33, scope: "Element", element: "Water" }, runes: ["Fatal", "Blade"], skills: [
-    { slot: 1, name: "Tidal Rush", cd: 0, target: "enemy", hits: 2, mult: 1.4, effects: [{ on: "target", type: "debuff", what: "SLOW", chance: .4, turns: 2 }], desc: "2 hits (140% each). 40% chance to Slow (2T)." },
-    { slot: 2, name: "Deep Hunt", cd: 3, target: "self", effects: [{ on: "self", type: "buff", what: "ATK_UP", turns: 2 }, { on: "self", type: "buff", what: "CRIT_RATE_UP", turns: 2 }, { on: "self", type: "atkbar+", amount: .2 }], desc: "Gain ATK Up and Crit Rate Up (2T) and 20% turn meter." },
-    { slot: 3, name: "Abyssal Strike", cd: 4, target: "enemy", hits: 1, mult: 4.2, effects: [{ on: "target", type: "bonusPerDebuff", cap: .5, per: .1 }], desc: "420% ATK. +10% damage per debuff on the target (up to +50%)." }] },
-  Nightingale: { stats: { hp: 10200, atk: 620, def: 630, spd: 112 }, leader: { stat: "RES", amount: .41, scope: "All" }, runes: ["Swift", "Will"], skills: [
-    { slot: 1, name: "Hymn", cd: 0, target: "enemy", hits: 1, mult: 2.2, effects: [{ on: "target", type: "debuff", what: "GLANCING", chance: .5, turns: 2 }], desc: "220% ATK. 50% chance to inflict Glancing (2T)." },
-    { slot: 2, name: "Purifying Choir", cd: 3, target: "ally_single", effects: [{ on: "ally", type: "cleanse", amount: 2 }, { on: "ally", type: "healPctTarget", amount: .25 }], desc: "Cleanse 2 debuffs from an ally and heal them for 25% of their Max HP." },
-    { slot: 3, name: "Sanctuary", cd: 5, target: "team", effects: [{ on: "ally", type: "reviveOne", amount: .3 }, { on: "ally", type: "buff", what: "IMMUNITY", turns: 2 }, { on: "ally", type: "buff", what: "HOT", turns: 2 }, { on: "ally", type: "shieldCasterHP", amount: .15, turns: 2 }], desc: "Revive one fallen ally at 30% HP, then grant the team Immunity and Heal over Time (2T) and a Shield (15% of Nightingale's HP)." }] },
-  Angelina: { stats: { hp: 9300, atk: 700, def: 520, spd: 120 }, leader: { stat: "SPD", amount: .24, scope: "All" }, runes: ["Despair", "Focus"], skills: [
-    { slot: 1, name: "Gravity Well", cd: 0, target: "enemy", hits: 1, mult: 2.6, effects: [{ on: "target", type: "atkbar-", chance: .5, amount: .15 }], desc: "260% ATK. 50% chance to reduce turn meter by 15%." },
-    { slot: 2, name: "Time Dilation", cd: 3, target: "team", effects: [{ on: "ally", type: "buff", what: "SPD_UP", turns: 2 }, { on: "self", type: "atkbar+", amount: .25 }], desc: "Grant the team SPD Up (2T). Angelina gains 25% turn meter." },
-    { slot: 3, name: "Chrono Collapse", cd: 4, target: "aoe_enemies", hits: 1, mult: 3.2, effects: [{ on: "target", type: "debuff", what: "SLOW", chance: .6, turns: 2 }, { on: "target", type: "atkbar-", amount: .2 }], desc: "Hits all enemies (320% ATK). 60% chance to Slow (2T) and reduces turn meter by 20%." }] },
-  Lappland: { stats: { hp: 9100, atk: 780, def: 500, spd: 115 }, leader: { stat: "ATK", amount: .33, scope: "Element", element: "Dark" }, runes: ["Revenge", "Will"], skills: [
-    { slot: 1, name: "Rending", cd: 0, target: "enemy", hits: 2, mult: 1.5, effects: [{ on: "target", type: "debuff", what: "HEAL_BLOCK", chance: .5, turns: 2 }], desc: "2 hits (150% each). 50% chance to inflict Heal Block (2T)." },
-    { slot: 2, name: "Savage Lunge", cd: 3, target: "aoe_enemies", hits: 1, mult: 2.2, effects: [{ on: "target", type: "debuff", what: "SILENCE", chance: .6, turns: 1 }], desc: "Hits all enemies (220% ATK). 60% chance to Silence (1T)." },
-    { slot: 3, name: "Lupine Execution", cd: 4, target: "enemy", hits: 1, mult: 4.0, effects: [{ on: "self", type: "bonusIf", cond: "HEAL_BLOCK", bonusDmg: .3 }], desc: "400% ATK. +30% damage if the target has Heal Block." }] },
-  Blaze: { stats: { hp: 9900, atk: 740, def: 570, spd: 111 }, leader: { stat: "DEF", amount: .33, scope: "Element", element: "Fire" }, runes: ["Guard", "Revenge"], skills: [
-    { slot: 1, name: "Burning Drive", cd: 0, target: "enemy", hits: 1, mult: 3.0, effects: [{ on: "target", type: "debuff", what: "ATK_DOWN", chance: .5, turns: 2 }], desc: "300% ATK. 50% chance to inflict ATK Down (2T)." },
-    { slot: 2, name: "Overheat", cd: 3, target: "self", effects: [{ on: "self", type: "buff", what: "ATK_UP", turns: 2 }, { on: "self", type: "shieldCasterHP", amount: .2, turns: 2 }, { on: "self", type: "buff", what: "COUNTER", turns: 2 }], desc: "Gain ATK Up (2T), a Shield (20% HP, 2T) and Counter (2T)." },
-    { slot: 3, name: "Flame Cyclone", cd: 4, target: "aoe_enemies", hits: 1, mult: 3.4, effects: [{ on: "target", type: "debuff", what: "DEF_BREAK", chance: .5, turns: 2 }], desc: "Hits all enemies (340% ATK). 50% chance of DEF Break (2T)." }] },
-  Schwarz: { stats: { hp: 8600, atk: 900, def: 430, spd: 112 }, leader: { stat: "CR", amount: .24, scope: "Element", element: "Dark" }, runes: ["Fatal", "Rage"], skills: [
-    { slot: 1, name: "Piercing Shot", cd: 0, target: "enemy", hits: 1, mult: 3.5, effects: [{ on: "target", type: "debuff", what: "SLOW", chance: .4, turns: 2 }], desc: "350% ATK. 40% chance to Slow (2T)." },
-    { slot: 2, name: "Target Weakness", cd: 3, target: "enemy", hits: 1, mult: 2.6, effects: [{ on: "target", type: "debuff", what: "BRAND", chance: 1, turns: 2 }, { on: "target", type: "debuff", what: "DEF_BREAK", chance: .5, turns: 2 }], desc: "260% ATK. Always Brands (2T); 50% chance of DEF Break (2T)." },
-    { slot: 3, name: "Fatal Shot", cd: 4, target: "enemy", hits: 1, mult: 5.0, ignoreDef: .25, effects: [{ on: "self", type: "bonusIf", cond: "BRAND", bonusDmg: .3 }], desc: "500% ATK, ignoring 25% DEF. +30% damage if the target is Branded." }] },
-
-  // ---- new hand-built kits ----
-  Amiya: { stats: { hp: 9000, atk: 860, def: 460, spd: 113 }, leader: { stat: "ATK", amount: .2, scope: "All" }, runes: ["Focus", "Rage"], skills: [
-    { slot: 1, name: "Arts Bolt", cd: 0, target: "enemy", hits: 2, mult: 1.6, effects: [{ on: "target", type: "debuff", what: "DEF_BREAK", chance: .35, turns: 2 }], desc: "2 hits (160% each). 35% chance per hit to inflict DEF Break (2T)." },
-    { slot: 2, name: "Spirit Burst", cd: 3, target: "aoe_enemies", hits: 1, mult: 2.4, effects: [{ on: "target", type: "atkbar-", amount: .15 }], desc: "Hits all enemies (240% ATK) and reduces their turn meter by 15%." },
-    { slot: 3, name: "Chimera", cd: 5, target: "enemy", hits: 6, mult: .9, ignoreDef: 1, effects: [{ on: "self", type: "atkbar+", amount: .05, perCrit: true }], desc: "6 hits (90% each) that ignore DEF entirely. Gain 5% turn meter per critical hit." }] },
-  Texas: { stats: { hp: 9400, atk: 760, def: 500, spd: 124 }, leader: { stat: "SPD", amount: .2, scope: "All" }, runes: ["Swift", "Violent"], skills: [
-    { slot: 1, name: "Swordrain Cut", cd: 0, target: "enemy", hits: 2, mult: 1.5, effects: [{ on: "target", type: "debuff", what: "STUN", chance: .15, turns: 1 }], desc: "2 hits (150% each). 15% chance per hit to Stun (1T)." },
-    { slot: 2, name: "Tactical Delivery", cd: 4, target: "team", effects: [{ on: "ally", type: "atkbar+", amount: .2 }], desc: "All allies gain 20% turn meter." },
-    { slot: 3, name: "Sword Rain", cd: 4, target: "aoe_enemies", hits: 2, mult: 1.6, effects: [{ on: "target", type: "debuff", what: "STUN", chance: .35, turns: 1 }], desc: "Hits all enemies twice (160% each). 35% chance per hit to Stun (1T)." }] },
-  Hoshiguma: { stats: { hp: 11800, atk: 640, def: 720, spd: 102 }, leader: { stat: "DEF", amount: .3, scope: "All" }, runes: ["Guard", "Revenge"], skills: [
-    { slot: 1, name: "Oni Guard", cd: 0, target: "enemy", hits: 1, mult: 2.6, effects: [{ on: "self", type: "atkbar+", amount: .1 }], desc: "260% ATK. Gain 10% turn meter." },
-    { slot: 2, name: "Thorny Shield", cd: 3, target: "self", effects: [{ on: "self", type: "buff", what: "TAUNT", turns: 2 }, { on: "self", type: "buff", what: "COUNTER", turns: 2 }, { on: "self", type: "buff", what: "DEF_UP", turns: 2 }], desc: "Gain Taunt, Counter and DEF Up (2T)." },
-    { slot: 3, name: "Saga of the Oni", cd: 4, target: "team", effects: [{ on: "ally", type: "shieldCasterHP", amount: .22, turns: 2 }, { on: "ally", type: "buff", what: "DEF_UP", turns: 2 }], desc: "Grant all allies a Shield (22% of Hoshiguma's HP) and DEF Up (2T)." }] },
-  Eyjafjalla: { stats: { hp: 8600, atk: 900, def: 450, spd: 108 }, leader: { stat: "ATK", amount: .33, scope: "Element", element: "Fire" }, runes: ["Fatal", "Focus"], skills: [
-    { slot: 1, name: "Magma Shot", cd: 0, target: "enemy", hits: 1, mult: 3.4, effects: [{ on: "target", type: "debuff", what: "DOT", chance: .5, turns: 2 }], desc: "340% ATK. 50% chance to Burn (2T)." },
-    { slot: 2, name: "Ignition", cd: 3, target: "self", effects: [{ on: "self", type: "buff", what: "ATK_UP", turns: 2 }, { on: "self", type: "atkbar+", amount: .35 }], desc: "Gain ATK Up (2T) and 35% turn meter." },
-    { slot: 3, name: "Volcano", cd: 5, target: "aoe_enemies", hits: 3, mult: 1.4, effects: [{ on: "target", type: "debuff", what: "DOT", chance: .45, turns: 2 }, { on: "target", type: "bonusPerDebuff", per: .08, cap: .4 }], desc: "Hits all enemies 3 times (140% each), 45% chance per hit to Burn. +8% damage per debuff on the target." }] },
-  Mostima: { stats: { hp: 8800, atk: 830, def: 470, spd: 111 }, leader: { stat: "SPD", amount: .19, scope: "All" }, runes: ["Swift", "Despair"], skills: [
-    { slot: 1, name: "Key of Chronology", cd: 0, target: "enemy", hits: 1, mult: 3.0, effects: [{ on: "target", type: "atkbar-", chance: .6, amount: .15 }], desc: "300% ATK. 60% chance to reduce turn meter by 15%." },
-    { slot: 2, name: "Lock of Control", cd: 3, target: "aoe_enemies", hits: 1, mult: 2.0, effects: [{ on: "target", type: "debuff", what: "SLOW", chance: .7, turns: 2 }], desc: "Hits all enemies (200% ATK). 70% chance to Slow (2T)." },
-    { slot: 3, name: "Fallen Halo", cd: 5, target: "aoe_enemies", hits: 1, mult: 3.4, effects: [{ on: "target", type: "debuff", what: "STUN", chance: .4, turns: 1 }, { on: "target", type: "atkbar-", amount: .25 }], desc: "Hits all enemies (340% ATK), reduces turn meter by 25%, 40% chance to Stun (1T)." }] },
-  Thorns: { stats: { hp: 9600, atk: 800, def: 520, spd: 110 }, leader: { stat: "HP", amount: .25, scope: "All" }, runes: ["Revenge", "Energy"], passives: [{ id: "LIFESTEAL", amount: .15, text: "Heals for 15% of damage dealt." }], skills: [
-    { slot: 1, name: "Toxic Blade", cd: 0, target: "enemy", hits: 1, mult: 3.1, effects: [{ on: "target", type: "debuff", what: "DOT", chance: .6, turns: 2 }], desc: "310% ATK. 60% chance to Burn (2T)." },
-    { slot: 2, name: "Defensive Stance", cd: 3, target: "self", effects: [{ on: "self", type: "buff", what: "COUNTER", turns: 2 }, { on: "self", type: "healPct", amount: .2 }], desc: "Gain Counter (2T) and heal 20% HP." },
-    { slot: 3, name: "Destreza", cd: 4, target: "enemy", hits: 3, mult: 1.5, effects: [{ on: "target", type: "bonusIf", cond: "DOT", bonusDmg: .35 }], desc: "3 hits (150% each). +35% damage against Burning targets." }] },
-  Ptilopsis: { stats: { hp: 9800, atk: 600, def: 600, spd: 116 }, leader: { stat: "RES", amount: .3, scope: "All" }, runes: ["Swift", "Energy"], skills: [
-    { slot: 1, name: "Alarm Pulse", cd: 0, target: "enemy", hits: 1, mult: 2.3, effects: [{ on: "self", type: "atkbar+", amount: .1 }], desc: "230% ATK. Gain 10% turn meter." },
-    { slot: 2, name: "Night Shift", cd: 2, target: "ally_single", effects: [{ on: "ally", type: "healPctTarget", amount: .3 }, { on: "ally", type: "buff", what: "HOT", turns: 2 }], desc: "Heal an ally for 30% of their Max HP and grant Heal over Time (2T)." },
-    { slot: 3, name: "Dawn Chorus", cd: 4, target: "aoe_allies", effects: [{ on: "ally", type: "healFlatCasterHP", amount: .3 }, { on: "ally", type: "cleanse", amount: 1 }, { on: "ally", type: "atkbar+", amount: .1 }], desc: "Heal all allies for 30% of Ptilopsis's Max HP, cleanse 1 debuff and grant 10% turn meter." }] },
-  Specter: { stats: { hp: 10000, atk: 790, def: 500, spd: 108 }, leader: { stat: "HP", amount: .2, scope: "Element", element: "Dark" }, runes: ["Energy", "Rage"],
-    passives: [{ id: "REVIVE_ONCE", amount: .25, buff: "INVINCIBLE", turns: 1, text: "Unholy Vow: revives once at 25% HP with Invincible (1T)." }], skills: [
-    { slot: 1, name: "Chainsaw Swing", cd: 0, target: "enemy", hits: 1, mult: 3.0, effects: [{ on: "target", type: "debuff", what: "BRAND", chance: .3, turns: 2 }], desc: "300% ATK. 30% chance to Brand (2T)." },
-    { slot: 2, name: "Bone Fracture", cd: 3, target: "aoe_enemies", hits: 1, mult: 2.4, effects: [{ on: "target", type: "debuff", what: "DEF_BREAK", chance: .5, turns: 2 }], desc: "Hits all enemies (240% ATK). 50% chance of DEF Break (2T)." },
-    { slot: 3, name: "Undying Will", cd: 5, target: "self", effects: [{ on: "self", type: "buff", what: "INVINCIBLE", turns: 1 }, { on: "self", type: "buff", what: "ATK_UP", turns: 2 }, { on: "self", type: "atkbar+", amount: .5 }], desc: "Gain Invincible (1T), ATK Up (2T) and 50% turn meter." }] },
-  Nearl: { stats: { hp: 10800, atk: 660, def: 680, spd: 105 }, leader: { stat: "HP", amount: .25, scope: "All" }, runes: ["Energy", "Will"], skills: [
-    { slot: 1, name: "Shield Bash", cd: 0, target: "enemy", hits: 1, mult: 2.6, effects: [{ on: "target", type: "debuff", what: "ATK_DOWN", chance: .4, turns: 2 }], desc: "260% ATK. 40% chance to inflict ATK Down (2T)." },
-    { slot: 2, name: "First Aid", cd: 3, target: "aoe_allies", effects: [{ on: "ally", type: "healFlatCasterHP", amount: .18 }], desc: "Heal all allies for 18% of Nearl's Max HP." },
-    { slot: 3, name: "Kazimierz Knight", cd: 4, target: "team", effects: [{ on: "ally", type: "buff", what: "DEF_UP", turns: 2 }, { on: "ally", type: "buff", what: "IMMUNITY", turns: 1 }, { on: "self", type: "buff", what: "TAUNT", turns: 2 }], desc: "Team gains DEF Up (2T) and Immunity (1T). Nearl gains Taunt (2T)." }] },
-  Mudrock: { stats: { hp: 11500, atk: 700, def: 700, spd: 101 }, leader: { stat: "DEF", amount: .3, scope: "Element", element: "Fire" }, runes: ["Shield", "Guard"], skills: [
-    { slot: 1, name: "Earthen Hammer", cd: 0, target: "enemy", hits: 1, mult: 2.8, effects: [{ on: "target", type: "debuff", what: "STUN", chance: .2, turns: 1 }], desc: "280% ATK. 20% chance to Stun (1T)." },
-    { slot: 2, name: "Rock Armor", cd: 3, target: "self", effects: [{ on: "self", type: "shieldCasterHP", amount: .3, turns: 2 }, { on: "self", type: "buff", what: "TAUNT", turns: 2 }], desc: "Gain a Shield (30% HP, 2T) and Taunt (2T)." },
-    { slot: 3, name: "Bloodline of Desecrated Earth", cd: 5, target: "aoe_enemies", hits: 2, mult: 1.8, effects: [{ on: "target", type: "debuff", what: "STUN", chance: .35, turns: 1 }], desc: "Hits all enemies twice (180% each). 35% chance per hit to Stun (1T)." }] },
-  Suzuran: { stats: { hp: 9300, atk: 640, def: 540, spd: 118 }, leader: { stat: "RES", amount: .35, scope: "All" }, runes: ["Swift", "Will"], skills: [
-    { slot: 1, name: "Foxfire", cd: 0, target: "enemy", hits: 1, mult: 2.4, effects: [{ on: "target", type: "debuff", what: "SLOW", chance: .5, turns: 2 }], desc: "240% ATK. 50% chance to Slow (2T)." },
-    { slot: 2, name: "Small Blessing", cd: 3, target: "team", effects: [{ on: "ally", type: "cleanse", amount: 1 }, { on: "ally", type: "buff", what: "HOT", turns: 2 }], desc: "Cleanse 1 debuff from all allies and grant Heal over Time (2T)." },
-    { slot: 3, name: "Lullabye", cd: 5, target: "aoe_enemies", hits: 1, mult: 2.4, effects: [{ on: "target", type: "debuff", what: "SLOW", chance: .8, turns: 2 }, { on: "target", type: "debuff", what: "STUN", chance: .35, turns: 1 }], desc: "Hits all enemies (240% ATK). 80% chance to Slow (2T) and 35% chance to Stun (1T)." }] },
-  Mountain: { stats: { hp: 10400, atk: 760, def: 560, spd: 113 }, leader: { stat: "HP", amount: .2, scope: "All" }, runes: ["Energy", "Revenge"], passives: [{ id: "LIFESTEAL", amount: .2, text: "Heals for 20% of damage dealt." }], skills: [
-    { slot: 1, name: "Fist Combo", cd: 0, target: "enemy", hits: 3, mult: 1.1, effects: [{ on: "target", type: "atkbar-", chance: .2, amount: .05 }], desc: "3 hits (110% each). 20% chance per hit to reduce turn meter by 5%." },
-    { slot: 2, name: "Steady Breathing", cd: 3, target: "self", effects: [{ on: "self", type: "buff", what: "DEF_UP", turns: 2 }, { on: "self", type: "buff", what: "COUNTER", turns: 2 }], desc: "Gain DEF Up and Counter (2T)." },
-    { slot: 3, name: "Earth-Shaker", cd: 4, target: "aoe_enemies", hits: 2, mult: 1.7, effects: [{ on: "target", type: "debuff", what: "DEF_BREAK", chance: .4, turns: 2 }], desc: "Hits all enemies twice (170% each). 40% chance per hit of DEF Break (2T)." }] },
-  Bagpipe: { stats: { hp: 9700, atk: 780, def: 520, spd: 115 }, leader: { stat: "ATK", amount: .2, scope: "All" }, runes: ["Swift", "Fatal"], passives: [{ id: "TEAM_ATB_ON_KILL", amount: .1, text: "Tactical Uplift: on a kill, all allies gain 10% turn meter." }], skills: [
-    { slot: 1, name: "Lance Thrust", cd: 0, target: "enemy", hits: 2, mult: 1.5, effects: [], desc: "2 hits (150% each)." },
-    { slot: 2, name: "Rally Formation", cd: 4, target: "team", effects: [{ on: "ally", type: "atkbar+", amount: .2 }, { on: "ally", type: "buff", what: "ATK_UP", turns: 2 }], desc: "All allies gain 20% turn meter and ATK Up (2T)." },
-    { slot: 3, name: "High-Impact Assault", cd: 4, target: "enemy", hits: 3, mult: 1.6, ignoreDef: .15, effects: [{ on: "target", type: "debuff", what: "DEF_BREAK", chance: .5, turns: 2 }], desc: "3 hits (160% each), ignoring 15% DEF. 50% chance per hit of DEF Break (2T)." }] },
-  Ash: { stats: { hp: 8600, atk: 880, def: 440, spd: 115 }, leader: { stat: "CR", amount: .24, scope: "All" }, runes: ["Blade", "Rage"], skills: [
-    { slot: 1, name: "Assault Fire", cd: 0, target: "enemy", hits: 3, mult: 1.2, effects: [], desc: "3 hits (120% each)." },
-    { slot: 2, name: "Flashbang", cd: 4, target: "aoe_enemies", hits: 1, mult: 1.6, effects: [{ on: "target", type: "debuff", what: "STUN", chance: .5, turns: 1 }], desc: "Hits all enemies (160% ATK). 50% chance to Stun (1T)." },
-    { slot: 3, name: "Breach Assault", cd: 4, target: "enemy", hits: 8, mult: .6, effects: [{ on: "self", type: "bonusIf", cond: "STUN", bonusDmg: .6, bonusCrit: .3 }], desc: "8 hits (60% each). Against Stunned targets: +60% damage and +30% Crit Rate." }] },
-  Kroos: { stats: { hp: 8200, atk: 820, def: 420, spd: 112 }, runes: ["Fatal", "Blade"], skills: [
-    { slot: 1, name: "Double Tap", cd: 0, target: "enemy", hits: 2, mult: 1.6, effects: [], desc: "2 hits (160% each)." },
-    { slot: 2, name: "Steady Aim", cd: 3, target: "self", effects: [{ on: "self", type: "buff", what: "CRIT_RATE_UP", turns: 2 }, { on: "self", type: "atkbar+", amount: .25 }], desc: "Gain Crit Rate Up (2T) and 25% turn meter." },
-    { slot: 3, name: "Hailstorm", cd: 4, target: "aoe_enemies", hits: 2, mult: 1.4, effects: [], desc: "Hits all enemies twice (140% each)." }] },
-  Melantha: { stats: { hp: 9000, atk: 860, def: 460, spd: 110 }, runes: ["Fatal", "Energy"], skills: [
-    { slot: 1, name: "Drain Cut", cd: 0, target: "enemy", hits: 1, mult: 3.2, effects: [{ on: "self", type: "healPct", chance: .4, amount: .1 }], desc: "320% ATK. 40% chance to heal 10% HP." },
-    { slot: 2, name: "Blood Focus", cd: 3, target: "self", effects: [{ on: "self", type: "buff", what: "ATK_UP", turns: 2 }], desc: "Gain ATK Up (2T)." },
-    { slot: 3, name: "Crimson Edge", cd: 4, target: "enemy", hits: 1, mult: 4.4, effects: [{ on: "self", type: "bonusPerDebuff", per: .1, cap: .3 }], desc: "440% ATK. +10% damage per debuff on the target (up to +30%)." }] },
-  Fang: { stats: { hp: 9400, atk: 700, def: 520, spd: 118 }, runes: ["Swift", "Energy"], skills: [
-    { slot: 1, name: "Spear Charge", cd: 0, target: "enemy", hits: 1, mult: 2.8, effects: [{ on: "self", type: "atkbar+", amount: .1 }], desc: "280% ATK. Gain 10% turn meter." },
-    { slot: 2, name: "Spur", cd: 4, target: "team", effects: [{ on: "ally", type: "atkbar+", amount: .15 }], desc: "All allies gain 15% turn meter." },
-    { slot: 3, name: "Charging Mode", cd: 4, target: "enemy", hits: 2, mult: 2.0, effects: [{ on: "target", type: "atkbar-", amount: .2 }], desc: "2 hits (200% each). Reduces the target's turn meter by 20%." }] },
-  Ansel: { stats: { hp: 9600, atk: 560, def: 580, spd: 110 }, runes: ["Energy", "Will"], skills: [
-    { slot: 1, name: "Gentle Strike", cd: 0, target: "enemy", hits: 1, mult: 2.0, effects: [], desc: "200% ATK." },
-    { slot: 2, name: "Healing Range", cd: 2, target: "ally_single", effects: [{ on: "ally", type: "healPctTarget", amount: .32 }], desc: "Heal an ally for 32% of their Max HP." },
-    { slot: 3, name: "Medic Kit", cd: 4, target: "aoe_allies", effects: [{ on: "ally", type: "healFlatCasterHP", amount: .22 }, { on: "ally", type: "cleanse", amount: 1 }], desc: "Heal all allies for 22% of Ansel's Max HP and cleanse 1 debuff." }] },
-  Ling: { stats: { hp: 9600, atk: 760, def: 520, spd: 116 }, leader: { stat: "ATK", amount: .24, scope: "All" }, runes: ["Swift", "Focus"], skills: [
-    { slot: 1, name: "Summoned Dragon", cd: 0, target: "enemy", hits: 2, mult: 1.5, effects: [{ on: "target", type: "debuff", what: "SLOW", chance: .3, turns: 2 }], desc: "2 hits (150% each). 30% chance per hit to Slow (2T)." },
-    { slot: 2, name: "Ink and Wash", cd: 3, target: "team", effects: [{ on: "ally", type: "buff", what: "ATK_UP", turns: 2 }, { on: "ally", type: "buff", what: "CRIT_RATE_UP", turns: 2 }], desc: "Grant the team ATK Up and Crit Rate Up (2T)." },
-    { slot: 3, name: "Where the Sky Ends", cd: 5, target: "aoe_enemies", hits: 3, mult: 1.5, effects: [{ on: "target", type: "atkbar-", amount: .1 }], desc: "Hits all enemies 3 times (150% each), reducing turn meter by 10% per hit." }] },
-  Weedy: { stats: { hp: 9900, atk: 780, def: 520, spd: 112 }, leader: { stat: "HP", amount: .2, scope: "Element", element: "Water" }, runes: ["Energy", "Despair"], skills: [
-    { slot: 1, name: "Water Cannon", cd: 0, target: "enemy", hits: 1, mult: 3.0, effects: [{ on: "target", type: "atkbar-", chance: .5, amount: .15 }], desc: "300% ATK. 50% chance to reduce turn meter by 15%." },
-    { slot: 2, name: "Torrent", cd: 3, target: "aoe_enemies", hits: 1, mult: 2.2, effects: [{ on: "target", type: "atkbar-", amount: .2 }], desc: "Hits all enemies (220% ATK) and reduces turn meter by 20%." },
-    { slot: 3, name: "Tidal Burst", cd: 5, target: "aoe_enemies", hits: 1, mult: 3.4, effects: [{ on: "target", type: "debuff", what: "STUN", chance: .4, turns: 1 }], desc: "Hits all enemies (340% ATK). 40% chance to Stun (1T)." }] },
-  Ceobe: { stats: { hp: 8700, atk: 880, def: 450, spd: 113 }, leader: { stat: "ACC", amount: .3, scope: "All" }, runes: ["Fatal", "Violent"], skills: [
-    { slot: 1, name: "Axe Toss", cd: 0, target: "enemy", hits: 2, mult: 1.6, effects: [{ on: "target", type: "debuff", what: "STUN", chance: .15, turns: 1 }], desc: "2 hits (160% each). 15% chance per hit to Stun (1T)." },
-    { slot: 2, name: "Pocket Snacks", cd: 3, target: "self", effects: [{ on: "self", type: "healPct", amount: .2 }, { on: "self", type: "atkbar+", amount: .3 }], desc: "Heal 20% HP and gain 30% turn meter." },
-    { slot: 3, name: "Bona Fide Caster", cd: 4, target: "enemy", hits: 5, mult: .9, effects: [{ on: "target", type: "debuff", what: "DEF_BREAK", chance: .3, turns: 2 }], desc: "5 hits (90% each). 30% chance per hit of DEF Break (2T)." }] },
-  Siege: { stats: { hp: 10000, atk: 800, def: 560, spd: 113 }, leader: { stat: "ATK", amount: .25, scope: "All" }, runes: ["Fatal", "Swift"], skills: [
-    { slot: 1, name: "Hammer Smash", cd: 0, target: "enemy", hits: 1, mult: 3.2, effects: [{ on: "target", type: "debuff", what: "DEF_BREAK", chance: .35, turns: 2 }], desc: "320% ATK. 35% chance of DEF Break (2T)." },
-    { slot: 2, name: "Lionheart", cd: 4, target: "team", effects: [{ on: "ally", type: "atkbar+", amount: .2 }, { on: "self", type: "buff", what: "ATK_UP", turns: 2 }], desc: "All allies gain 20% turn meter. Siege gains ATK Up (2T)." },
-    { slot: 3, name: "Royal Execution", cd: 4, target: "enemy", hits: 1, mult: 5.0, ignoreDef: .3, effects: [{ on: "self", type: "atkbar+", amount: .5, onKill: true }], desc: "500% ATK, ignoring 30% DEF. On a kill, gain 50% turn meter." }] },
+  Exusiai: { leader: { stat: "ATK", amount: .24, scope: "Element", element: "Wind" }, runes: ["Swift", "Blade"] },
+  SilverAsh: { leader: { stat: "CR", amount: .24, scope: "All" }, runes: ["Violent", "Will"] },
+  Surtr: { leader: { stat: "ATK", amount: .33, scope: "Element", element: "Fire" }, runes: ["Rage", "Will"] },
+  Saria: { leader: { stat: "HP", amount: .33, scope: "All" }, runes: ["Energy", "Shield"] },
+  Ifrit: { leader: { stat: "ACC", amount: .4, scope: "All" }, runes: ["Focus", "Despair"] },
+  Skadi: { leader: { stat: "CD", amount: .33, scope: "Element", element: "Water" }, runes: ["Fatal", "Blade"] },
+  Nightingale: { leader: { stat: "RES", amount: .41, scope: "All" }, runes: ["Swift", "Will"] },
+  Angelina: { leader: { stat: "SPD", amount: .24, scope: "All" }, runes: ["Despair", "Focus"] },
+  Lappland: { leader: { stat: "ATK", amount: .33, scope: "Element", element: "Dark" }, runes: ["Revenge", "Will"] },
+  Blaze: { leader: { stat: "DEF", amount: .33, scope: "Element", element: "Fire" }, runes: ["Guard", "Revenge"] },
+  Schwarz: { leader: { stat: "CR", amount: .24, scope: "Element", element: "Dark" }, runes: ["Fatal", "Rage"] },
+  Amiya: { leader: { stat: "ATK", amount: .2, scope: "All" }, runes: ["Focus", "Rage"] },
+  Texas: { leader: { stat: "SPD", amount: .2, scope: "All" }, runes: ["Swift", "Violent"] },
+  Hoshiguma: { leader: { stat: "DEF", amount: .3, scope: "All" }, runes: ["Guard", "Revenge"] },
+  Eyjafjalla: { leader: { stat: "ATK", amount: .33, scope: "Element", element: "Fire" }, runes: ["Fatal", "Focus"] },
+  Mostima: { leader: { stat: "SPD", amount: .19, scope: "All" }, runes: ["Swift", "Despair"] },
+  Thorns: { leader: { stat: "HP", amount: .25, scope: "All" }, runes: ["Revenge", "Energy"] },
+  Ptilopsis: { leader: { stat: "RES", amount: .3, scope: "All" }, runes: ["Swift", "Energy"] },
+  Specter: { leader: { stat: "HP", amount: .2, scope: "Element", element: "Dark" }, runes: ["Energy", "Rage"] },
+  Nearl: { leader: { stat: "HP", amount: .25, scope: "All" }, runes: ["Energy", "Will"] },
+  Mudrock: { leader: { stat: "DEF", amount: .3, scope: "Element", element: "Fire" }, runes: ["Shield", "Guard"] },
+  Suzuran: { leader: { stat: "RES", amount: .35, scope: "All" }, runes: ["Swift", "Will"] },
+  Mountain: { leader: { stat: "HP", amount: .2, scope: "All" }, runes: ["Energy", "Revenge"] },
+  Bagpipe: { leader: { stat: "ATK", amount: .2, scope: "All" }, runes: ["Swift", "Fatal"] },
+  Ash: { leader: { stat: "CR", amount: .24, scope: "All" }, runes: ["Blade", "Rage"] },
+  Kroos: { runes: ["Fatal", "Blade"] }, Melantha: { runes: ["Fatal", "Energy"] }, Fang: { runes: ["Swift", "Energy"] }, Ansel: { runes: ["Energy", "Will"] },
+  Ling: { leader: { stat: "ATK", amount: .24, scope: "All" }, runes: ["Swift", "Focus"] },
+  Weedy: { leader: { stat: "HP", amount: .2, scope: "Element", element: "Water" }, runes: ["Energy", "Despair"] },
+  Ceobe: { leader: { stat: "ACC", amount: .3, scope: "All" }, runes: ["Fatal", "Violent"] },
+  Siege: { leader: { stat: "ATK", amount: .25, scope: "All" }, runes: ["Fatal", "Swift"] },
 };
+const ARTS_CLASSES = new Set(["Caster", "Supporter", "Medic"]);
 
-// ---------- deterministic class templates for every other operator ----------
-const TEMPLATE = {
-  Vanguard: (r, el) => [
-    { slot: 1, name: "Charge Strike", cd: 0, target: "enemy", hits: 1, mult: 3.0, effects: [{ on: "target", type: "atkbar-", chance: .4, amount: .1 }], desc: "300% ATK. 40% chance to reduce turn meter by 10%." },
-    { slot: 2, name: "Tactical Deployment", cd: 4, target: "team", effects: [{ on: "ally", type: "atkbar+", amount: .15 }, { on: "ally", type: "buff", what: "SPD_UP", turns: 2 }], desc: "All allies gain 15% turn meter and SPD Up (2T)." },
-    r() < .5 ? { slot: 3, name: "Spearhead", cd: 4, target: "enemy", hits: 2, mult: 1.9, ignoreDef: .2, effects: [{ on: "self", type: "atkbar+", amount: .3 }], desc: "2 hits (190% each), ignoring 20% DEF. Gain 30% turn meter." }
-      : { slot: 3, name: "Breakthrough", cd: 4, target: "aoe_enemies", hits: 1, mult: 2.6, effects: [{ on: "target", type: "atkbar-", amount: .15 }], desc: "Hits all enemies (260% ATK) and reduces turn meter by 15%." }],
-  Guard: (r, el) => [
-    { slot: 1, name: "Blade Strike", cd: 0, target: "enemy", hits: 2, mult: 1.6, effects: [{ on: "target", type: "debuff", what: "DEF_BREAK", chance: .3, turns: 2 }], desc: "2 hits (160% each). 30% chance per hit of DEF Break (2T)." },
-    { slot: 2, name: "Battle Focus", cd: 3, target: "self", effects: [{ on: "self", type: "buff", what: "ATK_UP", turns: 2 }, { on: "self", type: "buff", what: "CRIT_RATE_UP", turns: 2 }, { on: "self", type: "atkbar+", amount: .2 }], desc: "Gain ATK Up and Crit Rate Up (2T) and 20% turn meter." },
-    r() < .5 ? { slot: 3, name: "Decisive Cut", cd: 4, target: "enemy", hits: 1, mult: 4.2, effects: [{ on: "target", type: "bonusPerDebuff", per: .1, cap: .5 }], desc: "420% ATK. +10% damage per debuff on the target (up to +50%)." }
-      : { slot: 3, name: "Whirlwind", cd: 4, target: "aoe_enemies", hits: 1, mult: 3.0, effects: [{ on: "target", type: "debuff", what: "DEF_BREAK", chance: .5, turns: 2 }], desc: "Hits all enemies (300% ATK). 50% chance of DEF Break (2T)." }],
-  Defender: (r, el) => [
-    { slot: 1, name: "Shield Strike", cd: 0, target: "enemy", hits: 1, mult: 2.6, effects: [{ on: "target", type: "debuff", what: "PROVOKE", chance: .4, turns: 1 }], desc: "260% ATK. 40% chance to Provoke (1T)." },
-    { slot: 2, name: "Iron Wall", cd: 3, target: "self", effects: [{ on: "self", type: "buff", what: "TAUNT", turns: 2 }, { on: "self", type: "buff", what: "DEF_UP", turns: 2 }, { on: "self", type: "shieldCasterHP", amount: .15, turns: 2 }], desc: "Gain Taunt and DEF Up (2T) and a Shield (15% HP)." },
-    r() < .5 ? { slot: 3, name: "Bulwark", cd: 4, target: "team", effects: [{ on: "ally", type: "buff", what: "DEF_UP", turns: 2 }, { on: "ally", type: "shieldCasterHP", amount: .12, turns: 2 }], desc: "Team gains DEF Up (2T) and a Shield (12% of this operator's HP)." }
-      : { slot: 3, name: "Shockwave", cd: 4, target: "aoe_enemies", hits: 1, mult: 2.4, effects: [{ on: "target", type: "debuff", what: "ATK_DOWN", chance: .6, turns: 2 }], desc: "Hits all enemies (240% ATK). 60% chance of ATK Down (2T)." }],
-  Sniper: (r, el) => [
-    { slot: 1, name: "Precise Shot", cd: 0, target: "enemy", hits: 1, mult: 3.4, effects: [{ on: "target", type: "debuff", what: "SLOW", chance: .3, turns: 2 }], desc: "340% ATK. 30% chance to Slow (2T)." },
-    { slot: 2, name: "Mark Target", cd: 3, target: "enemy", hits: 1, mult: 2.4, effects: [{ on: "target", type: "debuff", what: "BRAND", chance: 1, turns: 2 }], desc: "240% ATK. Always Brands (2T)." },
-    r() < .5 ? { slot: 3, name: "Lethal Shot", cd: 4, target: "enemy", hits: 1, mult: 4.8, ignoreDef: .25, effects: [{ on: "self", type: "bonusIf", cond: "BRAND", bonusDmg: .3 }], desc: "480% ATK, ignoring 25% DEF. +30% damage against Branded targets." }
-      : { slot: 3, name: "Arrow Rain", cd: 4, target: "aoe_enemies", hits: 3, mult: 1.0, effects: [], desc: "Hits all enemies 3 times (100% each)." }],
-  Caster: (r, el) => [
-    { slot: 1, name: "Arts Shot", cd: 0, target: "enemy", hits: 1, mult: 3.2, effects: [{ on: "target", type: "debuff", what: "DOT", chance: .3, turns: 2 }], desc: "320% ATK. 30% chance to Burn (2T)." },
-    { slot: 2, name: "Arts Storm", cd: 3, target: "aoe_enemies", hits: 2, mult: 1.5, effects: [{ on: "target", type: "debuff", what: "DOT", chance: .35, turns: 2 }], desc: "Hits all enemies twice (150% each). 35% chance per hit to Burn (2T)." },
-    r() < .5 ? { slot: 3, name: "Arts Cataclysm", cd: 4, target: "aoe_enemies", hits: 1, mult: 3.5, effects: [{ on: "target", type: "atkbar-", amount: .2 }], desc: "Hits all enemies (350% ATK) and reduces turn meter by 20%." }
-      : { slot: 3, name: "Focused Annihilation", cd: 4, target: "enemy", hits: 1, mult: 4.6, ignoreDef: .3, effects: [{ on: "target", type: "debuff", what: "HEAL_BLOCK", chance: .7, turns: 2 }], desc: "460% ATK, ignoring 30% DEF. 70% chance of Heal Block (2T)." }],
-  Medic: (r, el) => [
-    { slot: 1, name: "Arts Pulse", cd: 0, target: "enemy", hits: 1, mult: 2.2, effects: [{ on: "target", type: "debuff", what: "GLANCING", chance: .3, turns: 2 }], desc: "220% ATK. 30% chance to inflict Glancing (2T)." },
-    { slot: 2, name: "Triage", cd: 2, target: "ally_single", effects: [{ on: "ally", type: "healPctTarget", amount: .3 }, { on: "ally", type: "cleanse", amount: 1 }], desc: "Heal an ally for 30% of their Max HP and cleanse 1 debuff." },
-    { slot: 3, name: "Field Hospital", cd: 4, target: "aoe_allies", effects: [{ on: "ally", type: "healFlatCasterHP", amount: .22 }, { on: "ally", type: "buff", what: "HOT", turns: 2 }], desc: "Heal all allies for 22% of this operator's Max HP and grant Heal over Time (2T)." }],
-  Supporter: (r, el) => [
-    { slot: 1, name: "Arts Wave", cd: 0, target: "enemy", hits: 1, mult: 2.4, effects: [{ on: "target", type: "debuff", what: "SLOW", chance: .45, turns: 2 }], desc: "240% ATK. 45% chance to Slow (2T)." },
-    r() < .5 ? { slot: 2, name: "Encourage", cd: 3, target: "team", effects: [{ on: "ally", type: "buff", what: "ATK_UP", turns: 2 }, { on: "ally", type: "atkbar+", amount: .1 }], desc: "Team gains ATK Up (2T) and 10% turn meter." }
-      : { slot: 2, name: "Haste", cd: 3, target: "team", effects: [{ on: "ally", type: "buff", what: "SPD_UP", turns: 2 }, { on: "ally", type: "atkbar+", amount: .1 }], desc: "Team gains SPD Up (2T) and 10% turn meter." },
-    { slot: 3, name: "Arts Prison", cd: 4, target: "aoe_enemies", hits: 1, mult: 2.6, effects: [{ on: "target", type: "debuff", what: "SLOW", chance: .6, turns: 2 }, { on: "target", type: "atkbar-", amount: .2 }], desc: "Hits all enemies (260% ATK), reduces turn meter by 20%, 60% chance to Slow (2T)." }],
-  Specialist: (r, el) => [
-    { slot: 1, name: "Swift Strike", cd: 0, target: "enemy", hits: 2, mult: 1.5, effects: [{ on: "target", type: "atkbar-", chance: .3, amount: .1 }], desc: "2 hits (150% each). 30% chance per hit to reduce turn meter by 10%." },
-    { slot: 2, name: "Vanish", cd: 3, target: "self", effects: [{ on: "self", type: "buff", what: "STEALTH", turns: 2 }, { on: "self", type: "atkbar+", amount: .25 }], desc: "Gain Stealth (2T) and 25% turn meter." },
-    { slot: 3, name: "Ambush", cd: 4, target: "enemy", hits: 1, mult: 4.0, effects: [{ on: "target", type: "strip", amount: 2, chance: 1 }, { on: "target", type: "debuff", what: "STUN", chance: .3, turns: 1 }], desc: "400% ATK. Removes 2 buffs; 30% chance to Stun (1T)." }],
+// ---------- branch traits → basic attack + trait passive ----------
+// b: basic attack fields (target, mult, hits, n, aoe, dmg, heal, healN, reach, sure, falloff, front, effects)
+// tl: trait passive (talent format); mech: engine-coded trait; prio: auto-target rule
+const BRANCH = {
+  pioneer:       { n: "Pioneer", t: "Blocks 2 enemies, so enemies are more likely to attack this operator." },
+  charger:       { n: "Charger", t: "After defeating an enemy, all allies gain 5% turn meter.", tl: { on: "kill", effects: [{ on: "team", type: "atkbar+", amount: .05 }] } },
+  tactician:     { n: "Tactician", t: "Calls Reinforcements: deals +50% damage to Slowed, Bound, Frozen or Stunned enemies.", tl: { dmgBonus: [{ cond: { targetCC: true }, v: .5 }] } },
+  agent:         { n: "Agent", t: "Ranged attacks: can hit any enemy, ignoring Taunt and Camouflage.", b: { reach: true } },
+  bearer:        { n: "Standard Bearer", t: "While a skill is active, doesn't Block, so enemies don't prefer it.", mech: "bearer" },
+  lord:          { n: "Lord", t: "Ranged attacks: can hit any enemy, ignoring Taunt and Camouflage.", b: { reach: true } },
+  artsfghter:    { n: "Arts Fighter", t: "Deals Arts damage.", b: { dmg: "arts" } },
+  fighter:       { n: "Fighter", t: "Blocks 1 enemy. Fast, steady strikes." },
+  sword:         { n: "Swordmaster", t: "Basic attacks deal damage twice (75% ATK each).", b: { hits: 2, mult: .75 } },
+  centurion:     { n: "Centurion", t: "Attacks all blocked enemies: basic attacks hit up to 3 enemies (85% ATK).", b: { n: 3, mult: .85 } },
+  instructor:    { n: "Instructor", t: "Extended range: basic attacks ignore Taunt and Camouflage and deal 120% ATK.", b: { reach: true, mult: 1.2 } },
+  fearless:      { n: "Dreadnought", t: "Blocks 1 enemy. Heavy single blows." },
+  musha:         { n: "Soloblade", t: "Can't be healed by allies. Restores 3% max HP with every hit.", tl: { special: "NO_ALLY_HEAL", on: "hit", effects: [{ on: "self", type: "healPct", amount: .03 }] } },
+  reaper:        { n: "Reaper", t: "Can't be healed by allies. Basic attacks hit up to 3 enemies (80% ATK) and restore 2% max HP per enemy hit.", b: { n: 3, mult: .8 }, tl: { special: "NO_ALLY_HEAL", on: "hit", effects: [{ on: "self", type: "healPct", amount: .02 }] } },
+  crusher:       { n: "Crusher", t: "Attacks all blocked enemies: basic attacks hit up to 3 enemies (90% ATK).", b: { n: 3, mult: .9 } },
+  librator:      { n: "Liberator", t: "Basic action doesn't attack: it gains ATK +40% (max +200%) instead. The bonus resets when a skill ends.", mech: "librator" },
+  protector:     { n: "Protector", t: "Blocks 3 enemies, so enemies are much more likely to attack this operator." },
+  guardian:      { n: "Guardian", t: "Blocks 3 enemies and heals allies through skills." },
+  artsprotector: { n: "Arts Protector", t: "Blocks 3 enemies. Basic attacks deal Arts damage while a skill is active.", mech: "artsprotector" },
+  fortress:      { n: "Fortress", t: "Ranged AoE: basic attacks hit up to 3 enemies (70% ATK).", b: { n: 3, mult: .7 } },
+  duelist:       { n: "Duelist", t: "Skill cooldowns only count down on turns after this operator was attacked.", mech: "duelist" },
+  shotprotector: { n: "Sentry Protector", t: "Blocks 3 enemies and attacks from long range, ignoring Taunt and Camouflage.", b: { reach: true } },
+  unyield:       { n: "Juggernaut", t: "Can't be healed by allies.", tl: { special: "NO_ALLY_HEAL" } },
+  fastshot:      { n: "Marksman", t: "Targets the fastest enemy first and deals +15% damage to it.", prio: "spd", tl: { dmgBonus: [{ cond: { targetFastest: true }, v: .15 }] } },
+  longrange:     { n: "Deadeye", t: "Targets the enemy with the lowest DEF first.", prio: "def" },
+  reaperrange:   { n: "Spreadshooter", t: "Basic attacks hit every enemy (70% ATK) and deal 150% of that to the main target.", b: { aoe: true, mult: .7, front: 1.5 } },
+  closerange:    { n: "Heavyshooter", t: "Point-blank shots: basic attacks can't be dodged.", b: { sure: true } },
+  siegesniper:   { n: "Besieger", t: "Targets the enemy with the highest max HP first.", prio: "hp" },
+  aoesniper:     { n: "Artilleryman", t: "AoE Physical: basic attacks hit up to 3 enemies (75% ATK).", b: { n: 3, mult: .75 } },
+  corecaster:    { n: "Core Caster", t: "Deals Arts damage." },
+  splashcaster:  { n: "Splash Caster", t: "AoE Arts: basic attacks hit up to 3 enemies (70% ATK).", b: { n: 3, mult: .7 } },
+  blastcaster:   { n: "Blast Caster", t: "Long-line AoE Arts: basic attacks hit every enemy (70% ATK).", b: { aoe: true, mult: .7 } },
+  chain:         { n: "Chain Caster", t: "Arts attacks jump between up to 4 enemies, 15% weaker per jump, with a 25% chance to Slow (1T).", b: { n: 4, falloff: .85, effects: [{ on: "target", type: "debuff", what: "SLOW", chance: .25, turns: 1 }] } },
+  phalanx:       { n: "Phalanx Caster", t: "With no skill active: DEF +200%, RES +20, weak attacks (40% ATK). With a skill active: basic attacks hit every enemy.", mech: "phalanx" },
+  funnel:        { n: "Mech-accord Caster", t: "A Drone attacks with Arts: 60% ATK, +25% for each consecutive attack on the same enemy (max 110%).", mech: "funnel", b: { mult: .6 } },
+  mystic:        { n: "Mystic Caster", t: "Stores 2 charged attacks at the start of each wave; the next basic attack fires them as extra hits (80% ATK each).", mech: "mystic" },
+  primcaster:    { n: "Primal Caster", t: "Arts attacks also build 15% Elemental Injury.", mech: "primcaster" },
+  soulcaster:    { n: "Shaper Caster", t: "Each kill raises a Summon (max 2); each Summon adds a 50% ATK Arts hit to basic attacks.", mech: "soulcaster" },
+  physician:     { n: "Medic", t: "Basic action heals the most injured ally for 100% ATK.", b: { target: "ally_single", heal: 1 } },
+  ringhealer:    { n: "Multi-target Medic", t: "Basic action heals the 3 most injured allies for 80% ATK.", b: { target: "ally_single", heal: .8, healN: 3 } },
+  healer:        { n: "Therapist", t: "Basic action heals any ally for 100% ATK.", b: { target: "ally_single", heal: 1 } },
+  wandermedic:   { n: "Wandering Medic", t: "Basic action heals the most injured ally for 100% ATK and removes 1 debuff.", b: { target: "ally_single", heal: 1, effects: [{ on: "target", type: "cleanse", amount: 1 }] } },
+  slower:        { n: "Decel Binder", t: "Arts attacks with a 50% chance to Slow (1T).", b: { effects: [{ on: "target", type: "debuff", what: "SLOW", chance: .5, turns: 1 }] } },
+  summoner:      { n: "Summoner", t: "Deals Arts damage and fights alongside Summons through skills." },
+  underminer:    { n: "Hexer", t: "Deals Arts damage; skills weaken enemies." },
+  bard:          { n: "Bard", t: "Doesn't attack: basic action heals every ally for 30% ATK.", b: { target: "team", heal: .3 } },
+  blessing:      { n: "Abjurer", t: "Deals Arts damage. While a skill is active, basic attacks heal the most injured ally for 75% ATK instead.", mech: "blessing" },
+  craftsman:     { n: "Artificer", t: "Blocks 2 enemies and supports the squad with devices through skills." },
+  dollkeeper:    { n: "Dollkeeper", t: "Once per battle, lethal damage swaps in a Substitute: back at 50% HP instead of falling.", tl: { special: "UNDYING", amount: .5, turns: 0 } },
+  hookmaster:    { n: "Hookmaster", t: "Shifts enemies with skills, delaying their turns." },
+  stalker:       { n: "Ambusher", t: "Basic attacks hit up to 3 enemies (80% ATK). 50% chance to dodge Physical and Arts hits; enemies rarely target it.", b: { n: 3, mult: .8 }, tl: { stats: { dodge: .5 } }, mech: "stalker" },
+  pusher:        { n: "Push Stroker", t: "Attacks all blocked enemies: basic attacks hit up to 3 enemies (80% ATK).", b: { n: 3, mult: .8 } },
+  traper:        { n: "Trapmaster", t: "Plants 2 traps each wave: the first enemies to act take 150% ATK Physical damage and are Bound (1T).", mech: "traper" },
+  executor:      { n: "Executor", t: "Fast redeployment: the first time this operator falls, it returns 3 turns later at full HP.", mech: "redeploy" },
+  merchant:      { n: "Merchant", t: "Returns once, 3 turns after falling, but pays upkeep: loses 3% max HP at the start of each turn.", mech: "merchant" },
 };
-const TPL_PASSIVES = [
-  null, null,
-  { id: "LIFESTEAL", amount: .15, text: "Heals for 15% of damage dealt." },
-  { id: "TEAM_ATB_START", amount: .1, text: "All allies start battle with 10% turn meter." },
-  { id: "REVIVE_ONCE", amount: .25, buff: "INVINCIBLE", turns: 1, text: "Revives once at 25% HP with Invincible (1T)." },
-  { id: "IMMUNE_LIST", list: ["STUN", "SILENCE"], text: "Immune to Stun and Silence." },
-];
+const ELEM_OF = { diamante: "necrosis", nymph: "necrosis", warmy: "burn", "miss-christine": "nervous" };
 const RAR_MULT = { 1: .62, 2: .68, 3: .76, 4: .84, 5: .92, 6: 1 };
 
 // ---------- build the operator table ----------
 const OPS = {};
 const OP_KEYS = [];
+function basicFor(cls, br) {
+  const B = BRANCH[br] || { n: br, t: "" };
+  const b = { slot: 0, name: br === "bard" ? "Melody" : B.b && B.b.heal ? "Treatment" : "Attack", target: "enemy", mult: 1, hits: 1, ...(B.b || {}) };
+  if (!b.dmg) b.dmg = ARTS_CLASSES.has(cls) ? "arts" : "phys";
+  b.desc = B.t; b.basic = true;
+  return b;
+}
 for (const line of ROSTER_RAW.split("\n")) {
   const [n, slug, rar, cls, el, asp] = line.split("|");
-  const f = FEATURED[n], rng = seeded(hash(n + "kit"));
-  const base = CLASS_BASE[cls];
-  const spread = k => Math.round(base[k] * (1 + (rng() - .5) * .08));
-  const op = { key: slug, n, slug, rar: +rar, cls, el, asp: +asp, featured: !!f,
-    stats: f ? { ...base, ...f.stats } : { hp: spread("hp"), atk: spread("atk"), def: spread("def"), spd: base.spd + Math.round((rng() - .5) * 8) },
-    skills: f ? f.skills : TEMPLATE[cls](rng, el),
-    leader: f ? (f.leader || null) : +rar >= 4 ? { ...CLASS_LEADER[cls], element: el } : null,
-    passives: f ? (f.passives || []) : +rar >= 6 ? [TPL_PASSIVES[Math.floor(rng() * TPL_PASSIVES.length)]].filter(Boolean) : [],
+  const f = FEATURED[n], R = REAL[slug], B = BRANCH[R.b] || {};
+  const dmg = ARTS_CLASSES.has(cls) || R.b === "artsfghter" ? "arts" : "phys";
+  const op = { key: slug, n, slug, rar: +rar, cls, el, asp: +asp, featured: !!f, branch: R.b, branchName: B.n || R.b, trait: B.t || "",
+    stats: { ...R.st }, basic: basicFor(cls, R.b), skills: R.sk.map(s => ({ dmg, ...s })), talents: R.tl,
+    traitTl: B.tl || null, mech: B.mech || null, prio: B.prio || null, elem: ELEM_OF[slug] || null,
+    leader: f && f.leader ? f.leader : !f && +rar >= 4 ? { ...CLASS_LEADER[cls], element: el } : null,
     runes: f ? f.runes : CLASS_RUNES[cls],
   };
   if (op.leader && op.leader.scope === "Element" && !op.leader.element) op.leader.element = el;
@@ -315,4 +229,27 @@ const ENEMY = {
       { slot: 2, name: "Permafrost Armor", cd: 3, target: "self", effects: [{ on: "self", type: "buff", what: "DEF_UP", turns: 2 }, { on: "self", type: "buff", what: "COUNTER", turns: 2 }], desc: "Gain DEF Up and Counter (2T)." },
       { slot: 3, name: "Avalanche", cd: 4, target: "aoe_enemies", hits: 1, mult: 3.0, effects: [{ on: "target", type: "debuff", what: "STUN", chance: .35, turns: 1 }], desc: "Hits all enemies (300%). 35% chance to Stun." }] },
 };
-for (const k in ENEMY) { ENEMY[k].key = k; ENEMY[k].enemy = true; ENEMY[k].passives = ENEMY[k].passives || []; ENEMY[k].runes = []; }
+// Arts RES (points) per enemy; enemy Casters and Medics deal Arts damage
+const ENEMY_RES = { thrower: 10, caster: 30, shield: 10, acidslug: 20, sarkaz: 20, wraith: 30, crownslayer: 30, skullshatterer: 20,
+  mephisto: 50, faust: 30, frostnova: 50, queenslug: 20, centurion: 30, yeti: 30 };
+const ENEMY_V = { ATK_UP: .5, DEF_UP: .5, DEF_BREAK: .4 }; // enemy kits keep their original buff strengths
+function prepEnemy(k) {
+  const d = ENEMY[k]; d.key = k; d.enemy = true; d.passives = d.passives || []; d.runes = []; d.ares = ENEMY_RES[k] || 0;
+  // Arts damage skips DEF, so Arts enemies hit with less ATK than before damage types existed
+  if (ARTS_CLASSES.has(d.cls)) d.m = { ...d.m, atk: +(d.m.atk * .75).toFixed(3) };
+  // slot 0 is the basic attack, as for operators; enemy multipliers are already in this game's turn scale
+  for (const s of d.skills) {
+    s.slot -= 1; if (s.slot === 0) s.basic = true; s.dmg = s.dmg || (ARTS_CLASSES.has(d.cls) ? "arts" : "phys");
+    for (const e of s.effects || []) {
+      if (e.on === "ally") e.on = "team";            // older enemy kits: "ally" meant the whole team
+      if (e.type === "reviveOne") e.type = "revive";
+      if (e.v == null && ENEMY_V[e.what]) e.v = ENEMY_V[e.what];
+    }
+  }
+}
+for (const k in ENEMY) prepEnemy(k);
+// later parts (new story episodes) add their enemies with this: addEnemies({ key: def, … }, { key: RES points, … })
+function addEnemies(defs, res = {}) {
+  Object.assign(ENEMY_RES, res);
+  for (const k in defs) { if (ENEMY[k]) throw new Error("duplicate enemy " + k); ENEMY[k] = defs[k]; prepEnemy(k); }
+}

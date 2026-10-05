@@ -5,6 +5,7 @@
   <nav id="tabs"></nav>
 </div>
 <div id="battle" hidden></div>
+<div id="draft" hidden></div>
 <div id="dlg" hidden></div>
 <div id="gacha" hidden></div>
 <div id="modal" hidden></div>
@@ -20,7 +21,7 @@ const ASSET = window.AT_ASSET_BASE || "../assets/";
 // ---------- utils ----------
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
-const R = Math.random;
+let R = Math.random;   // swapped for a seeded generator while the Expert AI plays moves out (a7_engine.js)
 const ri = (a, b) => a + Math.floor(R() * (b - a + 1));
 const pick = a => a[Math.floor(R() * a.length)];
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -84,6 +85,9 @@ const IC = {
   prime: '<svg viewBox="0 0 24 24"><path fill="#ff7a2a" d="M9 2h6l3 6-6 14L6 8z"/><path fill="#ffd0a8" d="M9 2h6l-3 6z"/><path fill="#b8401a" d="M12 22 18 8h-6z"/></svg>',
   credit: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#3fb3a0"/><circle cx="12" cy="12" r="6.5" fill="none" stroke="#0f4a40" stroke-width="1.6"/><path d="M14.5 9.5a3.2 3.2 0 1 0 0 5" stroke="#0f4a40" stroke-width="2" fill="none"/></svg>',
   lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+  voice: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8a5 5 0 0 1 0 8M19 5a9 9 0 0 1 0 14"/></svg>',
+  mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>',
+  chat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg>',
   check: '<svg viewBox="0 0 24 24" fill="none" stroke="#43d67e" stroke-width="3"><path d="m5 12 5 5 9-10"/></svg>',
   cross: '<svg viewBox="0 0 24 24" fill="none" stroke="#5b6886" stroke-width="3"><path d="M6 6l12 12M18 6 6 18"/></svg>',
 };
@@ -102,35 +106,67 @@ const ITEMS = {
   rec4: { n: "Strategic Battle Record", ic: IC.rec4, xp: 2000 },
   chip: { n: "Chip Pack", ic: IC.chip, d: "Used for Elite Promotion." },
   summ: { n: "Skill Summary", ic: IC.summ, d: "Used to raise skill levels." },
+  hh10: { n: "Ten-roll Headhunting Permit", ic: '<svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2" fill="#ff7a3a"/><rect x="4" y="7" width="16" height="10" rx="1" fill="#f2c14e"/><text x="12" y="15.5" font-size="8" font-weight="900" text-anchor="middle" fill="#7a2a08" font-family="sans-serif">10</text></svg>', d: "One free ten-roll on any Headhunting banner." },
 };
 
-// ---------- status effects (names follow the original game) ----------
+// ---------- status effects (Arknights names). v = default magnitude; cc = loses the turn ----------
 const FX = {
-  ATK_UP:       { n: "ATK Up", b: 1, s: "A↑", d: "+50% ATK" },
-  DEF_UP:       { n: "DEF Up", b: 1, s: "D↑", d: "+50% DEF" },
-  SPD_UP:       { n: "SPD Up", b: 1, s: "S↑", d: "+30% Speed" },
-  CRIT_RATE_UP: { n: "Crit Rate Up", b: 1, s: "C↑", d: "+30% Critical Rate" },
-  IMMUNITY:     { n: "Immunity", b: 1, s: "IM", d: "Blocks new debuffs" },
-  HOT:          { n: "Heal over Time", b: 1, s: "HT", d: "Heals 5% Max HP at the start of each turn (stacks)" },
-  SHIELD:       { n: "Shield", b: 1, s: "SH", d: "Absorbs damage before HP" },
-  INVINCIBLE:   { n: "Invincible", b: 1, s: "IV", d: "Takes no damage" },
-  COUNTER:      { n: "Counter", b: 1, s: "CT", d: "30% chance to counterattack when hit" },
-  TAUNT:        { n: "Taunt", b: 1, s: "TA", d: "Single-target attacks must target this unit" },
-  STEALTH:      { n: "Stealth", b: 1, s: "SL", d: "Can't be targeted by single-target skills" },
-  DEF_BREAK:    { n: "DEF Break", b: 0, s: "DB", d: "DEF is 40% less effective" },
-  ATK_DOWN:     { n: "ATK Down", b: 0, s: "A↓", d: "-30% ATK" },
-  BRAND:        { n: "Brand", b: 0, s: "BR", d: "Takes 25% more damage" },
-  HEAL_BLOCK:   { n: "Heal Block", b: 0, s: "HB", d: "Can't be healed" },
-  STUN:         { n: "Stun", b: 0, s: "ST", d: "Loses the next turn" },
-  SLOW:         { n: "Slow", b: 0, s: "SW", d: "-30% Speed" },
-  GLANCING:     { n: "Glancing", b: 0, s: "GL", d: "50% chance to land glancing hits (-30%, no crit)" },
-  DOT:          { n: "Burn", b: 0, s: "BN", d: "Loses 5% Max HP per stack at the start of each turn" },
-  PROVOKE:      { n: "Provoke", b: 0, s: "PV", d: "Forced to use S1 on the provoker" },
-  SILENCE:      { n: "Silence", b: 0, s: "SI", d: "Can't use S2 or S3" },
+  ATK_UP:       { n: "ATK Up", b: 1, s: "A↑", v: .3, d: v => `ATK +${pct(v)}` },
+  DEF_UP:       { n: "DEF Up", b: 1, s: "D↑", v: .3, d: v => `DEF +${pct(v)}` },
+  SPD_UP:       { n: "SPD Up", b: 1, s: "S↑", v: .3, d: v => `SPD +${pct(v)}` },
+  CRIT_RATE_UP: { n: "Crit Rate Up", b: 1, s: "C↑", v: .3, d: v => `Crit Rate +${pct(v)}` },
+  RES_UP:       { n: "RES Up", b: 1, s: "R↑", v: 20, d: v => `RES +${Math.round(v)}` },
+  INSPIRE:      { n: "Inspiration", b: 1, s: "IN", v: .15, d: v => v < 5 ? `ATK +${pct(v)} of the giver's ATK` : `ATK +${Math.round(v)}` },
+  IMMUNITY:     { n: "Immunity", b: 1, s: "IM", d: () => "Blocks new debuffs" },
+  HOT:          { n: "Regeneration", b: 1, s: "RG", v: .05, d: v => `Heals ${pct(v)} max HP at the start of each turn (stacks)` },
+  SHIELD:       { n: "Barrier", b: 1, s: "BA", d: () => "Absorbs damage before HP" },
+  INVINCIBLE:   { n: "Invincible", b: 1, s: "IV", d: () => "Takes no damage" },
+  COUNTER:      { n: "Counter", b: 1, s: "CT", v: .3, d: v => `${pct(v)} chance to counterattack when hit` },
+  TAUNT:        { n: "Taunt", b: 1, s: "TA", d: () => "Single-target attacks must target this unit" },
+  STEALTH:      { n: "Camouflage", b: 1, s: "CF", d: () => "Can't be targeted by single-target attacks" },
+  DODGE:        { n: "Dodge", b: 1, s: "DG", v: .3, d: v => `${pct(v)} chance to avoid Physical and Arts hits` },
+  DMG_REDUCE:   { n: "Shelter", b: 1, s: "SR", v: .3, d: v => `Takes ${pct(v)} less damage` },
+  SKILL:        { n: "Skill", b: 1, s: "SK", d: () => "A skill is active" },
+  DEF_BREAK:    { n: "DEF Down", b: 0, s: "D↓", v: .3, d: v => `DEF −${pct(v)}` },
+  ATK_DOWN:     { n: "ATK Down", b: 0, s: "A↓", v: .3, d: v => `ATK −${pct(v)}` },
+  RES_DOWN:     { n: "RES Down", b: 0, s: "R↓", v: 20, d: v => `RES −${Math.round(v)}` },
+  BRAND:        { n: "Fragile", b: 0, s: "FR", v: .25, d: v => `Takes ${pct(v)} more damage` },
+  FRAGILE:      { n: "Fragile", b: 0, s: "FR", v: .2, d: v => `Takes ${pct(v)} more damage` },
+  HEAL_BLOCK:   { n: "Heal Block", b: 0, s: "HB", d: () => "Can't be healed" },
+  STUN:         { n: "Stun", b: 0, s: "ST", cc: 1, d: () => "Loses the next turn" },
+  SLEEP:        { n: "Sleep", b: 0, s: "ZZ", cc: 1, d: () => "Loses the next turn; wakes when damaged" },
+  FREEZE:       { n: "Freeze", b: 0, s: "FZ", cc: 1, d: () => "Loses the next turn; RES −15" },
+  LEVITATE:     { n: "Levitate", b: 0, s: "LV", cc: 1, d: () => "Lifted off the ground: loses the next turn" },
+  SLOW:         { n: "Slow", b: 0, s: "SW", v: .3, d: v => `SPD −${pct(v)}` },
+  COLD:         { n: "Cold", b: 0, s: "CD", v: .3, d: v => `SPD −${pct(v)}; Cold again causes Freeze` },
+  BIND:         { n: "Bind", b: 0, s: "BD", v: .5, d: v => `Held in place: SPD −${pct(v)}` },
+  GLANCING:     { n: "Glancing", b: 0, s: "GL", d: () => "50% chance to land glancing hits (−30%, no crit)" },
+  DOT:          { n: "Burn", b: 0, s: "BN", v: .05, d: v => `Loses ${pct(v)} max HP per stack at the start of each turn` },
+  PROVOKE:      { n: "Provoke", b: 0, s: "PV", d: () => "Forced to attack the provoker" },
+  SILENCE:      { n: "Silence", b: 0, s: "SI", d: () => "Can't use skills" },
+  FEAR:         { n: "Fear", b: 0, s: "FE", v: .3, d: v => `Can't use skills; SPD −${pct(v)}` },
+};
+const fxDesc = e => FX[e.id].d(e.v != null ? e.v : FX[e.id].v);
+const ELEM = {
+  burn: { n: "Burn", c: "#ff7a3a", d: "12% max HP True damage and RES −20 (2T)" },
+  necrosis: { n: "Necrosis", c: "#b98aff", d: "10% max HP True damage and ATK Down (2T)" },
+  nervous: { n: "Nervous Impairment", c: "#ffe066", d: "8% max HP True damage and Stun (1T)" },
+  corrosion: { n: "Corrosion", c: "#7fdc8a", d: "DEF −30% (2T)" },
 };
 const RUNE_INFO = {
   Swift: "+25% SPD", Fatal: "+35% ATK", Blade: "+12% Crit Rate", Focus: "+20% Accuracy", Energy: "+15% HP", Guard: "+15% DEF",
   Rage: "+40% Crit Damage", Despair: "25% chance to Stun on each hit", Revenge: "15% chance to counterattack", Violent: "22% chance of an extra turn",
-  Will: "Immunity for 1 turn at battle start", Shield: "Team Shield (15% of HP) at battle start", Nemesis: "Gain turn meter when damaged", Endure: "+20% Resistance",
+  Will: "Immunity for 1 turn at battle start", Shield: "Team Barrier (15% of HP) at battle start", Nemesis: "Gain turn meter when damaged", Endure: "+20% Status RES",
 };
 const RUNE_SETS = Object.keys(RUNE_INFO);
+// Auto-battle AI styles; "expert" looks ahead by simulating each candidate action (a7_engine.js)
+const AI_STYLES = ["balanced", "aggressive", "safe", "expert"];
+// module sets carry real Arknights module type codes (internal ids stay the same for old saves)
+const RUNE_SET = {
+  Swift: ["FGT", "Fighter"], Fatal: ["DRE", "Dreadnought"], Blade: ["SWO", "Swordmaster"], Focus: ["DEA", "Deadeye"],
+  Energy: ["UNY", "Juggernaut"], Guard: ["PRO", "Protector"], Rage: ["EXE", "Executor"], Despair: ["TRP", "Trapmaster"],
+  Revenge: ["HES", "Duelist"], Violent: ["CHG", "Charger"], Will: ["BLS", "Abjurer"], Shield: ["GUA", "Guardian"],
+  Nemesis: ["BEA", "Standard Bearer"], Endure: ["PLX", "Phalanx Caster"],
+};
+const runeSetName = s => RUNE_SET[s] ? RUNE_SET[s][0] : s;
+const runeSetFull = s => RUNE_SET[s] ? `${RUNE_SET[s][0]} · ${RUNE_SET[s][1]}` : s;

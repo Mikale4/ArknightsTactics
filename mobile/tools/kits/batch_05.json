@@ -1,0 +1,319 @@
+[
+{ "slug": "sharp",
+  "skills": [
+    { "name": "Drawing Sword", "state": { "turns": 4, "def": -1, "hp": 0.3, "basic": { "mult": 2.3 } },
+      "desc": "For 4 turns: DEF drops to 0, Max HP +30%, and basic attacks deal 230% ATK." }
+  ],
+  "talents": [
+    { "name": "Invisible Blade", "stats": { "atk": 0.15, "dodge": 0.3 }, "desc": "ATK +15% and 30% chance to dodge hits." }
+  ] },
+{ "slug": "skadi",
+  "skills": [
+    { "name": "Swift Strike γ", "state": { "turns": 4, "atk": 0.34, "spd": 0.21 },
+      "desc": "For 4 turns: ATK +34%, SPD +21%." },
+    { "name": "Wave Strike", "passive": { "on": "start", "effects": [ { "on": "self", "type": "buff", "what": "ATK_UP", "v": 1.2, "turns": 3 } ] },
+      "desc": "Passive. At battle start, Skadi gains ATK +120% for 3 turns." },
+    { "name": "Tidal Elegy", "state": { "turns": 5, "atk": 1.0, "def": 1.0, "hp": 1.0 },
+      "desc": "For 5 turns: ATK, DEF and Max HP +100%." }
+  ],
+  "talents": [
+    { "name": "Abyssal Predator", "stats": { "atk": 0.16 }, "desc": "ATK +16% (Abyssal Hunter bonus; applies to Skadi herself)." },
+    { "name": "Swift Action", "on": "start", "effects": [ { "on": "self", "type": "atkbar+", "amount": 0.1 } ],
+      "desc": "Starts battle with 10% turn meter." }
+  ] },
+{ "slug": "beehunter",
+  "skills": [
+    { "name": "Flexibility", "passive": { "stats": { "dodge": 0.4 } },
+      "desc": "Passive. 40% chance to dodge hits." },
+    { "name": "Soaring Fists", "state": { "turns": 1, "spd": 0.7, "basic": { "hits": 2 } },
+      "desc": "For 1 turn: SPD +70% and basic attacks hit twice (a flurry of much faster punches)." }
+  ],
+  "talents": [
+    { "name": "Boxer's Concentration", "on": "attack", "effects": [ { "on": "self", "type": "buff", "what": "ATK_UP", "v": 0.3, "turns": 1 } ],
+      "desc": "After attacking, ATK +30% until her next turn ends (6% × 5 stacks of focus)." }
+  ] },
+{ "slug": "chongyue",
+  "skills": [
+    { "name": "Abundant", "target": "enemy", "mult": 2.9,
+      "desc": "Deals 290% ATK Physical damage to the target." },
+    { "name": "Whisk", "target": "enemies", "n": 4, "mult": 3.5,
+      "effects": [ { "on": "target", "type": "bonusIf", "cond": "FRAGILE", "bonusDmg": 1.37 } ],
+      "desc": "Deals 350% ATK Physical damage to up to 4 enemies. Targets made Fragile by his Talent are slammed down for 830% ATK instead." },
+    { "name": "Anatta", "target": "enemies", "n": 3, "mult": 3.0,
+      "desc": "Deals 300% ATK Physical damage to the target and up to 2 nearby enemies." }
+  ],
+  "talents": [
+    { "name": "An End to War", "on": "hit", "chance": 0.25, "effects": [ { "on": "target", "type": "debuff", "what": "FRAGILE", "v": 0.7, "turns": 1 } ],
+      "desc": "Each hit has a 25% chance to make the target Fragile (+70% damage taken, 1T)." },
+    { "name": "All Are Guests", "on": "kill", "effects": [ { "on": "self", "type": "cdReduce", "amount": 1 } ],
+      "desc": "After defeating an enemy, Chongyue's skill cooldowns drop by 1 turn." }
+  ] },
+{ "slug": "dagda",
+  "skills": [
+    { "name": "Counter Technique", "auto": true, "target": "enemy", "mult": 2.8,
+      "effects": [ { "on": "self", "type": "buff", "what": "DMG_REDUCE", "v": 0.5, "turns": 1 } ],
+      "desc": "Auto. When ready, the basic attack deals 280% ATK and Dagda takes 50% less damage until her next turn." },
+    { "name": "Search and Destroy", "state": { "turns": 2, "atk": 0.28, "basic": { "hits": 2, "effects": [ { "on": "target", "type": "dmg", "mult": 0.5, "chance": 0.5 } ] } },
+      "desc": "For 2 turns: ATK +28%, basic attacks hit twice, and Gang Spirit procs 50% more often." }
+  ],
+  "talents": [
+    { "name": "Gang Spirit", "on": "hit", "chance": 0.3, "effects": [ { "on": "target", "type": "dmg", "mult": 0.5 } ],
+      "desc": "Each hit has a 30% chance to deal 150% ATK (an extra 50% ATK Physical damage)." },
+    { "name": "Knight's Honor", "stats": { "hp": 0.2 }, "special": "LIFESTEAL", "amount": 0.2,
+      "desc": "Max HP +20%, and heals for 20% of damage dealt." }
+  ] },
+{ "slug": "flint",
+  "skills": [
+    { "name": "Relentless", "auto": true, "target": "enemy", "mult": 1.9,
+      "effects": [ { "on": "target", "type": "atkbar-", "amount": 0.1 }, { "on": "target", "type": "debuff", "what": "SLOW", "turns": 1 } ],
+      "desc": "Auto. When ready, the basic attack deals 190% ATK, knocks the target back (−10% turn meter) and Slows it (1T)." },
+    { "name": "Display of Might", "state": { "turns": 3, "atk": 0.4, "spd": 0.24, "basic": { "effects": [ { "on": "target", "type": "debuff", "what": "SLOW", "turns": 1 } ] } },
+      "desc": "For 3 turns: ATK +40%, SPD +24%, and basic attacks Slow the target (1T)." }
+  ],
+  "talents": [
+    { "name": "Featherweight", "dmgBonus": [ { "cond": { "skillActive": true }, "v": 0.45 } ],
+      "desc": "Deals +45% damage while a skill is active (she fights unblocked)." }
+  ] },
+{ "slug": "indra",
+  "skills": [
+    { "name": "Armorcrusher", "auto": true, "target": "enemy", "mult": 2.1, "ignoreDef": 0.45,
+      "desc": "Auto. When ready, the basic attack deals 210% ATK and ignores 45% of the target's DEF." },
+    { "name": "Sundered Soul", "state": { "turns": 3, "atk": 0.75, "lifesteal": 0.2, "basic": { "dmg": "arts" } },
+      "desc": "For 3 turns: ATK +75%, basic attacks deal Arts damage, and Indra heals for 20% of damage dealt." }
+  ],
+  "talents": [
+    { "name": "Quick Fists", "stats": { "dodge": 0.33 }, "on": "hurt", "chance": 0.33,
+      "effects": [ { "on": "self", "type": "buff", "what": "ATK_UP", "v": 1.0, "turns": 1 } ],
+      "desc": "33% chance to dodge hits. When attacked, 33% chance to gain ATK +100% for her next turn." }
+  ] },
+{ "slug": "jackie",
+  "skills": [
+    { "name": "Grit Those Teeth!", "auto": true, "target": "enemy", "mult": 2.1,
+      "desc": "Auto. When ready, the basic attack deals 210% ATK." },
+    { "name": "Pay Close Attention!", "basic": false, "state": { "turns": 2, "dodge": 0.6, "counter": 0.6, "basic": { "mult": 1.5 } },
+      "desc": "Doesn't attack this turn. For 2 turns: 60% chance to dodge hits and 60% chance to counter attackers for 150% ATK." }
+  ],
+  "talents": [
+    { "name": "Extreme Evasion", "stats": { "dodge": 0.33, "spd": 0.07 }, "desc": "33% chance to dodge hits and SPD +7%." }
+  ] },
+{ "slug": "mountain",
+  "skills": [
+    { "name": "Left Hook", "auto": true, "target": "enemies", "n": 2, "mult": 2.0,
+      "desc": "Auto. When ready, the basic attack deals 200% ATK to the target and 1 more enemy." },
+    { "name": "Sweeping Stance", "state": { "turns": 99, "atk": 0.5, "def": -0.25, "regen": 0.1, "basic": { "n": 2 } },
+      "desc": "Stance (rest of battle): ATK +50%, DEF −25%, basic attacks hit up to 2 enemies, and restores 10% max HP each turn." },
+    { "name": "Earth-Shattering Smash", "state": { "turns": 3, "atk": 0.7, "spd": -0.45, "basic": { "hits": 2, "effects": [
+        { "on": "target", "type": "atkbar-", "amount": 0.15 },
+        { "on": "target", "type": "dmg", "mult": 0.65, "chance": 0.35 },
+        { "on": "target", "type": "debuff", "what": "ATK_DOWN", "v": 0.15, "turns": 1, "chance": 0.35 } ] } },
+      "desc": "For 3 turns: ATK +70%, SPD −45%, basic attacks hit twice and knock back (−15% turn meter); Forceful Fist procs 55% of the time." }
+  ],
+  "talents": [
+    { "name": "Forceful Fist", "on": "hit", "chance": 0.2, "effects": [
+        { "on": "target", "type": "dmg", "mult": 0.65 },
+        { "on": "target", "type": "debuff", "what": "ATK_DOWN", "v": 0.15, "turns": 1 } ],
+      "desc": "Each hit has a 20% chance to deal 165% damage (+65% ATK) and inflict ATK −15% (1T)." },
+    { "name": "Sturdy Constitution", "stats": { "def": 0.1, "dodge": 0.15 }, "desc": "DEF +10% and 15% chance to dodge hits." }
+  ] },
+{ "slug": "bryophyta",
+  "skills": [
+    { "name": "Power Strike β", "auto": true, "target": "enemy", "mult": 2.0,
+      "desc": "Auto. When ready, the basic attack deals 200% ATK." },
+    { "name": "Earthen Tenacity", "state": { "turns": 4, "atk": 0.6, "onEnd": [ { "on": "self", "type": "debuff", "what": "STUN", "turns": 2 } ] },
+      "effects": [ { "on": "lowest", "type": "buff", "what": "DEF_UP", "v": 0.6, "turns": 4 } ],
+      "desc": "For 4 turns: ATK +60%; the lowest-HP ally gains DEF +60% (4T). Bryophyta is Stunned for 2 turns afterwards." }
+  ],
+  "talents": [
+    { "name": "Cautious and Calculated", "aura": { "who": "melee", "stats": { "def": 0.14 } },
+      "desc": "Allied melee operators, Bryophyta included, gain DEF +14%." }
+  ] },
+{ "slug": "pallas",
+  "skills": [
+    { "name": "Strikes of Victory", "auto": true, "target": "enemy", "hits": 2, "mult": 1.45,
+      "desc": "Auto. When ready, the basic attack strikes twice for 145% ATK each." },
+    { "name": "Whip of Conviction", "state": { "turns": 3, "atk": 0.5, "basic": { "effects": [ { "on": "target", "type": "atkbar-", "amount": 0.15, "chance": 0.7 } ] } },
+      "desc": "For 3 turns: ATK +50%, and basic attacks have a 70% chance to briefly stun the target (−15% turn meter)." },
+    { "name": "Blessing of Heroism", "state": { "turns": 4, "atk": 0.7, "basic": { "n": 3 } },
+      "effects": [ { "on": "random_ally", "type": "buff", "what": "ATK_UP", "v": 0.4, "turns": 4 }, { "on": "random_ally", "type": "buff", "what": "DEF_UP", "v": 0.25, "turns": 4 } ],
+      "desc": "For 4 turns: ATK +70%, basic attacks hit up to 3 enemies; a random ally gains ATK +40% and DEF +25% (4T)." }
+  ],
+  "talents": [
+    { "name": "Birth of a Hero", "while": { "hpAbove": 0.8 }, "whileStats": { "atk": 0.25 },
+      "desc": "Vigor: ATK +25% while HP is above 80%." },
+    { "name": "Goddess' Inspiration", "on": "hit", "effects": [ { "on": "self", "type": "heal", "amount": 0.1 }, { "on": "random_ally", "type": "heal", "amount": 0.1 } ],
+      "desc": "Every hit heals Pallas and a random ally for 10% ATK." }
+  ] },
+{ "slug": "swire",
+  "skills": [
+    { "name": "Command and Dispatch", "state": { "turns": 3 },
+      "effects": [ { "on": "team", "type": "buff", "what": "ATK_UP", "v": 0.24, "turns": 3 } ],
+      "desc": "For 3 turns, her Talent doubles and reaches the whole squad: all allies gain ATK +24%." },
+    { "name": "Cooperative Combat", "state": { "turns": 3, "atk": 0.5 },
+      "effects": [ { "on": "allies", "type": "buff", "what": "ATK_UP", "v": 0.2, "turns": 3 } ],
+      "desc": "For 3 turns: ATK +50%, and other allies gain ATK +20% (Talent ×2.7, +32% for melee allies)." }
+  ],
+  "talents": [
+    { "name": "Melee Combat Guidance", "aura": { "who": "melee", "stats": { "atk": 0.12 } },
+      "desc": "Allied melee operators gain ATK +12%." }
+  ] },
+{ "slug": "whislash",
+  "skills": [
+    { "name": "Motivational Skills", "state": { "turns": 2 },
+      "effects": [ { "on": "team", "type": "buff", "what": "DEF_UP", "v": 0.24, "turns": 2 }, { "on": "team", "type": "buff", "what": "SPD_UP", "v": 0.08, "turns": 2 } ],
+      "desc": "For 2 turns: all allies gain DEF +24% and SPD +8% (Defenders reach DEF +38%, SPD +13% with Rebuke ×2.7)." },
+    { "name": "Whip Sword", "state": { "turns": 3, "atk": 0.35, "def": 0.24, "spd": 0.08, "basic": { "n": 3 } },
+      "effects": [ { "on": "allies", "type": "buff", "what": "DEF_UP", "v": 0.1, "turns": 3 } ],
+      "desc": "For 3 turns: ATK +35%, DEF +24%, SPD +8%, basic attacks hit up to 3 enemies; other allies gain DEF +10%." }
+  ],
+  "talents": [
+    { "name": "Rebuke", "aura": { "who": "class:Defender", "stats": { "spd": 0.05, "def": 0.14 } },
+      "desc": "Allied Defenders gain SPD +5% and DEF +14%." }
+  ] },
+{ "slug": "tequila",
+  "skills": [
+    { "name": "Decisive Action", "state": { "turns": 3, "spd": 0.23, "basic": { "mult": 1.5 } },
+      "desc": "For 3 turns: SPD +23%, and basic attacks deal 150% ATK." },
+    { "name": "Esoteric Bladework", "state": { "turns": 2, "basic": { "n": 2, "mult": 2.0 } },
+      "desc": "For 2 turns, basic attacks hit up to 2 enemies for 200% ATK each." }
+  ],
+  "talents": [
+    { "name": "Waiting Game", "on": "hurt", "cond": { "skillActive": false },
+      "effects": [ { "on": "attacker", "type": "dmg", "mult": 0.23, "dmg": "arts" } ],
+      "desc": "While no skill is active, deals 23% ATK Arts damage to each enemy that hits Tequila." }
+  ] },
+{ "slug": "arene",
+  "skills": [
+    { "name": "Just Kidding", "state": { "turns": 2, "basic": { "hits": 2, "mult": 1.3 } },
+      "desc": "For 2 turns, basic attacks strike twice for 130% ATK each." },
+    { "name": "Deadly Prank", "state": { "turns": 3, "basic": { "mult": 1.4, "dmg": "arts", "n": 2 } },
+      "desc": "For 3 turns, basic attacks deal 140% ATK Arts damage to up to 2 enemies." }
+  ],
+  "talents": [
+    { "name": "Structural Decomposition", "dmgBonus": [ { "cond": {}, "v": 0.43 } ],
+      "desc": "Deals +43% damage (his anti-drone bonus, applied to all enemies)." }
+  ] },
+{ "slug": "ayerscarpe",
+  "skills": [
+    { "name": "Shrapnel Burst", "auto": true, "target": "enemies", "n": 3, "mult": 1.4, "dmg": "arts",
+      "effects": [ { "on": "target", "type": "debuff", "what": "SLOW", "turns": 1 } ],
+      "desc": "Auto. When ready, the basic attack deals 140% ATK Arts damage to up to 3 enemies and Slows them (1T)." },
+    { "name": "Activate Phase Blades", "state": { "turns": 3, "basic": { "dmg": "arts", "effects": [ { "on": "enemies", "type": "dmg", "mult": 1.3, "dmg": "arts" } ] } },
+      "desc": "For 3 turns: basic attacks deal Arts damage and also hit all enemies for 130% ATK Arts damage." }
+  ],
+  "talents": [
+    { "name": "Seek Aid", "aura": { "who": "team", "stats": { "spd": 0.06 } }, "desc": "All allies gain SPD +6%." }
+  ] },
+{ "slug": "frostleaf",
+  "skills": [
+    { "name": "Frost Tomahawk", "auto": true, "target": "enemy", "mult": 1.35,
+      "effects": [ { "on": "target", "type": "debuff", "what": "SLOW", "v": 0.35, "turns": 1 } ],
+      "desc": "Auto. When ready, the basic attack deals 135% ATK and inflicts SPD −35% (1T)." },
+    { "name": "Ice Tomahawk", "state": { "turns": 3, "spd": 0.21, "basic": { "effects": [
+        { "on": "target", "type": "debuff", "what": "SLOW", "v": 0.42, "turns": 1 },
+        { "on": "target", "type": "debuff", "what": "BIND", "turns": 1, "chance": 0.25 } ] } },
+      "desc": "For 3 turns: SPD +21%; basic attacks inflict SPD −42% (1T) with a 25% chance to Bind (1T)." }
+  ],
+  "talents": [
+    { "name": "Covered Strike", "stats": { "spd": -0.1 }, "special": "TRUESIGHT",
+      "desc": "Longer reach: can target Camouflaged enemies, but SPD −10%." }
+  ] },
+{ "slug": "lappland",
+  "skills": [
+    { "name": "Sundial", "auto": true, "state": { "turns": 99, "atk": 0.55, "dodge": 0.3 },
+      "desc": "Auto. For the rest of battle: ATK +55% and 30% chance to dodge hits." },
+    { "name": "Wolf Spirit", "auto": true, "state": { "turns": 2, "atk": 0.9, "basic": { "dmg": "arts", "n": 2, "mult": 1.0 } },
+      "desc": "Auto. For 2 turns: ATK +90%, and basic attacks deal full Arts damage to up to 2 enemies." }
+  ],
+  "talents": [
+    { "name": "Spiritual Destruction", "on": "attack", "effects": [ { "on": "target", "type": "debuff", "what": "SILENCE", "turns": 2 } ],
+      "desc": "Attacks Silence the target for 2 turns, disabling its skills." }
+  ] },
+{ "slug": "midnight",
+  "skills": [
+    { "name": "Enchant Weapon α", "state": { "turns": 5, "atk": 0.35, "basic": { "dmg": "arts" } },
+      "desc": "For 5 turns: ATK +35%, and basic attacks deal Arts damage." }
+  ],
+  "talents": [
+    { "name": "Targeting - Primary", "on": "attack", "chance": 0.2, "effects": [ { "on": "target", "type": "dmg", "mult": 0.6 } ],
+      "desc": "20% chance per attack to deal 160% damage (an extra 60% ATK)." }
+  ] },
+{ "slug": "qiubai",
+  "skills": [
+    { "name": "Halting Feather", "auto": true, "target": "enemies", "n": 3, "mult": 2.4, "dmg": "arts",
+      "effects": [ { "on": "target", "type": "debuff", "what": "BIND", "turns": 1 } ],
+      "desc": "Auto. When ready, the basic attack Binds (1T) and deals 240% ATK Arts damage to the target and up to 2 nearby enemies." },
+    { "name": "Holding Shadow", "target": "aoe_enemies", "mult": 2.4, "dmg": "arts",
+      "effects": [ { "on": "target", "type": "debuff", "what": "SLOW", "turns": 1 } ],
+      "state": { "turns": 1, "atk": 0.9, "onEnd": [ { "on": "enemies", "type": "dmg", "mult": 2.4, "dmg": "phys" } ] },
+      "desc": "Deals 240% ATK Arts damage to all enemies and Slows them (1T); ATK +90% for 1 turn, then 240% ATK Physical damage to all enemies." },
+    { "name": "Questioning Snow", "state": { "turns": 4, "atk": 0.4, "spd": 0.45, "basic": { "dmg": "arts", "n": 3, "mult": 1.0 } },
+      "desc": "For 4 turns: ATK +40%, SPD +45% (stacking ASPD), and basic attacks deal full Arts damage to up to 3 enemies." }
+  ],
+  "talents": [
+    { "name": "Find an Opening", "on": "hit", "cond": { "targetHas": "BIND" },
+      "effects": [ { "on": "target", "type": "dmg", "mult": 0.43, "dmg": "arts" } ],
+      "triggers": [ { "on": "hit", "cond": { "targetHas": "SLOW" }, "effects": [ { "on": "target", "type": "dmg", "mult": 0.43, "dmg": "arts" } ] } ],
+      "desc": "Hits on Slowed or Bound enemies deal an extra 43% ATK Arts damage." },
+    { "name": "Falling Petals", "on": "hit", "chance": 0.23, "effects": [ { "on": "target", "type": "debuff", "what": "BIND", "turns": 1 } ],
+      "desc": "Each hit has a 23% chance to Bind the target (1T)." }
+  ] },
+{ "slug": "thorns",
+  "skills": [
+    { "name": "ATK Up γ", "state": { "turns": 4, "atk": 0.6 },
+      "desc": "For 4 turns: ATK +60%." },
+    { "name": "Protective Spikes", "basic": false, "state": { "turns": 5, "atk": 0.4, "def": 0.7, "counter": 1, "basic": { "n": 4 } },
+      "desc": "Doesn't attack this turn. For 5 turns: ATK +40%, DEF +70%, and every hit taken fires spikes back at up to 4 enemies." },
+    { "name": "Destreza", "state": { "turns": 4, "atk": 0.4, "spd": 0.1, "basic": { "mult": 1.0 } },
+      "desc": "For 4 turns: ATK +40%, SPD +10%, and ranged basic attacks deal full damage." }
+  ],
+  "talents": [
+    { "name": "Nerve Corrosion", "on": "attack", "effects": [ { "on": "target", "type": "dmg", "mult": 0.6, "dmg": "arts" } ],
+      "desc": "Attacks poison the target for an extra 60% ATK Arts damage." },
+    { "name": "Echoes of Ancestral Waves", "on": "turn", "effects": [ { "on": "self", "type": "healPct", "amount": 0.04 } ],
+      "desc": "Restores 4% max HP at the start of each turn." }
+  ] },
+{ "slug": "togawa-sakiko",
+  "skills": [
+    { "name": "Awakening of the New Moon", "target": "enemy", "hits": 8, "mult": 0.42, "dmg": "arts",
+      "desc": "Plays 8 notes at the target, 337% ATK Arts damage in total (each note weaker, 80% down to 4% ATK)." },
+    { "name": "Full Moon Ball", "state": { "turns": 99, "atk": 0.75, "basic": { "n": 2, "dmg": "phys" } },
+      "desc": "Piano stance (rest of battle): ATK +75%, and basic attack notes pierce through, hitting up to 2 enemies for Physical damage." },
+    { "name": "Echoes of the Waning Moon", "state": { "turns": 3, "basic": { "hits": 2, "mult": 1.8, "dmg": "phys", "effects": [ { "on": "random_enemy", "type": "dmg", "mult": 1.8, "dmg": "arts", "hits": 2 } ] } },
+      "desc": "For 3 turns: each basic attack plays 2 Physical notes (180% ATK) at the target and 2 Arts notes (180% ATK) at a random enemy." }
+  ],
+  "talents": [
+    { "name": "Hymnal Notes", "aura": { "who": "enemies", "stats": { "def": -0.3, "aresPct": -0.2 } },
+      "desc": "Her notes fill the field: all enemies have DEF −30% and RES −20%." },
+    { "name": "Fear Not Oblivion", "aura": { "who": "team", "stats": { "spd": 0.1 } },
+      "desc": "All allies gain SPD +10%." }
+  ] },
+{ "slug": "akafuyu",
+  "skills": [
+    { "name": "Nobukage-ryu - Kaminari Gatana no Zei", "state": { "turns": 2, "atk": 0.5, "basic": { "hits": 2 } },
+      "desc": "For 2 turns: ATK +50%, and basic attacks strike twice." },
+    { "name": "Nobukage-ryu - Juumonji Masaru", "state": { "turns": 3, "atk": 0.7, "def": 0.9, "drain": 0.25 },
+      "effects": [ { "on": "self", "type": "shield", "pctHP": 0.3, "turns": 3 } ],
+      "desc": "For 3 turns: ATK +70%, DEF +90%, Barrier of 30% max HP; loses 25% max HP each turn (fuels Tenacity)." }
+  ],
+  "talents": [
+    { "name": "Nobukage-ryu - Hatobu", "while": { "hpBelow": 0.65 }, "whileStats": { "spd": 0.3 },
+      "on": "turn", "cond": { "hpBelow": 0.3 }, "effects": [ { "on": "self", "type": "buff", "what": "SPD_UP", "v": 0.3, "turns": 1 } ],
+      "desc": "Tenacity: SPD +30% while HP is below 65%, rising to +60% below 30%." }
+  ] },
+{ "slug": "hellagur",
+  "skills": [
+    { "name": "Crescent Moon", "auto": true, "target": "enemy", "hits": 2, "mult": 1.45,
+      "desc": "Auto. When ready, the basic attack strikes twice for 145% ATK each." },
+    { "name": "Half Moon", "state": { "turns": 2, "atk": 0.5, "dodge": 0.75, "basic": { "hits": 2 } },
+      "desc": "For 2 turns: ATK +50%, basic attacks strike twice, and 75% chance to dodge hits." },
+    { "name": "Full Moon", "state": { "turns": 2, "atk": 0.7, "basic": { "n": 3 } },
+      "desc": "For 2 turns: ATK +70%, and basic attacks hit up to 3 enemies." }
+  ],
+  "talents": [
+    { "name": "Waxing Moon", "while": { "hpBelow": 0.65 }, "whileStats": { "spd": 0.3 },
+      "on": "turn", "cond": { "hpBelow": 0.3 }, "effects": [ { "on": "self", "type": "buff", "what": "SPD_UP", "v": 0.3, "turns": 1 } ],
+      "desc": "Tenacity: SPD +30% while HP is below 65%, rising to +60% below 30%." },
+    { "name": "Ingenious Strategist", "on": "turn", "effects": [ { "on": "self", "type": "healPct", "amount": 0.07 } ],
+      "desc": "Restores 7% max HP at the start of each turn." }
+  ] }
+]

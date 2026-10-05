@@ -74,8 +74,9 @@ async function fireBolt(a, t, opts = {}) {
   const d = Math.hypot(to[0] - from[0], to[1] - from[1], to[2] - from[2]), dur = clamp(d / (opts.speed || 2.4), 80, 320);
   BT.bolts.push({ from, to, t0: BT.clock, dur, col: opts.col || elc(a), len: opts.len || .32, w: opts.w || 1 });
   addParts(from, 5, { col: "#ffe2a0", speed: 60, life: 160, size: 3, g: 0 });
-  if (opts.sound !== "none") sfx(opts.sound || "arts");
+  if (opts.sound !== "none") sfx(opts.sound || attackSfx(a.u));
   await bwait(dur);
+  if (opts.sound !== "none") { const hit = attackSfx(a.u, true); if (hit !== attackSfx(a.u)) sfx(hit, .6); }
   addParts(to, opts.big ? 22 : 9, { col: opts.col || elc(a), speed: opts.big ? 220 : 160, life: 340, size: opts.big ? 3.6 : 2.4, g: 200 });
 }
 function auraBurst(vu, col, ring = true) {
@@ -88,6 +89,7 @@ function warpFx(v) {
   addParts([v.home.x, 0, v.home.z], 18, { col: v.team === "A" ? "#9fe0ff" : "#ffb0a0", speed: 30, vy: 200, life: 700, size: 2.2, g: 0, spread: 24 });
 }
 function cutIn(vu, skillName) {
+  if (S && S.settings.cutins === false) return;
   const wrap = $(".bwrap"); if (!wrap) return;
   const d = (950 / BT.speed / 1000).toFixed(2) + "s";
   const src = (vu.u.isOp ? opArt(vu.u.key) : enemyArt(vu.u.key)).full;
@@ -117,16 +119,17 @@ async function handle(e) {
       if (e.tms) for (const [uid, tm] of e.tms) { const v = VU(uid); if (v) v.tmT = tm; }
       if (vu) { vu.tmT = 0; camTo(twoShot(vu, null), 1.6); }
       updateStrip();
+      if (BT.cfg.turnLimit && $("#bLimit")) $("#bLimit").innerHTML = `<b>${Math.max(0, BT.cfg.turnLimit - BT.B.allyTurns + (vu && vu.team === "A" ? 1 : 0))}</b> turns left · <b>${fmt(BT.B.damageBy("A"))}</b> damage`;
       await bwait(140);
       break;
     }
     case "wave": {
       for (const [uid, v] of BT.vus) if (v.team === "E" && v.dead) BT.vus.delete(uid);
       const list = e.units.map(uid => addVU(BT.B.byId(uid), true));
-      banner(`Wave ${e.w + 1} / ${BT.B.waves.length}`, "Incoming", "ds");
+      banner(`Wave ${e.w + 1} / ${BT.B.waves.length}`, "Incoming", "ds"); sfx("ui_alarm", .7);
       BT.letterboxT = 1;
       camTo({ ...BT.home, tx: 200, yaw: BT.home.yaw - .45, dist: BT.home.dist * .75, pitch: .2 }, 2.2);
-      await bwait(350); sfx("warp");
+      await bwait(350); sfx("ui_whoosh", .7);
       list.forEach((v, k) => { v.spawnT = BT.clock + k * 110; bwait(k * 110).then(() => warpFx(v)); });
       await bwait(1000);
       BT.letterboxT = 0; hideBanner(); camHome(2.4);
@@ -138,20 +141,22 @@ async function handle(e) {
       BT.act = e; if (!vu) break;
       const tv = e.t != null ? VU(e.t) : null;
       if (e.s3) {
-        BT.letterboxT = 1; sfx("special");
+        BT.letterboxT = 1; sfx("cast");
+        if (vu.team === "A" && vu.u.isOp) voice(vu.u.key, VO.battle);
         cutIn(vu, e.name);
         camTo(focusShot(vu), 5.5);
         setPose(vu, e.anim === "orb" || e.anim === "nova" ? "cast" : "buff", 800);
         auraBurst(vu, elc(vu), false);
         await bwait(950);
-      } else if (e.slot === 2) {
+      } else if (e.slot > 0) {
         banner(e.name, vu.u.n, vu.team === "A" ? "ls" : "ds");
+        if (vu.team === "A" && vu.u.isOp) voice(vu.u.key, VO.battle, .55);
         camTo(tv && tv !== vu ? twoShot(vu, tv) : focusShot(vu), 3.2);
         await bwait(420);
       } else { camTo(twoShot(vu, tv), 2.4); await bwait(90); }
       if (e.anim === "buff" || e.anim === "heal") {
         const col = e.anim === "heal" ? "#5dfc9b" : "#f2c14e";
-        setPose(vu, "buff", 700); sfx(e.anim === "heal" ? "heal" : "special");
+        setPose(vu, "buff", 700); sfx(e.anim === "heal" ? (e.slot ? "buff_heal" : "heal") : e.slot ? "buff_atk" : "cast", .8);
         const group = e.tgt === "team" || e.tgt === "aoe_allies" ? [...BT.vus.values()].filter(v => v.team === vu.team && !v.dead) : tv ? [tv] : [vu];
         if (group.length > 1) camTo({ ...BT.home, tx: avg(group.map(v => v.pos.x)), dist: fitDist(420, 460), yaw: BT.home.yaw + vu.dir * .25, pitch: .2 }, 3);
         if (e.tgt === "ally_single" && tv && tv !== vu) BT.bolts.push({ from: tipW(vu), to: chestW(tv), t0: BT.clock, dur: 260, col, len: .9, w: 1.4 });
@@ -170,7 +175,7 @@ async function handle(e) {
       if (e.dot) { addParts(chestW(vu), 8, { col: "#ff8a3a", speed: 50, vy: 40, life: 600, size: 2.6, g: -30 }); await bwait(300); break; }
       vu.flash = BT.clock + 160;
       if (vu.hp > 0) setPose(vu, "hit", 340);
-      if (e.crit) { BT.shake = Math.max(BT.shake, 9); sfx("crit"); } else sfx("hit");
+      if (e.crit) { BT.shake = Math.max(BT.shake, 9); sfx("bigexplo", .55); }
       await bwait(45);
       break;
     }
@@ -178,6 +183,7 @@ async function handle(e) {
       if (!vu) break;
       vu.hp = e.hp; vu.sh = e.sh;
       floatText(e.u, "+" + fmtFull(e.n), e.isShield ? "prot" : "heal");
+      if (e.isShield) sfx("shield", .6);
       addParts([vu.pos.x, 30, vu.pos.z], 8, { col: e.isShield ? "#c8ffd6" : "#5dfc9b", speed: 30, vy: 90, life: 700, size: 2.2, g: -10, spread: 30 });
       await bwait(60);
       break;
@@ -188,6 +194,7 @@ async function handle(e) {
     case "death": {
       if (!vu) break;
       vu.dead = true; vu.deathT = BT.clock; vu.hp = 0; vu.sh = 0; vu.effs = [];
+      sfx(vu.team === "A" ? "dead_ally" : vu.u.boss ? "dead_boss" : "dead_enemy", .8);
       addParts(chestW(vu), 26, { col: vu.team === "A" ? "#9fd8ff" : "#ffb0a0", speed: 90, vy: 60, life: 1100, size: 2.4, g: -40, spread: 26 });
       BT.shake = Math.max(BT.shake, 5);
       if (BT.target === vu) BT.target = null;
@@ -199,7 +206,7 @@ async function handle(e) {
       if (!vu) break;
       vu.dead = false; vu.gone = false; vu.hp = e.hp; vu.lag = e.hp; vu.sh = 0; vu.effs = [];
       if (!e.inPlace) { vu.pos.x = vu.home.x; vu.pos.z = vu.home.z; vu.spawnT = BT.clock; }
-      warpFx(vu); auraBurst(vu, "#ffd76b"); floatText(e.u, "REVIVED", "buff");
+      warpFx(vu); auraBurst(vu, "#ffd76b"); floatText(e.u, "REVIVED", "buff"); sfx("buff_heal");
       updateStrip();
       await bwait(500);
       break;
@@ -215,10 +222,10 @@ async function handle(e) {
 }
 // projectile look and sound follow the weapon: arrows and bolts, gunfire tracers, or Originium Arts
 function shotStyle(a, col) {
-  const w = a.u.def.fig && a.u.def.fig.w;
-  if (w === "bow" || w === "bowcaster" || a.u.key === "crossbow") return { col: "#efe6d2", len: .09, w: .5, speed: 3.6, sound: "bow" };
-  if (w === "rifle" || w === "pistols" || w === "pistol") return { col: "#ffe2a0", len: .16, w: .42, speed: 4.6, sound: "shot" };
-  return { col, sound: "arts", speed: 2.6 };
+  const w = a.u.def.fig && a.u.def.fig.w, sound = attackSfx(a.u);
+  if (w === "bow" || w === "bowcaster" || a.u.key === "crossbow") return { col: "#efe6d2", len: .09, w: .5, speed: 3.6, sound };
+  if (w === "rifle" || w === "pistols" || w === "pistol") return { col: "#ffe2a0", len: .16, w: .42, speed: 4.6, sound };
+  return { col, sound, speed: 2.6 };
 }
 async function doAttack(e) {
   const a = VU(e.a), ts = e.t.map(VU).filter(v => v && !v.dead);
@@ -228,15 +235,15 @@ async function doAttack(e) {
     case "melee": {
       await engage(a, main);
       if (sp && first) camTo(impactShot(a, main), 5);
-      setPose(a, "swing", e.n > 2 ? 300 : 420); sfx("saber");
+      setPose(a, "swing", e.n > 2 ? 300 : 420); sfx(attackSfx(a.u));
       await bwait(e.n > 2 ? 140 : 200);
-      slashAt(main, col, sp); sparks(main, col);
+      slashAt(main, col, sp); sparks(main, col); sfx(attackSfx(a.u, true), .7);
       if (sp) BT.shake = Math.max(BT.shake, 6);
       break;
     }
     case "spin": {
       if (first) { await moveTo(a, avg(ts.map(t => t.home.x)) - a.dir * 100, 0, 1.2); if (sp) camTo(aoeShot(ts, a), 4); }
-      a.spin = BT.clock; setPose(a, "swing", 520); sfx("saber");
+      a.spin = BT.clock; setPose(a, "swing", 520); sfx(attackSfx(a.u));
       await bwait(260);
       for (const t of ts) { slashAt(t, col, true); sparks(t, col, 8); }
       BT.shake = Math.max(BT.shake, 7);
@@ -268,8 +275,8 @@ async function doAttack(e) {
     case "nova": {
       if (first) { setPose(a, "cast", 900); if (sp) camTo(aoeShot(ts, a), 4); await bwait(180); }
       const cx = avg(ts.map(t => t.pos.x)), cz = avg(ts.map(t => t.pos.z));
-      if (first) { BT.rings.push({ x: cx, z: cz, r0: 30, r1: 260, t0: BT.clock, dur: 520, col, w: 5 }); sfx("boom"); }
-      else sfx("zap");
+      if (first) { BT.rings.push({ x: cx, z: cz, r0: 30, r1: 260, t0: BT.clock, dur: 520, col, w: 5 }); sfx(sp ? "explo" : "nova"); }
+      else sfx(attackSfx(a.u), .6);
       await bwait(first ? 260 : 120);
       for (const t of ts) { addParts([t.pos.x, 4, t.pos.z], 18, { col, speed: 60, vy: 260, life: 560, size: 3.2, g: 80, spread: 20 }); slashAt(t, col, false); }
       if (first) { BT.flash = .35; BT.flashCol = col; BT.shake = Math.max(BT.shake, 10); }
@@ -283,9 +290,10 @@ async function doAttack(e) {
 function skillIcon(u, sk) {
   if (!sk) return IC.boost;
   const ef = sk.effects || [];
-  if (sk.target === "ally_single" || ef.some(e => /heal|revive/.test(e.type))) return IC.heal;
-  if (ef.some(e => e.what === "TAUNT" || e.type === "shieldCasterHP")) return IC.shield;
-  if (sk.target === "self" || sk.target === "team" || sk.target === "aoe_allies") return IC.boost;
+  const st = sk.state || {};
+  if (sk.heal || (st.basic && st.basic.heal) || ef.some(e => /heal|revive/.test(e.type))) return IC.heal;
+  if (st.taunt || st.def > 0 || ef.some(e => e.what === "TAUNT" || e.type === "shield" || e.type === "shieldCasterHP")) return IC.shield;
+  if (!(sk.mult > 0) && !(st.basic) && (!sk.target || /self|team|allies/.test(sk.target))) return IC.boost;
   if (u.cls === "Sniper") return IC.bow;
   if (MELEE.has(u.cls)) return IC.sword;
   return IC.orb;
@@ -293,6 +301,7 @@ function skillIcon(u, sk) {
 function banner(name, sub, cls) { const b = $("#bBan"); if (!b) return; b.className = "bban show " + (cls || ""); b.innerHTML = `<small>${esc(sub)}</small><b>${esc(name)}</b>`; }
 function hideBanner() { const b = $("#bBan"); if (b) b.className = "bban"; }
 function hideControls(txt = "") { BT.picking = false; BT.allyPick = null; const c = $("#bCtl"); if (c) c.innerHTML = txt ? `<div class="bwait">${txt}</div>` : ""; }
+const allyTargeted = (B, u, slot) => { const sk = slot ? u.skills.find(s => s.slot === slot) : B.basicSpec(u); return !!sk && (sk.target === "ally_single" || (!!sk.heal && sk.target !== "team" && sk.target !== "allies")); };
 function showControls(u) {
   const B = BT.B;
   BT.picking = true; BT.allyPick = null;
@@ -301,12 +310,14 @@ function showControls(u) {
     const best = valid.slice().sort((a, b) => a.hp / a.max.hp - b.hp / b.max.hp)[0];
     BT.target = best ? VU(best.uid) : null;
   }
-  const c = $("#bCtl");
-  c.innerHTML = `<div class="bwho"><img class="bpt" src="${opArt(u.key).head}" alt=""><div class="bwn"><b>${esc(u.n)}</b><small id="bHint">Tap an enemy to target · hold for details</small></div></div>
-    <div class="babs">${[1, 2, 3].map(slot => {
-      const sk = u.skills.find(s => s.slot === slot); if (!sk) return "";
-      const ok = B.usable(u, slot), cd = u.cool[slot] || 0;
-      return `<button class="skbtn s${slot} ${ok ? (slot === 3 ? "ready" : "") : "off"}" data-s="${slot}" aria-label="${esc(sk.name)}">${skillIcon(u, sk)}${!ok ? `<span class="cdv">${cd || "✕"}</span>` : ""}<span class="alabel">S${slot}</span></button>`;
+  const c = $("#bCtl"), slots = u.skills.map(s => s.slot).sort((a, b) => a - b);
+  c.innerHTML = `<div class="bwho"><img class="bpt" src="${opArt(u.key).head}" alt=""><div class="bwn"><b>${esc(u.n)}</b><small id="bHint">${slots.length > 3 ? "Tap an enemy · hold for info" : "Tap an enemy to target · hold for details"}</small></div></div>
+    <div class="babs ${slots.length > 3 ? "four" : ""}">${slots.map(slot => {
+      const sk = u.skills.find(s => s.slot === slot);
+      const ok = B.usable(u, slot), cd = u.cool[slot] || 0, active = u.states.some(x => x.slot === slot);
+      const cls = slot === 0 ? "" : slot === u.top && slot >= 2 ? "s3" : slot === 2 ? "s2" : "s1";
+      const label = slot === 0 ? (sk.name === "Attack" ? "ATK" : sk.name) : sk.auto ? `S${slot} Auto` : `S${slot}`;
+      return `<button class="skbtn ${cls} ${sk.auto ? "auto" : ""} ${ok ? (slot === u.top && slot >= 2 ? "ready" : "") : "off"}" data-s="${slot}" aria-label="${esc(sk.name)}">${skillIcon(u, slot ? sk : B.basicSpec(u))}${!ok && !active ? `<span class="cdv">${sk.auto && !cd ? "A" : cd || "✕"}</span>` : ""}${active ? `<span class="act">ON</span>` : ""}<span class="alabel">${esc(label)}</span></button>`;
     }).join("")}</div>`;
   for (const btn of $$(".skbtn", c)) {
     const slot = +btn.dataset.s, sk = u.skills.find(s => s.slot === slot);
@@ -314,34 +325,53 @@ function showControls(u) {
       if (!B.usable(u, slot)) { sfx("tap"); popup(skillPop(u, sk)); return; }
       if (!BT.inputRes) return;
       sfx("tap");
-      if (sk.target === "ally_single") {
+      if (allyTargeted(B, u, slot)) {
         BT.allyPick = slot; $$(".skbtn", c).forEach(b => b.classList.toggle("picking", b === btn));
         const h = $("#bHint"); if (h) h.textContent = "Tap an ally to use " + sk.name;
         return;
       }
       const r = BT.inputRes; BT.inputRes = null; hideControls();
-      r({ slot, t: sk.target === "enemy" && BT.target ? BT.target.u : null });
+      r({ slot, t: BT.target ? BT.target.u : null });
     }, () => popup(skillPop(u, sk)));
   }
 }
+// Real-Time Contract: a turn that runs out of time is played by Auto
+function turnTimer(res, secs) {
+  const c = $("#bCtl"); if (!c) return;
+  const el = document.createElement("div"); el.className = "bturn"; el.innerHTML = '<i></i><span></span>'; c.prepend(el);
+  let left = secs * 1000, last = performance.now();
+  const step = now => {
+    if (BT.inputRes !== res || !BT.on) return;
+    if (!BT.paused) left -= now - last; last = now;
+    el.firstChild.style.width = clamp(left / (secs * 1000), 0, 1) * 100 + "%"; el.lastChild.textContent = Math.ceil(Math.max(0, left) / 1000) + "s";
+    if (left <= 0) { BT.inputRes = null; hideControls("Time's up · Auto"); res("auto"); return; }
+    requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
 function skillPop(u, sk) {
-  const cd = u.cool[sk.slot] || 0, rank = u.sk[sk.slot - 1] || 1;
-  return `<div class="eyebrow">S${sk.slot} · Rank ${rank}${sk.cd ? ` · Cooldown ${sk.cd}` : ""}</div><h3 style="margin:4px 0 6px">${esc(sk.name)}</h3>
-    <p class="small">${esc(sk.desc)}</p>${cd ? `<p class="small" style="margin-top:6px;color:var(--debuff)">Ready in ${cd} turn${cd > 1 ? "s" : ""}.</p>` : ""}`;
+  if (!sk.slot) return `<div class="eyebrow">Basic · ${esc(u.def.branchName || u.cls)} trait</div><h3 style="margin:4px 0 6px">${esc(sk.name)}</h3><p class="small">${esc(sk.desc || "Attacks the target.")}</p>`;
+  const cd = u.cool[sk.slot] || 0, rank = u.sk[sk.slot - 1] || 1, st = u.states.find(x => x.slot === sk.slot);
+  return `<div class="eyebrow">S${sk.slot}${u.isOp ? ` · Skill Level ${rank}` : ""}${sk.cd ? ` · Cooldown ${sk.cd}` : ""}${sk.auto ? " · Auto" : ""}</div><h3 style="margin:4px 0 6px">${esc(sk.name)}</h3>
+    <p class="small">${esc(sk.desc)}</p>${st ? `<p class="small" style="margin-top:6px;color:var(--buff)">Active · about ${Math.max(1, Math.ceil(st.left / 100))} turn${st.left > 100 ? "s" : ""} left.</p>` : cd ? `<p class="small" style="margin-top:6px;color:var(--debuff)">Ready in ${cd} turn${cd > 1 ? "s" : ""}.</p>` : ""}`;
 }
 function unitPop(u) {
   const B = BT.B, e = B.effStat;
+  const tl = u.passives.filter(p => p.name && p.desc);
+  const elem = Object.entries(u.elem || {}).filter(([, v]) => v > 0);
   return `<div class="row"><img class="bpt" src="${u.isOp ? opArt(u.key).head : enemyArt(u.key).head}" alt=""><div><div class="eyebrow">${u.team === "A" ? "Your squad" : "Enemy"}${u.boss ? " · Boss" : ""}</div><h3>${esc(u.n)}</h3>
-    <div class="row" style="gap:4px;margin-top:3px"><span class="el ${u.el}">${u.el}</span><span class="cls">${u.cls}</span></div></div></div>
+    <div class="row" style="gap:4px;margin-top:3px"><span class="el ${u.el}">${u.el}</span><span class="cls">${u.isOp ? esc(u.def.branchName) : u.cls}</span></div></div></div>
     <div class="statgrid" style="margin-top:10px">
-      <div><span>HP</span><b>${fmtFull(u.hp)} / ${fmtFull(u.max.hp)}</b></div><div><span>Shield</span><b>${fmtFull(u.shield)}</b></div>
+      <div><span>HP</span><b>${fmtFull(u.hp)} / ${fmtFull(u.max.hp)}</b></div><div><span>Barrier</span><b>${fmtFull(u.shield)}</b></div>
       <div><span>ATK</span><b>${fmtFull(e.atk(u))}</b></div><div><span>DEF</span><b>${fmtFull(e.def(u))}</b></div>
-      <div><span>SPD</span><b>${Math.round(e.spd(u))}</b></div><div><span>Crit Rate</span><b>${pct(e.cr(u))}</b></div>
-      <div><span>Accuracy</span><b>${pct(u.max.acc)}</b></div><div><span>Resistance</span><b>${pct(u.max.res)}</b></div>
+      <div><span>RES</span><b>${Math.round(e.res(u))}</b></div><div><span>SPD</span><b>${Math.round(e.spd(u))}</b></div>
+      <div><span>Crit Rate</span><b>${pct(e.cr(u))}</b></div><div><span>Dodge</span><b>${pct(e.dodge(u))}</b></div>
     </div>
-    ${u.eff.length ? `<div class="stack" style="gap:4px;margin-top:10px">${u.eff.map(x => `<div class="small"><span class="tag ${FX[x.id].b ? "ls" : "ds"}">${FX[x.id].n}</span> <span class="dim">${FX[x.id].d} · ${x.turns}T</span></div>`).join("")}</div>` : `<p class="tiny dim" style="margin-top:10px">No active effects.</p>`}
-    ${[...u.sets].length ? `<p class="small" style="margin-top:8px"><b class="gold">Modules:</b> <span class="dim">${[...u.sets].map(s => `${s} (${RUNE_INFO[s]})`).join(", ")}</span></p>` : ""}
-    ${u.passives.length ? `<p class="small" style="margin-top:6px"><b class="gold">Talent:</b> <span class="dim">${u.passives.map(p => esc(p.text || p.id)).join(" ")}</span></p>` : ""}`;
+    ${u.states.length ? `<div class="stack" style="gap:4px;margin-top:10px">${u.states.map(s => `<div class="small"><span class="tag ls">${esc(s.name)}</span> <span class="dim">skill active · about ${s.left > 1e9 ? "∞" : Math.max(1, Math.ceil(s.left / 100))} turn(s)</span></div>`).join("")}</div>` : ""}
+    ${u.eff.filter(x => !x.fromState).length ? `<div class="stack" style="gap:4px;margin-top:10px">${u.eff.filter(x => !x.fromState).map(x => `<div class="small"><span class="tag ${FX[x.id].b ? "ls" : "ds"}">${FX[x.id].n}</span> <span class="dim">${fxDesc(x)} · ${x.turns}T</span></div>`).join("")}</div>` : u.states.length ? "" : `<p class="tiny dim" style="margin-top:10px">No active effects.</p>`}
+    ${elem.length ? `<p class="small" style="margin-top:8px"><b class="ds">Elemental Injury:</b> <span class="dim">${elem.map(([k, v]) => `${ELEM[k].n} ${pct(v)}`).join(", ")}</span></p>` : ""}
+    ${[...u.sets].length ? `<p class="small" style="margin-top:8px"><b class="gold">Modules:</b> <span class="dim">${[...u.sets].map(s => `${runeSetName(s)} (${RUNE_INFO[s]})`).join(", ")}</span></p>` : ""}
+    ${tl.length ? `<div class="stack" style="gap:4px;margin-top:8px">${tl.map(p => `<p class="small"><b class="gold">${esc(p.name)}:</b> <span class="dim">${esc(p.desc)}</span></p>`).join("")}</div>` : ""}`;
 }
 function popup(html) {
   const p = $("#bPop"); if (!p) return;
@@ -395,7 +425,8 @@ function sizeCanvas() {
   else if (!BT.act) Object.assign(BT.camT, BT.home);
 }
 function startBattle(cfg) {
-  const B = makeBattle({ allies: cfg.allies, waves: cfg.waves, auto: S.settings.auto, aiStyle: S.settings.ai });
+  music(cfg.bgm || "normal1");
+  const B = makeBattle({ allies: cfg.allies, waves: cfg.waves, auto: S.settings.auto, aiStyle: S.settings.ai, enemyStyle: cfg.enemyStyle, turnLimit: cfg.turnLimit });
   Object.assign(BT, { B, cfg, quit: false, paused: false, speed: S.settings.speed, clock: 0, last: 0, parts: [], bolts: [], floats: [], arcs: [], rings: [], nades: [], slashes: [],
     waits: [], tweens: [], target: null, active: null, picking: false, allyPick: null, orbit: false, act: null, inputRes: null, home: null, shake: 0, shx: 0, shy: 0, flash: 0, letterbox: 1, letterboxT: 1 });
   BT.vus = new Map();
@@ -410,6 +441,7 @@ function startBattle(cfg) {
       <button class="tog" id="bPause" aria-label="Pause">II</button>
     </div>
     <div class="turnstrip" id="bStrip"></div>
+    ${cfg.turnLimit ? `<div class="blimit" id="bLimit"></div>` : ""}
     <div class="bban" id="bBan"></div>
     <div class="bctl" id="bCtl"><div class="bwait">Deploying…</div></div>
     <div class="bpop" id="bPop" hidden></div>
@@ -429,20 +461,20 @@ function startBattle(cfg) {
     popup(`<h2>Paused</h2><p class="small dim" style="margin:6px 0 12px">${esc(cfg.title || "")}</p>
       <div class="stack" style="gap:8px"><button class="btn wide" id="bRes">Resume</button>
       <button class="btn ghost wide" id="bAi">Auto AI: ${S.settings.ai}</button>
-      <button class="btn ghost wide" id="bSnd">Sound: ${S.settings.sound ? "On" : "Off"}</button>
+      <button class="btn ghost wide" id="bSnd">Sound: ${muted() ? "Off" : "On"}</button>
       <button class="btn red wide" id="bQuit">Give Up</button></div>`);
     $("#bPopX").remove();
     const close = () => { $("#bPop").hidden = true; BT.paused = false; };
     $("#bPop").onclick = ev => { if (ev.target === $("#bPop")) close(); };
     $("#bRes").onclick = close;
-    $("#bAi").onclick = () => { const order = ["balanced", "aggressive", "safe"]; S.settings.ai = order[(order.indexOf(S.settings.ai) + 1) % 3]; B.aiStyle = S.settings.ai; save(); $("#bAi").textContent = "Auto AI: " + S.settings.ai; };
-    $("#bSnd").onclick = () => { S.settings.sound = !S.settings.sound; save(); $("#bSnd").textContent = "Sound: " + (S.settings.sound ? "On" : "Off"); };
+    $("#bAi").onclick = () => { const order = AI_STYLES; S.settings.ai = order[(order.indexOf(S.settings.ai) + 1) % order.length]; B.aiStyle = S.settings.ai; save(); $("#bAi").textContent = "Auto AI: " + S.settings.ai; };
+    $("#bSnd").onclick = () => { setAudioPref("mute", !muted()); $("#bSnd").textContent = "Sound: " + (muted() ? "Off" : "On"); };
     $("#bQuit").onclick = () => { BT.quit = true; BT.paused = false; if (BT.inputRes) { BT.inputRes("quit"); BT.inputRes = null; } closeBattle(); cfg.onQuit && cfg.onQuit(); };
   };
   press(BT.cv, ev => {
     const r = BT.cv.getBoundingClientRect(), vu = unitAt(ev.clientX - r.left, ev.clientY - r.top);
     if (!vu || !BT.picking || !BT.B.waiting) return;
-    if (BT.allyPick && vu.team === "A" && BT.inputRes) {
+    if (BT.allyPick != null && vu.team === "A" && BT.inputRes) {
       const r2 = BT.inputRes; BT.inputRes = null; const slot = BT.allyPick; hideControls(); sfx("tap"); r2({ slot, t: vu.u }); return;
     }
     if (vu.team === "E" && BT.B.targetable(BT.B.waiting).includes(vu.u)) { BT.target = vu; sfx("tap"); }
@@ -474,6 +506,7 @@ async function intro() {
   mine.forEach((v, k) => { v.spawnT = BT.clock + k * 110; bwait(k * 110).then(() => warpFx(v)); });
   await bwait(1050);
   hideBanner(); BT.letterboxT = 0;
+  { const lead = BT.B.units.find(u => u.team === "A" && u.isOp); if (lead) voice(lead.key, VO.begin, .9); }
   camHome(1.8);
   updateStrip();
   await bwait(500);
@@ -491,7 +524,7 @@ async function runBattle() {
       if (B.auto) B.autoAct();
       else {
         camHome(3);
-        const ch = await new Promise(res => { BT.inputRes = res; showControls(B.waiting); });
+        const ch = await new Promise(res => { BT.inputRes = res; showControls(B.waiting); if (BT.cfg.timer) turnTimer(res, BT.cfg.timer); });
         if (ch === "quit" || BT.quit) return;
         if (ch === "auto") B.autoAct(); else B.playerAct(ch.slot, ch.t);
       }
@@ -510,12 +543,13 @@ async function outro() {
   if (res.win) {
     for (const v of mine) setPose(v, "victory", 0, false);
     camTo({ tx: avg(mine.map(v => v.pos.x)), ty: 60, tz: avg(mine.map(v => v.pos.z)), yaw: h.yaw + .55, pitch: .1, dist: fitDist(320, 360), fov: .62, roll: 0 }, 1.8);
-    BT.orbit = true; sfx("win"); banner("Mission Accomplished", "", "ls");
+    BT.orbit = true; sfx("ui_win"); music("victory"); banner("Mission Accomplished", "", "ls");
   } else {
     const foes = [...BT.vus.values()].filter(v => v.team === "E" && !v.dead);
     for (const v of foes) setPose(v, "victory", 0, false);
     camTo({ tx: avg(foes.map(v => v.pos.x)), ty: 60, tz: 0, yaw: h.yaw - .5, pitch: .14, dist: fitDist(320, 380), fov: .62, roll: 0 }, 1.4);
-    sfx("lose"); banner("Mission Failed", "", "ds");
+    if (res.timeUp) { sfx("ui_win"); music("victory"); banner("Time Up", "The squad withdraws", "ls"); }
+    else { sfx("ui_lose"); music("failed"); banner("Mission Failed", "", "ds"); }
   }
   BT.letterboxT = 1;
   await bwait(1600);
@@ -526,16 +560,21 @@ async function outro() {
   el.className = "result";
   const missions = out.missions || null;
   el.innerHTML = `<div class="eyebrow">${esc(BT.cfg.sub || "")}</div>
-    <h1 class="${res.win ? "gold" : "ds"}">${res.win ? "Mission<br>Accomplished" : "Mission<br>Failed"}</h1>
+    <h1 class="${res.win || res.timeUp ? "gold" : "ds"}">${res.win ? "Mission<br>Accomplished" : res.timeUp ? "Operation<br>Complete" : "Mission<br>Failed"}</h1>
+    ${out.note ? `<p class="small">${esc(out.note)}</p>` : ""}
     ${missions ? `<div class="bigstars">${[0, 1, 2].map(k => `<span class="${missions[k].ok ? "on" : ""}">${missions[k].ok ? IC.star : IC.starOff}</span>`).join("")}</div>
       <div class="stack" style="gap:4px;text-align:left">${missions.map(m => `<div class="mission">${m.ok ? IC.check : IC.cross}<span>${esc(m.n)}</span></div>`).join("")}</div>` : ""}
-    ${!res.win ? `<p class="small dim" style="max-width:34ch">Level up and promote your operators, equip modules, or try a different leader and element matchup.</p>` : ""}
+    ${!res.win && !res.timeUp ? `<p class="small dim" style="max-width:34ch">Level up and promote your operators, equip modules, or try a different leader and element matchup.</p>` : ""}
     ${out.rewards && out.rewards.length ? `<div class="rewards">${rewardsHTML(out.rewards)}</div>` : ""}
     <div class="row" style="gap:10px;margin-top:6px">
       ${BT.cfg.retry ? `<button class="btn ghost" id="rRetry">Retry</button>` : ""}
       <button class="btn" id="rDone">Continue</button>
     </div>`;
   $(".bwrap").appendChild(el);
+  // stars ring in one by one; the squad leader reacts
+  const nStars = missions ? missions.filter(m => m.ok).length : 0;
+  for (let k = 0; k < nStars; k++) setTimeout(() => sfx("ui_star", .8), 250 + k * 280);
+  { const lead = B.units.find(u => u.team === "A" && u.isOp); if (lead) setTimeout(() => voice(lead.key, !res.win ? VO.fail : !missions || nStars === 3 ? VO.three : VO.clear), 500 + nStars * 280); }
   $("#rDone").onclick = () => { closeBattle(); BT.cfg.onClose && BT.cfg.onClose(res); };
   if ($("#rRetry")) $("#rRetry").onclick = () => { const r = BT.cfg.retry; closeBattle(); r(); };
 }

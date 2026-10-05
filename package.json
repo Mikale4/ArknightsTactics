@@ -1,14 +1,17 @@
 {
   "name": "arknights-tactics",
   "private": true,
-  "description": "Single-file HTML games: Arknights Tactics (original and mobile) and Galactic Heroes.",
+  "description": "Single-file HTML games: Arknights Tactics (original desktop and mobile).",
   "scripts": {
-    "build": "sh mobile/src/build.sh && sh galactic-heroes/src/build.sh",
+    "build": "sh mobile/src/build.sh",
     "build:mobile": "sh mobile/src/build.sh",
-    "build:gh": "sh galactic-heroes/src/build.sh",
     "test:mobile": "node mobile/tests/phone.js",
     "test:figures": "node mobile/tests/figures.js",
     "test:balance": "node mobile/tests/sim.js",
+    "test:demo": "node mobile/tests/demo.js",
+    "test:accounts": "node mobile/tests/accounts.js",
+    "test:push": "node mobile/tests/push.js",
+    "test:social": "node mobile/tests/social.js",
     "serve": "python3 -m http.server 8000"
   },
   "devDependencies": {

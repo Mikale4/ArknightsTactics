@@ -1,0 +1,232 @@
+[
+{ "slug": "vigna",
+  "skills": [
+    { "name": "ATK Up β", "state": { "turns": 3, "atk": 0.5 },
+      "desc": "For 3 turns: ATK +50%." },
+    { "name": "Hammer-On", "state": { "turns": 3, "atk": 1.5, "spd": -0.3 },
+      "desc": "For 3 turns: ATK +150%, SPD −30% (slower, heavier attacks)." }
+  ],
+  "talents": [
+    { "name": "Fierce Stabbing", "on": "attack", "cond": { "skillActive": false }, "chance": 0.1,
+      "effects": [ { "on": "target", "type": "dmg", "mult": 1.1 } ],
+      "triggers": [ { "on": "attack", "cond": { "skillActive": true }, "chance": 0.3, "effects": [ { "on": "target", "type": "dmg", "mult": 1.1 } ] } ],
+      "desc": "Each attack has a 10% chance (30% while a skill is active) to deal an extra 110% ATK damage." }
+  ] },
+{ "slug": "wild-mane",
+  "skills": [
+    { "name": "Stabbing Lance", "passive": { "on": "start", "effects": [ { "on": "self", "type": "buff", "what": "SPD_UP", "v": 0.6, "turns": 3 } ] },
+      "desc": "Passive. At battle start, SPD +60% for 3 turns." },
+    { "name": "Lance Charge", "state": { "turns": 3, "atk": 0.6, "basic": { "reach": true, "effects": [ { "on": "target", "type": "atkbar-", "amount": 0.2 } ] } },
+      "desc": "For 3 turns: ATK +60%, basic attacks reach past Taunt and push the target back (turn meter −20%)." }
+  ],
+  "talents": [
+    { "name": "Forward March", "aura": { "who": "class:Guard", "stats": { "spd": 0.05 } },
+      "desc": "Allied Guards gain SPD +5%." }
+  ] },
+{ "slug": "chiave",
+  "skills": [
+    { "name": "Charge γ", "auto": true, "target": "team", "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.3 } ],
+      "desc": "Auto. When ready, all allies gain 30% turn meter." },
+    { "name": "Blazing Wire Stripper", "target": "aoe_enemies", "mult": 2.8, "dmg": "arts",
+      "effects": [ { "on": "target", "type": "debuff", "what": "RES_DOWN", "v": 10, "turns": 1 }, { "on": "team", "type": "atkbar+", "amount": 0.3 } ],
+      "desc": "Deals 280% ATK Arts damage to all enemies and RES −10 (1T). All allies gain 30% turn meter." }
+  ],
+  "talents": [
+    { "name": "Technical Expertise", "stats": { "atk": 0.13, "def": 0.13 },
+      "desc": "ATK and DEF +13% (the bonus for one Robot squadmate, always applied)." }
+  ] },
+{ "slug": "courier",
+  "skills": [
+    { "name": "Charge β", "auto": true, "target": "team", "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.3 } ],
+      "desc": "Auto. When ready, all allies gain 30% turn meter." },
+    { "name": "Command - Defense", "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.3 } ], "state": { "turns": 2, "def": 0.5 },
+      "desc": "All allies gain 30% turn meter. For 2 turns: DEF +50%." }
+  ],
+  "talents": [
+    { "name": "Karlan Patrol", "while": { "enemiesAlive": 2 }, "whileStats": { "def": 0.19 },
+      "desc": "DEF +19% while 2 or more enemies remain." }
+  ] },
+{ "slug": "fang",
+  "skills": [
+    { "name": "Charge α", "auto": true, "target": "team", "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.24 } ],
+      "desc": "Auto. When ready, all allies gain 24% turn meter." }
+  ],
+  "talents": [
+    { "name": "Lightweight", "on": "start", "effects": [ { "on": "self", "type": "atkbar+", "amount": 0.1 } ],
+      "desc": "Fang starts battle with 10% turn meter." }
+  ] },
+{ "slug": "flametail",
+  "skills": [
+    { "name": "Quick Intuition", "auto": true, "target": "team",
+      "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.24 }, { "on": "self", "type": "buff", "what": "DODGE", "v": 1, "turns": 1 } ],
+      "desc": "Auto. When ready, all allies gain 24% turn meter and Flametail gains Dodge +100% (1T) to slip the next attack." },
+    { "name": "'Pinus Sylvestris'", "target": "enemies", "n": 6, "hits": 2, "mult": 2.1,
+      "effects": [ { "on": "target", "type": "debuff", "what": "STUN", "turns": 1 }, { "on": "team", "type": "atkbar+", "amount": 0.3 },
+                   { "on": "team", "type": "buff", "what": "DODGE", "v": 0.45, "turns": 1 } ],
+      "desc": "Deals 210% ATK twice to up to 6 enemies and Stuns them (1T). All allies gain 30% turn meter and Dodge +45% (1T)." },
+    { "name": "Flameheart", "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.3 } ],
+      "state": { "turns": 1, "atk": 0.6, "spd": 0.6, "dodge": 0.8 },
+      "desc": "All allies gain 30% turn meter. For 1 turn: ATK +60%, SPD +60%, Dodge +80%." }
+  ],
+  "talents": [
+    { "name": "Vanguard Swordsmanship", "on": "attack", "chance": 0.25,
+      "effects": [ { "on": "target", "type": "dmg", "mult": 1.0 }, { "on": "random_enemy", "type": "dmg", "mult": 1.0, "hits": 2 } ],
+      "desc": "After attacking, 25% chance (her dodge rate) to follow up: 1 more hit on the target and 2 hits on a random enemy (100% ATK each)." },
+    { "name": "Pinus Sylvestris Leader", "stats": { "dodge": 0.25 }, "aura": { "who": "random_ally", "stats": { "dodge": 0.25 } },
+      "desc": "Dodge +25%, and one random ally gains Dodge +25% at battle start." }
+  ] },
+{ "slug": "poncirus",
+  "skills": [
+    { "name": "Charge γ", "auto": true, "target": "team", "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.3 } ],
+      "desc": "Auto. When ready, all allies gain 30% turn meter." },
+    { "name": "Engineer's Wish", "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.3 } ],
+      "state": { "turns": 99, "atk": 0.2, "def": 0.5, "basic": { "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.04 } ] } },
+      "desc": "All allies gain 30% turn meter. Then for the rest of battle: ATK +20%, DEF +50%, and each basic attack gives all allies 4% turn meter." }
+  ],
+  "talents": [
+    { "name": "Demolition Team's Code", "stats": { "hp": 0.18 },
+      "desc": "Max HP +18%." }
+  ] },
+{ "slug": "saga",
+  "skills": [
+    { "name": "Charge γ", "auto": true, "target": "team", "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.3 } ],
+      "desc": "Auto. When ready, all allies gain 30% turn meter." },
+    { "name": "Cleansing Evil", "target": "enemies", "n": 6, "mult": 3.2,
+      "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.16 }, { "on": "self", "type": "cdReduce", "amount": 1, "onKill": true } ],
+      "desc": "Deals 320% ATK to up to 6 enemies. All allies gain 16% turn meter. If it defeats an enemy, its cooldown drops by 1 turn." },
+    { "name": "Fierce Glare", "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.3 } ],
+      "state": { "turns": 3, "atk": 1.0, "spd": -0.3, "basic": { "n": 2, "effects": [ { "on": "target", "type": "dmg", "mult": 1.0, "chance": 0.5 } ] } },
+      "desc": "All allies gain 30% turn meter. For 3 turns: ATK +100%, SPD −30%, basic attacks hit 2 enemies with a 50% chance of an extra strike." }
+  ],
+  "talents": [
+    { "name": "Preaching", "on": "kill", "effects": [ { "on": "self", "type": "cdReduce", "amount": 1 } ],
+      "desc": "After defeating an enemy, Saga's skill cooldowns drop by 1 turn." },
+    { "name": "Clear Mind", "on": "lowhp", "cond": { "hpBelow": 0.4 }, "once": true,
+      "effects": [ { "on": "self", "type": "buff", "what": "DODGE", "v": 0.7, "turns": 2 }, { "on": "self", "type": "buff", "what": "HOT", "v": 0.48, "turns": 2 } ],
+      "desc": "Once, when HP drops below 40%: Dodge +70% and restores 48% max HP per turn for 2 turns." }
+  ] },
+{ "slug": "scavenger",
+  "skills": [
+    { "name": "Charge β", "auto": true, "target": "team", "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.3 } ],
+      "desc": "Auto. When ready, all allies gain 30% turn meter." },
+    { "name": "Command - Attack", "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.3 } ], "state": { "turns": 2, "atk": 0.4 },
+      "desc": "All allies gain 30% turn meter. For 2 turns: ATK +40%." }
+  ],
+  "talents": [
+    { "name": "Lone Wolf", "stats": { "atk": 0.13, "def": 0.13 },
+      "desc": "ATK and DEF +13%." }
+  ] },
+{ "slug": "siege",
+  "skills": [
+    { "name": "Charge γ", "auto": true, "target": "team", "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.3 } ],
+      "desc": "Auto. When ready, all allies gain 30% turn meter." },
+    { "name": "Aerial Hammer", "auto": true, "target": "enemies", "n": 3, "mult": 2.8,
+      "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.12 } ],
+      "desc": "Auto. When ready, the basic attack deals 280% ATK to up to 3 enemies and all allies gain 12% turn meter." },
+    { "name": "Skull Breaker", "state": { "turns": 3, "spd": -0.5, "basic": { "mult": 3.2, "effects": [ { "on": "target", "type": "debuff", "what": "STUN", "turns": 1, "chance": 0.4 } ] } },
+      "desc": "For 3 turns: SPD −50%, basic attacks deal 320% ATK with a 40% chance to Stun (1T)." }
+  ],
+  "talents": [
+    { "name": "King of Beasts", "aura": { "who": "class:Vanguard", "stats": { "atk": 0.1, "def": 0.1 } },
+      "desc": "Allied Vanguards gain ATK and DEF +10%." },
+    { "name": "Crushing", "on": "kill", "chance": 0.5, "effects": [ { "on": "self", "type": "cdReduce", "amount": 1 } ],
+      "desc": "After defeating an enemy, 50% chance to reduce Siege's skill cooldowns by 1 turn." }
+  ] },
+{ "slug": "tulip",
+  "skills": [
+    { "name": "Lingering Scent", "target": "enemies", "n": 2, "hits": 4, "mult": 1.7, "ignoreDef": 0.5,
+      "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.28 } ],
+      "desc": "8 chain slashes (170% ATK each, ignore 50% DEF): 4 each on up to 2 enemies. All allies gain 28% turn meter." }
+  ],
+  "talents": [
+    { "name": "Boundless Heart", "on": "start", "effects": [ { "on": "self", "type": "cdReduce", "amount": 2 } ],
+      "triggers": [ { "on": "skill", "once": true, "effects": [ { "on": "self", "type": "cdReduce", "amount": 2 } ] } ],
+      "desc": "Skill cooldown starts 2 turns shorter, and drops by 2 more turns after Tulip's first skill use." }
+  ] },
+{ "slug": "vanilla",
+  "skills": [
+    { "name": "Command - Reinforcement", "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.24 } ], "state": { "turns": 1, "atk": 0.35 },
+      "desc": "All allies gain 24% turn meter. For 1 turn: ATK +35%." }
+  ],
+  "talents": [
+    { "name": "ATK Up", "stats": { "atk": 0.08 },
+      "desc": "ATK +8%." }
+  ] },
+{ "slug": "yato",
+  "skills": [],
+  "talents": [
+    { "name": "Fast Redeployment", "special": "UNDYING", "amount": 0.3, "turns": 1,
+      "desc": "Once per battle, survives a lethal hit at 30% HP and is Invincible for 1 turn." }
+  ] },
+{ "slug": "zima",
+  "skills": [
+    { "name": "Charge γ", "auto": true, "target": "team", "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.3 } ],
+      "desc": "Auto. When ready, all allies gain 30% turn meter." },
+    { "name": "Ursus's Roar",
+      "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.3 }, { "on": "team", "type": "buff", "what": "ATK_UP", "v": 0.45, "turns": 1 },
+                   { "on": "team", "type": "buff", "what": "DEF_UP", "v": 0.45, "turns": 1 } ],
+      "state": { "turns": 1, "basic": { "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.04, "onKill": true } ] } },
+      "desc": "All allies gain 30% turn meter and ATK +45%, DEF +45% (1T). For 1 turn, Zima's kills give all allies 4% more turn meter." }
+  ],
+  "talents": [
+    { "name": "Spearheader", "aura": { "who": "class:Vanguard", "stats": { "spd": 0.05 } },
+      "desc": "Allied Vanguards gain SPD +5%." }
+  ] },
+{ "slug": "beanstalk",
+  "skills": [
+    { "name": "Sentinel Command", "target": "team",
+      "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.3 }, { "on": "random_enemy", "type": "debuff", "what": "BIND", "turns": 1 } ],
+      "desc": "All allies gain 30% turn meter. A refreshed Metal Crab Binds a random enemy (1T)." },
+    { "name": "'Everyone Together!'",
+      "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.3 }, { "on": "enemies", "type": "debuff", "what": "BIND", "turns": 1 } ],
+      "state": { "turns": 2, "basic": { "effects": [ { "on": "target", "type": "debuff", "what": "BIND", "turns": 1 } ] } },
+      "desc": "All allies gain 30% turn meter and a swarm of Metal Crabs Binds all enemies (1T). For 2 turns, basic attacks Bind the target (1T)." }
+  ],
+  "talents": [
+    { "name": "Professional Breeder", "on": "attack",
+      "effects": [ { "on": "target", "type": "dmg", "mult": 0.5 }, { "on": "target", "type": "debuff", "what": "BIND", "turns": 1, "chance": 0.3 } ],
+      "desc": "Her Metal Crab joins each attack: +50% ATK Physical damage and a 30% chance to Bind the target (1T)." }
+  ] },
+{ "slug": "muelsyse",
+  "skills": [
+    { "name": "Progressive Moisturization", "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.3 } ],
+      "state": { "turns": 2, "atk": 0.35, "spd": 0.21 },
+      "desc": "All allies gain 30% turn meter. For 2 turns: ATK +35%, SPD +21%." },
+    { "name": "Ecological Interaction", "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.3 } ],
+      "state": { "turns": 2, "atk": 0.35, "dmgTaken": -0.2, "basic": { "hits": 2, "n": 2 } },
+      "desc": "All allies gain 30% turn meter. For 2 turns: ATK +35%, takes 20% less damage, basic attacks strike twice at up to 2 enemies." },
+    { "name": "Superficial Regulation",
+      "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.3 }, { "on": "enemies", "type": "atkbar-", "amount": 0.1 },
+                   { "on": "random_enemy", "type": "debuff", "what": "STUN", "turns": 1 } ],
+      "state": { "turns": 2, "atk": 0.35, "basic": { "effects": [ { "on": "target", "type": "debuff", "what": "BIND", "turns": 1 } ] } },
+      "desc": "All allies gain 30% turn meter; enemies lose 10% turn meter and one is Stunned (1T). For 2 turns: ATK +35%, basic attacks Bind (1T)." }
+  ],
+  "talents": [
+    { "name": "Pure Water is Life", "on": "attack",
+      "effects": [ { "on": "random_enemy", "type": "dmg", "mult": 0.8 }, { "on": "target", "type": "debuff", "what": "BIND", "turns": 1, "chance": 0.3 } ],
+      "desc": "Her Flowing Shape fights alongside: after each attack it strikes a random enemy (80% ATK), 30% chance to Bind the target (1T)." },
+    { "name": "Expenditure Economization", "on": "start",
+      "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.08 }, { "on": "random_ally", "type": "atkbar+", "amount": 0.08 } ],
+      "desc": "All allies start battle with 8% turn meter, and one random ally gets 8% more." }
+  ] },
+{ "slug": "vigil",
+  "skills": [
+    { "name": "Packleader's Call", "auto": true, "target": "enemy", "mult": 1.0,
+      "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.28 }, { "on": "target", "type": "debuff", "what": "BIND", "turns": 1 } ],
+      "desc": "Auto. When ready, a new Wolf Shadow strikes the target (100% ATK) and Binds it (1T). All allies gain 28% turn meter." },
+    { "name": "Packleader's Gift", "auto": true, "target": "enemy", "mult": 1.7,
+      "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.08 }, { "on": "self", "type": "healPct", "amount": 0.15 },
+                   { "on": "team", "type": "atkbar+", "amount": 0.04, "onKill": true } ],
+      "desc": "Auto. When ready, the Wolfpack strikes for 170% ATK and Vigil restores 15% max HP. All allies gain 8% turn meter (+4% on a kill)." },
+    { "name": "Packleader's Dignity", "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.3 } ],
+      "state": { "turns": 2, "basic": { "hits": 3, "effects": [ { "on": "target", "type": "dmg", "mult": 0.3, "dmg": "arts", "hits": 3 } ] } },
+      "desc": "All allies gain 30% turn meter. For 2 turns, basic attacks hit 3 times and add 3 × 30% ATK Arts damage." }
+  ],
+  "talents": [
+    { "name": "Leader of the Wolfpack", "on": "attack",
+      "effects": [ { "on": "target", "type": "dmg", "mult": 0.5, "hits": 2 }, { "on": "target", "type": "debuff", "what": "BIND", "turns": 1, "chance": 0.3 } ],
+      "desc": "Two Wolf Shadows join each attack: 2 extra hits (50% ATK each) and a 30% chance to Bind the target (1T)." },
+    { "name": "Wolven Nature", "dmgBonus": [ { "cond": { "targetHas": "BIND" }, "v": 0.3 } ],
+      "desc": "Deals +30% damage to Bound enemies, as Vigil's strikes pierce the DEF of foes pinned by the Wolfpack." }
+  ] }
+]

@@ -1,0 +1,950 @@
+{
+"12f": [
+"voice_en",
+"char_009_12fce"
+],
+"absinthe": [
+"voice_en",
+"char_405_absin"
+],
+"adnachiel": [
+"voice_en",
+"char_211_adnach"
+],
+"akafuyu": [
+"voice_en",
+"char_475_akafyu"
+],
+"ambriel": [
+"voice_en",
+"char_302_glaze"
+],
+"amiya": [
+"voice_en",
+"char_002_amiya"
+],
+"angelina": [
+"voice_en",
+"char_291_aglina"
+],
+"ansel": [
+"voice_en",
+"char_212_ansel"
+],
+"april": [
+"voice_en",
+"char_365_aprl"
+],
+"archetto": [
+"voice_en",
+"char_332_archet"
+],
+"arene": [
+"voice_en",
+"char_271_spikes"
+],
+"aroma": [
+"voice_en",
+"char_446_aroma"
+],
+"asbestos": [
+"voice_en",
+"char_378_asbest"
+],
+"ash": [
+"voice",
+"char_456_ash"
+],
+"ashlock": [
+"voice_en",
+"char_431_ashlok"
+],
+"astesia": [
+"voice_en",
+"char_274_astesi"
+],
+"astgenne": [
+"voice_en",
+"char_135_halo"
+],
+"aurora": [
+"voice_en",
+"char_422_aurora"
+],
+"ayerscarpe": [
+"voice_en",
+"char_294_ayer"
+],
+"bagpipe": [
+"voice_en",
+"char_222_bpipe"
+],
+"beagle": [
+"voice_en",
+"char_122_beagle"
+],
+"beanstalk": [
+"voice",
+"char_452_bstalk"
+],
+"beehunter": [
+"voice_en",
+"char_137_brownb"
+],
+"beeswax": [
+"voice_en",
+"char_344_beewax"
+],
+"bena": [
+"voice_en",
+"char_369_bena"
+],
+"bibeak": [
+"voice_en",
+"char_252_bibeak"
+],
+"bison": [
+"voice_en",
+"char_325_bison"
+],
+"blaze": [
+"voice_en",
+"char_017_huang"
+],
+"blemishine": [
+"voice_en",
+"char_423_blemsh"
+],
+"blitz": [
+"voice",
+"char_457_blitz"
+],
+"blue-poison": [
+"voice_en",
+"char_129_bluep"
+],
+"breeze": [
+"voice_en",
+"char_275_breeze"
+],
+"broca": [
+"voice_en",
+"char_356_broca"
+],
+"bryophyta": [
+"voice_en",
+"char_4106_bryota"
+],
+"bubble": [
+"voice_en",
+"char_381_bubble"
+],
+"cantabile": [
+"voice_en",
+"char_497_ctable"
+],
+"cardigan": [
+"voice_en",
+"char_209_ardign"
+],
+"castle-3": [
+"voice_en",
+"char_286_cast3"
+],
+"cement": [
+"voice_en",
+"char_464_cement"
+],
+"ceobe": [
+"voice_en",
+"char_2013_cerber"
+],
+"ceylon": [
+"voice_en",
+"char_348_ceylon"
+],
+"chiave": [
+"voice_en",
+"char_349_chiave"
+],
+"chongyue": [
+"voice_en",
+"char_2024_chyue"
+],
+"click": [
+"voice_en",
+"char_328_cammou"
+],
+"cliffheart": [
+"voice_en",
+"char_173_slchan"
+],
+"conviction": [
+"voice_en",
+"char_159_peacok"
+],
+"corroserum": [
+"voice_en",
+"char_489_serum"
+],
+"courier": [
+"voice_en",
+"char_198_blackd"
+],
+"croissant": [
+"voice_en",
+"char_201_moeshd"
+],
+"cuora": [
+"voice_en",
+"char_150_snakek"
+],
+"cutter": [
+"voice_en",
+"char_301_cutter"
+],
+"czerny": [
+"voice_en",
+"char_4047_pianst"
+],
+"dagda": [
+"voice_en",
+"char_157_dagda"
+],
+"deepcolor": [
+"voice_en",
+"char_110_deepcl"
+],
+"delphine": [
+"voice_en",
+"char_4110_delphn"
+],
+"diamante": [
+"voice_en",
+"char_499_kaitou"
+],
+"dur-nar": [
+"voice_en",
+"char_260_durnar"
+],
+"durin": [
+"voice_en",
+"char_501_durin"
+],
+"dusk": [
+"voice_en",
+"char_2015_dusk"
+],
+"earthspirit": [
+"voice_en",
+"char_183_skgoat"
+],
+"ebenholz": [
+"voice_en",
+"char_4046_ebnhlz"
+],
+"elysium": [
+"voice_en",
+"char_401_elysm"
+],
+"estelle": [
+"voice_en",
+"char_127_estell"
+],
+"ethan": [
+"voice_en",
+"char_355_ethan"
+],
+"eunectes": [
+"voice_en",
+"char_416_zumama"
+],
+"executor": [
+"voice_en",
+"char_279_excu"
+],
+"exusiai": [
+"voice_en",
+"char_103_angel"
+],
+"eyjafjalla": [
+"voice_en",
+"char_180_amgoat"
+],
+"fang": [
+"voice_en",
+"char_123_fang"
+],
+"fartooth": [
+"voice_en",
+"char_430_fartth"
+],
+"feater": [
+"voice_en",
+"char_241_panda"
+],
+"firewatch": [
+"voice_en",
+"char_158_milu"
+],
+"firewhistle": [
+"voice_en",
+"char_493_firwhl"
+],
+"flamebringer": [
+"voice_en",
+"char_131_flameb"
+],
+"flametail": [
+"voice_en",
+"char_420_flamtl"
+],
+"flint": [
+"voice_en",
+"char_415_flint"
+],
+"folinic": [
+"voice_en",
+"char_345_folnic"
+],
+"franka": [
+"voice_en",
+"char_106_franka"
+],
+"friston-3": [
+"voice_en",
+"char_4093_frston"
+],
+"frost": [
+"voice",
+"char_458_rfrost"
+],
+"frostleaf": [
+"voice_en",
+"char_193_frostl"
+],
+"gavial": [
+"voice_en",
+"char_187_ccheal"
+],
+"gitano": [
+"voice_en",
+"char_109_fmout"
+],
+"gladiia": [
+"voice_en",
+"char_474_glady"
+],
+"glaucus": [
+"voice_en",
+"char_326_glacus"
+],
+"gnosis": [
+"voice_en",
+"char_206_gnosis"
+],
+"goldenglow": [
+"voice_en",
+"char_377_gdglow"
+],
+"grani": [
+"voice_en",
+"char_220_grani"
+],
+"gravel": [
+"voice_en",
+"char_237_gravel"
+],
+"greythroat": [
+"voice_en",
+"char_367_swllow"
+],
+"greyy": [
+"voice_en",
+"char_253_greyy"
+],
+"gummy": [
+"voice_en",
+"char_196_sunbr"
+],
+"harmonie": [
+"voice_en",
+"char_297_hamoni"
+],
+"haze": [
+"voice_en",
+"char_141_nights"
+],
+"heavyrain": [
+"voice_en",
+"char_304_zebra"
+],
+"heidi": [
+"voice_en",
+"char_4045_heidi"
+],
+"hellagur": [
+"voice_en",
+"char_188_helage"
+],
+"hibiscus": [
+"voice_en",
+"char_120_hibisc"
+],
+"highmore": [
+"voice_en",
+"char_4066_highmo"
+],
+"honeyberry": [
+"voice_en",
+"char_449_glider"
+],
+"horn": [
+"voice_en",
+"char_4039_horn"
+],
+"hoshiguma": [
+"voice_en",
+"char_136_hsguma"
+],
+"hung": [
+"voice_en",
+"char_226_hmau"
+],
+"ifrit": [
+"voice_en",
+"char_134_ifrit"
+],
+"indigo": [
+"voice_en",
+"char_469_indigo"
+],
+"indra": [
+"voice_en",
+"char_155_tiger"
+],
+"ines": [
+"voice_en",
+"char_4087_ines"
+],
+"irene": [
+"voice_en",
+"char_4009_irene"
+],
+"iris": [
+"voice_en",
+"char_338_iris"
+],
+"istina": [
+"voice_en",
+"char_195_glassb"
+],
+"jackie": [
+"voice_en",
+"char_347_jaksel"
+],
+"jaye": [
+"voice_en",
+"char_272_strong"
+],
+"jessica": [
+"voice_en",
+"char_235_jesica"
+],
+"kafka": [
+"voice_en",
+"char_214_kafka"
+],
+"kjera": [
+"voice_en",
+"char_4013_kjera"
+],
+"kroos": [
+"voice_en",
+"char_124_kroos"
+],
+"la-pluma": [
+"voice_en",
+"char_421_crow"
+],
+"lancet-2": [
+"voice_en",
+"char_285_medic2"
+],
+"lappland": [
+"voice_en",
+"char_140_whitew"
+],
+"lava": [
+"voice_en",
+"char_121_lava"
+],
+"leizi": [
+"voice_en",
+"char_306_leizi"
+],
+"leonhardt": [
+"voice_en",
+"char_373_lionhd"
+],
+"lin": [
+"voice_en",
+"char_4080_lin"
+],
+"ling": [
+"voice_en",
+"char_2023_ling"
+],
+"liskarm": [
+"voice_en",
+"char_107_liskam"
+],
+"logos": [
+"voice_en",
+"char_4133_logos"
+],
+"lumen": [
+"voice_en",
+"char_4042_lumen"
+],
+"magallan": [
+"voice_en",
+"char_248_mgllan"
+],
+"manticore": [
+"voice_en",
+"char_215_mantic"
+],
+"marcille": [
+"voice",
+"char_4141_marcil"
+],
+"matoimaru": [
+"voice_en",
+"char_289_gyuki"
+],
+"matterhorn": [
+"voice_en",
+"char_199_yak"
+],
+"may": [
+"voice_en",
+"char_133_mm"
+],
+"melantha": [
+"voice_en",
+"char_208_melan"
+],
+"midnight": [
+"voice_en",
+"char_283_midn"
+],
+"mint": [
+"voice_en",
+"char_388_mint"
+],
+"miss-christine": [
+"voice",
+"char_4198_christ"
+],
+"mizuki": [
+"voice_en",
+"char_437_mizuki"
+],
+"morgan": [
+"voice_en",
+"char_154_morgan"
+],
+"mostima": [
+"voice_en",
+"char_213_mostma"
+],
+"mountain": [
+"voice_en",
+"char_264_f12yin"
+],
+"mr-nothing": [
+"voice_en",
+"char_455_nothin"
+],
+"mudrock": [
+"voice_en",
+"char_311_mudrok"
+],
+"muelsyse": [
+"voice_en",
+"char_249_mlyss"
+],
+"mulberry": [
+"voice_en",
+"char_473_mberry"
+],
+"myrrh": [
+"voice_en",
+"char_117_myrrh"
+],
+"myrtle": [
+"voice_en",
+"char_151_myrtle"
+],
+"nearl": [
+"voice_en",
+"char_148_nearl"
+],
+"necrass": [
+"voice_en",
+"char_450_necras"
+],
+"nian": [
+"voice_en",
+"char_2014_nian"
+],
+"nightingale": [
+"voice_en",
+"char_179_cgbird"
+],
+"nightmare": [
+"voice_en",
+"char_164_nightm"
+],
+"noir-corne": [
+"voice_en",
+"char_500_noirc"
+],
+"nymph": [
+"voice_en",
+"char_4146_nymph"
+],
+"orchid": [
+"voice_en",
+"char_278_orchid"
+],
+"pallas": [
+"voice_en",
+"char_485_pallas"
+],
+"passenger": [
+"voice_en",
+"char_472_pasngr"
+],
+"penance": [
+"voice_en",
+"char_4065_judge"
+],
+"perfumer": [
+"voice_en",
+"char_181_flower"
+],
+"pith": [
+"voice_en",
+"char_509_acast"
+],
+"platinum": [
+"voice_en",
+"char_204_platnm"
+],
+"plume": [
+"voice_en",
+"char_192_falco"
+],
+"podenco": [
+"voice_en",
+"char_258_podego"
+],
+"poncirus": [
+"voice_en",
+"char_488_buildr"
+],
+"popukar": [
+"voice_en",
+"char_281_popka"
+],
+"pramanix": [
+"voice_en",
+"char_174_slbell"
+],
+"projekt-red": [
+"voice_en",
+"char_144_red"
+],
+"provence": [
+"voice_en",
+"char_145_prove"
+],
+"ptilopsis": [
+"voice_en",
+"char_128_plosis"
+],
+"pudding": [
+"voice_en",
+"char_4004_pudd"
+],
+"purestream": [
+"voice_en",
+"char_385_finlpp"
+],
+"puzzle": [
+"voice_en",
+"char_4017_puzzle"
+],
+"qanipalaat": [
+"voice_en",
+"char_466_qanik"
+],
+"qiubai": [
+"voice_en",
+"char_4082_qiubai"
+],
+"quartz": [
+"voice_en",
+"char_4063_quartz"
+],
+"quercus": [
+"voice_en",
+"char_492_quercu"
+],
+"rangers": [
+"voice_en",
+"char_503_rang"
+],
+"rathalos-s-noir-corne": [
+"voice_en",
+"char_1030_noirc2"
+],
+"reed": [
+"voice_en",
+"char_261_sddrag"
+],
+"roberta": [
+"voice_en",
+"char_484_robrta"
+],
+"robin": [
+"voice_en",
+"char_451_robin"
+],
+"rockrock": [
+"voice_en",
+"char_4040_rockr"
+],
+"rope": [
+"voice_en",
+"char_236_rope"
+],
+"rosa": [
+"voice_en",
+"char_197_poca"
+],
+"saga": [
+"voice_en",
+"char_362_saga"
+],
+"saileach": [
+"voice_en",
+"char_479_sleach"
+],
+"santalla": [
+"voice_en",
+"char_341_sntlla"
+],
+"saria": [
+"voice_en",
+"char_202_demkni"
+],
+"savage": [
+"voice_en",
+"char_230_savage"
+],
+"scavenger": [
+"voice_en",
+"char_149_scave"
+],
+"scene": [
+"voice_en",
+"char_336_folivo"
+],
+"schwarz": [
+"voice_en",
+"char_340_shwaz"
+],
+"shalem": [
+"voice_en",
+"char_4025_aprot2"
+],
+"sharp": [
+"voice_en",
+"char_508_aguard"
+],
+"shirayuki": [
+"voice_en",
+"char_118_yuki"
+],
+"sideroca": [
+"voice_en",
+"char_333_sidero"
+],
+"siege": [
+"voice_en",
+"char_112_siege"
+],
+"silence": [
+"voice_en",
+"char_108_silent"
+],
+"silverash": [
+"voice_en",
+"char_172_svrash"
+],
+"skadi": [
+"voice_en",
+"char_263_skadi"
+],
+"skyfire": [
+"voice_en",
+"char_166_skfire"
+],
+"snowsant": [
+"voice_en",
+"char_383_snsant"
+],
+"sora": [
+"voice_en",
+"char_101_sora"
+],
+"specter": [
+"voice_en",
+"char_143_ghost"
+],
+"spot": [
+"voice_en",
+"char_284_spot"
+],
+"stainless": [
+"voice_en",
+"char_4072_ironmn"
+],
+"steward": [
+"voice_en",
+"char_210_stward"
+],
+"surtr": [
+"voice_en",
+"char_350_surtr"
+],
+"suzuran": [
+"voice_en",
+"char_358_lisa"
+],
+"swire": [
+"voice_en",
+"char_308_swire"
+],
+"tachanka": [
+"voice",
+"char_459_tachak"
+],
+"tecno": [
+"voice_en",
+"char_4164_tecno"
+],
+"tequila": [
+"voice_en",
+"char_486_takila"
+],
+"texas": [
+"voice_en",
+"char_102_texas"
+],
+"thorns": [
+"voice_en",
+"char_293_thorns"
+],
+"thrm-ex": [
+"voice_en",
+"char_376_therex"
+],
+"tomimi": [
+"voice_en",
+"char_411_tomimi"
+],
+"tsukinogi": [
+"voice_en",
+"char_343_tknogi"
+],
+"tulip": [
+"voice_en",
+"char_513_apionr"
+],
+"utage": [
+"voice_en",
+"char_337_utage"
+],
+"vanilla": [
+"voice_en",
+"char_240_wyvern"
+],
+"vermeil": [
+"voice_en",
+"char_190_clour"
+],
+"vigil": [
+"voice_en",
+"char_427_vigil"
+],
+"vigna": [
+"voice_en",
+"char_290_vigna"
+],
+"viviana-droste": [
+"voice_en",
+"char_4098_vvana"
+],
+"vulcan": [
+"voice_en",
+"char_163_hpsts"
+],
+"waai-fu": [
+"voice_en",
+"char_243_waaifu"
+],
+"warfarin": [
+"voice_en",
+"char_171_bldsk"
+],
+"warmy": [
+"voice_en",
+"char_4081_warmy"
+],
+"weedy": [
+"voice_en",
+"char_400_weedy"
+],
+"whislash": [
+"voice_en",
+"char_265_sophia"
+],
+"whisperain": [
+"voice_en",
+"char_436_whispr"
+],
+"wild-mane": [
+"voice_en",
+"char_496_wildmn"
+],
+"wind-chimes": [
+"voice_en",
+"char_4083_chimes"
+],
+"windflit": [
+"voice_en",
+"char_433_windft"
+],
+"yato": [
+"voice_en",
+"char_502_nblade"
+],
+"zima": [
+"voice_en",
+"char_115_headbr"
+]
+}

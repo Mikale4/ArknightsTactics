@@ -1,0 +1,333 @@
+[
+{ "slug": "rathalos-s-noir-corne",
+  "skills": [
+    { "name": "Iai Spirit Slash", "target": "enemy", "hits": 4, "mult": 1.2,
+      "effects": [ { "on": "self", "type": "buff", "what": "DODGE", "v": 0.5, "turns": 1 },
+                   { "on": "self", "type": "cdReduce", "amount": 3, "onKill": true } ],
+      "desc": "Strikes one enemy 4 times (120% ATK each) and gains Dodge 50% for 1 turn to resist blows. On a kill, cooldowns drop by 3 turns." },
+    { "name": "Spirit Helm Breaker", "target": "enemy", "hits": 7, "mult": 1.5,
+      "desc": "Deals 150% ATK Physical damage 7 times to one enemy." }
+  ],
+  "talents": [
+    { "name": "Decisive", "while": { "hpBelow": 0.5 }, "whileStats": { "spd": 0.25, "def": 0.4 },
+      "desc": "Tenacity: while below 50% HP, SPD +25% and DEF +40%." },
+    { "name": "Spirit", "on": "attack", "every": 2,
+      "effects": [ { "on": "self", "type": "buff", "what": "ATK_UP", "v": 0.21, "turns": 3 } ],
+      "desc": "Every 2nd attack builds Spirit: ATK +21% (3 stacks of 7%) for 3 turns." }
+  ] },
+{ "slug": "utage",
+  "skills": [
+    { "name": "Space Out", "target": "self", "basic": false,
+      "effects": [ { "on": "self", "type": "healPct", "amount": 0.64 } ],
+      "state": { "turns": 1, "def": 1.6 },
+      "desc": "Stops attacking: DEF +160% for 1 turn and restores 64% of max HP (8% per second)." },
+    { "name": "Descending Strike - Earth Splitter",
+      "passive": { "on": "start", "effects": [ { "on": "self", "type": "buff", "what": "ATK_UP", "v": 0.8, "turns": 2 } ] },
+      "desc": "Passive. Opens each battle with ATK +80% for 2 turns." }
+  ],
+  "talents": [
+    { "name": "Serious Mode", "while": { "hpBelow": 0.5 }, "whileStats": { "spd": 0.5 },
+      "desc": "Tenacity: while below 50% HP, SPD +50%." }
+  ] },
+{ "slug": "highmore",
+  "skills": [
+    { "name": "Surrendrance from Hindsight", "auto": true, "target": "enemies", "n": 3, "hits": 2, "mult": 1.35,
+      "desc": "Auto. When ready, the basic attack strikes twice at 135% ATK, hitting up to 3 enemies." },
+    { "name": "Evanescence from Paranoia",
+      "state": { "turns": 3, "atk": 0.5, "dodge": 0.5,
+                 "basic": { "effects": [ { "on": "self", "type": "healPct", "amount": 0.07, "onKill": true } ] } },
+      "desc": "For 3 turns: ATK +50%, Dodge +50%, and restores 7% max HP whenever her attack defeats an enemy." }
+  ],
+  "talents": [
+    { "name": "Sustenance from the Reaper", "on": "attack", "chance": 0.35,
+      "effects": [ { "on": "self", "type": "cleanse", "amount": 1 } ],
+      "desc": "35% chance after attacking to remove 1 debuff from herself." },
+    { "name": "Interfluence from Maladie", "stats": { "spd": 0.15 },
+      "desc": "SPD +15%." }
+  ] },
+{ "slug": "la-pluma",
+  "skills": [
+    { "name": "Rapid Slashing", "auto": true, "target": "enemies", "n": 3, "hits": 2, "mult": 1.35,
+      "desc": "Auto. When ready, the basic attack strikes twice at 135% ATK, hitting up to 3 enemies." },
+    { "name": "Reap", "state": { "turns": 3, "atk": 0.75, "spd": 0.27 },
+      "desc": "For 3 turns: SPD +27% and ATK +75% (ATK +55%, plus +40% more against enemies below 50% HP, averaged)." }
+  ],
+  "talents": [
+    { "name": "Into the Groove", "on": "kill",
+      "effects": [ { "on": "self", "type": "buff", "what": "SPD_UP", "v": 0.2, "turns": 3 } ],
+      "desc": "After defeating an enemy: SPD +20% for 3 turns." }
+  ] },
+{ "slug": "bibeak",
+  "skills": [
+    { "name": "Plumage Pins", "auto": true, "target": "enemy", "hits": 2, "mult": 1.5,
+      "effects": [ { "on": "random_enemy", "type": "dmg", "mult": 1.5, "dmg": "arts" } ],
+      "desc": "Auto. When ready, the basic attack hits twice at 150% ATK and a random enemy takes 150% ATK Arts damage." },
+    { "name": "Blade Swap", "target": "aoe_enemies", "mult": 1.7, "dmg": "arts",
+      "effects": [ { "on": "target", "type": "debuff", "what": "STUN", "turns": 1 } ],
+      "desc": "Deals 170% ATK Arts damage to all enemies (up to 6) and Stuns them for 1 turn." }
+  ],
+  "talents": [
+    { "name": "Soul Drinker", "on": "kill",
+      "effects": [ { "on": "self", "type": "buff", "what": "SPD_UP", "v": 0.2, "turns": 3 } ],
+      "desc": "After defeating an enemy: SPD +20% for 3 turns." }
+  ] },
+{ "slug": "cutter",
+  "skills": [
+    { "name": "Redshift", "target": "enemy", "mult": 2.8,
+      "effects": [ { "on": "random_enemy", "type": "dmg", "mult": 2.8, "dmg": "phys" },
+                   { "on": "random_enemy", "type": "dmg", "mult": 2.8, "dmg": "phys" },
+                   { "on": "random_enemy", "type": "dmg", "mult": 2.8, "dmg": "phys" } ],
+      "desc": "Throws 4 knives (280% ATK Physical each): one at the chosen enemy and three at random enemies." },
+    { "name": "Crimson Crescent", "target": "aoe_enemies", "mult": 3.8,
+      "desc": "Deals 380% ATK Physical damage to all enemies (up to 6)." }
+  ],
+  "talents": [
+    { "name": "Photoetched Marks", "on": "attack", "chance": 0.15,
+      "effects": [ { "on": "self", "type": "cdReduce", "amount": 1 } ],
+      "desc": "15% chance after attacking to reduce Cutter's skill cooldowns by 1 turn." }
+  ] },
+{ "slug": "irene",
+  "skills": [
+    { "name": "Gust", "auto": true, "target": "enemy", "hits": 2, "mult": 1.6,
+      "effects": [ { "on": "target", "type": "debuff", "what": "LEVITATE", "turns": 1, "chance": 0.5 } ],
+      "desc": "Auto. When ready, the basic attack hits twice at 160% ATK, with a 50% chance to Levitate the target (1T)." },
+    { "name": "Shattertide", "target": "aoe_enemies", "mult": 3.4,
+      "effects": [ { "on": "target", "type": "debuff", "what": "LEVITATE", "turns": 1 } ],
+      "desc": "Deals 340% ATK Physical damage to all enemies (up to 6) and Levitates them (1T)." },
+    { "name": "Judgment", "target": "aoe_enemies", "mult": 2.5,
+      "effects": [ { "on": "target", "type": "debuff", "what": "LEVITATE", "turns": 1 },
+                   { "on": "enemies", "type": "dmg", "mult": 2.3, "dmg": "phys", "hits": 4 } ],
+      "desc": "Deals 250% ATK to all enemies and Levitates them (1T), then 10 blasts of 230% ATK rain down (about 4 hits on each enemy)." }
+  ],
+  "talents": [
+    { "name": "Flames of Castigation", "dmgBonus": [ { "cond": {}, "v": 0.15 } ],
+      "desc": "Deals +15% damage (a 50% chance to ignore half the target's DEF, averaged)." },
+    { "name": "Sword of Cleansing", "stats": { "spd": 0.13 },
+      "desc": "SPD +13%." }
+  ] },
+{ "slug": "tachanka",
+  "skills": [
+    { "name": "Incendiary Grenade", "target": "enemies", "n": 3, "hits": 6, "mult": 0.4, "dmg": "arts",
+      "effects": [ { "on": "target", "type": "debuff", "what": "DEF_BREAK", "v": 0.4, "turns": 1 } ],
+      "desc": "Burning zone: up to 3 enemies take 40% ATK Arts damage 6 times (once per second) and DEF -40% for 1 turn." },
+    { "name": "Spray and Pray",
+      "state": { "turns": 1, "basic": { "n": 3, "effects": [ { "on": "target", "type": "dmg", "mult": 0.7, "chance": 0.11 } ] } },
+      "desc": "For 1 turn, the basic attack sprays up to 3 enemies (2 hits each); each has an 11% chance to take 170% ATK instead of 100%." }
+  ],
+  "talents": [
+    { "name": "Heavy Firepower", "stats": { "def": 0.15 },
+      "desc": "DEF +15%." }
+  ] },
+{ "slug": "ceylon",
+  "skills": [
+    { "name": "Concentrated Hydrotherapy", "auto": true, "target": "ally_single", "heal": 1.7,
+      "desc": "Auto. When ready, the next heal restores 170% ATK." },
+    { "name": "Water Blessing",
+      "state": { "turns": 4, "atk": 0.5, "basic": { "healN": 2, "effects": [ { "on": "target", "type": "cleanse", "amount": 1 } ] } },
+      "desc": "For 4 turns: ATK +50%, heals 2 allies per action, and healed allies shed 1 debuff (status resistance)." }
+  ],
+  "talents": [
+    { "name": "Lake Walker", "stats": { "atk": 0.06 },
+      "desc": "ATK +6%." }
+  ] },
+{ "slug": "lumen",
+  "skills": [
+    { "name": "In Drizzle, Privation", "auto": true, "target": "ally_single", "heal": 2.0,
+      "effects": [ { "on": "random_ally", "type": "heal", "amount": 2.0 } ],
+      "desc": "Auto. When ready, the heal becomes a regen: the target and one random ally each recover 200% ATK (40% ATK/s for 5s)." },
+    { "name": "In Downpour, Grace", "target": "ally_single", "heal": 2.0,
+      "effects": [ { "on": "target", "type": "cleanse", "amount": 3 },
+                   { "on": "random_ally", "type": "heal", "amount": 2.0 } ],
+      "desc": "Heals 2 allies (the target and a random ally) for 200% ATK and removes the target's debuffs." },
+    { "name": "This Lantern Undying",
+      "state": { "turns": 4, "atk": 0.4, "spd": 0.12,
+                 "basic": { "heal": 1.5, "effects": [ { "on": "target", "type": "cleanse", "amount": 3 } ] } },
+      "desc": "For 4 turns: ATK +40%, SPD +12%; heals restore 150% ATK and remove all debuffs from the healed ally." }
+  ],
+  "talents": [
+    { "name": "An Everyman's Wish", "aura": { "who": "team", "stats": { "res": 0.2 } },
+      "desc": "All allies gain +20% status resistance (her heals grant it)." },
+    { "name": "Quick Fix", "on": "turn", "every": 2,
+      "effects": [ { "on": "lowest", "type": "heal", "amount": 0.8 } ],
+      "desc": "Every 2nd turn, heals the lowest-HP ally for 80% ATK." }
+  ] },
+{ "slug": "purestream",
+  "skills": [
+    { "name": "Healing Waves", "target": "team", "heal": 2.6,
+      "desc": "Heals all allies for 260% ATK." },
+    { "name": "Lifespring",
+      "state": { "turns": 3, "spd": 0.5, "basic": { "effects": [ { "on": "random_ally", "type": "heal", "amount": 0.4 } ] } },
+      "desc": "For 3 turns: SPD +50%, and each heal also restores 40% ATK to another random ally." }
+  ],
+  "talents": [
+    { "name": "Rapid Restoration", "aura": { "who": "team", "stats": { "res": 0.15 } },
+      "desc": "All allies gain +15% status resistance (her heals grant it)." }
+  ] },
+{ "slug": "whisperain",
+  "skills": [
+    { "name": "Oriented Diagnosis", "auto": true, "target": "ally_single", "heal": 1.2,
+      "effects": [ { "on": "target", "type": "cleanse", "amount": 1 },
+                   { "on": "random_ally", "type": "heal", "amount": 1.2 } ],
+      "desc": "Auto. When ready, heals the target and a random ally for 120% ATK and removes 1 debuff from the target." },
+    { "name": "Pain Suppression", "auto": true,
+      "state": { "turns": 99, "spd": 0.07,
+                 "basic": { "effects": [ { "on": "team", "type": "heal", "amount": 0.13 },
+                                         { "on": "target", "type": "cleanse", "amount": 1, "chance": 0.5 } ] } },
+      "desc": "Auto. Permanent: SPD +7%, each heal adds 13% ATK healing to all allies (Tower of Life x1.7), and the healed ally may shed a debuff (50%)." }
+  ],
+  "talents": [
+    { "name": "Tower of Life", "on": "turn",
+      "effects": [ { "on": "team", "type": "heal", "amount": 0.19 } ],
+      "desc": "At the start of each turn, heals all allies for 19% ATK (7% ATK per second)." }
+  ] },
+{ "slug": "ansel",
+  "skills": [
+    { "name": "Healing Range Up", "state": { "turns": 3, "atk": 0.4 },
+      "desc": "For 3 turns: ATK +40% (heals 40% more)." }
+  ],
+  "talents": [
+    { "name": "Additional Healing", "on": "turn", "chance": 0.18,
+      "effects": [ { "on": "random_ally", "type": "heal", "amount": 1.0 } ],
+      "desc": "18% chance each turn to also heal a random ally for 100% ATK." }
+  ] },
+{ "slug": "folinic",
+  "skills": [
+    { "name": "Max-Dosage Infusion", "state": { "turns": 5, "atk": 0.5 },
+      "desc": "For 5 turns: ATK +50%." },
+    { "name": "Compound Drug Shell",
+      "state": { "turns": 3,
+                 "basic": { "heal": 0, "mult": 1.6, "dmg": "arts", "n": 3,
+                            "effects": [ { "on": "lowest", "type": "heal", "amount": 1.2 } ] } },
+      "desc": "For 3 turns, attacks fire a drug shell: 160% ATK Arts damage to up to 3 enemies, and the lowest ally heals 120% ATK." }
+  ],
+  "talents": [
+    { "name": "Drug Inhibition Technique", "stats": { "res": 0.2 },
+      "desc": "Status resistance +20%." }
+  ] },
+{ "slug": "gavial",
+  "skills": [
+    { "name": "Vitality Restoration", "auto": true, "target": "ally_single", "heal": 2.5,
+      "desc": "Auto. The next heal adds a regen (26% ATK/s for 4s, doubled below 50% HP): about 250% ATK in total." },
+    { "name": "Vitality Restoration - Wide Range", "target": "team", "heal": 1.47,
+      "effects": [ { "on": "lowest", "type": "heal", "amount": 2.03 } ],
+      "desc": "Regen for all allies: heals 147% ATK (21% ATK/s for 7s); the lowest ally (below 50% HP) heals 350% ATK in total." }
+  ],
+  "talents": [
+    { "name": "Battlefield Medic", "aura": { "who": "class:Medic", "stats": { "atk": 0.12, "def": 0.2 } },
+      "desc": "Allied Medics gain ATK +12% and DEF +20%." }
+  ] },
+{ "slug": "hibiscus",
+  "skills": [
+    { "name": "Healing Up α", "state": { "turns": 3, "atk": 0.5 },
+      "desc": "For 3 turns: ATK +50%." }
+  ],
+  "talents": [
+    { "name": "Healing Up", "stats": { "atk": 0.08 },
+      "desc": "ATK +8%." }
+  ] },
+{ "slug": "lancet-2",
+  "skills": [],
+  "talents": [
+    { "name": "Support Spray 6", "on": "wave",
+      "effects": [ { "on": "team", "type": "healPct", "amount": 0.15 } ],
+      "desc": "At each new enemy wave, restores 15% max HP to all allies." }
+  ] },
+{ "slug": "myrrh",
+  "skills": [
+    { "name": "Dual Healing", "auto": true, "target": "ally_single", "heal": 1.12,
+      "effects": [ { "on": "random_ally", "type": "heal", "amount": 1.12 } ],
+      "desc": "Auto. When ready, the heal restores 112% ATK to the target and one more random ally." },
+    { "name": "Medic Field", "state": { "turns": 3, "atk": 0.35, "basic": { "healN": 2 } },
+      "desc": "For 3 turns: ATK +35% and heals 2 allies per action." }
+  ],
+  "talents": [
+    { "name": "First Aid Kit", "on": "wave",
+      "effects": [ { "on": "team", "type": "heal", "amount": 1.6 } ],
+      "desc": "At each new enemy wave, heals all allies for 160% ATK." }
+  ] },
+{ "slug": "silence",
+  "skills": [
+    { "name": "Healing Up γ", "state": { "turns": 4, "atk": 0.7 },
+      "desc": "For 4 turns: ATK +70%." },
+    { "name": "Medical Drone", "auto": true, "target": "team", "heal": 1.0,
+      "effects": [ { "on": "team", "type": "buff", "what": "HOT", "turns": 1 } ],
+      "desc": "Auto. When ready, sends a Medical Drone: heals all allies for 100% ATK and grants regeneration (5% max HP) for 1 turn." }
+  ],
+  "talents": [
+    { "name": "Booster Injection", "aura": { "who": "class:Medic", "stats": { "spd": 0.08 } },
+      "desc": "Allied Medics gain SPD +8%." }
+  ] },
+{ "slug": "warfarin",
+  "skills": [
+    { "name": "Emergency Triage", "auto": true, "target": "ally_single", "heal": 1.0,
+      "effects": [ { "on": "target", "type": "healPct", "amount": 0.19 } ],
+      "desc": "Auto. When ready, the heal also restores 19% of the target's max HP." },
+    { "name": "Unstable Plasma", "target": "self",
+      "effects": [ { "on": "random_ally", "type": "buff", "what": "ATK_UP", "v": 0.6, "turns": 2 } ],
+      "state": { "turns": 2, "atk": 0.6, "drain": 0.2 },
+      "desc": "Warfarin and a random ally gain ATK +60% for 2 turns; Warfarin loses 20% max HP each turn while it lasts." }
+  ],
+  "talents": [
+    { "name": "Blood Sample Recycle", "on": "turn", "every": 3,
+      "effects": [ { "on": "self", "type": "cdReduce", "amount": 1 },
+                   { "on": "random_ally", "type": "cdReduce", "amount": 1 } ],
+      "desc": "Every 3rd turn, Warfarin and a random ally reduce their skill cooldowns by 1 turn." }
+  ] },
+{ "slug": "breeze",
+  "skills": [
+    { "name": "Cluster Therapy", "state": { "turns": 4, "atk": 1.0, "basic": { "healN": 2 } },
+      "desc": "For 4 turns: ATK +100%, but heals 2 allies instead of 3." },
+    { "name": "Widespread Therapy",
+      "state": { "turns": 5, "atk": 1.9, "basic": { "healN": 1, "effects": [ { "on": "allies", "type": "heal", "amount": 0.5 } ] } },
+      "desc": "For 5 turns: ATK +190%; heals 1 ally per action and splashes 50% ATK healing onto all allies." }
+  ],
+  "talents": [
+    { "name": "Medic Squad Protection", "aura": { "who": "class:Medic", "stats": { "res": 0.15 } },
+      "desc": "Allied Medics gain +15% status resistance." }
+  ] },
+{ "slug": "nightingale",
+  "skills": [
+    { "name": "Healing Up γ", "state": { "turns": 4, "atk": 0.7 },
+      "desc": "For 4 turns: ATK +70%." },
+    { "name": "Arts Shield", "auto": true, "target": "team", "heal": 1.0,
+      "effects": [ { "on": "team", "type": "shield", "amount": 0.6, "turns": 1 },
+                   { "on": "team", "type": "buff", "what": "RES_UP", "v": 15, "turns": 1 } ],
+      "desc": "Auto. When ready, heals all allies for 100% ATK and grants each a Barrier (60% ATK) and RES +15 for 1 turn." },
+    { "name": "Sanctuary", "target": "team",
+      "effects": [ { "on": "team", "type": "buff", "what": "RES_UP", "v": 25, "turns": 5 },
+                   { "on": "team", "type": "buff", "what": "DODGE", "v": 0.2, "turns": 5 } ],
+      "state": { "turns": 5, "atk": 0.5 },
+      "desc": "For 5 turns: ATK +50%, and all allies gain RES +25 and Dodge +20%." }
+  ],
+  "talents": [
+    { "name": "White Fiend's Protection", "aura": { "who": "team", "stats": { "ares": 17 } },
+      "desc": "All allies gain RES +17." },
+    { "name": "Fleeting Phantom", "on": "turn", "every": 3,
+      "effects": [ { "on": "team", "type": "shield", "pctHP": 0.15, "turns": 2 } ],
+      "desc": "Every 3rd turn, her Phantoms draw enemy fire: all allies gain a Barrier of 15% of her max HP for 2 turns." }
+  ] },
+{ "slug": "perfumer",
+  "skills": [
+    { "name": "Healing Up β", "state": { "turns": 3, "atk": 0.5 },
+      "desc": "For 3 turns: ATK +50%." },
+    { "name": "Fine Blending", "state": { "turns": 4, "atk": 2.1, "spd": -0.3 },
+      "desc": "For 4 turns: ATK +210%, SPD -30%." }
+  ],
+  "talents": [
+    { "name": "Lavender's Fragrance", "on": "turn",
+      "effects": [ { "on": "team", "type": "heal", "amount": 0.15 } ],
+      "desc": "At the start of each turn, heals all allies for 15% ATK (5.5% ATK per second)." }
+  ] },
+{ "slug": "ptilopsis",
+  "skills": [
+    { "name": "Healing Up γ", "state": { "turns": 4, "atk": 0.7 },
+      "desc": "For 4 turns: ATK +70%." },
+    { "name": "Enkephalin", "state": { "turns": 5, "spd": 0.67 },
+      "desc": "For 5 turns: SPD +67%." }
+  ],
+  "talents": [
+    { "name": "Skill Aura", "on": "turn", "every": 3,
+      "effects": [ { "on": "team", "type": "cdReduce", "amount": 1 } ],
+      "desc": "Every 3rd turn, all allies' skill cooldowns drop by 1 turn." }
+  ] }
+]

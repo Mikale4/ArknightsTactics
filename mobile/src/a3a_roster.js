@@ -50,10 +50,10 @@ Courier|courier|4|Vanguard|Fire|0.539
 Croissant|croissant|5|Defender|Wind|0.472
 Cuora|cuora|4|Defender|Water|0.762
 Cutter|cutter|4|Guard|Water|0.958
-Czerny|czerny|5|Caster|Fire|0.642
+Czerny|czerny|5|Defender|Fire|0.642
 Dagda|dagda|5|Guard|Fire|0.63
 Deepcolor|deepcolor|4|Supporter|Light|0.547
-Delphine|delphine|5|Supporter|Wind|0.683
+Delphine|delphine|5|Caster|Wind|0.683
 Diamante|diamante|5|Caster|Water|0.555
 Durin|durin|2|Caster|Dark|0.48
 Dur-nar|dur-nar|4|Defender|Water|0.611
@@ -71,7 +71,7 @@ Fang|fang|3|Vanguard|Fire|0.741
 Fartooth|fartooth|6|Sniper|Fire|0.664
 FEater|feater|5|Specialist|Wind|0.667
 Firewatch|firewatch|5|Sniper|Light|0.466
-Firewhistle|firewhistle|5|Sniper|Wind|0.672
+Firewhistle|firewhistle|5|Defender|Wind|0.672
 Flamebringer|flamebringer|5|Guard|Light|0.623
 Flametail|flametail|6|Vanguard|Light|0.664
 Flint|flint|5|Guard|Dark|0.706
@@ -135,7 +135,7 @@ May|may|4|Sniper|Fire|0.689
 Melantha|melantha|3|Guard|Dark|0.567
 Midnight|midnight|3|Guard|Fire|0.442
 Mint|mint|5|Caster|Light|0.627
-Miss Christine|miss-christine|5|Specialist|Fire|0.778
+Miss Christine|miss-christine|5|Caster|Fire|0.778
 Mizuki|mizuki|6|Specialist|Water|0.486
 Morgan|morgan|5|Guard|Wind|0.481
 Mostima|mostima|6|Caster|Dark|0.689
@@ -159,7 +159,7 @@ Pallas|pallas|6|Guard|Fire|0.939
 Passenger|passenger|6|Caster|Dark|0.748
 Penance|penance|6|Defender|Dark|0.645
 Perfumer|perfumer|4|Medic|Dark|0.959
-Pith|pith|5|Sniper|Fire|0.6
+Pith|pith|5|Caster|Fire|0.6
 Platinum|platinum|5|Sniper|Wind|0.748
 Plume|plume|3|Vanguard|Fire|0.617
 Podenco|podenco|4|Supporter|Fire|0.516
@@ -177,7 +177,7 @@ Qiubai|qiubai|6|Guard|Light|0.713
 Quartz|quartz|4|Guard|Wind|0.467
 Quercus|quercus|5|Supporter|Wind|0.6
 Rangers|rangers|2|Sniper|Fire|0.605
-Rathalos S Noir Corne|rathalos-s-noir-corne|5|Defender|Wind|0.536
+Rathalos S Noir Corne|rathalos-s-noir-corne|5|Guard|Wind|0.536
 Reed|reed|5|Vanguard|Dark|1.178
 Roberta|roberta|4|Supporter|Wind|0.503
 Robin|robin|5|Specialist|Water|0.528
@@ -216,10 +216,10 @@ Tequila|tequila|5|Guard|Wind|0.528
 Texas|texas|5|Vanguard|Wind|0.388
 Thorns|thorns|6|Guard|Water|0.667
 THRM-EX|thrm-ex|1|Specialist|Fire|0.863
-Togawa Sakiko|togawa-sakiko|6|Caster|Light|0.452
+Togawa Sakiko|togawa-sakiko|6|Guard|Light|0.452
 Tomimi|tomimi|5|Caster|Light|0.559
 Tsukinogi|tsukinogi|5|Supporter|Fire|0.592
-Tulip|tulip|5|Sniper|Water|0.627
+Tulip|tulip|5|Vanguard|Water|0.627
 Utage|utage|4|Guard|Wind|0.528
 Vanilla|vanilla|3|Vanguard|Light|0.758
 Vermeil|vermeil|4|Sniper|Water|0.794
@@ -234,7 +234,7 @@ Weedy|weedy|6|Specialist|Water|1.045
 Whislash|whislash|5|Guard|Water|0.377
 Whisperain|whisperain|5|Medic|Light|0.748
 Wild Mane|wild-mane|5|Vanguard|Water|0.739
-Wind Chimes|wind-chimes|5|Sniper|Fire|0.547
+Wind Chimes|wind-chimes|5|Guard|Fire|0.547
 Windflit|windflit|5|Supporter|Dark|0.523
 Yato|yato|2|Vanguard|Light|0.481
 Zima|zima|5|Vanguard|Water|0.569`;

@@ -1,0 +1,83 @@
+[
+{ "slug": "exusiai",
+  "skills": [
+    { "name": "Charging Mode", "auto": true, "target": "enemy", "hits": 3, "mult": 1.21,
+      "desc": "Auto. When ready, the basic attack fires 3 shots (121% ATK each)." },
+    { "name": "Shooting Mode", "state": { "turns": 2, "basic": { "hits": 4, "mult": 1.1 } },
+      "desc": "For 2 turns, basic attacks fire 4 shots (110% ATK each)." },
+    { "name": "Overloading Mode", "auto": true, "state": { "turns": 2, "spd": 0.08, "basic": { "hits": 5, "mult": 1.0 } },
+      "desc": "Auto. For 2 turns, basic attacks fire 5 shots (100% ATK each) and SPD +8%." }
+  ],
+  "talents": [
+    { "name": "Fast Cartridge", "stats": { "spd": 0.09 }, "desc": "SPD +9%." },
+    { "name": "Angel's Blessings", "stats": { "atk": 0.08, "hp": 0.13 }, "aura": { "who": "random_ally", "stats": { "atk": 0.08, "hp": 0.13 } },
+      "desc": "ATK +8% and Max HP +13%. A random ally gains the same at battle start." }
+  ] },
+{ "slug": "hoshiguma",
+  "skills": [
+    { "name": "Warpath", "state": { "turns": 3, "def": 0.65, "atk": 0.3 },
+      "desc": "For 3 turns: DEF +65%, ATK +30%." },
+    { "name": "Thorns", "passive": { "stats": { "def": 0.21 }, "on": "hurt", "effects": [ { "on": "attacker", "type": "dmg", "mult": 0.8, "dmg": "phys" } ] },
+      "desc": "Passive. DEF +21%. Deals 80% ATK Physical damage to each enemy that hits Hoshiguma." },
+    { "name": "Saw of Strength", "state": { "turns": 3, "atk": 0.95, "def": 0.6, "basic": { "n": 3 } },
+      "desc": "For 3 turns: ATK +95%, DEF +60%, and basic attacks hit up to 3 enemies." }
+  ],
+  "talents": [
+    { "name": "Tactical Armor", "stats": { "dodge": 0.28 }, "desc": "28% chance to avoid damage from Physical and Arts hits." },
+    { "name": "Special Operation Strategy", "aura": { "who": "class:Defender", "stats": { "def": 0.08 } }, "desc": "Allied Defenders gain DEF +8%." }
+  ] },
+{ "slug": "silverash",
+  "skills": [
+    { "name": "Power Strike γ", "auto": true, "target": "enemy", "mult": 2.25,
+      "desc": "Auto. When ready, the basic attack deals 225% ATK." },
+    { "name": "Rules of Survival", "state": { "turns": 3, "def": 0.65, "regen": 0.12 },
+      "desc": "For 3 turns: DEF +65% and restores 12% max HP at the start of each turn." },
+    { "name": "Truesilver Slash", "state": { "turns": 3, "def": -0.7, "atk": 1.4, "basic": { "n": 5, "reach": true } },
+      "desc": "For 3 turns: ATK +140%, DEF −70%, and basic attacks hit up to 5 enemies." }
+  ],
+  "talents": [
+    { "name": "Leader", "aura": { "who": "team", "stats": { "atk": 0.12 } }, "desc": "All allies gain ATK +12%." },
+    { "name": "Eagle Eyes", "dmgBonus": [ { "cond": { "targetHas": "STEALTH" }, "v": 0.2 } ], "special": "TRUESIGHT",
+      "desc": "Can target Camouflaged enemies, and deals +20% damage to them." }
+  ] },
+{ "slug": "ifrit",
+  "skills": [
+    { "name": "Fanaticism", "state": { "turns": 3, "atk": 0.2, "spd": 0.4 },
+      "desc": "For 3 turns: ATK +20%, SPD +40%." },
+    { "name": "Pyroclasm", "auto": true, "target": "aoe_enemies", "mult": 1.9, "dmg": "arts",
+      "effects": [ { "on": "target", "type": "debuff", "what": "DEF_BREAK", "v": 0.3, "turns": 1 }, { "on": "target", "type": "elem", "kind": "burn", "amount": 0.35 } ],
+      "desc": "Auto. When ready, the basic attack deals 190% ATK Arts damage to all enemies, DEF −30% (1T), and builds Burn." },
+    { "name": "Scorched Earth", "state": { "turns": 3, "drain": 0.04, "basic": { "mult": 1.6, "effects": [ { "on": "target", "type": "debuff", "what": "RES_DOWN", "v": 10, "turns": 2 } ] } },
+      "desc": "For 3 turns: basic attacks deal 160% ATK and RES −10 (2T). Ifrit loses 4% max HP each turn." }
+  ],
+  "talents": [
+    { "name": "Spiritual Dissolution", "aura": { "who": "enemies", "stats": { "aresPct": -0.44 } }, "desc": "All enemies have RES −44%." },
+    { "name": "Rhine Loop", "on": "turn", "every": 2, "effects": [ { "on": "self", "type": "cdReduce", "amount": 1 } ],
+      "desc": "Every 2nd turn, Ifrit's skill cooldowns drop by 1 extra turn." }
+  ] },
+{ "slug": "amiya",
+  "skills": [
+    { "name": "Tactical Chant γ", "state": { "turns": 4, "spd": 0.36 }, "desc": "For 4 turns: SPD +36%." },
+    { "name": "Spirit Burst", "auto": true, "state": { "turns": 3, "basic": { "hits": 7, "mult": 0.45, "spread": true }, "onEnd": [ { "on": "self", "type": "debuff", "what": "STUN", "turns": 1 } ] },
+      "desc": "Auto. For 3 turns, basic attacks fire 7 bolts (45% ATK each) at random enemies. Amiya is Stunned afterwards." },
+    { "name": "Chimera", "state": { "turns": 4, "atk": 1.6, "hp": 0.75, "basic": { "dmg": "true" }, "onEnd": [ { "on": "self", "type": "retreat" } ] },
+      "desc": "For 4 turns: ATK +160%, Max HP +75%, and basic attacks deal True damage. Amiya leaves the battle afterwards." }
+  ],
+  "talents": [
+    { "name": "Emotional Absorption", "on": "attack", "chance": 0.3, "effects": [ { "on": "self", "type": "cdReduce", "amount": 1 } ],
+      "triggers": [ { "on": "kill", "effects": [ { "on": "self", "type": "cdReduce", "amount": 1 } ] } ],
+      "desc": "30% chance after attacking, and always after a kill, to reduce Amiya's skill cooldowns by 1 turn." }
+  ] },
+{ "slug": "texas",
+  "skills": [
+    { "name": "Charge γ", "auto": true, "target": "team", "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.3 } ],
+      "desc": "Auto. When ready, all allies gain 30% turn meter." },
+    { "name": "Sword Rain", "target": "aoe_enemies", "hits": 2, "mult": 1.35, "dmg": "arts",
+      "effects": [ { "on": "target", "type": "debuff", "what": "STUN", "turns": 1 }, { "on": "team", "type": "atkbar+", "amount": 0.3 } ],
+      "desc": "Deals 135% ATK Arts damage twice to all enemies and Stuns them (1T). All allies gain 30% turn meter." }
+  ],
+  "talents": [
+    { "name": "Tactical Delivery", "on": "start", "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.08 } ],
+      "desc": "All allies start battle with 8% turn meter." }
+  ] }
+]

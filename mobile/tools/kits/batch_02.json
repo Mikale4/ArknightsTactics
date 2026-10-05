@@ -1,0 +1,328 @@
+[
+{ "slug": "iris",
+  "skills": [
+    { "name": "Fairytale Guardian", "state": { "turns": 1, "basic": { "hits": 6, "mult": 0.4 } },
+      "desc": "For 1 turn, basic attacks fire 6 rapid bolts (40% ATK Arts damage each)." },
+    { "name": "Dreamland's Cradle", "target": "enemies", "n": 2, "mult": 2.3, "dmg": "arts",
+      "effects": [ { "on": "target", "type": "debuff", "what": "SLEEP", "turns": 2 } ],
+      "desc": "Deals 230% ATK Arts damage to up to 2 enemies and puts them to Sleep (2T)." }
+  ],
+  "talents": [
+    { "name": "Sealed Treasure", "on": "wave", "effects": [ { "on": "random_enemy", "type": "dmg", "mult": 1.34, "dmg": "arts", "hits": 3 } ],
+      "desc": "At the start of each wave, fires 3 stored attacks at random enemies (134% ATK Arts damage each)." }
+  ] },
+{ "slug": "beeswax",
+  "skills": [
+    { "name": "Growing Sandstorm", "state": { "turns": 2, "atk": 0.4 },
+      "desc": "For 2 turns: ATK +40%, and she attacks (AoE Arts) while it's active." },
+    { "name": "Guardian Obelisk", "target": "aoe_enemies", "mult": 2.3, "dmg": "arts",
+      "effects": [ { "on": "target", "type": "debuff", "what": "STUN", "turns": 1 } ], "state": { "turns": 3 },
+      "desc": "Raises an Obelisk: 230% ATK Arts damage to all enemies and Stun (1T). The skill stays active (she attacks) for 3 turns." }
+  ],
+  "talents": [
+    { "name": "Shambhala's Sanctuary", "on": "turn", "cond": { "skillActive": false },
+      "effects": [ { "on": "self", "type": "healPct", "amount": 0.12 } ],
+      "desc": "While no skill is active, restores 12% max HP at the start of each turn." }
+  ] },
+{ "slug": "lin",
+  "skills": [
+    { "name": "Elegance", "state": { "turns": 99, "atk": 0.4, "spd": -0.2,
+        "basic": { "effects": [ { "on": "target", "type": "debuff", "what": "SLOW", "turns": 1 } ] } },
+      "desc": "Toggle (rest of battle): ATK +40%, SPD −20%, and her AoE Arts basic attacks Slow targets (1T)." },
+    { "name": "Shelter", "target": "team", "effects": [ { "on": "team", "type": "shield", "pctHP": 0.15, "turns": 3 } ],
+      "state": { "turns": 3, "spd": 0.54, "stealth": true },
+      "desc": "For 3 turns: SPD +54% and Camouflage. All allies gain a Crystal Barrier (shield = 15% of Lin's max HP)." },
+    { "name": "Riving Lighttails", "target": "self", "effects": [ { "on": "self", "type": "shield", "pctHP": 0.5, "turns": 4 } ],
+      "state": { "turns": 4, "atk": 1.6, "basic": { "effects": [
+        { "on": "enemies", "type": "dmg", "mult": 1.1, "dmg": "arts", "onKill": true },
+        { "on": "self", "type": "shield", "pctHP": 0.2, "turns": 2, "onKill": true } ] } },
+      "desc": "For 4 turns: ATK +160% and a 2.5× Barrier (50% max HP). A kill shatters it (110% ATK Arts to all enemies) and forms a new one." }
+  ],
+  "talents": [
+    { "name": "Foolproof Plan", "on": "start", "effects": [ { "on": "self", "type": "shield", "pctHP": 0.2, "turns": 2 } ],
+      "triggers": [
+        { "on": "turn", "every": 2, "effects": [ { "on": "self", "type": "shield", "pctHP": 0.2, "turns": 2 } ] },
+        { "on": "hurt", "every": 3, "effects": [ { "on": "enemies", "type": "dmg", "mult": 1.1, "dmg": "arts" },
+                                               { "on": "attacker", "type": "debuff", "what": "STUN", "turns": 1 } ] } ],
+      "desc": "Barrier of 20% max HP at start and every 2nd turn. Every 3rd hit taken it shatters: 110% ATK Arts to all enemies, attacker Stunned (1T)." },
+    { "name": "Shrouded Strength", "on": "hurt", "chance": 0.2, "effects": [ { "on": "self", "type": "cdReduce", "amount": 1 } ],
+      "desc": "When hit, 20% chance to reduce her skill cooldowns by 1 turn." }
+  ] },
+{ "slug": "mint",
+  "skills": [
+    { "name": "Wind Whispers", "state": { "turns": 2, "basic": { "mult": 1.4 } },
+      "desc": "For 2 turns, she attacks: AoE basic attacks deal 140% ATK Arts damage." },
+    { "name": "Swirling Vortex", "state": { "turns": 3,
+        "basic": { "mult": 1.15, "effects": [ { "on": "target", "type": "atkbar-", "amount": 0.1 } ] },
+        "onEnd": [ { "on": "enemies", "type": "dmg", "mult": 2.4, "dmg": "arts" } ] },
+      "desc": "For 3 turns, basic attacks deal 115% ATK Arts and drag targets (−10% turn meter). When it ends: 240% ATK Arts damage to all enemies." }
+  ],
+  "talents": [
+    { "name": "Geologist", "aura": { "who": "melee", "stats": { "def": 0.12 } },
+      "on": "skill", "effects": [ { "on": "self", "type": "buff", "what": "STEALTH", "turns": 2 } ],
+      "desc": "Melee allies gain DEF +12%. After using a skill, Mint gains Camouflage (2T)." }
+  ] },
+{ "slug": "diamante",
+  "skills": [
+    { "name": "Laser Cutter", "state": { "turns": 3, "atk": 0.8, "basic": { "effects": [
+        { "on": "target", "type": "elem", "kind": "necrosis", "amount": 0.35 },
+        { "on": "target", "type": "bonusIf", "cond": "ATK_DOWN", "bonusDmg": 0.22 } ] } },
+      "desc": "For 3 turns: ATK +80%, basic attacks build Necrosis and deal +22% damage (≈40% ATK) to targets with ATK Down (Necrosis burst)." },
+    { "name": "Heat Treatment Discoloration", "state": { "turns": 4, "spd": 0.45, "basic": { "n": 2, "effects": [
+        { "on": "target", "type": "bonusIf", "cond": "ATK_DOWN", "bonusDmg": 0.6 } ] } },
+      "desc": "For 4 turns: SPD +45%, basic attacks hit 2 enemies and deal +60% damage to targets with ATK Down (Necrosis burst)." }
+  ],
+  "talents": [
+    { "name": "Advanced Notice", "dmgBonus": [ { "cond": { "targetHas": "ATK_DOWN" }, "v": 0.21 } ],
+      "desc": "+21% damage against enemies with ATK Down (Necrosis burst)." }
+  ] },
+{ "slug": "miss-christine",
+  "skills": [
+    { "name": "Mealtime Manners", "state": { "turns": 3, "atk": 0.2, "basic": { "n": 2, "effects": [
+        { "on": "target", "type": "elem", "kind": "nervous", "amount": 0.35 } ] } },
+      "desc": "For 3 turns: ATK +20%, basic attacks hit 2 enemies and build Nervous Impairment." },
+    { "name": "Bacchanalia", "state": { "turns": 3, "basic": { "mult": 0.85, "hits": 2, "n": 3, "effects": [
+        { "on": "target", "type": "bonusIf", "cond": "STUN", "bonusDmg": 0.88 } ] } },
+      "desc": "For 3 turns a Sensory Spirit attacks instead: 2 pulses of 85% ATK Arts on up to 3 enemies, +88% damage to Stunned ones." }
+  ],
+  "talents": [
+    { "name": "Captivating Delicacy", "on": "attack", "cond": { "targetHas": "STUN" },
+      "effects": [ { "on": "target", "type": "dmg", "mult": 1.3, "dmg": "true" } ],
+      "desc": "Attacking a Stunned enemy (e.g. Nervous Impairment burst) deals an extra 130% ATK True damage." }
+  ] },
+{ "slug": "nymph",
+  "skills": [
+    { "name": "Strike of the Djall", "state": { "turns": 3, "atk": 0.8, "basic": { "effects": [
+        { "on": "target", "type": "elem", "kind": "necrosis", "amount": 0.35 },
+        { "on": "target", "type": "bonusIf", "cond": "ATK_DOWN", "bonusDmg": 0.22 } ] } },
+      "desc": "For 3 turns: ATK +80%, basic attacks build Necrosis and deal +22% damage (≈40% ATK) to targets with ATK Down (Necrosis burst)." },
+    { "name": "Fear Blast", "target": "enemies", "n": 3, "mult": 3.0, "dmg": "arts", "effects": [
+        { "on": "target", "type": "debuff", "what": "FEAR", "turns": 2 },
+        { "on": "target", "type": "elem", "kind": "necrosis", "amount": 0.35 },
+        { "on": "target", "type": "bonusIf", "cond": "ATK_DOWN", "bonusDmg": 0.28 } ],
+      "desc": "Deals 300% ATK Arts damage to up to 3 enemies, building Necrosis and inflicting Fear (2T). +28% damage to targets with ATK Down." },
+    { "name": "Crumbling Heart", "state": { "turns": 4, "atk": 1.7, "spd": 0.27, "basic": { "n": 2, "effects": [
+        { "on": "target", "type": "bonusIf", "cond": "ATK_DOWN", "bonusDmg": 0.25 } ] } },
+      "desc": "For 4 turns: ATK +170%, SPD +27%, basic attacks hit 2 enemies; +25% damage (Elemental) to targets with ATK Down (Necrosis burst)." }
+  ],
+  "talents": [
+    { "name": "Soul Stolen", "on": "attack", "cond": { "targetHas": "ATK_DOWN" },
+      "effects": [ { "on": "target", "type": "dmg", "mult": 0.4, "dmg": "true", "hits": 2 } ],
+      "desc": "Attacking an enemy with ATK Down (Necrosis burst) deals an extra 2× 40% ATK True damage." },
+    { "name": "Key to the Heart", "on": "attack", "cond": { "targetHas": "ATK_DOWN" },
+      "effects": [ { "on": "self", "type": "buff", "what": "ATK_UP", "v": 0.24, "turns": 3 } ],
+      "desc": "Attacking an enemy with ATK Down (Necrosis burst) grants ATK +24% for 3 turns." }
+  ] },
+{ "slug": "warmy",
+  "skills": [
+    { "name": "Burning Flames", "state": { "turns": 3, "spd": 0.42, "basic": { "effects": [
+        { "on": "target", "type": "elem", "kind": "burn", "amount": 0.3 } ] } },
+      "desc": "For 3 turns: SPD +42%, and basic attacks build Burn." },
+    { "name": "Scorching Stream", "state": { "turns": 2, "atk": 1.7, "spd": -0.22, "basic": { "n": 2, "effects": [
+        { "on": "target", "type": "bonusIf", "cond": "RES_DOWN", "bonusDmg": 0.2 } ] } },
+      "desc": "For 2 turns: ATK +170%, SPD −22%, basic attacks hit 2 enemies; +20% damage (≈50% ATK) to targets with RES Down (Burn burst)." }
+  ],
+  "talents": [
+    { "name": "Overflowing Pot", "on": "attack", "cond": { "targetHas": "RES_DOWN" }, "chance": 0.5,
+      "effects": [ { "on": "target", "type": "dmg", "mult": 3.2, "dmg": "true" } ],
+      "desc": "50% chance, when attacking an enemy with RES Down (Burn burst), to deal an extra 320% ATK True damage." }
+  ] },
+{ "slug": "necrass",
+  "skills": [
+    { "name": "Dread Desire", "target": "enemies", "n": 3, "mult": 3.7, "dmg": "arts",
+      "desc": "Summons Servants of Lamentation; their arrival deals 370% ATK Arts damage to up to 3 enemies." },
+    { "name": "Snap the Withered", "state": { "turns": 2, "basic": { "n": 2, "hits": 3, "mult": 1.3, "effects": [
+        { "on": "target", "type": "debuff", "what": "STUN", "turns": 1 },
+        { "on": "random_enemy", "type": "dmg", "mult": 1.0, "dmg": "arts", "hits": 2, "onKill": true } ] } },
+      "desc": "For 2 turns, holds up to 2 enemies (Stun) and hits them 3× for 130% ATK Arts. A kill raises 2 Servants (2× 100% ATK on random enemies)." },
+    { "name": "Crown the Dead", "target": "aoe_enemies", "mult": 6.5, "dmg": "arts",
+      "desc": "Crowns her special Servant: deals 650% ATK Arts damage to all enemies." }
+  ],
+  "talents": [
+    { "name": "Rekindle", "on": "kill", "effects": [ { "on": "random_enemy", "type": "dmg", "mult": 1.0, "dmg": "arts" } ],
+      "desc": "When she defeats an enemy, a Servant of Lamentation rises and strikes a random enemy for 100% ATK Arts damage." },
+    { "name": "Deathbed Deliverance", "dmgBonus": [ { "cond": { "targetHpBelow": 0.6 }, "v": 0.45 } ],
+      "desc": "+45% damage against enemies below 60% HP." }
+  ] },
+{ "slug": "tecno",
+  "skills": [
+    { "name": "Lockin'", "state": { "turns": 3, "atk": 0.4, "hp": 0.4, "def": 0.9 },
+      "desc": "For 3 turns: ATK +40%, Max HP +40%, DEF +90% (her Puppet Dancers' boosts, applied to Tecno)." },
+    { "name": "Poppin'", "state": { "turns": 3, "spd": 0.42, "basic": { "effects": [
+        { "on": "random_enemy", "type": "dmg", "mult": 1.0, "dmg": "arts" } ] } },
+      "desc": "For 3 turns: SPD +42%, and a Puppet Dancer joins each basic attack, striking a random enemy for 100% ATK Arts damage." }
+  ],
+  "talents": [
+    { "name": "Freestyle Puppetry", "on": "kill", "effects": [ { "on": "random_enemy", "type": "dmg", "mult": 1.0, "dmg": "arts" } ],
+      "desc": "When she defeats an enemy, a Puppet Dancer appears and strikes a random enemy for 100% ATK Arts damage." }
+  ] },
+{ "slug": "12f",
+  "skills": [],
+  "talents": [
+    { "name": "Dodge Rate Up", "stats": { "dodge": 0.35 }, "desc": "35% chance to avoid damage from Physical and Arts hits." }
+  ] },
+{ "slug": "dusk",
+  "skills": [
+    { "name": "Transcendental Stroke", "auto": true, "target": "enemies", "n": 4, "mult": 2.1, "dmg": "arts",
+      "desc": "Auto. When ready, the basic attack has a wider splash: 210% ATK Arts damage to up to 4 enemies." },
+    { "name": "Flowing Ink", "state": { "turns": 2, "atk": 0.4, "spd": 0.24, "basic": { "aoe": true } },
+      "desc": "For 2 turns: ATK +40%, SPD +24%, and basic attacks hit all enemies." },
+    { "name": "Image over Form", "state": { "turns": 5, "atk": 1.0, "spd": -0.07, "basic": { "n": 4, "reach": true, "effects": [
+        { "on": "random_enemy", "type": "dmg", "mult": 1.0, "dmg": "arts" } ] } },
+      "desc": "For 5 turns: ATK +100%, SPD −7%, splash hits up to 4 enemies past Taunt; each attack calls a Freeling that strikes a random enemy (100% ATK)." }
+  ],
+  "talents": [
+    { "name": "Sublimity", "on": "kill", "effects": [ { "on": "self", "type": "buff", "what": "ATK_UP", "v": 0.2, "turns": 99 } ],
+      "desc": "After defeating an enemy, ATK +20% for the rest of the battle." },
+    { "name": "Finishing Touch", "on": "attack", "once": true, "effects": [
+        { "on": "target", "type": "dmg", "mult": 1.0, "dmg": "arts", "hits": 2 },
+        { "on": "target", "type": "atkbar-", "amount": 0.15 } ],
+      "desc": "Her first attack summons a Freeling: it strikes the target twice (100% ATK Arts each) and holds it back (−15% turn meter)." }
+  ] },
+{ "slug": "gitano",
+  "skills": [
+    { "name": "Tactical Chant β", "state": { "turns": 3, "spd": 0.27 }, "desc": "For 3 turns: SPD +27%." },
+    { "name": "Destiny", "state": { "turns": 4, "atk": 0.7, "basic": { "aoe": true },
+        "onEnd": [ { "on": "self", "type": "debuff", "what": "STUN", "turns": 2 } ] },
+      "desc": "For 4 turns: ATK +70% and basic attacks hit all enemies. Afterwards Gitano stops attacking (Stunned, 2T)." }
+  ],
+  "talents": [
+    { "name": "Divination", "stats": { "atk": 0.05, "spd": 0.03, "hp": 0.07 },
+      "desc": "ATK +5%, SPD +3%, Max HP +7% (her three random Divination buffs, averaged)." }
+  ] },
+{ "slug": "greyy",
+  "skills": [
+    { "name": "Tactical Chant β", "state": { "turns": 3, "spd": 0.27 }, "desc": "For 3 turns: SPD +27%." },
+    { "name": "Electrostatic Discharge", "state": { "turns": 3, "spd": 0.39, "basic": { "effects": [
+        { "on": "target", "type": "debuff", "what": "SLOW", "turns": 1 } ] } },
+      "desc": "For 3 turns: SPD +39%, and basic attacks always Slow their targets (1T)." }
+  ],
+  "talents": [
+    { "name": "Electrostatic Field", "on": "hit", "chance": 0.4,
+      "effects": [ { "on": "target", "type": "debuff", "what": "SLOW", "turns": 1 } ],
+      "desc": "Each hit has a 40% chance to Slow the target (1T)." }
+  ] },
+{ "slug": "lava",
+  "skills": [
+    { "name": "Tactical Chant α", "state": { "turns": 3, "spd": 0.3 }, "desc": "For 3 turns: SPD +30%." }
+  ],
+  "talents": [
+    { "name": "Quick Skill Usage", "on": "start", "effects": [ { "on": "self", "type": "cdReduce", "amount": 4 } ],
+      "desc": "At battle start, her skill cooldown drops by 4 turns." }
+  ] },
+{ "slug": "leonhardt",
+  "skills": [
+    { "name": "ATK Up γ", "state": { "turns": 4, "atk": 0.6 }, "desc": "For 4 turns: ATK +60%." },
+    { "name": "Deconstruct and Detonate", "target": "aoe_enemies", "mult": 2.0, "dmg": "arts",
+      "effects": [ { "on": "target", "type": "debuff", "what": "RES_DOWN", "v": 12, "turns": 2 } ],
+      "desc": "Deals 200% ATK Arts damage to all enemies and lowers their RES by 12 (2T)." }
+  ],
+  "talents": [
+    { "name": "Lethal Fragmentation", "while": { "enemiesAlive": 3 }, "whileStats": { "atk": 0.12 },
+      "desc": "While 3 or more enemies remain, ATK +12%." }
+  ] },
+{ "slug": "marcille",
+  "skills": [
+    { "name": "A Top Student's Abilities", "state": { "turns": 5, "atk": 0.85 },
+      "desc": "For 5 turns (until her Mana runs out): ATK +85%." },
+    { "name": "Summon Familiar", "auto": true, "state": { "turns": 99, "atk": 0.7, "basic": { "effects": [
+        { "on": "target", "type": "debuff", "what": "SLOW", "turns": 1 } ] } },
+      "desc": "Auto. Summons a familiar for the rest of the battle: ATK +70%, and basic attacks Slow their targets (1T)." },
+    { "name": "Explosion Magic", "target": "aoe_enemies", "hits": 2, "mult": 3.4, "dmg": "arts",
+      "effects": [ { "on": "target", "type": "debuff", "what": "STUN", "turns": 1 } ],
+      "desc": "Casts 2 explosions, each dealing 340% ATK Arts damage to all enemies, and Stuns them (1T)." }
+  ],
+  "talents": [
+    { "name": "The Most Brilliant Student In the School's History", "stats": { "atk": 0.25 },
+      "on": "start", "effects": [ { "on": "self", "type": "cdReduce", "amount": 7 } ],
+      "desc": "ATK +25%. Her skills run on Mana and are ready at battle start." },
+    { "name": "Reliable Companion", "on": "skill", "effects": [ { "on": "self", "type": "cdReduce", "amount": 2 } ],
+      "desc": "Extra Mana: after using a skill, her skill cooldowns drop by 2 turns." }
+  ] },
+{ "slug": "mostima",
+  "skills": [
+    { "name": "ATK Up γ", "state": { "turns": 4, "atk": 0.6 }, "desc": "For 4 turns: ATK +60%." },
+    { "name": "Lock of Shattered Time", "target": "aoe_enemies", "hits": 3, "mult": 1.2, "dmg": "arts",
+      "effects": [ { "on": "target", "type": "debuff", "what": "STUN", "turns": 2 } ],
+      "desc": "Stops time: Stuns all enemies (2T) and deals 3× 120% ATK Arts damage to each." },
+    { "name": "Key of Chronology", "state": { "turns": 3, "atk": 1.2, "basic": { "aoe": true, "effects": [
+        { "on": "target", "type": "debuff", "what": "SLOW", "v": 0.27, "turns": 1 },
+        { "on": "target", "type": "atkbar-", "amount": 0.1 } ] } },
+      "desc": "For 3 turns: ATK +120%; basic attacks ripple through all enemies, Slowing them (SPD −27%, 1T) and knocking back 10% turn meter." }
+  ],
+  "talents": [
+    { "name": "Skill Aura - Caster", "on": "turn", "every": 3, "effects": [ { "on": "team", "type": "cdReduce", "amount": 1 } ],
+      "desc": "Every 3rd turn, all allies' skill cooldowns drop by 1 turn." },
+    { "name": "Subjective Time Dilation", "aura": { "who": "enemies", "stats": { "spd": -0.09 } },
+      "desc": "All enemies have SPD −9%." }
+  ] },
+{ "slug": "pith",
+  "skills": [
+    { "name": "'All That I Do'", "target": "team", "effects": [ { "on": "team", "type": "buff", "what": "ATK_UP", "v": 0.25, "turns": 4 } ],
+      "state": { "turns": 4, "spd": 0.3 },
+      "desc": "For 4 turns: SPD +30%, and all allies gain ATK +25%." }
+  ],
+  "talents": [
+    { "name": "'All That I See'", "dmgBonus": [ { "cond": {}, "v": 0.2 } ],
+      "desc": "Her attacks deal +20% damage (ignoring 20 RES)." }
+  ] },
+{ "slug": "santalla",
+  "skills": [
+    { "name": "Swift Strike γ", "state": { "turns": 4, "atk": 0.34, "spd": 0.21 }, "desc": "For 4 turns: ATK +34%, SPD +21%." },
+    { "name": "'Witch's Tears'", "state": { "turns": 2, "basic": { "hits": 4, "mult": 0.75, "effects": [
+        { "on": "target", "type": "debuff", "what": "COLD", "turns": 1 } ] } },
+      "desc": "For 2 turns, basic attacks drop 4 icicles (75% ATK Arts each) on up to 3 enemies and inflict Cold (1T)." }
+  ],
+  "talents": [
+    { "name": "Born of the Biting Cold", "stats": { "res": 0.3 },
+      "on": "turn", "every": 2, "once": true, "effects": [ { "on": "self", "type": "buff", "what": "ATK_UP", "v": 0.18, "turns": 99 } ],
+      "desc": "Status RES +30%. From her 2nd turn on, ATK +18% for the rest of the battle." }
+  ] },
+{ "slug": "skyfire",
+  "skills": [
+    { "name": "ATK Up γ", "state": { "turns": 4, "atk": 0.6 }, "desc": "For 4 turns: ATK +60%." },
+    { "name": "Fire of Heaven", "state": { "turns": 4, "spd": -0.12, "basic": { "mult": 2.1, "aoe": true, "effects": [
+        { "on": "target", "type": "atkbar-", "amount": 0.05 } ] } },
+      "desc": "For 4 turns: SPD −12%, basic attacks call meteors: 210% ATK Arts damage to all enemies and −5% turn meter." }
+  ],
+  "talents": [
+    { "name": "Arts Sniper", "aura": { "who": "enemies", "stats": { "dmgTaken": 0.1 } },
+      "desc": "All enemies take 10% more damage." }
+  ] },
+{ "slug": "asbestos",
+  "skills": [
+    { "name": "Resilient Mode", "target": "self", "effects": [ { "on": "self", "type": "shield", "pctHP": 0.1, "turns": 3 } ],
+      "state": { "turns": 3, "ares": 20, "basic": { "dmg": "arts" } },
+      "desc": "For 3 turns: RES +20 and Arts basic attacks. Gains a Barrier (10% max HP) that soaks the next hit." },
+    { "name": "Thermal Power Mode", "state": { "turns": 5, "atk": 0.6, "def": 0.45, "spd": -0.12, "basic": { "aoe": true, "dmg": "arts" } },
+      "desc": "For 5 turns: ATK +60%, DEF +45%, SPD −12%, and basic attacks deal Arts damage to all enemies." }
+  ],
+  "talents": [
+    { "name": "Moist Skin", "stats": { "ares": 10 }, "on": "hurt", "chance": 0.25,
+      "effects": [ { "on": "self", "type": "cdReduce", "amount": 1 } ],
+      "desc": "RES +10. When hit, 25% chance to reduce her skill cooldowns by 1 turn." }
+  ] },
+{ "slug": "czerny",
+  "skills": [
+    { "name": "Fingerfertigkeit", "state": { "turns": 4, "atk": 0.5, "ares": 20, "basic": { "dmg": "arts" } },
+      "desc": "For 4 turns: ATK +50%, RES +20 (≈ +80%), and basic attacks deal Arts damage." },
+    { "name": "Meisterwerk", "state": { "turns": 3, "hp": 0.7, "atk": 1.2, "taunt": true, "basic": { "dmg": "arts" },
+        "onEnd": [ { "on": "enemies", "type": "dmg", "mult": 1.9, "dmg": "arts" } ] },
+      "desc": "For 3 turns: Max HP +70%, Taunt, ATK +120% (stacks from hits taken). When it ends: 190% ATK Arts damage to all enemies." }
+  ],
+  "talents": [
+    { "name": "Reverberation", "stats": { "ares": 10 }, "on": "hurt", "chance": 0.5,
+      "effects": [ { "on": "attacker", "type": "dmg", "mult": 0.85, "dmg": "arts" } ],
+      "desc": "RES +10. When hit, 50% chance to deal 85% ATK Arts damage back to the attacker." }
+  ] },
+{ "slug": "dur-nar",
+  "skills": [
+    { "name": "ATK Up β", "state": { "turns": 3, "atk": 0.5, "basic": { "dmg": "arts" } },
+      "desc": "For 3 turns: ATK +50% and basic attacks deal Arts damage." },
+    { "name": "Shielded Counterattack", "state": { "turns": 4, "atk": 0.5, "basic": { "n": 3, "dmg": "arts" } },
+      "desc": "For 4 turns: ATK +50%, and Arts basic attacks hit up to 3 enemies." }
+  ],
+  "talents": [
+    { "name": "Sword and Shield", "stats": { "atk": 0.07, "def": 0.07 }, "desc": "ATK +7%, DEF +7%." }
+  ] }
+]

@@ -11,3 +11,7 @@ build/
 # Test screenshots and lockfiles from local tooling
 **/tests/shots/
 package-lock.json
+# audio source clone made by mobile/tools/fetch_audio.py
+mobile/tools/.audio_repo/
+mobile/tools/.art_cache/
+__pycache__/

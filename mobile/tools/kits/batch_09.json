@@ -1,0 +1,383 @@
+[
+{ "slug": "windflit",
+  "skills": [
+    { "name": "Machine Rapport", "auto": true, "target": "enemies", "n": 3, "mult": 1.9, "dmg": "phys",
+      "effects": [ { "on": "random_ally", "type": "cdReduce", "amount": 1, "chance": 0.3 } ],
+      "desc": "Auto. When ready, the basic attack deals 190% ATK Physical damage to up to 3 enemies; 30% chance to cut a random ally's cooldowns by 1 (Battery SP)." },
+    { "name": "Energy Rapport",
+      "effects": [ { "on": "random_ally", "type": "buff", "what": "ATK_UP", "v": 0.29, "turns": 2 } ],
+      "state": { "turns": 2, "atk": 1.3, "spd": -0.25,
+                 "onEnd": [ { "on": "random_ally", "type": "buff", "what": "ATK_UP", "v": 0.17, "turns": 4 } ] },
+      "desc": "For 2 turns: ATK +130%, SPD −25%; a random ally gets a boosted Battery (ATK +29%). When it ends, a new Battery: random ally ATK +17% (4T)." }
+  ],
+  "talents": [
+    { "name": "Forward Together", "aura": { "who": "class:Caster", "stats": { "atk": 0.17 } },
+      "desc": "Reliable Batteries: allied Casters gain ATK +17%." }
+  ] },
+{ "slug": "angelina",
+  "skills": [
+    { "name": "Arcane Staff - Quick Charge Mode", "auto": true, "state": { "turns": 4, "atk": 0.8 },
+      "desc": "Auto. For 4 turns: ATK +80%." },
+    { "name": "Arcane Staff - Particle Mode", "state": { "turns": 3, "basic": { "hits": 6, "mult": 0.4 } },
+      "desc": "For 3 turns, basic attacks fire 6 rapid bolts (40% ATK Arts each), each able to Slow." },
+    { "name": "Arcane Staff - Anti-Gravity Mode",
+      "effects": [ { "on": "enemies", "type": "atkbar-", "amount": 0.1 } ],
+      "state": { "turns": 2, "atk": 1.05, "basic": { "n": 5, "reach": true } },
+      "desc": "All enemies become Weightless (−10% turn meter). For 2 turns: ATK +105%, basic attacks hit up to 5 enemies." }
+  ],
+  "talents": [
+    { "name": "Accelerator Field", "aura": { "who": "team", "stats": { "spd": 0.05 } },
+      "desc": "All allies gain SPD +5%." },
+    { "name": "Part-time Job", "on": "turn", "cond": { "skillActive": false },
+      "effects": [ { "on": "team", "type": "healPct", "amount": 0.04 } ],
+      "desc": "At the start of each of her turns while no skill is active, all allies restore 4% max HP." }
+  ] },
+{ "slug": "earthspirit",
+  "skills": [
+    { "name": "ATK Up β", "state": { "turns": 3, "atk": 0.5 },
+      "desc": "For 3 turns: ATK +50%." },
+    { "name": "Quicksand Conversion", "target": "aoe_enemies",
+      "effects": [ { "on": "target", "type": "debuff", "what": "SLOW", "turns": 3 } ],
+      "desc": "Stops attacking to turn the ground to quicksand: Slows all enemies (SPD −30%) for 3 turns." }
+  ],
+  "talents": [
+    { "name": "Geological Survey", "on": "attack", "effects": [ { "on": "target", "type": "debuff", "what": "SLOW", "turns": 2 } ],
+      "desc": "Her Slows last longer: attacks Slow the target for 2 turns." }
+  ] },
+{ "slug": "glaucus",
+  "skills": [
+    { "name": "Binary Reload", "state": { "turns": 3, "atk": 0.4, "basic": { "n": 2 } },
+      "desc": "For 3 turns: ATK +40%, basic attacks hit 2 enemies." },
+    { "name": "Counter EMP", "target": "aoe_enemies", "mult": 3.2, "dmg": "arts",
+      "effects": [ { "on": "target", "type": "debuff", "what": "BIND", "turns": 2 } ],
+      "desc": "Shockwave: deals 320% ATK Arts damage to all enemies and Binds them for 2 turns." }
+  ],
+  "talents": [
+    { "name": "Countermeasure Device", "dmgBonus": [ { "cond": {}, "v": 0.55 } ],
+      "desc": "Anti-drone targeting: her attacks deal +55% damage." }
+  ] },
+{ "slug": "istina",
+  "skills": [
+    { "name": "Concentration", "state": { "turns": 3, "spd": 0.53 },
+      "desc": "For 3 turns: SPD +53% (attack interval −1.0s)." },
+    { "name": "Literature Storm", "state": { "turns": 3, "atk": 0.3, "basic": { "n": 3, "reach": true } },
+      "desc": "For 3 turns: ATK +30%, basic attacks hit up to 3 enemies." }
+  ],
+  "talents": [
+    { "name": "Explorer", "stats": { "def": -0.35, "spd": 0.13 },
+      "desc": "DEF −35%, SPD +13%." }
+  ] },
+{ "slug": "orchid",
+  "skills": [
+    { "name": "Swift Strike α", "state": { "turns": 3, "atk": 0.25, "spd": 0.15 },
+      "desc": "For 3 turns: ATK +25%, SPD +15%." }
+  ],
+  "talents": [
+    { "name": "Casting Speed Up", "stats": { "spd": 0.05 }, "desc": "SPD +5%." }
+  ] },
+{ "slug": "podenco",
+  "skills": [
+    { "name": "Aromatherapy", "state": { "turns": 3, "atk": 0.3, "basic": { "heal": 1 } },
+      "desc": "For 3 turns: ATK +30%, and basic attacks heal the lowest-HP ally (100% ATK) instead of attacking." },
+    { "name": "Spread Spores", "target": "enemies", "n": 3, "hits": 5, "mult": 0.6, "dmg": "arts",
+      "effects": [ { "on": "target", "type": "debuff", "what": "SLOW", "turns": 2 },
+                   { "on": "target", "type": "debuff", "what": "SILENCE", "turns": 2 } ],
+      "desc": "Spore cloud: up to 3 enemies take 60% ATK Arts damage 5 times and are Slowed and Silenced for 2 turns." }
+  ],
+  "talents": [
+    { "name": "Gardener", "aura": { "who": "class:Supporter", "stats": { "atk": 0.11 } },
+      "desc": "Allied Supporters gain ATK +11%." }
+  ] },
+{ "slug": "suzuran",
+  "skills": [
+    { "name": "I'll Do My Best", "auto": true, "state": { "turns": 3, "atk": 0.6, "spd": 0.09 },
+      "desc": "Auto. For 3 turns: ATK +60%, SPD +9%." },
+    { "name": "Childhood Frolic", "auto": true, "state": { "turns": 99, "atk": 0.3, "basic": { "n": 2 } },
+      "desc": "Auto. For the rest of the battle: ATK +30%, basic attacks hit 2 enemies." },
+    { "name": "Foxfire Haze",
+      "effects": [ { "on": "enemies", "type": "debuff", "what": "SLOW", "turns": 4 },
+                   { "on": "enemies", "type": "debuff", "what": "FRAGILE", "v": 0.39, "turns": 4 } ],
+      "state": { "turns": 4, "basic": { "heal": 0.33, "healN": 5 } },
+      "desc": "All enemies are Slowed and Fragile (+39% damage taken) for 4 turns. For 4 turns, basic attacks instead heal all allies (33% ATK)." }
+  ],
+  "talents": [
+    { "name": "Skill Aura - Supporter", "on": "turn", "every": 3,
+      "effects": [ { "on": "team", "type": "cdReduce", "amount": 1 } ],
+      "desc": "Every 3rd turn, all allies' skill cooldowns drop by 1." },
+    { "name": "Binding Circle", "on": "hit", "cond": { "targetHas": "SLOW" },
+      "effects": [ { "on": "target", "type": "debuff", "what": "FRAGILE", "v": 0.23, "turns": 1 } ],
+      "desc": "Slowed enemies she hits become Fragile: +23% damage taken (1T)." }
+  ] },
+{ "slug": "deepcolor",
+  "skills": [
+    { "name": "Shadow Tentacle", "state": { "turns": 4, "atk": 0.45, "def": 0.45, "regen": 0.05 },
+      "desc": "For 4 turns, Deepcolor and her Tentacles: ATK +45%, DEF +45%, and restore 5% max HP at the start of each turn." },
+    { "name": "Visual Trap", "target": "team",
+      "effects": [ { "on": "team", "type": "buff", "what": "DODGE", "v": 0.35, "turns": 5 } ],
+      "desc": "All allies gain a 35% chance to dodge hits for 5 turns." }
+  ],
+  "talents": [
+    { "name": "Tentacle Summoner", "on": "attack",
+      "effects": [ { "on": "target", "type": "dmg", "mult": 0.5, "dmg": "phys" } ],
+      "desc": "Tentacles fight beside her: after each attack, they strike the target for 50% ATK Physical damage." }
+  ] },
+{ "slug": "ling",
+  "skills": [
+    { "name": "Sips of Wine",
+      "state": { "turns": 3, "atk": 0.38, "spd": 0.23, "basic": { "effects": [ { "on": "target", "type": "dmg", "mult": 0.5, "dmg": "arts" } ] } },
+      "desc": "For 3 turns: ATK +38%, SPD +23%; a new dragon joins: basic attacks add a 50% ATK Arts hit." },
+    { "name": "Amidst Pleasant Melodies", "target": "enemies", "n": 2, "mult": 3.7, "dmg": "arts",
+      "effects": [ { "on": "target", "type": "debuff", "what": "BIND", "turns": 1 } ],
+      "desc": "Ling and her dragons deal 370% ATK Arts damage to 2 enemies and Bind them (1T)." },
+    { "name": "To Remain Oneself",
+      "state": { "turns": 4, "atk": 0.7, "def": 0.6,
+                 "basic": { "effects": [ { "on": "enemies", "type": "dmg", "mult": 0.2, "dmg": "arts", "hits": 8 } ] } },
+      "desc": "For 4 turns: ATK +70%, DEF +60%; her dragons storm: each basic attack also hits all enemies 8 times for 20% ATK Arts damage." }
+  ],
+  "talents": [
+    { "name": "Lantern Lit, Thy Dream Sought", "on": "attack",
+      "effects": [ { "on": "target", "type": "dmg", "mult": 0.5, "dmg": "phys", "hits": 2 } ],
+      "desc": "Her dragons fight beside her: after each attack, they strike the target 2 times for 50% ATK Physical damage." },
+    { "name": "So is Writ, an Ode to Wine", "stats": { "atk": 0.15 }, "on": "turn", "every": 3,
+      "effects": [ { "on": "self", "type": "cdReduce", "amount": 1 } ],
+      "desc": "ATK +15% (5 stacks from recalled dragons). Every 3rd turn a dragon returns: her skill cooldowns drop by 1." }
+  ] },
+{ "slug": "magallan",
+  "skills": [
+    { "name": "High-Efficiency Freezing Module",
+      "effects": [ { "on": "enemies", "type": "debuff", "what": "BIND", "turns": 1 } ],
+      "state": { "turns": 2, "basic": { "effects": [ { "on": "target", "type": "debuff", "what": "BIND", "turns": 1 } ] } },
+      "desc": "Freezing drones: on use, Binds all enemies (1T). For 2 turns, basic attacks also Bind the target (1T)." },
+    { "name": "Laser Mining Module",
+      "state": { "turns": 2, "spd": 0.6, "basic": { "effects": [ { "on": "enemies", "type": "dmg", "mult": 0.5, "dmg": "arts" } ] } },
+      "desc": "For 2 turns: SPD +60%; drones fire area lasers: each basic attack also deals 50% ATK Arts damage to all enemies." },
+    { "name": "Armed Combat Module",
+      "state": { "turns": 2, "atk": 1.0, "basic": { "effects": [ { "on": "enemies", "type": "dmg", "mult": 0.8, "dmg": "phys" } ] } },
+      "desc": "For 2 turns: ATK +100%; armed drones bombard: each basic attack also deals 80% ATK Physical damage to all enemies." }
+  ],
+  "talents": [
+    { "name": "Support Drone - Soaring Dragon", "on": "attack",
+      "effects": [ { "on": "target", "type": "dmg", "mult": 0.4, "dmg": "arts" } ],
+      "desc": "Support drones: after each attack, a drone strikes the target for 40% ATK Arts damage." },
+    { "name": "Optical Refraction Accessories", "on": "start",
+      "effects": [ { "on": "self", "type": "buff", "what": "STEALTH", "turns": 3 } ],
+      "desc": "Gains Camouflage for the first 3 turns of battle." }
+  ] },
+{ "slug": "scene",
+  "skills": [
+    { "name": "Protective Camouflage", "auto": true,
+      "state": { "turns": 99, "basic": { "effects": [ { "on": "target", "type": "dmg", "mult": 0.52, "dmg": "phys" } ] } },
+      "desc": "Auto. For the rest of the battle, camouflaged Buggy Cams (ATK +30%) join in: basic attacks add a 52% ATK Physical hit." },
+    { "name": "Panoramic Overload",
+      "state": { "turns": 2, "basic": { "effects": [ { "on": "target", "type": "dmg", "mult": 0.72, "dmg": "phys", "hits": 2 } ] } },
+      "desc": "For 2 turns, an extra Buggy Cam joins and cams get ATK +80%: basic attacks add 2 cam hits (72% ATK Physical each)." }
+  ],
+  "talents": [
+    { "name": "Camera Squad", "special": "TRUESIGHT",
+      "desc": "Buggy Cams reveal hidden enemies: Scene can target Camouflaged enemies." }
+  ] },
+{ "slug": "gnosis",
+  "skills": [
+    { "name": "High-Speed Cogitation", "auto": true, "target": "enemy", "hits": 2, "mult": 1.5, "dmg": "arts",
+      "effects": [ { "on": "target", "type": "debuff", "what": "COLD", "turns": 1 } ],
+      "desc": "Auto. When ready, the basic attack strikes twice (150% ATK Arts each); both strikes chill, inflicting Cold." },
+    { "name": "Zero-Point Burst", "target": "aoe_enemies", "mult": 1.6, "dmg": "arts",
+      "effects": [ { "on": "target", "type": "debuff", "what": "COLD", "turns": 1 },
+                   { "on": "target", "type": "debuff", "what": "COLD", "turns": 1, "chance": 0.3 } ],
+      "desc": "Deals 160% ATK Arts damage to all enemies and inflicts Cold (1T); 30% chance of an extra Cold layer (Charged), which Freezes." },
+    { "name": "Hypothermia",
+      "state": { "turns": 1, "spd": 0.73,
+                 "basic": { "n": 2, "hits": 2, "effects": [ { "on": "target", "type": "debuff", "what": "COLD", "turns": 1 } ] },
+                 "onEnd": [ { "on": "enemies", "type": "dmg", "mult": 4.0, "dmg": "arts" } ] },
+      "desc": "For 1 turn: SPD +73%, basic attacks hit 2 enemies twice and inflict Cold. When it ends, the ice shatters: 400% ATK Arts damage to all enemies." }
+  ],
+  "talents": [
+    { "name": "Rigid Ice", "on": "attack",
+      "effects": [ { "on": "target", "type": "debuff", "what": "COLD", "turns": 1 } ],
+      "triggers": [
+        { "on": "hit", "cond": { "targetHas": "COLD" }, "effects": [ { "on": "target", "type": "debuff", "what": "FRAGILE", "v": 0.27, "turns": 1 } ] },
+        { "on": "hit", "cond": { "targetHas": "FREEZE" }, "effects": [ { "on": "target", "type": "debuff", "what": "FRAGILE", "v": 0.54, "turns": 1 } ] } ],
+      "desc": "Attacks inflict Cold (1T). Cold enemies he hits become Fragile (+27% damage taken, 1T); Frozen ones +54%." },
+    { "name": "Two Paths, One Goal", "stats": { "res": 0.25 }, "aura": { "who": "random_ally", "stats": { "res": 0.25 } },
+      "desc": "Resist: Gnosis and a random ally gain +25% status resistance." }
+  ] },
+{ "slug": "pramanix",
+  "skills": [
+    { "name": "Echolocation",
+      "effects": [ { "on": "enemies", "type": "debuff", "what": "SLOW", "v": 0.3, "turns": 2 } ],
+      "state": { "turns": 2, "basic": { "n": 2 } },
+      "desc": "All enemies lose 30% SPD (ASPD −50) for 2 turns. For 2 turns, basic attacks hit 2 enemies." },
+    { "name": "Natural Deterrent", "target": "aoe_enemies",
+      "effects": [ { "on": "target", "type": "debuff", "what": "DEF_BREAK", "v": 0.45, "turns": 2 },
+                   { "on": "target", "type": "debuff", "what": "RES_DOWN", "v": 10, "turns": 2 } ],
+      "desc": "All enemies: DEF −45% and RES −10 (about −26%) for 2 turns." }
+  ],
+  "talents": [
+    { "name": "Weakening", "on": "hit", "cond": { "targetHpBelow": 0.4 },
+      "effects": [ { "on": "target", "type": "debuff", "what": "FRAGILE", "v": 0.33, "turns": 1 } ],
+      "desc": "Enemies below 40% HP that she hits become Fragile: +33% damage taken (1T)." },
+    { "name": "The Bell Tolls Twice", "on": "attack",
+      "effects": [ { "on": "random_enemy", "type": "dmg", "mult": 1.0, "dmg": "arts" } ],
+      "desc": "Attacks 2 enemies at once: after each attack, a random enemy also takes 100% ATK Arts damage." }
+  ] },
+{ "slug": "cantabile",
+  "skills": [
+    { "name": "Penetrating Gaze",
+      "passive": { "on": "start", "effects": [ { "on": "self", "type": "buff", "what": "ATK_UP", "v": 0.7, "turns": 2 } ],
+                   "triggers": [ { "on": "attack", "cond": { "selfHas": "ATK_UP" }, "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.04 } ] } ] },
+      "desc": "Passive. At battle start: ATK +70% for 2 turns; while it lasts, each attack gives all allies 4% turn meter." },
+    { "name": "Specular Reflection",
+      "state": { "turns": 2, "atk": 0.28, "spd": 0.2, "stealth": true,
+                 "basic": { "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.04 } ] } },
+      "desc": "For 2 turns: ATK +28%, SPD +20%, Camouflage; each attack gives all allies 4% turn meter." }
+  ],
+  "talents": [
+    { "name": "Protean", "stats": { "spd": 0.08 }, "while": { "hpBelow": 0.99 }, "whileStats": { "atk": 0.14 },
+      "desc": "SPD +8%. While engaged (below full HP), ATK +14%." }
+  ] },
+{ "slug": "ines",
+  "skills": [
+    { "name": "Shadow Raid", "auto": true, "target": "enemy", "mult": 1.0,
+      "effects": [ { "on": "target", "type": "dmg", "mult": 0.55, "dmg": "arts", "hits": 3 },
+                   { "on": "team", "type": "atkbar+", "amount": 0.08 } ],
+      "desc": "Auto. When ready, the basic attack also deals 55% ATK Arts damage 3 times (shadow bleed); all allies gain 8% turn meter." },
+    { "name": "Murky Night",
+      "state": { "turns": 2, "atk": 0.8, "spd": 0.18, "stealth": true,
+                 "basic": { "reach": true, "effects": [ { "on": "target", "type": "debuff", "what": "SLOW", "v": 0.1, "turns": 2 },
+                                                        { "on": "team", "type": "atkbar+", "amount": 0.04 } ] } },
+      "desc": "For 2 turns: ATK +80%, Camouflage, steals SPD (self +18%, target −10%); attacks reach any enemy and give allies 4% turn meter." },
+    { "name": "Solitary Return",
+      "passive": { "on": "start", "effects": [ { "on": "self", "type": "buff", "what": "ATK_UP", "v": 1.2, "turns": 2 },
+                                               { "on": "enemies", "type": "dmg", "mult": 1.4, "dmg": "phys" } ],
+                   "triggers": [ { "on": "attack", "cond": { "selfHas": "ATK_UP" }, "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.04 } ] } ] },
+      "desc": "Passive. At battle start her sentry returns: 140% ATK Physical to all enemies, ATK +120% for 2 turns, and attacks then give allies 4% turn meter." }
+  ],
+  "talents": [
+    { "name": "Shadow Weaver", "on": "attack", "chance": 0.35,
+      "effects": [ { "on": "target", "type": "debuff", "what": "BIND", "turns": 2 },
+                   { "on": "target", "type": "debuff", "what": "ATK_DOWN", "v": 0.15, "turns": 3 },
+                   { "on": "self", "type": "buff", "what": "INSPIRE", "v": 0.17, "turns": 3 } ],
+      "desc": "35% chance per attack (first strike on a foe): Binds it (2T) and steals ATK: target ATK −15%, Ines ATK +17% (3T)." },
+    { "name": "Shadow Sentry", "special": "TRUESIGHT", "on": "attack",
+      "effects": [ { "on": "target", "type": "debuff", "what": "SLOW", "v": 0.3, "turns": 1 } ],
+      "desc": "Can target Camouflaged enemies, and her attacks Slow the target (−30% SPD, 1T)." }
+  ] },
+{ "slug": "puzzle",
+  "skills": [
+    { "name": "Key Clue", "auto": true, "target": "enemy", "mult": 2.3,
+      "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.12 } ],
+      "desc": "Auto. When ready, the basic attack deals 230% ATK Physical damage; all allies gain 12% turn meter." },
+    { "name": "Follow a Lead",
+      "state": { "turns": 1, "spd": 0.36,
+                 "basic": { "effects": [ { "on": "target", "type": "dmg", "mult": 0.12, "dmg": "arts", "hits": 16 },
+                                         { "on": "team", "type": "atkbar+", "amount": 0.04 } ] } },
+      "desc": "For 1 turn: SPD +36%; each attack adds a bleed dealing 12% ATK Arts damage 16 times and gives allies 4% turn meter." }
+  ],
+  "talents": [
+    { "name": "Sequence", "dmgBonus": [ { "cond": { "targetHpAbove": 0.99 }, "v": 0.25 } ],
+      "triggers": [ { "on": "kill", "effects": [ { "on": "self", "type": "cdReduce", "amount": 1 } ] } ],
+      "desc": "+25% damage to full-HP enemies. After each kill (moving to a fresh foe), her skill cooldowns drop by 1." }
+  ] },
+{ "slug": "elysium",
+  "skills": [
+    { "name": "Support γ", "target": "team",
+      "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.3 } ],
+      "desc": "Stops attacking to call in support: all allies gain 30% turn meter." },
+    { "name": "Monitor", "target": "enemies", "n": 4,
+      "effects": [ { "on": "target", "type": "debuff", "what": "DEF_BREAK", "v": 0.25, "turns": 2 },
+                   { "on": "target", "type": "debuff", "what": "SLOW", "turns": 2 },
+                   { "on": "team", "type": "atkbar+", "amount": 0.3 } ],
+      "desc": "Locks up to 4 enemies: DEF −25% and Slowed for 2 turns. All allies gain 30% turn meter." }
+  ],
+  "talents": [
+    { "name": "Sniper Support", "aura": { "who": "class:Sniper", "stats": { "spd": 0.14 } },
+      "desc": "Allied Snipers gain SPD +14%." }
+  ] },
+{ "slug": "myrtle",
+  "skills": [
+    { "name": "Support β", "target": "team",
+      "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.3 } ],
+      "desc": "Stops attacking to call in support: all allies gain 30% turn meter." },
+    { "name": "Healing Wings",
+      "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.3 } ],
+      "state": { "turns": 2, "basic": { "heal": 1.05 } },
+      "desc": "All allies gain 30% turn meter. For 2 turns, basic attacks instead heal the lowest-HP ally for 105% ATK." }
+  ],
+  "talents": [
+    { "name": "Glistening", "on": "turn", "effects": [ { "on": "team", "type": "healPct", "amount": 0.04 } ],
+      "desc": "At the start of each of her turns, all allies restore 4% max HP." }
+  ] },
+{ "slug": "saileach",
+  "skills": [
+    { "name": "Support γ", "target": "team",
+      "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.3 } ],
+      "desc": "Stops attacking to call in support: all allies gain 30% turn meter." },
+    { "name": "Inheritance of Faith",
+      "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.3 },
+                   { "on": "lowest", "type": "buff", "what": "DEF_UP", "v": 0.35, "turns": 2 } ],
+      "state": { "turns": 2, "basic": { "heal": 1.05 } },
+      "desc": "All allies gain 30% turn meter; the lowest-HP ally gets DEF +35% (2T). For 2 turns, basic attacks instead heal that ally for 105% ATK." },
+    { "name": "Glorious Banner", "target": "enemy", "mult": 2.4, "dmg": "phys",
+      "effects": [ { "on": "target", "type": "debuff", "what": "STUN", "turns": 1 },
+                   { "on": "enemies", "type": "debuff", "what": "SLOW", "turns": 1 },
+                   { "on": "enemies", "type": "debuff", "what": "FRAGILE", "v": 0.25, "turns": 1 },
+                   { "on": "team", "type": "atkbar+", "amount": 0.3 } ],
+      "desc": "Hurls the banner: 240% ATK Physical damage and Stun (1T); all enemies Slowed and Fragile (+25%, 1T). All allies gain 30% turn meter." }
+  ],
+  "talents": [
+    { "name": "Unwavering Banner", "aura": { "who": "team", "stats": { "spd": 0.07 } }, "on": "wave",
+      "effects": [ { "on": "enemies", "type": "debuff", "what": "SLOW", "v": 0.07, "turns": 99 } ],
+      "desc": "Banner: all allies SPD +7%; each enemy wave is Slowed by 7% SPD." },
+    { "name": "Spiritual Influence", "on": "start", "effects": [ { "on": "team", "type": "atkbar+", "amount": 0.08 } ],
+      "desc": "All allies start battle with 8% turn meter." }
+  ] },
+{ "slug": "bagpipe",
+  "skills": [
+    { "name": "Swift Strike γ", "state": { "turns": 4, "atk": 0.34, "spd": 0.21 },
+      "desc": "For 4 turns: ATK +34%, SPD +21%." },
+    { "name": "High-Impact Assault", "auto": true, "target": "enemy", "hits": 2, "mult": 1.6,
+      "desc": "Auto. When ready, the basic attack strikes twice (160% ATK each)." },
+    { "name": "Locked Breech Burst", "state": { "turns": 3, "atk": 0.9, "def": 0.9, "spd": -0.4, "basic": { "hits": 3 } },
+      "desc": "For 3 turns: ATK +90%, DEF +90%, SPD −40%, and basic attacks hit 3 times in a row." }
+  ],
+  "talents": [
+    { "name": "Precise Reloading", "on": "attack", "chance": 0.28,
+      "effects": [ { "on": "target", "type": "dmg", "mult": 0.3, "dmg": "phys" },
+                   { "on": "random_enemy", "type": "dmg", "mult": 1.3, "dmg": "phys" } ],
+      "desc": "28% chance after attacking to fire at 130% ATK: +30% ATK on the target and a 130% ATK hit on a random enemy." },
+    { "name": "Martial Tradition", "on": "start", "effects": [ { "on": "team", "type": "cdReduce", "amount": 1 } ],
+      "desc": "At battle start, all allies' skill cooldowns drop by 1 turn." }
+  ] },
+{ "slug": "grani",
+  "skills": [
+    { "name": "DEF Up γ", "state": { "turns": 5, "def": 0.6 },
+      "desc": "For 5 turns: DEF +60%." },
+    { "name": "Press the Attack!", "state": { "turns": 4, "atk": 0.6, "def": 0.6, "basic": { "n": 2 } },
+      "desc": "For 4 turns: ATK +60%, DEF +60%, and basic attacks hit 2 enemies." }
+  ],
+  "talents": [
+    { "name": "Mounted Police", "aura": { "who": "class:Vanguard", "stats": { "dodge": 0.25 } },
+      "desc": "Allied Vanguards gain a 25% chance to dodge hits." }
+  ] },
+{ "slug": "plume",
+  "skills": [
+    { "name": "Swift Strike α", "state": { "turns": 3, "atk": 0.25, "spd": 0.15 },
+      "desc": "For 3 turns: ATK +25%, SPD +15%." }
+  ],
+  "talents": [
+    { "name": "ATK Up", "stats": { "atk": 0.08 }, "desc": "ATK +8%." }
+  ] },
+{ "slug": "reed",
+  "skills": [
+    { "name": "Swift Strike γ", "state": { "turns": 4, "atk": 0.34, "spd": 0.21 },
+      "desc": "For 4 turns: ATK +34%, SPD +21%." },
+    { "name": "Soul Spark",
+      "state": { "turns": 3, "atk": 0.6,
+                 "basic": { "effects": [ { "on": "target", "type": "dmg", "mult": 0.25, "dmg": "arts" },
+                                         { "on": "team", "type": "atkbar+", "amount": 0.04, "onKill": true } ] } },
+      "desc": "For 3 turns: ATK +60%, attacks deal an extra 25% ATK Arts damage, and kills give all allies 4% more turn meter." }
+  ],
+  "talents": [
+    { "name": "Blighted Blood", "stats": { "ares": 20 }, "desc": "RES +20." }
+  ] }
+]

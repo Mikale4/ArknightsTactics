@@ -1,0 +1,1241 @@
+[
+ {
+  "slug": "aroma",
+  "skills": [
+   {
+    "name": "Power Cleaning",
+    "auto": true,
+    "target": "enemies",
+    "n": 3,
+    "mult": 1.8,
+    "dmg": "arts",
+    "desc": "Auto. When ready, the basic attack deals 180% ATK Arts damage to up to 3 enemies."
+   },
+   {
+    "name": "Caution! Wet Floor!",
+    "state": {
+     "turns": 3,
+     "atk": 0.8,
+     "basic": {
+      "effects": [
+       {
+        "type": "bonusIf",
+        "cond": "LEVITATE",
+        "bonusDmg": 0.8
+       }
+      ]
+     }
+    },
+    "desc": "For 3 turns: ATK +80%, and basic attacks deal +80% damage to Levitated enemies."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Let's Get Saponaceous!",
+    "dmgBonus": [
+     {
+      "cond": {
+       "targetHpAbove": 0.99
+      },
+      "v": 0.15
+     }
+    ],
+    "on": "hit",
+    "chance": 0.3,
+    "effects": [
+     {
+      "on": "target",
+      "type": "debuff",
+      "what": "LEVITATE",
+      "turns": 1
+     }
+    ],
+    "desc": "+15% damage to full-HP enemies. Each hit has a 30% chance to Levitate the target (1T)."
+   }
+  ]
+ },
+ {
+  "slug": "corroserum",
+  "skills": [
+   {
+    "name": "Focus Overload",
+    "state": {
+     "turns": 4,
+     "atk": 1.0,
+     "onEnd": [
+      {
+       "on": "self",
+       "type": "debuff",
+       "what": "STUN",
+       "turns": 2
+      }
+     ]
+    },
+    "desc": "For 4 turns: ATK +100%. Corroserum is Stunned for 2 turns afterwards."
+   },
+   {
+    "name": "Conductive Corrosive Blast",
+    "state": {
+     "turns": 3,
+     "atk": 0.7,
+     "basic": {
+      "effects": [
+       {
+        "on": "target",
+        "type": "debuff",
+        "what": "SILENCE",
+        "turns": 1
+       }
+      ]
+     }
+    },
+    "desc": "For 3 turns: ATK +70%, and basic attacks Silence their targets (1T)."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Tactical Readjustment",
+    "on": "wave",
+    "effects": [
+     {
+      "on": "self",
+      "type": "cdReduce",
+      "amount": 1
+     }
+    ],
+    "desc": "At the start of each enemy wave, Corroserum's skill cooldowns drop by 1 turn."
+   }
+  ]
+ },
+ {
+  "slug": "astgenne",
+  "skills": [
+   {
+    "name": "Double Diversion",
+    "auto": true,
+    "target": "enemies",
+    "n": 4,
+    "hits": 2,
+    "mult": 1.1,
+    "dmg": "arts",
+    "desc": "Auto. When ready, the basic attack fires 2 chains (110% ATK Arts each) that hit up to 4 enemies."
+   },
+   {
+    "name": "Starlight Intersection",
+    "state": {
+     "turns": 3,
+     "atk": 0.25,
+     "basic": {
+      "hits": 2
+     }
+    },
+    "desc": "For 3 turns: ATK +25%, and basic attacks fire 2 chains at once."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Passion for Research",
+    "stats": {
+     "spd": 0.12
+    },
+    "desc": "SPD +12%."
+   }
+  ]
+ },
+ {
+  "slug": "leizi",
+  "skills": [
+   {
+    "name": "ATK Up γ",
+    "state": {
+     "turns": 4,
+     "atk": 0.6
+    },
+    "desc": "For 4 turns: ATK +60%."
+   },
+   {
+    "name": "Thunderclap",
+    "state": {
+     "turns": 4,
+     "atk": 1.0,
+     "basic": {
+      "falloff": 1
+     }
+    },
+    "desc": "For 4 turns: ATK +100%, and chain jumps no longer lose damage."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Unobstructed Flow",
+    "stats": {
+     "atk": 0.23
+    },
+    "desc": "ATK +23%."
+   }
+  ]
+ },
+ {
+  "slug": "passenger",
+  "skills": [
+   {
+    "name": "Touch of Static",
+    "auto": true,
+    "target": "enemies",
+    "n": 4,
+    "mult": 2.1,
+    "dmg": "arts",
+    "effects": [
+     {
+      "on": "target",
+      "type": "debuff",
+      "what": "SLOW",
+      "turns": 1
+     }
+    ],
+    "desc": "Auto. When ready, the basic attack deals 210% ATK Arts damage chaining to up to 4 enemies and Slows them (1T)."
+   },
+   {
+    "name": "Focus Command",
+    "state": {
+     "turns": 4,
+     "atk": 0.2,
+     "spd": 0.15,
+     "basic": {
+      "n": 5
+     }
+    },
+    "desc": "For 4 turns: ATK +20%, SPD +15%, and basic attacks chain to up to 5 enemies."
+   },
+   {
+    "name": "Glorious Shards",
+    "target": "aoe_enemies",
+    "hits": 3,
+    "mult": 1.3,
+    "dmg": "arts",
+    "desc": "Calls a lightning storm: every enemy is struck 3 times for 130% ATK Arts damage."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Mechanism Analysis",
+    "dmgBonus": [
+     {
+      "cond": {
+       "targetHpAbove": 0.8
+      },
+      "v": 0.25
+     }
+    ],
+    "desc": "+25% damage to enemies at 80% HP or more."
+   },
+   {
+    "name": "Lone Soldier",
+    "stats": {
+     "atk": 0.1
+    },
+    "desc": "ATK +10%."
+   }
+  ]
+ },
+ {
+  "slug": "pudding",
+  "skills": [
+   {
+    "name": "Tactical Chant β",
+    "state": {
+     "turns": 3,
+     "spd": 0.27
+    },
+    "desc": "For 3 turns: SPD +27%."
+   },
+   {
+    "name": "Diffusion Current",
+    "state": {
+     "turns": 3,
+     "atk": 0.8,
+     "basic": {
+      "n": 5
+     }
+    },
+    "desc": "For 3 turns: ATK +80%, and basic attacks chain to up to 5 enemies."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Electromagnetic Waves",
+    "stats": {
+     "atk": 0.1
+    },
+    "desc": "ATK +10%."
+   }
+  ]
+ },
+ {
+  "slug": "absinthe",
+  "skills": [
+   {
+    "name": "Enforcement Mode",
+    "auto": true,
+    "state": {
+     "turns": 99,
+     "atk": 0.6
+    },
+    "desc": "Auto. Once activated, ATK +60% for the rest of the battle."
+   },
+   {
+    "name": "Ultimatum",
+    "state": {
+     "turns": 3,
+     "basic": {
+      "hits": 4,
+      "mult": 0.75
+     }
+    },
+    "desc": "For 3 turns: basic attacks become bursts of 4 hits (75% ATK Arts each)."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Enforcer",
+    "dmgBonus": [
+     {
+      "cond": {
+       "targetHpBelow": 0.4
+      },
+      "v": 0.3
+     }
+    ],
+    "desc": "+30% damage to enemies below 40% HP."
+   }
+  ]
+ },
+ {
+  "slug": "ceobe",
+  "skills": [
+   {
+    "name": "'Really Cold Axe'",
+    "auto": true,
+    "target": "enemy",
+    "mult": 1.8,
+    "dmg": "arts",
+    "effects": [
+     {
+      "on": "target",
+      "type": "debuff",
+      "what": "BIND",
+      "turns": 1
+     }
+    ],
+    "desc": "Auto. When ready, the basic attack deals 180% ATK Arts damage and Binds the target (1T)."
+   },
+   {
+    "name": "'Really Hot Knives'",
+    "state": {
+     "turns": 5,
+     "spd": 0.25
+    },
+    "desc": "For 5 turns: SPD +25%."
+   },
+   {
+    "name": "'Really Heavy Spear'",
+    "state": {
+     "turns": 5,
+     "atk": 1.6,
+     "basic": {
+      "dmg": "phys",
+      "effects": [
+       {
+        "on": "target",
+        "type": "debuff",
+        "what": "SILENCE",
+        "turns": 1
+       }
+      ]
+     }
+    },
+    "desc": "For 5 turns: ATK +160%; basic attacks deal Physical damage and Silence the target (1T)."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Thresher",
+    "on": "attack",
+    "effects": [
+     {
+      "on": "target",
+      "type": "dmg",
+      "mult": 0.3,
+      "dmg": "arts"
+     }
+    ],
+    "desc": "Each attack deals an extra 30% ATK Arts damage (approximating 44% of the target's DEF)."
+   },
+   {
+    "name": "Lone Journey",
+    "stats": {
+     "atk": 0.08,
+     "spd": 0.05
+    },
+    "desc": "ATK +8%, SPD +5%."
+   }
+  ]
+ },
+ {
+  "slug": "durin",
+  "skills": [],
+  "talents": [
+   {
+    "name": "Lucky Lass",
+    "stats": {
+     "ares": 50
+    },
+    "desc": "RES +50 (in place of a 50% chance to dodge Arts damage)."
+   }
+  ]
+ },
+ {
+  "slug": "eyjafjalla",
+  "skills": [
+   {
+    "name": "Duetto",
+    "state": {
+     "turns": 3,
+     "spd": 0.27,
+     "atk": 0.45
+    },
+    "desc": "For 3 turns: SPD +27% and ATK +45%."
+   },
+   {
+    "name": "Ignition",
+    "auto": true,
+    "target": "enemy",
+    "mult": 3.1,
+    "dmg": "arts",
+    "effects": [
+     {
+      "on": "target",
+      "type": "debuff",
+      "what": "RES_DOWN",
+      "v": 10,
+      "turns": 1
+     },
+     {
+      "on": "random_enemy",
+      "type": "dmg",
+      "mult": 1.55,
+      "dmg": "arts"
+     }
+    ],
+    "desc": "Auto. When ready, the basic attack deals 310% ATK Arts damage and RES −10 (1T); a random enemy takes 155% ATK splash."
+   },
+   {
+    "name": "Volcano",
+    "state": {
+     "turns": 2,
+     "atk": 0.85,
+     "spd": 0.69,
+     "basic": {
+      "n": 5
+     }
+    },
+    "desc": "For 2 turns: ATK +85%, SPD +69%, and basic attacks rain lava on up to 5 enemies."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Pyrobreath",
+    "aura": {
+     "who": "class:Caster",
+     "stats": {
+      "atk": 0.16
+     }
+    },
+    "desc": "Allied Casters gain ATK +16%."
+   },
+   {
+    "name": "Wild Fire",
+    "on": "start",
+    "effects": [
+     {
+      "on": "self",
+      "type": "cdReduce",
+      "amount": 1
+     },
+     {
+      "on": "self",
+      "type": "cdReduce",
+      "amount": 1,
+      "chance": 0.5
+     }
+    ],
+    "desc": "At battle start, Eyjafjalla's skill cooldowns drop by 1–2 turns at random."
+   }
+  ]
+ },
+ {
+  "slug": "haze",
+  "skills": [
+   {
+    "name": "ATK Up β",
+    "state": {
+     "turns": 3,
+     "atk": 0.5
+    },
+    "desc": "For 3 turns: ATK +50%."
+   },
+   {
+    "name": "Crimson Eyes",
+    "state": {
+     "turns": 3,
+     "hp": -0.75,
+     "atk": 0.45,
+     "spd": 0.27
+    },
+    "desc": "For 3 turns: Max HP −75%, ATK +45%, SPD +27%."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Black Mist",
+    "on": "hit",
+    "effects": [
+     {
+      "on": "target",
+      "type": "debuff",
+      "what": "RES_DOWN",
+      "v": 12,
+      "turns": 1
+     }
+    ],
+    "desc": "Hits reduce the target's RES by 12 (1T)."
+   }
+  ]
+ },
+ {
+  "slug": "logos",
+  "skills": [
+   {
+    "name": "Perish",
+    "auto": true,
+    "state": {
+     "turns": 99,
+     "atk": 0.7,
+     "basic": {
+      "effects": [
+       {
+        "on": "random_enemy",
+        "type": "dmg",
+        "mult": 1.2,
+        "dmg": "arts",
+        "onKill": true
+       }
+      ]
+     }
+    },
+    "desc": "Auto. Once activated, for the rest of the battle: ATK +70%, and a basic attack that defeats its target deals 120% ATK Arts damage to a random enemy."
+   },
+   {
+    "name": "Synecdoche",
+    "state": {
+     "turns": 3,
+     "ares": 50,
+     "basic": {
+      "hits": 3,
+      "mult": 0.5,
+      "effects": [
+       {
+        "on": "target",
+        "type": "debuff",
+        "what": "SLOW",
+        "turns": 1
+       },
+       {
+        "type": "bonusIf",
+        "cond": "SLOW",
+        "bonusDmg": 2.0
+       }
+      ]
+     }
+    },
+    "desc": "For 3 turns: RES +50; basic attacks lock on for 3 hits (50% ATK Arts) and Slow (1T). Hits on Slowed targets deal triple damage."
+   },
+   {
+    "name": "Extended Acuity",
+    "state": {
+     "turns": 4,
+     "atk": 2.2,
+     "basic": {
+      "n": 3
+     }
+    },
+    "desc": "For 4 turns: ATK +220%, and basic attacks hit up to 3 enemies."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Lexical Evolution",
+    "on": "attack",
+    "chance": 0.4,
+    "effects": [
+     {
+      "on": "random_enemy",
+      "type": "dmg",
+      "mult": 0.65,
+      "dmg": "arts"
+     }
+    ],
+    "desc": "40% chance after attacking to deal 65% ATK Arts damage to a random enemy."
+   },
+   {
+    "name": "Requiem Aeternam",
+    "on": "hit",
+    "effects": [
+     {
+      "on": "target",
+      "type": "debuff",
+      "what": "RES_DOWN",
+      "v": 10,
+      "turns": 1
+     },
+     {
+      "on": "target",
+      "type": "debuff",
+      "what": "FRAGILE",
+      "v": 0.1,
+      "turns": 1
+     }
+    ],
+    "desc": "Hits inflict RES −10 and make the target take 10% more damage (1T)."
+   }
+  ]
+ },
+ {
+  "slug": "nightmare",
+  "skills": [
+   {
+    "name": "Drain Soul",
+    "state": {
+     "turns": 5,
+     "basic": {
+      "effects": [
+       {
+        "on": "lowest",
+        "type": "heal",
+        "amount": 0.7
+       }
+      ]
+     }
+    },
+    "desc": "For 5 turns: each basic attack also heals the lowest-HP ally for 70% ATK."
+   },
+   {
+    "name": "Night Phantom",
+    "auto": true,
+    "target": "enemies",
+    "n": 3,
+    "mult": 1.0,
+    "dmg": "true",
+    "effects": [
+     {
+      "on": "target",
+      "type": "debuff",
+      "what": "SLOW",
+      "v": 0.6,
+      "turns": 1
+     }
+    ],
+    "desc": "Auto. When ready, the basic attack curses up to 3 enemies: 100% ATK True damage and SPD −60% (1T)."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Dual Personality",
+    "stats": {
+     "atk": 0.18
+    },
+    "while": {
+     "skillActive": true
+    },
+    "whileStats": {
+     "dodge": 0.45
+    },
+    "desc": "ATK +18%. While Drain Soul is active, 45% chance to avoid Physical and Arts hits."
+   }
+  ]
+ },
+ {
+  "slug": "qanipalaat",
+  "skills": [
+   {
+    "name": "Frigid Wind",
+    "state": {
+     "turns": 4,
+     "spd": 0.36
+    },
+    "desc": "For 4 turns: SPD +36%."
+   },
+   {
+    "name": "Falling Snow",
+    "target": "enemies",
+    "n": 2,
+    "hits": 2,
+    "mult": 0.6,
+    "dmg": "arts",
+    "effects": [
+     {
+      "on": "target",
+      "type": "debuff",
+      "what": "LEVITATE",
+      "turns": 2
+     }
+    ],
+    "state": {
+     "turns": 2,
+     "onEnd": [
+      {
+       "on": "enemies",
+       "type": "dmg",
+       "mult": 2.3,
+       "dmg": "arts"
+      }
+     ]
+    },
+    "desc": "Hits 2 enemies twice (60% ATK Arts) and Levitates them (2T). When they land, every enemy takes 230% ATK Arts damage."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Tundra Survival",
+    "on": "attack",
+    "effects": [
+     {
+      "on": "target",
+      "type": "debuff",
+      "what": "FRAGILE",
+      "v": 0.22,
+      "turns": 1
+     }
+    ],
+    "desc": "Attacks make the target take 22% more damage (1T)."
+   }
+  ]
+ },
+ {
+  "slug": "steward",
+  "skills": [
+   {
+    "name": "Power Strike α",
+    "auto": true,
+    "target": "enemy",
+    "mult": 1.9,
+    "desc": "Auto. When ready, the basic attack deals 190% ATK."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Armor Break",
+    "stats": {
+     "atk": 0.06
+    },
+    "desc": "ATK +6%."
+   }
+  ]
+ },
+ {
+  "slug": "tomimi",
+  "skills": [
+   {
+    "name": "Tribal Techniques",
+    "state": {
+     "turns": 4,
+     "spd": 0.36
+    },
+    "desc": "For 4 turns: SPD +36%."
+   },
+   {
+    "name": "Gavial's Protection Plan",
+    "state": {
+     "turns": 3,
+     "atk": 1.2,
+     "basic": {
+      "dmg": "phys",
+      "effects": [
+       {
+        "on": "target",
+        "type": "debuff",
+        "what": "STUN",
+        "turns": 1,
+        "chance": 0.23
+       },
+       {
+        "on": "target",
+        "type": "dmg",
+        "mult": 0.9,
+        "dmg": "phys",
+        "chance": 0.23
+       },
+       {
+        "on": "enemies",
+        "type": "dmg",
+        "mult": 1.0,
+        "dmg": "phys",
+        "chance": 0.23
+       }
+      ]
+     }
+    },
+    "desc": "For 3 turns: ATK +120%, Physical attacks; each has a 23% chance each to Stun (1T), deal +90% damage, or hit every enemy."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Arts of the Wild",
+    "desc": "Gavial's Protection Plan also grants ATK +120% and Physical attacks (built into that skill)."
+   }
+  ]
+ },
+ {
+  "slug": "click",
+  "skills": [
+   {
+    "name": "ATK Up β",
+    "state": {
+     "turns": 3,
+     "atk": 0.5
+    },
+    "desc": "For 3 turns: ATK +50%."
+   },
+   {
+    "name": "Synchronized Attack",
+    "state": {
+     "turns": 3,
+     "atk": 0.58,
+     "basic": {
+      "effects": [
+       {
+        "on": "target",
+        "type": "debuff",
+        "what": "STUN",
+        "turns": 1,
+        "chance": 0.23
+       }
+      ]
+     }
+    },
+    "desc": "For 3 turns: ATK +58%, and basic attacks have a 23% chance to Stun (1T)."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Coordinated",
+    "stats": {
+     "spd": 0.07
+    },
+    "desc": "SPD +7%."
+   }
+  ]
+ },
+ {
+  "slug": "goldenglow",
+  "skills": [
+   {
+    "name": "Scattering Sparks",
+    "state": {
+     "turns": 3,
+     "atk": 0.32,
+     "spd": 0.23,
+     "basic": {
+      "hits": 2
+     }
+    },
+    "desc": "For 3 turns: ATK +32%, SPD +23%, and an extra Drone makes basic attacks hit twice."
+   },
+   {
+    "name": "Surging Current",
+    "auto": true,
+    "state": {
+     "turns": 99,
+     "atk": 0.45,
+     "basic": {
+      "hits": 2
+     }
+    },
+    "desc": "Auto. Once activated, for the rest of the battle: ATK +45%, and an extra Drone makes basic attacks hit twice."
+   },
+   {
+    "name": "Crystalline Shine",
+    "state": {
+     "turns": 4,
+     "atk": 0.55,
+     "basic": {
+      "hits": 3,
+      "reach": true,
+      "effects": [
+       {
+        "on": "target",
+        "type": "debuff",
+        "what": "SLOW",
+        "v": 0.2,
+        "turns": 1
+       }
+      ]
+     }
+    },
+    "desc": "For 4 turns: ATK +55%; 3 Drones make basic attacks hit 3 times, ignore Taunt, and Slow the target by 20% (1T)."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Beacon's Wrath",
+    "on": "attack",
+    "cond": {
+     "skillActive": true
+    },
+    "chance": 0.1,
+    "effects": [
+     {
+      "on": "enemies",
+      "type": "dmg",
+      "mult": 3.15,
+      "dmg": "arts"
+     }
+    ],
+    "desc": "While a skill is active, attacks have a 10% chance to detonate a Drone: 315% ATK Arts damage to all enemies."
+   },
+   {
+    "name": "Precise Redirection",
+    "on": "hit",
+    "effects": [
+     {
+      "on": "target",
+      "type": "debuff",
+      "what": "RES_DOWN",
+      "v": 18,
+      "turns": 1
+     }
+    ],
+    "desc": "Hits reduce the target's RES by 18 (1T)."
+   }
+  ]
+ },
+ {
+  "slug": "kjera",
+  "skills": [
+   {
+    "name": "ATK Up γ",
+    "state": {
+     "turns": 4,
+     "atk": 0.6
+    },
+    "desc": "For 4 turns: ATK +60%."
+   },
+   {
+    "name": "Unrestrained Heart",
+    "state": {
+     "turns": 3,
+     "atk": 0.4,
+     "basic": {
+      "hits": 2,
+      "effects": [
+       {
+        "on": "target",
+        "type": "debuff",
+        "what": "COLD",
+        "turns": 1,
+        "chance": 0.2
+       }
+      ]
+     }
+    },
+    "desc": "For 3 turns: ATK +40%; an extra Drone makes basic attacks hit twice, with a 20% chance to inflict Cold (1T)."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Deference",
+    "stats": {
+     "atk": 0.19
+    },
+    "desc": "ATK +19%."
+   }
+  ]
+ },
+ {
+  "slug": "rockrock",
+  "skills": [
+   {
+    "name": "Tactical Chant γ",
+    "state": {
+     "turns": 4,
+     "spd": 0.36
+    },
+    "desc": "For 4 turns: SPD +36%."
+   },
+   {
+    "name": "Willing Burden",
+    "state": {
+     "turns": 5,
+     "spd": 0.36,
+     "atk": 0.5,
+     "basic": {
+      "mult": 1.55
+     },
+     "onEnd": [
+      {
+       "on": "self",
+       "type": "debuff",
+       "what": "STUN",
+       "turns": 2
+      }
+     ]
+    },
+    "desc": "For 5 turns (Overload): SPD +36%, ATK +50%, and basic attacks deal 155% ATK. Rockrock is Stunned for 2 turns afterwards."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Firm Foundation",
+    "stats": {
+     "atk": 0.2
+    },
+    "desc": "ATK +20%."
+   }
+  ]
+ },
+ {
+  "slug": "delphine",
+  "skills": [
+   {
+    "name": "'Concentration'",
+    "target": "enemy",
+    "hits": 5,
+    "mult": 0.4,
+    "dmg": "arts",
+    "desc": "Rapid fire: hits an enemy 5 times for 40% ATK Arts damage each."
+   },
+   {
+    "name": "'Preemptive Strike'",
+    "state": {
+     "turns": 4,
+     "atk": 0.6,
+     "basic": {
+      "effects": [
+       {
+        "on": "target",
+        "type": "dmg",
+        "mult": 0.5,
+        "dmg": "arts"
+       }
+      ]
+     }
+    },
+    "desc": "For 4 turns: ATK +60%, and basic attacks deal an extra 50% ATK Arts damage (lingering curse)."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Baptize the Blade",
+    "dmgBonus": [
+     {
+      "cond": {
+       "targetHpAbove": 0.8
+      },
+      "v": 0.2
+     }
+    ],
+    "desc": "+20% damage to enemies above 80% HP."
+   },
+   {
+    "name": "Cut Without Mercy",
+    "dmgBonus": [
+     {
+      "cond": {
+       "targetBoss": true
+      },
+      "v": 0.2
+     }
+    ],
+    "desc": "+20% damage to bosses."
+   }
+  ]
+ },
+ {
+  "slug": "ebenholz",
+  "skills": [
+   {
+    "name": "Quickening Presto",
+    "target": "enemy",
+    "hits": 5,
+    "mult": 0.4,
+    "dmg": "arts",
+    "desc": "Rapid fire: hits an enemy 5 times for 40% ATK Arts damage each."
+   },
+   {
+    "name": "Desolate Echoes",
+    "auto": true,
+    "target": "enemies",
+    "n": 3,
+    "mult": 2.0,
+    "dmg": "arts",
+    "effects": [
+     {
+      "on": "target",
+      "type": "atkbar-",
+      "amount": 0.15
+     }
+    ],
+    "desc": "Auto. When ready, Old Day Remnants burst under up to 3 enemies: 200% ATK Arts damage and −15% turn meter."
+   },
+   {
+    "name": "Sound of Silence",
+    "state": {
+     "turns": 4,
+     "atk": 0.5,
+     "spd": 0.36,
+     "basic": {
+      "mult": 1.1,
+      "reach": true
+     }
+    },
+    "desc": "For 4 turns: ATK +50%, SPD +36%; basic attacks ignore Taunt and deal 110% ATK (boosted Dynamics)."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Dynamics",
+    "dmgBonus": [
+     {
+      "cond": {
+       "targetBoss": true
+      },
+      "v": 0.35
+     }
+    ],
+    "on": "wave",
+    "effects": [
+     {
+      "on": "random_enemy",
+      "type": "dmg",
+      "mult": 1.35,
+      "dmg": "arts"
+     }
+    ],
+    "desc": "Opens each wave with a stored attack (135% ATK Arts) on a random enemy. +35% damage to bosses."
+   },
+   {
+    "name": "Appoggiatura",
+    "on": "attack",
+    "effects": [
+     {
+      "on": "target",
+      "type": "dmg",
+      "mult": 0.17,
+      "dmg": "arts"
+     }
+    ],
+    "desc": "Attacks deal an extra 17% ATK Arts damage."
+   }
+  ]
+ },
+ {
+  "slug": "harmonie",
+  "skills": [
+   {
+    "name": "Lithe Steps",
+    "target": "enemy",
+    "hits": 5,
+    "mult": 0.4,
+    "dmg": "arts",
+    "desc": "Rapid fire: hits an enemy 5 times for 40% ATK Arts damage each."
+   },
+   {
+    "name": "A Disastrous Drowning",
+    "state": {
+     "turns": 4,
+     "spd": 0.35,
+     "basic": {
+      "effects": [
+       {
+        "on": "enemies",
+        "type": "dmg",
+        "mult": 0.85,
+        "dmg": "arts"
+       },
+       {
+        "on": "enemies",
+        "type": "debuff",
+        "what": "SLOW",
+        "v": 0.55,
+        "turns": 1
+       }
+      ]
+     }
+    },
+    "desc": "For 4 turns: SPD +35%; each basic attack floods every enemy for 85% ATK Arts damage and SPD −55% (1T)."
+   }
+  ],
+  "talents": [
+   {
+    "name": "A Surprise Visitor",
+    "stats": {
+     "atk": 0.2
+    },
+    "desc": "ATK +20%."
+   }
+  ]
+ },
+ {
+  "slug": "indigo",
+  "skills": [
+   {
+    "name": "Lighthouse Guardian",
+    "target": "enemy",
+    "hits": 4,
+    "mult": 0.4,
+    "dmg": "arts",
+    "desc": "Rapid fire: hits an enemy 4 times for 40% ATK Arts damage each."
+   },
+   {
+    "name": "Labyrinth of Light",
+    "state": {
+     "turns": 3,
+     "spd": 0.35,
+     "basic": {
+      "effects": [
+       {
+        "on": "target",
+        "type": "debuff",
+        "what": "BIND",
+        "turns": 2,
+        "chance": 0.375
+       },
+       {
+        "type": "bonusIf",
+        "cond": "BIND",
+        "bonusDmg": 1.0
+       }
+      ]
+     }
+    },
+    "desc": "For 3 turns: SPD +35%, Bind chance rises to 50% (2T), and basic attacks deal double damage to Bound enemies."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Gentle Binding Gaze",
+    "on": "attack",
+    "chance": 0.2,
+    "effects": [
+     {
+      "on": "target",
+      "type": "debuff",
+      "what": "BIND",
+      "turns": 2
+     }
+    ],
+    "desc": "Attacks have a 20% chance to Bind the target (2T)."
+   }
+  ]
+ }
+]

@@ -2,7 +2,8 @@
 // =====================================================================
 //  SAVE STATE + PROGRESSION
 // =====================================================================
-const SAVE_KEY = "ak_tactics_mobile_v1";
+const SAVE_KEY = "ak_tactics_mobile_v1";   // the guest save; accounts and the Demo use their own keys (a9c_title.js)
+let SAVE_SLOT = SAVE_KEY;
 let S = null;
 const LV_CAP = [30, 50, 70], LV_OFF = [0, 30, 50];
 const maxSanity = l => 80 + Math.floor(l * 1.5);
@@ -19,9 +20,9 @@ function newSave() {
     lmd: 20000, orundum: 6000, permit: 10, cert: 0, tokens: 0, prime: 6, credit: 300,
     inv: { rec1: 20, rec2: 6, rec3: 0, rec4: 0, chip: 4, summ: 6 },
     ops: {}, runes: [], runeSeq: 1,
-    story: {}, team: { story: STARTERS.slice(0, 4), hunt: STARTERS.slice(0, 4), tower: STARTERS.slice(0, 4), arena: STARTERS.slice(0, 4) },
+    story: {}, team: { story: STARTERS.slice(0, 4), hunt: STARTERS.slice(0, 4), tower: STARTERS.slice(0, 4), arena: STARTERS.slice(0, 4), defense: STARTERS.slice(0, 4) },
     assistant: "amiya", tower: 0,
-    arena: { rank: 1500, attempts: 5, aTime: Date.now(), payTime: Date.now(), opps: null },
+    ladder: ladderInit(), rta: rtaInit(),
     gacha: { pity: 0, firstTen: true, total: 0 },
     daily: { day: today(), clear: 0, sanity: 0, hh: 0, upgrade: 0, arena: 0, rune: 0, claimed: {} },
     ach: {}, settings: { speed: 1, auto: false, sound: true, ai: "balanced" }, stats: { battles: 0, wins: 0 },
@@ -30,21 +31,23 @@ function newSave() {
   return s;
 }
 function load() {
-  try { const raw = localStorage.getItem(SAVE_KEY); if (raw) { const s = JSON.parse(raw); if (s && s.v === 1) return s; } } catch (e) { /* storage unavailable */ }
+  try { const raw = localStorage.getItem(SAVE_SLOT); if (raw) { const s = JSON.parse(raw); if (s && s.v === 1) return s; } } catch (e) { /* storage unavailable */ }
   return null;
 }
 let saveTimer = 0;
 function save() {
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { /* storage unavailable */ } }, 150);
+  const slot = SAVE_SLOT, data = S;
+  saveTimer = setTimeout(() => { if (!data) return; try { localStorage.setItem(slot, JSON.stringify(data)); } catch (e) { /* storage unavailable */ } }, 150);
 }
 function tickTimers() {
   const now = Date.now(), mx = maxSanity(S.lvl);
   if (S.sanity >= mx) S.sTime = now;
   else { const n = Math.floor((now - S.sTime) / SAN_MS); if (n > 0) { S.sanity = Math.min(mx, S.sanity + n); S.sTime += n * SAN_MS; if (S.sanity >= mx) S.sTime = now; } }
-  const A = S.arena;
-  if (A.attempts >= 5) A.aTime = now;
-  else { const n = Math.floor((now - A.aTime) / ARENA_MS); if (n > 0) { A.attempts = Math.min(5, A.attempts + n); A.aTime += n * ARENA_MS; } }
+  ladderTick(now);
+  mailTick(now);
+  worldTick(now);
+  if (!tickTimers.a || now - tickTimers.a > 2000 || now < tickTimers.a) { tickTimers.a = now; achTick(); }
   if (S.daily.day !== today()) S.daily = { day: today(), clear: 0, sanity: 0, hh: 0, upgrade: 0, arena: 0, rune: 0, claimed: {} };
 }
 
@@ -65,7 +68,7 @@ function give(rw) {
   return out;
 }
 function spendSanity(n) {
-  S.sanity -= n; S.daily.sanity += n; S.xp += n * 10;
+  S.sanity -= n; S.daily.sanity += n; S.xp += n * 10; stat("sanity", n);
   let ups = 0;
   while (S.lvl < 120 && S.xp >= pxpNeed(S.lvl)) { S.xp -= pxpNeed(S.lvl); S.lvl++; ups++; }
   if (ups) { S.sanity = Math.max(S.sanity, maxSanity(S.lvl)); S.orundum += 30 * ups; toast(`Doctor level ${S.lvl}! Sanity restored, +${30 * ups} Orundum.`, "gold"); }
@@ -75,7 +78,7 @@ function spendSanity(n) {
 const MAINS = {
   atk: { n: "ATK", p: 1, a: .06, b: .3 }, hp: { n: "HP", p: 1, a: .06, b: .3 }, def: { n: "DEF", p: 1, a: .06, b: .3 },
   spd: { n: "SPD", p: 0, a: 3, b: 18 }, cr: { n: "Crit Rate", p: 1, a: .04, b: .24 }, cd: { n: "Crit Dmg", p: 1, a: .07, b: .38 },
-  acc: { n: "Accuracy", p: 1, a: .06, b: .32 }, res: { n: "Resistance", p: 1, a: .06, b: .32 },
+  acc: { n: "Accuracy", p: 1, a: .06, b: .32 }, res: { n: "Status RES", p: 1, a: .06, b: .32 },
 };
 const RUNE_RAR = ["", "T1", "T2", "T3", "T4", "T5"];
 const RUNE_RC = ["", "#9aa4b8", "#4fd17f", "#3fa7ff", "#b26bff", "#ff9a3c"];
@@ -96,10 +99,30 @@ function applySetStats(st, sets) {
   if (sets.has("Rage")) st.cd += .4;
   if (sets.has("Endure")) st.res += .2;
 }
+// trait passive, unlocked talents and unlocked passive skills, in that order
+function opPassives(op, elite) {
+  const out = [];
+  if (op.traitTl) out.push({ ...op.traitTl, name: op.branchName, trait: true });
+  for (const t of op.talents) if ((t.elite || 0) <= elite) out.push(t);
+  for (const s of op.skills) if (s.passive && s.elite <= elite) out.push({ ...s.passive, name: s.name, desc: s.desc });
+  return out;
+}
+// permanent stat changes from talents (stats key), applied to a stat block
+function addTalentStats(st, d) {
+  for (const k in d) {
+    const v = d[k];
+    if (k === "atk" || k === "def" || k === "hp" || k === "spd") st[k] *= 1 + v;
+    else if (k === "cdmg") st.cd += v;
+    else if (k === "aresPct") st.ares *= 1 + v;
+    else st[k] = (st[k] || 0) + v;
+  }
+}
 function opStats(key, p, virtualSets) {
   const op = OPS[key], LV = effLV(p);
   const f = (.32 + .68 * LV / 120) * RAR_MULT[op.rar] * (1 + .02 * (p.pot - 1));
-  const st = { hp: op.stats.hp * f, atk: op.stats.atk * f, def: op.stats.def * f, spd: op.stats.spd + p.elite * 2, cr: .15, cd: .5, acc: .25, res: .15 };
+  const st = { hp: op.stats.hp * f, atk: op.stats.atk * f, def: op.stats.def * f, spd: op.stats.spd + p.elite * 2, cr: .15, cd: .5, acc: .25, res: .15,
+    ares: op.stats.ares, block: op.stats.block, dodge: 0, dmgTaken: 0, heal: 0 };
+  for (const t of opPassives(op, p.elite)) if (t.stats) addTalentStats(st, t.stats);
   const sets = new Set(virtualSets || []);
   for (const rid of p.runes || []) {
     const r = runeById(rid); if (!r) continue;
@@ -114,7 +137,7 @@ function opStats(key, p, virtualSets) {
 function enemyStats(key, LV) {
   const d = ENEMY[key], b = CLASS_BASE[d.cls], f = .32 + .68 * LV / 120;
   return { st: { hp: Math.round(b.hp * d.m.hp * f), atk: Math.round(b.atk * d.m.atk * f), def: Math.round(b.def * d.m.def * f), spd: d.m.spd + Math.floor(LV / 12),
-    cr: .15, cd: .5, acc: .2 + LV / 400, res: .1 + LV / 500 }, sets: [] };
+    cr: .15, cd: .5, acc: .2 + LV / 400, res: .1 + LV / 500, ares: d.ares || 0, block: d.cls === "Defender" ? 3 : MELEE.has(d.cls) ? 1 : 0, dodge: 0, dmgTaken: 0, heal: 0 }, sets: [] };
 }
 function progForLV(key, LV) {
   const op = OPS[key];
@@ -160,7 +183,7 @@ function promote(key) {
 }
 const skillCost = r => ({ summ: [0, 1, 2, 3, 4, 5, 6][r], lmd: 1500 * r });
 function skillUp(key, i) {
-  const p = S.ops[key]; if (!p || p.sk[i] >= 7) return false;
+  const p = S.ops[key], sk = OPS[key].skills[i]; if (!p || !sk || sk.passive || sk.elite > p.elite || p.sk[i] >= 7) return false;
   if (p.sk[i] >= 4 && p.elite < 1) return false;
   const c = skillCost(p.sk[i]); if (S.inv.summ < c.summ || S.lmd < c.lmd) return false;
   S.inv.summ -= c.summ; S.lmd -= c.lmd; p.sk[i]++; S.daily.upgrade++; return true;
@@ -179,13 +202,6 @@ function enhanceRune(r) {
 function sellRune(r) { if (r.eq) unequipRune(r.eq.k, r.eq.s); S.lmd += sellValue(r); S.runes = S.runes.filter(x => x !== r); }
 
 // ---------- headhunting ----------
-function bannerToday() {
-  const rng = seeded(hash(today() + "banner"));
-  const f6 = BANNER_6[Math.floor(rng() * BANNER_6.length)];
-  const five = OP_KEYS.filter(k => OPS[k].rar === 5);
-  const f5 = [five[Math.floor(rng() * five.length)], five[Math.floor(rng() * five.length)]];
-  return { feat6: f6, feat5: [...new Set(f5)] };
-}
 const certFor = r => [0, 0, 0, 1, 5, 15, 30][r];
 function grantOp(key) {
   if (!S.ops[key]) { S.ops[key] = mkProg(); return { key, isNew: true }; }
@@ -197,52 +213,37 @@ function rollRarity() {
   const six = .02 + Math.max(0, S.gacha.pity - 49) * .02, r = R();
   if (r < six) return 6; if (r < six + .08) return 5; if (r < six + .58) return 4; return 3;
 }
-function pullOne(featured, forceMin) {
+// collaboration operators only come from their own banners
+const LIMITED_OPS = new Set(["marcille", "togawa-sakiko", "ash", "blitz", "tachanka", "frost", "rathalos-s-noir-corne"].filter(k => OPS[k]));
+function pullOne(B, forceMin) {
   let rar = rollRarity(); if (forceMin && rar < forceMin) rar = forceMin;
-  if (rar === 6) S.gacha.pity = 0; else S.gacha.pity++;
+  if (rar === 6) { S.gacha.pity = 0; stat("sixes"); } else S.gacha.pity++;
   S.gacha.total++;
-  const B = featured ? bannerToday() : null;
-  let key;
-  if (B && rar === 6 && R() < .5) key = B.feat6;
-  else if (B && rar === 5 && R() < .5) key = pick(B.feat5);
-  else key = pick(OP_KEYS.filter(k => OPS[k].rar === rar));
+  let key = null;
+  if (B && !B.std) {
+    if (rar === 6 && B.feat6.length && R() < (B.joint ? .7 : .5)) key = pick(B.feat6);
+    else if (rar === 5 && B.feat5.length && R() < .5) key = pick(B.feat5);
+    else if (rar === 4 && B.feat4.length && R() < .2) key = pick(B.feat4);
+  }
+  if (!key) key = pick(OP_KEYS.filter(k => OPS[k].rar === rar && !LIMITED_OPS.has(k)));
   return grantOp(key);
 }
-function headhunt(n, featured) {
-  const res = [];
+// n pulls on banner `bannerId` (a weekly themed banner id, or "standard")
+function headhunt(n, bannerId) {
+  const B = bannerById(typeof bannerId === "string" ? bannerId : bannerId === false ? "standard" : bannersNow()[0].id), res = [];
   for (let i = 0; i < n; i++) {
     const last = i === n - 1 && n === 10 && S.gacha.firstTen && !res.some(r => OPS[r.key].rar >= 5);
-    res.push(pullOne(featured, last ? 5 : 0));
+    res.push(pullOne(B, last ? 5 : 0));
   }
   if (n === 10) S.gacha.firstTen = false;
   S.daily.hh += n;
   return res;
 }
 
-// ---------- arena ----------
-function genOpps() {
-  const r = S.arena.rank, mine = topTeam(4);
-  const avg = mine.length ? mine.reduce((a, k) => a + power(k, S.ops[k]), 0) / mine.length : 2000;
-  const pool = OP_KEYS.filter(k => OPS[k].rar >= 3);
-  S.arena.opps = [.04, .1, .18].map(f => {
-    const rank = Math.max(1, r - Math.max(1, Math.ceil(r * f)) - ri(0, 3));
-    const mult = .8 + .6 * (1 - rank / 1600) + (f - .1) * .5;
-    const team = [...pool].sort(() => R() - .5).slice(0, 4);
-    const lead = team.find(k => OPS[k].leader); if (lead) { team.splice(team.indexOf(lead), 1); team.unshift(lead); }
-    const units = team.map(k => {
-      let lo = 1, hi = 120, best = 1;
-      for (let i = 0; i < 12; i++) { const m = (lo + hi) >> 1; if (power(k, progForLV(k, m)) < avg * mult) { lo = m + 1; best = m; } else hi = m - 1; }
-      return { op: k, LV: best };
-    });
-    return { rank, name: pick(ARENA_N1) + " " + pick(ARENA_N2) + " " + ri(2, 99), team: units, pw: units.reduce((a, u) => a + power(u.op, progForLV(u.op, u.LV)), 0) };
-  });
-}
-const payout = rank => ({ orundum: Math.max(20, Math.round(360 / (1 + rank / 45))), tokens: Math.max(40, Math.round(900 / (1 + rank / 90))) });
-
 // ---------- story progress ----------
 const nodeStars = id => S.story[id] || 0;
 function nodeOpen(nd) {
-  if (nd.idx === 0) { const chs = nd.ep.chapters, ci = chs.indexOf(nd.ch); return ci === 0 || chapterCleared(chs[ci - 1]); }
+  if (nd.idx === 0) { const ci = CHAPTERS.indexOf(nd.ch); return ci === 0 || chapterCleared(CHAPTERS[ci - 1]); }
   let prev = nd.ch.nodes[nd.idx - 1];
   if (prev.type === "side") prev = nd.ch.nodes[nd.idx - 2] || prev;
   return nodeStars(prev.id) > 0;

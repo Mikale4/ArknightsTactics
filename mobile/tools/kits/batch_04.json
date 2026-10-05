@@ -1,0 +1,322 @@
+[
+{ "slug": "blitz",
+  "skills": [
+    { "name": "Flash Shield", "target": "enemies", "n": 3,
+      "effects": [ { "on": "target", "type": "debuff", "what": "STUN", "turns": 1 }, { "on": "target", "type": "debuff", "what": "SILENCE", "turns": 1 } ],
+      "desc": "Stuns up to 3 enemies and Silences them (no S1–S3) for 1 turn." },
+    { "name": "Shield Bash", "target": "enemies", "n": 3, "mult": 1.7,
+      "effects": [ { "on": "target", "type": "debuff", "what": "STUN", "turns": 2 } ],
+      "state": { "turns": 1, "spd": 1.2, "basic": { "effects": [ { "on": "self", "type": "bonusIf", "cond": "STUN", "bonusDmg": 0.66 } ] } },
+      "desc": "Deals 170% ATK to up to 3 enemies and Stuns them (2T). For 1 turn: SPD +120% and the Talent bonus vs Stunned rises to +131%." }
+  ],
+  "talents": [
+    { "name": "Shielded Shooting", "dmgBonus": [ { "cond": { "targetHas": "STUN" }, "v": 0.65 } ],
+      "desc": "Deals +65% damage to Stunned enemies." },
+    { "name": "Bunker Defense", "stats": { "dodge": 0.25 },
+      "desc": "25% chance to avoid damage from Physical and Arts hits." }
+  ] },
+{ "slug": "liskarm",
+  "skills": [
+    { "name": "Charged Defense", "auto": true, "target": "self",
+      "effects": [ { "on": "self", "type": "shield", "pctHP": 0.15, "turns": 1 } ],
+      "state": { "turns": 1, "def": 0.8 },
+      "desc": "Auto. When ready: gains a Barrier of 15% max HP (soaks the next hit) and DEF +80% for 1 turn." },
+    { "name": "Counter Arc",
+      "state": { "turns": 3, "atk": 1.25, "spd": -0.37,
+                 "basic": { "n": 3, "dmg": "arts", "effects": [ { "on": "target", "type": "debuff", "what": "STUN", "turns": 1, "chance": 0.2 } ] },
+                 "onEnd": [ { "on": "self", "type": "debuff", "what": "STUN", "turns": 2 } ] },
+      "desc": "For 3 turns: ATK +125%, SPD −37%; basic attacks deal Arts damage to up to 3 enemies with 20% Stun chance (1T). Stunned 2 turns after." }
+  ],
+  "talents": [
+    { "name": "Tactical Defense", "on": "hurt", "chance": 0.3,
+      "effects": [ { "on": "self", "type": "cdReduce", "amount": 1 }, { "on": "random_ally", "type": "cdReduce", "amount": 1 } ],
+      "desc": "When hit, 30% chance to reduce her own and a random ally's skill cooldowns by 1 turn." },
+    { "name": "Thunder Resistance", "stats": { "ares": 13 }, "desc": "RES +13." }
+  ] },
+{ "slug": "mudrock",
+  "skills": [
+    { "name": "DEF Up γ", "state": { "turns": 5, "def": 0.6 }, "desc": "For 5 turns: DEF +60%." },
+    { "name": "Crag Splitter", "auto": true, "target": "enemies", "n": 3, "mult": 2.1,
+      "effects": [ { "on": "target", "type": "debuff", "what": "STUN", "turns": 1, "chance": 0.3 }, { "on": "self", "type": "healPct", "amount": 0.05 } ],
+      "desc": "Auto. When ready, the basic attack deals 210% ATK to up to 3 enemies (30% Stun chance, 1T) and restores 5% max HP." },
+    { "name": "Bloodline of Desecrated Earth", "target": "enemies", "n": 3, "basic": false,
+      "effects": [ { "on": "self", "type": "buff", "what": "INVINCIBLE", "turns": 1 }, { "on": "target", "type": "debuff", "what": "STUN", "turns": 1 } ],
+      "state": { "turns": 4, "atk": 1.0, "def": 0.5, "spd": 0.23, "basic": { "n": 3 } },
+      "desc": "No attack this turn; Invincible (1T) and Stuns up to 3 enemies (1T). For 4 turns: ATK +100%, DEF +50%, SPD +23%, basic attacks hit up to 3." }
+  ],
+  "talents": [
+    { "name": "Ward of the Fertile Soil", "on": "turn",
+      "effects": [ { "on": "self", "type": "shield", "pctHP": 0.22, "turns": 1 } ],
+      "triggers": [ { "on": "start", "effects": [ { "on": "self", "type": "shield", "pctHP": 0.22, "turns": 1 } ] } ],
+      "desc": "Gains a Barrier of 22% max HP at battle start and at the start of each turn." },
+    { "name": "Unshakable Solidarity", "stats": { "dmgTaken": -0.1 }, "desc": "Takes 10% less damage." }
+  ] },
+{ "slug": "penance",
+  "skills": [
+    { "name": "Last Word", "auto": true, "target": "enemy", "mult": 1,
+      "effects": [ { "on": "target", "type": "dmg", "mult": 1.8, "dmg": "arts" }, { "on": "target", "type": "debuff", "what": "STUN", "turns": 1, "chance": 0.3 } ],
+      "desc": "Auto. When ready, the basic attack adds a 180% ATK Arts hit and has a 30% chance (charged effect) to Stun (1T)." },
+    { "name": "Stoic Atonement",
+      "state": { "turns": 3, "dmgTaken": -0.5,
+                 "basic": { "n": 3, "mult": 1.6, "dmg": "arts", "effects": [ { "on": "self", "type": "shield", "pctHP": 0.08, "turns": 99, "onKill": true } ] } },
+      "desc": "For 3 turns: takes 50% less damage; basic attacks become 160% ATK Arts pulses on up to 3 enemies. Kills grant an extra 8% max HP Barrier." },
+    { "name": "Trial of Thorns", "target": "self",
+      "effects": [ { "on": "self", "type": "shield", "pctHP": 1.0, "turns": 4 } ],
+      "state": { "turns": 4, "atk": 3.2, "spd": -0.36, "taunt": true },
+      "desc": "Gains a Barrier of 100% max HP. For 4 turns: ATK +320%, SPD −36%, and Taunts enemies." }
+  ],
+  "talents": [
+    { "name": "Guardian of the Law", "on": "start",
+      "effects": [ { "on": "self", "type": "shield", "pctHP": 0.55, "turns": 99 } ],
+      "triggers": [ { "on": "kill", "effects": [ { "on": "self", "type": "shield", "pctHP": 0.1, "turns": 99 } ] } ],
+      "desc": "Starts battle with a Barrier of 55% max HP. Each kill grants a Barrier of 10% max HP." },
+    { "name": "Wreathed in Thorns", "on": "hurt",
+      "effects": [ { "on": "attacker", "type": "dmg", "mult": 0.53, "dmg": "arts" } ],
+      "desc": "Deals 53% ATK Arts damage to each enemy that hits Penance." }
+  ] },
+{ "slug": "vulcan",
+  "skills": [
+    { "name": "Guardian Mode", "state": { "turns": 3, "def": 0.9, "regen": 0.12 },
+      "desc": "For 3 turns: DEF +90% and restores 12% max HP at the start of each turn." },
+    { "name": "Combat Mode",
+      "state": { "turns": 3, "atk": 1.05, "spd": -0.2, "basic": { "n": 2, "effects": [ { "on": "self", "type": "healPct", "amount": 0.07 } ] } },
+      "desc": "For 3 turns: ATK +105%, SPD −20%; basic attacks hit up to 2 enemies and restore 7% max HP." }
+  ],
+  "talents": [
+    { "name": "Self-Defense", "while": { "skillActive": true }, "whileStats": { "dodge": 0.3 },
+      "on": "turn", "cond": { "skillActive": true }, "effects": [ { "on": "self", "type": "healPct", "amount": 0.15 } ],
+      "desc": "While a skill is active: 30% chance to avoid damage and restores 15% max HP at the start of each turn." }
+  ] },
+{ "slug": "astesia",
+  "skills": [
+    { "name": "Astral Protection", "state": { "turns": 4, "atk": 0.4, "def": 0.6 }, "desc": "For 4 turns: ATK +40%, DEF +60%." },
+    { "name": "Astral Sword", "state": { "turns": 2, "atk": 0.6, "def": 0.6, "basic": { "n": 2 } },
+      "desc": "For 2 turns: ATK +60%, DEF +60%, and basic attacks hit up to 2 enemies." }
+  ],
+  "talents": [
+    { "name": "Celestial Globe", "stats": { "spd": 0.09 }, "desc": "SPD +9%." }
+  ] },
+{ "slug": "sideroca",
+  "skills": [
+    { "name": "Regeneration γ", "target": "self", "effects": [ { "on": "self", "type": "healPct", "amount": 0.5 } ],
+      "desc": "Restores 50% max HP." },
+    { "name": "Restorative Surge", "state": { "turns": 3, "atk": 0.8, "regen": 0.21 },
+      "desc": "For 3 turns: ATK +80% and restores 21% max HP at the start of each turn." }
+  ],
+  "talents": [
+    { "name": "Mercenary's Tenacity", "on": "kill", "every": 5, "once": true,
+      "effects": [ { "on": "self", "type": "buff", "what": "SPD_UP", "v": 0.09, "turns": 99 }, { "on": "self", "type": "cleanse", "amount": 3 } ],
+      "desc": "On her 5th kill: SPD +9% for the rest of the battle and removes her debuffs." }
+  ] },
+{ "slug": "surtr",
+  "skills": [
+    { "name": "Laevatain", "auto": true, "target": "enemy", "mult": 2.4,
+      "effects": [ { "on": "self", "type": "cdReduce", "amount": 9, "onKill": true } ],
+      "desc": "Auto. When ready, the basic attack deals 240% ATK. If it defeats the target, her skill cooldowns reset." },
+    { "name": "Molten Giant", "state": { "turns": 2, "atk": 0.8, "basic": { "n": 2 } },
+      "desc": "For 2 turns: ATK +80% and basic attacks hit up to 2 enemies." },
+    { "name": "Twilight", "target": "self",
+      "effects": [ { "on": "self", "type": "healPct", "amount": 1.0 } ],
+      "state": { "turns": 5, "atk": 2.4, "hp": 1.71, "drain": 0.1, "basic": { "n": 3 }, "onEnd": [ { "on": "self", "type": "retreat" } ] },
+      "desc": "Fully heals. For 5 turns: ATK +240%, Max HP +171%, basic attacks hit up to 3 enemies; loses 10% max HP per turn. Then leaves the battle." }
+  ],
+  "talents": [
+    { "name": "Molten Flame", "dmgBonus": [ { "cond": {}, "v": 0.2 } ],
+      "desc": "Attacks ignore part of the target's RES: +20% damage." },
+    { "name": "Remnant Ash", "special": "UNDYING", "amount": 0.01, "turns": 1,
+      "desc": "Once per battle, survives a lethal hit with 1% HP and is Invincible for 1 turn." }
+  ] },
+{ "slug": "viviana-droste",
+  "skills": [
+    { "name": "Blade of Fleeting Shadows", "auto": true, "target": "enemy", "hits": 2, "mult": 1.7,
+      "desc": "Auto. When ready, the basic attack hits twice (170% ATK each)." },
+    { "name": "Shadowed by Candlelight",
+      "state": { "turns": 4, "atk": 0.3, "def": 1.1,
+                 "basic": { "n": 2, "effects": [
+                   { "on": "target", "type": "dmg", "mult": 1.4, "dmg": "arts", "chance": 0.2 },
+                   { "on": "target", "type": "debuff", "what": "SLOW", "v": 0.18, "turns": 2, "chance": 0.2 },
+                   { "on": "self", "type": "buff", "what": "SPD_UP", "v": 0.18, "turns": 3, "chance": 0.2 } ] } },
+      "desc": "For 4 turns: ATK +30%, DEF +110%, basic attacks hit up to 2 enemies; 20% chance per attack of an extra 140% hit and stealing 18% SPD." },
+    { "name": "'Flicker'",
+      "state": { "turns": 2, "atk": 0.75, "def": 0.6, "ares": 20, "spd": -0.29, "basic": { "hits": 2, "reach": true } },
+      "desc": "For 2 turns: ATK +75%, DEF +60%, RES +20, SPD −29%; basic attacks hit twice and can target past Taunt." }
+  ],
+  "talents": [
+    { "name": "Candlelight", "stats": { "dmgTaken": -0.09 },
+      "dmgBonus": [ { "cond": {}, "v": 0.09 }, { "cond": { "targetBoss": true }, "v": 0.09 } ],
+      "desc": "Deals +9% damage (+18% vs bosses) and takes 9% less damage." },
+    { "name": "Nova", "on": "attack", "cond": { "targetBoss": true }, "chance": 0.2,
+      "effects": [ { "on": "self", "type": "shield", "pctHP": 0.15, "turns": 1 } ],
+      "desc": "When attacking a boss, 20% chance to gain a Barrier of 15% max HP (1T)." }
+  ] },
+{ "slug": "blaze",
+  "skills": [
+    { "name": "Power Strike γ", "auto": true, "target": "enemies", "n": 3, "mult": 2.25,
+      "desc": "Auto. When ready, the basic attack deals 225% ATK to up to 3 enemies." },
+    { "name": "Chainsaw Extension Module", "auto": true, "state": { "turns": 99, "atk": 0.7, "def": 0.2 },
+      "desc": "Auto. When ready, for the rest of the battle: ATK +70%, DEF +20%." },
+    { "name": "Boiling Burst",
+      "state": { "turns": 1, "atk": 0.6, "def": 0.6, "drain": 0.25, "basic": { "aoe": true },
+                 "onEnd": [ { "on": "enemies", "type": "dmg", "mult": 3.4, "dmg": "phys" } ] },
+      "desc": "For 1 turn: ATK +60%, DEF +60%, basic attacks hit all enemies. Then deals 340% ATK to all enemies; Blaze loses 25% max HP." }
+  ],
+  "talents": [
+    { "name": "Emergency Defibrillation", "on": "lowhp", "cond": { "hpBelow": 0.25 }, "once": true,
+      "effects": [ { "on": "self", "type": "healPct", "amount": 0.5 }, { "on": "self", "type": "buff", "what": "INVINCIBLE", "turns": 1 } ],
+      "desc": "Once, when HP drops below 25%: restores 50% max HP and is Invincible for 1 turn." },
+    { "name": "Harsh Training", "stats": { "res": 0.25 }, "desc": "+25% resistance to debuffs." }
+  ] },
+{ "slug": "broca",
+  "skills": [
+    { "name": "Galvanize", "state": { "turns": 3, "atk": 0.5, "basic": { "dmg": "arts" } },
+      "desc": "For 3 turns: ATK +50% and basic attacks deal Arts damage." },
+    { "name": "High-Voltage Current",
+      "state": { "turns": 3, "atk": 1.4, "spd": -0.35,
+                 "basic": { "dmg": "arts", "effects": [ { "on": "target", "type": "debuff", "what": "SLOW", "turns": 1 } ] },
+                 "onEnd": [ { "on": "self", "type": "debuff", "what": "STUN", "turns": 2 } ] },
+      "desc": "For 3 turns: ATK +140%, SPD −35%; basic attacks deal Arts damage and Slow targets (1T). Broca is Stunned for 2 turns after." }
+  ],
+  "talents": [
+    { "name": "Drill Strengthening", "while": { "enemiesAlive": 2 }, "whileStats": { "atk": 0.14, "def": 0.14 },
+      "desc": "ATK and DEF +14% while 2 or more enemies remain." }
+  ] },
+{ "slug": "estelle",
+  "skills": [
+    { "name": "ATK Up β", "state": { "turns": 3, "atk": 0.5 }, "desc": "For 3 turns: ATK +50%." },
+    { "name": "Sacrificial Strike", "target": "self",
+      "effects": [ { "on": "self", "type": "debuff", "what": "HEAL_BLOCK", "turns": 2 } ],
+      "state": { "turns": 2, "atk": 1.15 },
+      "desc": "For 2 turns: ATK +115%, but Estelle can't be healed (Heal Block)." }
+  ],
+  "talents": [
+    { "name": "Self-Healing", "on": "kill", "effects": [ { "on": "self", "type": "healPct", "amount": 0.14 } ],
+      "desc": "Restores 14% max HP whenever she defeats an enemy." }
+  ] },
+{ "slug": "popukar",
+  "skills": [
+    { "name": "ATK Up α", "state": { "turns": 3, "atk": 0.5 }, "desc": "For 3 turns: ATK +50%." }
+  ],
+  "talents": [
+    { "name": "HP Up", "stats": { "hp": 0.08, "atk": 0.08 }, "desc": "Max HP +8%, ATK +8%." }
+  ] },
+{ "slug": "savage",
+  "skills": [
+    { "name": "Power Strike β", "auto": true, "target": "enemies", "n": 3, "mult": 2.0,
+      "desc": "Auto. When ready, the basic attack deals 200% ATK to up to 3 enemies." },
+    { "name": "Precise Blast", "target": "enemies", "n": 4, "mult": 3.6,
+      "desc": "Deals 360% ATK Physical damage to up to 4 enemies." }
+  ],
+  "talents": [
+    { "name": "Valley", "stats": { "atk": 0.1, "def": 0.1 }, "desc": "ATK +10%, DEF +10%." }
+  ] },
+{ "slug": "specter",
+  "skills": [
+    { "name": "ATK Up γ", "state": { "turns": 4, "atk": 0.6 }, "desc": "For 4 turns: ATK +60%." },
+    { "name": "Bone Fracture",
+      "state": { "turns": 2, "atk": 1.0, "invincible": true, "onEnd": [ { "on": "self", "type": "debuff", "what": "STUN", "turns": 2 } ] },
+      "desc": "For 2 turns: ATK +100% and Specter can't fall (takes no damage). Stunned for 2 turns afterwards." }
+  ],
+  "talents": [
+    { "name": "Abyssal Regeneration", "stats": { "hp": 0.12 },
+      "on": "turn", "effects": [ { "on": "self", "type": "healPct", "amount": 0.075 } ],
+      "desc": "Max HP +12%. Restores 7.5% max HP at the start of each turn." }
+  ] },
+{ "slug": "quartz",
+  "skills": [
+    { "name": "ATK Up β", "state": { "turns": 3, "atk": 0.5 }, "desc": "For 3 turns: ATK +50%." },
+    { "name": "All-Out Clash",
+      "state": { "turns": 3, "dmgTaken": 0.25, "spd": 0.39,
+                 "basic": { "effects": [ { "on": "target", "type": "debuff", "what": "STUN", "turns": 1, "chance": 0.25 } ] } },
+      "desc": "For 3 turns: SPD +39%, takes 25% more damage, and basic attacks have a 25% chance to Stun (1T)." }
+  ],
+  "talents": [
+    { "name": "Wilderness Wanderer", "stats": { "hp": 0.09, "atk": 0.09 }, "desc": "Max HP +9%, ATK +9%." }
+  ] },
+{ "slug": "wind-chimes",
+  "skills": [
+    { "name": "ATK Up γ", "state": { "turns": 4, "atk": 0.6 }, "desc": "For 4 turns: ATK +60%." },
+    { "name": "Longing for Home", "basic": false,
+      "state": { "turns": 1, "dmgTaken": -0.3, "atk": 0.5,
+                 "onEnd": [ { "on": "enemies", "type": "dmg", "mult": 2.0, "dmg": "phys" }, { "on": "enemies", "type": "debuff", "what": "STUN", "turns": 1 } ] },
+      "desc": "Holds her attack for 1 turn: takes 30% less damage, ATK +50%. Then deals 200% ATK to all enemies and Stuns them (1T)." }
+  ],
+  "talents": [
+    { "name": "Mountain Traveler", "stats": { "hp": 0.05 }, "while": { "hpAbove": 0.5 }, "whileStats": { "atk": 0.22 },
+      "desc": "Max HP +5%. ATK +22% while HP is above 50%." }
+  ] },
+{ "slug": "castle-3",
+  "skills": [],
+  "talents": [
+    { "name": "Tactical Configuration 6", "on": "start",
+      "effects": [ { "on": "team", "type": "buff", "what": "ATK_UP", "v": 0.2, "turns": 2 }, { "on": "team", "type": "buff", "what": "DEF_UP", "v": 0.2, "turns": 2 } ],
+      "desc": "At battle start, all allies gain ATK +20% and DEF +20% for 2 turns." }
+  ] },
+{ "slug": "conviction",
+  "skills": [
+    { "name": "Judgment", "auto": true, "target": "enemy", "mult": 1.7,
+      "effects": [ { "on": "target", "type": "dmg", "mult": 5.1, "dmg": "phys", "chance": 0.05 } ],
+      "desc": "Auto. When ready, the basic attack deals 170% ATK (5% chance to deal 680% instead)." },
+    { "name": "Genesis", "target": "enemies", "n": 3, "mult": 2.6, "dmg": "arts",
+      "effects": [ { "on": "target", "type": "debuff", "what": "SILENCE", "turns": 1, "chance": 0.5 }, { "on": "random_ally", "type": "debuff", "what": "STUN", "turns": 2, "chance": 0.5 } ],
+      "desc": "Deals 260% ATK Arts damage to up to 3 enemies, 50% chance to Silence them (1T). 50% chance to backfire, Stunning a random ally (2T)." }
+  ],
+  "talents": [
+    { "name": "Safe Landing", "on": "start",
+      "effects": [ { "on": "self", "type": "debuff", "what": "STUN", "turns": 2 }, { "on": "team", "type": "atkbar+", "amount": 0.16 } ],
+      "desc": "Starts the battle Stunned (2T), but all allies gain 16% turn meter." }
+  ] },
+{ "slug": "flamebringer",
+  "skills": [
+    { "name": "Blood Pact", "auto": true, "target": "enemy", "mult": 1.9,
+      "effects": [ { "on": "self", "type": "healPct", "amount": 0.07 } ],
+      "desc": "Auto. When ready, the basic attack deals 190% ATK and restores 7% max HP." },
+    { "name": "Blade Demon", "auto": true, "state": { "turns": 99, "atk": 0.5, "spd": 0.18 },
+      "desc": "Auto. When ready, for the rest of the battle: ATK +50%, SPD +18%." }
+  ],
+  "talents": [
+    { "name": "Bloody Slaughter", "on": "kill", "effects": [ { "on": "self", "type": "shield", "pctHP": 0.08, "turns": 99 } ],
+      "desc": "Each kill grants a lasting Barrier of 8% max HP." }
+  ] },
+{ "slug": "franka",
+  "skills": [
+    { "name": "Swift Strike γ", "state": { "turns": 4, "atk": 0.34, "spd": 0.21 }, "desc": "For 4 turns: ATK +34%, SPD +21%." },
+    { "name": "Vorpal Edge", "state": { "turns": 3, "def": -1, "atk": 0.7, "basic": { "ignoreDef": 0.5 } },
+      "desc": "For 3 turns: DEF drops to 0, ATK +70%, and basic attacks ignore 50% of DEF (Talent chance ×2.5)." }
+  ],
+  "talents": [
+    { "name": "Thermite Blade", "on": "attack", "chance": 0.2,
+      "effects": [ { "on": "target", "type": "dmg", "mult": 0.5, "dmg": "true" } ],
+      "desc": "20% chance per attack to ignore DEF, dealing an extra 50% ATK as True damage." }
+  ] },
+{ "slug": "matoimaru",
+  "skills": [
+    { "name": "Regeneration β", "target": "self", "effects": [ { "on": "self", "type": "healPct", "amount": 0.4 } ],
+      "desc": "Restores 40% max HP." },
+    { "name": "Demonic Power", "state": { "turns": 2, "def": -1, "atk": 1.05 }, "desc": "For 2 turns: DEF drops to 0, ATK +105%." }
+  ],
+  "talents": [
+    { "name": "Demonic Physique", "stats": { "def": -0.2, "hp": 0.23 }, "desc": "DEF −20%, Max HP +23%." }
+  ] },
+{ "slug": "melantha",
+  "skills": [
+    { "name": "ATK Up α", "state": { "turns": 3, "atk": 0.5 }, "desc": "For 3 turns: ATK +50%." }
+  ],
+  "talents": [
+    { "name": "ATK Up", "stats": { "atk": 0.08 }, "desc": "ATK +8%." }
+  ] },
+{ "slug": "morgan",
+  "skills": [
+    { "name": "Professional Street Fighter", "state": { "turns": 2, "drain": 0.12, "basic": { "mult": 1.6 } },
+      "desc": "For 2 turns: basic attacks deal 160% ATK, and Morgan loses 12% max HP each turn (fuels her Talent)." },
+    { "name": "Dauntless Resistance",
+      "passive": { "on": "start", "effects": [ { "on": "self", "type": "shield", "pctHP": 1.3, "turns": 1 }, { "on": "self", "type": "buff", "what": "ATK_UP", "v": 0.6, "turns": 2 } ] },
+      "desc": "Passive. At battle start, gains a Barrier of 130% max HP (1T) and ATK +60% (2T)." }
+  ],
+  "talents": [
+    { "name": "Hot-Blooded Vanguard",
+      "dmgBonus": [ { "cond": { "hpBelow": 0.75 }, "v": 0.17 }, { "cond": { "hpBelow": 0.5 }, "v": 0.17 }, { "cond": { "hpBelow": 0.3 }, "v": 0.18 } ],
+      "desc": "Deals more damage as HP drops: +17% below 75% HP, +34% below 50%, +52% below 30%." },
+    { "name": "Home-Ground Advantage", "on": "start", "effects": [ { "on": "self", "type": "atkbar+", "amount": 0.1 } ],
+      "desc": "Starts the battle with 10% turn meter." }
+  ] }
+]

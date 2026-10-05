@@ -29,9 +29,10 @@ function rewardsHTML(list) {
   for (const r of list) { const m = merged.find(x => x.k === r.k && !r.rune && !x.rune && !r.k.startsWith("op:")); if (m) m.n += r.n; else merged.push({ ...r }); }
   return merged.map(r => {
     if (r.k.startsWith("op:")) { const k = r.k.slice(3); return `<div class="rw">${opHTML(k, { s: 54, nostars: 1, nolv: 1, show: 1 })}<span>${r.isNew === false ? "Potential +1" : "New operator"}</span></div>`; }
-    if (r.k === "rune") return `<div class="rw"><div class="ri" style="width:54px;height:54px;color:${RUNE_RC[r.rune.rar]}">${IC.rune.replace('fill="#5fd4ff"', `fill="${RUNE_RC[r.rune.rar]}"`)}</div><span>${r.rune.set}</span><span class="tiny dim">${RUNE_RAR[r.rune.rar]}</span></div>`;
-    const name = r.k === "xp" ? "Operator EXP" : r.k === "rank" ? "Rank" : (ITEMS[r.k] && ITEMS[r.k].n) || r.k;
-    return `<div class="rw"><div class="ri" style="width:54px;height:54px">${r.k === "xp" ? IC.boost : r.k === "rank" ? IC.arena : itemIcon(r.k)}</div><span class="num">${r.k === "rank" ? "#" + r.n : "×" + fmt(r.n)}</span><span class="tiny dim">${esc(name)}</span></div>`;
+    if (r.k === "rune") return `<div class="rw"><div class="ri" style="width:54px;height:54px;color:${RUNE_RC[r.rune.rar]}">${IC.rune.replace('fill="#5fd4ff"', `fill="${RUNE_RC[r.rune.rar]}"`)}</div><span>${runeSetName(r.rune.set)}</span><span class="tiny dim">${RUNE_RAR[r.rune.rar]}</span></div>`;
+    if (r.k === "dmg") return `<div class="rw"><div class="ri" style="width:54px;height:54px">${IC.sword}</div><span class="num">${fmt(r.n)}</span><span class="tiny dim">Damage</span></div>`;
+    const name = r.k === "xp" ? "Operator EXP" : r.k === "rank" ? "Rank" : r.k === "pts" ? "Points" : (ITEMS[r.k] && ITEMS[r.k].n) || r.k;
+    return `<div class="rw"><div class="ri" style="width:54px;height:54px">${r.k === "xp" ? IC.boost : r.k === "rank" || r.k === "pts" ? IC.arena : itemIcon(r.k)}</div><span class="num">${r.k === "rank" ? "#" + r.n : r.k === "pts" ? (r.n > 0 ? "+" : "") + r.n : "×" + fmt(r.n)}</span><span class="tiny dim">${esc(name)}</span></div>`;
   }).join("");
 }
 const back = (act, label, data = "") => `<button class="btn ghost sm" data-act="${act}" ${data}>${IC.back.replace("<svg", '<svg width="16" height="16"')}${label}</button>`;
@@ -41,7 +42,7 @@ function renderTop() {
   tickTimers();
   const mx = maxSanity(S.lvl);
   $("#topbar").innerHTML = `
-    <button class="me" data-act="settings" aria-label="Profile and settings">
+    <button class="me" data-act="me" aria-label="Profile">
       <div class="me-badge num">${S.lvl}</div>
       <div style="min-width:0;text-align:left"><div class="me-name">${S.name === "Doctor" ? "Doctor" : "Dr. " + esc(S.name)}</div><div class="me-xp"><i style="width:${S.xp / pxpNeed(S.lvl) * 100}%"></i></div></div>
     </button>
@@ -55,10 +56,10 @@ function renderTop() {
   $("#tabs").innerHTML = tabs.map(([v, n, ic]) => `<button class="${on === v ? "on" : ""}" data-act="go" data-v="${v}">${ic}<span>${n}</span>${badge(v) ? '<i class="dot"></i>' : ""}</button>`).join("");
 }
 function badge(v) {
-  if (v === "home") return DAILIES.some(d => !S.daily.claimed[d.id] && S.daily[d.id] >= d.goal) || ACHIEVEMENTS.some(a => !S.ach[a.id] && a.test());
+  if (v === "home") return DAILIES.some(d => !S.daily.claimed[d.id] && S.daily[d.id] >= d.goal) || ACHIEVEMENTS.some(a => !S.ach[a.id] && a.test()) || (S.mail || []).some(m => !m.claimed) || !!(S.gApps || []).length;
   if (v === "story") return !!nextNode();
-  if (v === "battle") return Date.now() - S.arena.payTime >= PAYOUT_MS;
-  if (v === "hh") return S.permit > 0 || S.orundum >= 600;
+  if (v === "battle") return S.ladder.tickets >= TICKETS_MAX || S.ladder.log.some(x => x.t > S.ladder.seen);
+  if (v === "hh") return S.permit > 0 || S.orundum >= 600 || (S.inv.hh10 || 0) > 0;
   return false;
 }
 function route(view, arg, keep) {
@@ -66,7 +67,9 @@ function route(view, arg, keep) {
   const el = $("#view"), st = el.scrollTop;
   el.innerHTML = (SCREENS[view] || SCREENS.home)(arg);
   el.scrollTop = keep ? st : 0;
+  if (view === "chat") { const lg = $("#clog"); if (lg) lg.scrollTop = lg.scrollHeight; }
   renderTop(); save();
+  if (!BT.on && $("#dlg").hidden) music(screenMusic());
 }
 const rerender = () => route(UI.view, UI.arg, true);
 
@@ -99,11 +102,18 @@ SCREENS.home = () => {
       <img class="assist" src="${spriteURL(op)}" alt="${esc(op.n)}" data-act="poke" draggable="false">
       <div class="nameplate"><span class="eyebrow">Assistant</span><b>${esc(op.n)}</b><div class="row" style="gap:4px"><span class="el ${op.el}">${op.el}</span><span class="cls">${op.cls}</span></div></div>
       <div class="sidebtns">
-        <button class="sidebtn" data-act="missions" aria-label="Missions">${IC.missions}<small>Missions</small>${missionsReady ? '<i class="dot"></i>' : ""}</button>
+        <button class="sidebtn" data-act="missions" aria-label="Missions">${IC.missions}<small>Missions</small>${DAILIES.some(d => !S.daily.claimed[d.id] && S.daily[d.id] >= d.goal) || ACHIEVEMENTS.some(a => !S.ach[a.id] && a.test()) ? '<i class="dot"></i>' : ""}</button>
+        <button class="sidebtn" data-act="go" data-v="inbox" aria-label="Inbox">${IC.mail}<small>Inbox</small>${(S.mail || []).some(m => !m.claimed || !m.read) ? '<i class="dot"></i>' : ""}</button>
         <button class="sidebtn" data-act="go" data-v="shop" aria-label="Store">${IC.shop}<small>Store</small></button>
         <button class="sidebtn" data-act="go" data-v="depot" aria-label="Depot">${IC.depot}<small>Depot</small></button>
       </div>
+      <div class="sidebtns left">
+        <button class="sidebtn" data-act="go" data-v="guild" aria-label="Guild">${IC.shield.replace("<svg", '<svg fill="currentColor"')}<small>Guild</small>${(S.gApps || []).length || (S.gInv || []).some(x => x.t <= Date.now()) ? '<i class="dot"></i>' : ""}</button>
+        <button class="sidebtn" data-act="go" data-v="chat" aria-label="Chat">${IC.chat}<small>Chat</small><i class="dot" id="chatBtnDot" ${S.chat && S.chat.unread.guild + S.chat.unread.dm ? "" : "hidden"}></i></button>
+        <button class="sidebtn" data-act="go" data-v="achv" aria-label="Achievements">${IC.crown.replace('viewBox="0 0 20 14"', 'viewBox="0 -3 20 20"')}<small>Trophies</small></button>
+      </div>
     </section>
+    ${setv("ticker") ? tickerHTML() : ""}
     ${hint ? `<button class="hint" data-act="${hint.act}" ${hint.data || ""}>${IC.boost.replace("<svg", '<svg width="22" height="22"')}<div><div class="eyebrow">Next objective</div><div class="small">${hint.text}</div></div></button>` : ""}
     <div class="tiles">
       <button class="tile ls-t" data-act="go" data-v="story"><span class="ticon" style="color:var(--holo)">${IC.story}</span><h3>Main Theme</h3><span class="tsub">${nd ? "Next: " + nd.id + " " + esc(nd.name) : "All episodes cleared"}</span></button>
@@ -116,28 +126,28 @@ SCREENS.home = () => {
 };
 
 // ---------- story ----------
-SCREENS.story = () => {
-  const ep = STORY[0];
-  return `<div class="stack">
-    <section class="panel ep-card" style="background:radial-gradient(90% 120% at 100% 0%,#5a1e14,transparent 60%),var(--hull)">
-      <div class="eyebrow">Main Theme</div><h1 style="margin-top:4px;font-size:30px">${esc(ep.title)}</h1>
-      <p class="small dim" style="margin-top:6px;max-width:42ch">${esc(ep.blurb)}</p>
+SCREENS.story = () => `<div class="stack">${STORY.map(ep => {
+  const open = partOpen(ep), tint = ep.tint || mapTheme(ep.chapters[0].map).a;
+  return `<section class="panel ep-card" style="background:radial-gradient(90% 120% at 100% 0%,${tint},transparent 60%),var(--hull)">
+      <div class="eyebrow">Main Theme · ${esc(ep.sub || "")}</div><h1 style="margin-top:4px;font-size:30px">${esc(ep.title)}</h1>
+      <p class="small dim" style="margin-top:6px;max-width:42ch">${open ? esc(ep.blurb) : `Clear Episode ${STORY[STORY.indexOf(ep) - 1].chapters.slice(-1)[0].no} to unlock.`}</p>
     </section>
-    ${ep.chapters.map((ch, i) => {
-      const open = nodeOpen(ch.nodes[0]), done = chapterCleared(ch);
+    ${open ? ep.chapters.map(ch => {
+      const op = nodeOpen(ch.nodes[0]), done = chapterCleared(ch);
       const battles = ch.nodes.filter(n => n.waves), stars = battles.reduce((a, n) => a + nodeStars(n.id), 0);
-      return `<button class="tile wide" data-act="chapter" data-c="${ch.id}" ${open ? "" : "disabled"} style="min-height:88px;background:linear-gradient(120deg,${mapTheme(ch.map).a},var(--hull2) 70%)">
-        <span class="ticon" style="width:auto;height:auto;font:800 40px var(--f-display);opacity:.25;top:2px">${i + 1}</span>
+      return `<button class="tile wide" data-act="chapter" data-c="${ch.id}" ${op ? "" : "disabled"} style="min-height:88px;background:linear-gradient(120deg,${mapTheme(ch.map).a},var(--hull2) 70%)">
+        <span class="ticon" style="width:auto;height:auto;font:800 40px var(--f-display);opacity:.25;top:2px">${+ch.no}</span>
         <div class="eyebrow">Episode ${ch.no}${done ? " · Cleared" : ""}</div><h3>${esc(ch.title)}</h3>
-        <span class="tsub">${open ? `${stars}/${battles.length * 3} stars` : "Clear the previous episode to unlock"}</span></button>`;
-    }).join("")}
-  </div>`;
-};
+        <span class="tsub">${op ? `${stars}/${battles.length * 3} stars` : "Clear the previous episode to unlock"}</span></button>`;
+    }).join("") : ""}`;
+}).join("")}</div>`;
 function mapTheme(m) {
-  return { ruins: { a: "#4a1810", b: "#1a0c0a", c: "#ff7a3a" }, city: { a: "#16245a", b: "#080c1c", c: "#5fd4ff" }, slums: { a: "#4a3424", b: "#16100c", c: "#f2c14e" }, snow: { a: "#3a5a80", b: "#0c1624", c: "#cfe8ff" } }[m] || { a: "#16245a", b: "#080c1c", c: "#5fd4ff" };
+  return { ruins: { a: "#4a1810", b: "#1a0c0a", c: "#ff7a3a" }, city: { a: "#16245a", b: "#080c1c", c: "#5fd4ff" }, slums: { a: "#4a3424", b: "#16100c", c: "#f2c14e" }, snow: { a: "#3a5a80", b: "#0c1624", c: "#cfe8ff" },
+    victoria: { a: "#2a3a30", b: "#0c120e", c: "#e0c070" }, core: { a: "#3a0c16", b: "#0e0408", c: "#ff5a6a" }, temple: { a: "#3a2a4a", b: "#100c16", c: "#f2c88a" },
+    forest: { a: "#1f3a24", b: "#0a140c", c: "#a6d88a" }, lava: { a: "#3a0a06", b: "#0c0403", c: "#ff7a3a" }, arena: { a: "#2a1a4a", b: "#0a0612", c: "#b26bff" } }[m] || { a: "#16245a", b: "#080c1c", c: "#5fd4ff" };
 }
 SCREENS.chapter = cid => {
-  const ch = STORY[0].chapters.find(c => c.id === cid), th = mapTheme(ch.map), ci = STORY[0].chapters.indexOf(ch);
+  const ch = CHAPTERS.find(c => c.id === cid), th = mapTheme(ch.map);
   const XS = [50, 24, 70, 32, 74, 28, 60];
   let mainI = 0;
   const pos = ch.nodes.map(nd => {
@@ -153,7 +163,7 @@ SCREENS.chapter = cid => {
   let deco = "";
   for (let k = 0; k < 26; k++) {
     const x = rng() * 400, y = rng() * H, r = 6 + rng() * 26;
-    deco += ch.map === "city" || ch.map === "slums" ? `<rect x="${x}" y="${y}" width="${r}" height="${r * (1 + rng())}" fill="${th.c}" opacity="${.04 + rng() * .06}"/>`
+    deco += ch.map === "city" || ch.map === "slums" || ch.map === "victoria" ? `<rect x="${x}" y="${y}" width="${r}" height="${r * (1 + rng())}" fill="${th.c}" opacity="${.04 + rng() * .06}"/>`
       : ch.map === "snow" ? `<circle cx="${x}" cy="${y}" r="${r}" fill="#ffffff" opacity="${.03 + rng() * .05}"/>`
       : `<path d="M${x} ${y} l${r} ${-r * 1.4} l${r} ${r * 1.4}z" fill="${th.c}" opacity="${.04 + rng() * .06}"/>`;
   }
@@ -216,14 +226,14 @@ SCREENS.team = arg => {
     }).join("")}</div>
     <div class="leadtxt small">${lead ? `<b class="gold">Leader: ${esc(OPS[ids[0]].n)}</b> <span class="dim">${leaderText(lead)}</span>` : ids[0] ? `<span class="dim">${esc(OPS[ids[0]].n)} has no leader skill. Tap a squad member to make them leader.</span>` : `<span class="dim">Pick up to four operators. The first slot leads.</span>`}</div>
     <div class="spread small"><span>Squad power <b class="num">${fmtFull(myPw)}</b></span>${arg.cost ? `<span class="cost">${IC.sanity}${arg.cost}</span>` : ""}</div>
-    <button class="btn wide" data-act="deploy" ${ids.length ? "" : "disabled"}>Mission Start</button>
+    <button class="btn wide" data-act="deploy" ${ids.length ? "" : "disabled"}>${arg.launch && arg.launch.kind === "defense" ? "Save defense squad" : "Mission Start"}</button>
     <div class="filters">${["all", ...ELS].map(e => `<button class="chip ${UI.el === e ? "on" : ""}" data-act="elf" data-e="${e}">${e === "all" ? "All" : e}</button>`).join("")}</div>
     <div class="roster">${pool.map(k => `<button class="rcell ${ids.includes(k) ? "sel" : ""}" data-act="pickTeam" data-k="${k}">${opHTML(k)}<div class="pname">${esc(OPS[k].n)}</div><div class="pw">${fmt(power(k, S.ops[k]))}</div></button>`).join("")}</div>
   </div>`;
 };
 function leaderText(l) {
   if (!l) return "—";
-  const sym = { ATK: "ATK", HP: "HP", DEF: "DEF", SPD: "SPD", CR: "Crit Rate", CD: "Crit Damage", ACC: "Accuracy", RES: "Resistance" }[l.stat] || l.stat;
+  const sym = { ATK: "ATK", HP: "HP", DEF: "DEF", SPD: "SPD", CR: "Crit Rate", CD: "Crit Damage", ACC: "Accuracy", RES: "Status RES" }[l.stat] || l.stat;
   return `${sym} +${Math.round(l.amount * 100)}% for ${l.scope === "All" ? "all allies" : l.element + " allies"}`;
 }
 
@@ -231,7 +241,8 @@ function leaderText(l) {
 // Layered silhouette backdrop per environment (skyline, ruins, peaks), seeded so a scene always looks the same.
 function sceneSVG(env) {
   const th = mapTheme(env), rng = seeded(hash(env + "scene")), snow = env === "snow";
-  const sky = { ruins: ["#1a0806", "#6a2412", "#e0703a"], city: ["#03050d", "#141a44", "#4a3478"], slums: ["#140e14", "#4a3040", "#d8965a"], snow: ["#3a5070", "#8aa8c8", "#e8f2ff"] }[env] || ["#03050d", "#141a44", "#4a3478"];
+  const sky = { ruins: ["#1a0806", "#6a2412", "#e0703a"], city: ["#03050d", "#141a44", "#4a3478"], slums: ["#140e14", "#4a3040", "#d8965a"], snow: ["#3a5070", "#8aa8c8", "#e8f2ff"],
+    victoria: ["#0a100e", "#2e3e36", "#9aa88e"], core: ["#060308", "#2a0a14", "#a2283a"] }[env] || ["#03050d", "#141a44", "#4a3478"];
   const layer = (base, h0, h1, col, jag, lit) => {
     let x = -10, out = "";
     while (x < 410) {
@@ -248,18 +259,20 @@ function sceneSVG(env) {
   for (let k = 0; k < 40; k++) fx += snow ? `<circle cx="${rng() * 400}" cy="${rng() * 800}" r="${.8 + rng() * 2.2}" fill="#fff" opacity="${.3 + rng() * .5}"/>`
     : env === "city" ? (k < 30 ? `<circle cx="${rng() * 400}" cy="${rng() * 380}" r="${rng() * 1.2 + .3}" fill="#fff" opacity="${.2 + rng() * .6}"/>` : "")
     : `<circle cx="${rng() * 400}" cy="${200 + rng() * 520}" r="${.8 + rng() * 1.8}" fill="${th.c}" opacity="${.25 + rng() * .5}"/>`;
-  const jag = env === "ruins" || env === "slums";
+  const jag = env === "ruins" || env === "slums" || env === "core";
   return `<svg viewBox="0 0 400 800" preserveAspectRatio="xMidYMax slice" style="position:absolute;inset:0;width:100%;height:100%">
     <defs><linearGradient id="sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sky[0]}"/><stop offset=".55" stop-color="${sky[1]}"/><stop offset=".78" stop-color="${sky[2]}"/></linearGradient>
     <radialGradient id="gl" cx=".5" cy=".7" r=".5"><stop offset="0" stop-color="${th.c}" stop-opacity=".35"/><stop offset="1" stop-color="${th.c}" stop-opacity="0"/></radialGradient></defs>
     <rect width="400" height="800" fill="url(#sk)"/><rect width="400" height="800" fill="url(#gl)"/>
     ${env === "city" ? `<circle cx="300" cy="170" r="26" fill="#e8f0ff" opacity=".85"/>` : env === "ruins" ? `<circle cx="110" cy="420" r="34" fill="#ffb08a" opacity=".5"/>` : ""}
-    <g opacity=".55">${layer(560, 120, 320, snow ? "#7f98b8" : th.b, jag, env === "city" ? "#ffd76b" : null)}</g>
-    <g>${layer(610, 60, 200, snow ? "#5a7090" : "#05070c", jag, env === "city" || env === "slums" ? (env === "city" ? "#5fd4ff" : "#ffb050") : null)}</g>
+    <g opacity=".55">${layer(560, 120, 320, snow ? "#7f98b8" : th.b, jag, env === "city" ? "#ffd76b" : env === "victoria" ? "#ffcf7a" : null)}</g>
+    <g>${layer(610, 60, 200, snow ? "#5a7090" : "#05070c", jag, { city: "#5fd4ff", slums: "#ffb050", victoria: "#ffcf7a", core: "#ff5a6a" }[env] || null)}</g>
+    ${env === "victoria" ? `<rect y="380" width="400" height="260" fill="#9aa88e" opacity=".18"/>` : ""}
     <rect y="600" width="400" height="200" fill="${snow ? "#d8e4f0" : "#05070c"}"/>${fx}
     <rect width="400" height="800" fill="url(#gl)" opacity=".5"/></svg>`;
 }
-function playScene(lines, title, env) {
+function playScene(lines, title, env, mood) {
+  if (mood) music(mood);
   return new Promise(resolve => {
     const root = $("#dlg"), th = mapTheme(env);
     root.innerHTML = `<div class="dwrap">
@@ -277,17 +290,21 @@ function playScene(lines, title, env) {
       const ln = lines[i], sp = SPK[ln.s] || { n: ln.s };
       const nm = $("#dName"); nm.hidden = !sp.n; nm.textContent = sp.n || "";
       $("#dBox").classList.toggle("dnarr", ln.s === "narr");
-      const art = sp.op ? spriteURL(OPS[sp.op]) : sp.en ? enemyArt(sp.en).full : null;
+      const art = speakerArt(sp);
       if (art) {
-        const isRight = !!sp.en, img = isRight ? Rr : L;
+        // speakers keep their side; enemies stand right; anyone else faces whoever spoke last
+        const isRight = side.L === ln.s ? false : side.R === ln.s ? true : sp.en ? true : sp.op ? false : !!side.L && side.last === "L";
+        const img = isRight ? Rr : L;
         if (side[isRight ? "R" : "L"] !== ln.s) { img.classList.add("enter"); img.src = art; img.hidden = false; side[isRight ? "R" : "L"] = ln.s; requestAnimationFrame(() => requestAnimationFrame(() => img.classList.remove("enter"))); }
-        if (isRight) img.style.transform = "scaleX(-1)";
+        img.style.transform = isRight ? "scaleX(-1)" : "";
+        side.last = isRight ? "R" : "L";
         L.classList.toggle("dim", isRight); Rr.classList.toggle("dim", !isRight);
       } else { L.classList.add("dim"); Rr.classList.add("dim"); }
       full = ln.t; let n = 0; const tx = $("#dText"); tx.textContent = ""; $("#dNext").hidden = true;
       clearInterval(timer);
       typing = 1;
-      timer = setInterval(() => { n += 2; tx.textContent = full.slice(0, n); if (n >= full.length) { clearInterval(timer); typing = 0; $("#dNext").hidden = false; if (auto) autoT = setTimeout(showLine, 1100 + full.length * 18); } }, 22);
+      const tsp = { slow: 1, normal: 2, fast: 5, instant: 9999 }[(S && S.settings.textSpeed) || "normal"] || 2;
+      timer = setInterval(() => { n += tsp; tx.textContent = full.slice(0, n); if (n >= full.length) { clearInterval(timer); typing = 0; $("#dNext").hidden = false; if (auto) autoT = setTimeout(showLine, 1100 + full.length * 18); } }, 22);
     };
     root.onclick = ev => {
       if (ev.target.closest("#dSkip")) return done();

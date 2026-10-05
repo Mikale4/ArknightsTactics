@@ -1,0 +1,1166 @@
+[
+ {
+  "slug": "shalem",
+  "skills": [
+   {
+    "name": "Rapid Onslaught",
+    "state": {
+     "turns": 3,
+     "spd": 0.22,
+     "hp": 0.3,
+     "basic": {
+      "n": 3
+     }
+    },
+    "desc": "For 3 turns: SPD +22%, Max HP +30%, and basic attacks deal Arts damage to up to 3 enemies."
+   },
+   {
+    "name": "Carnival of Self-Immolation",
+    "state": {
+     "turns": 3,
+     "drain": 0.1,
+     "basic": {
+      "hits": 6,
+      "mult": 0.65,
+      "spread": true,
+      "reach": true
+     }
+    },
+    "desc": "For 3 turns, basic attacks fire 6 Arts shots (65% ATK each) at random enemies. Shalem loses 10% max HP each turn."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Land of Memories",
+    "stats": {
+     "atk": 0.15,
+     "spd": 0.18
+    },
+    "desc": "ATK +15% and SPD +18%."
+   },
+   {
+    "name": "Proclamation of Doom",
+    "on": "attack",
+    "chance": 0.25,
+    "effects": [
+     {
+      "on": "target",
+      "type": "debuff",
+      "what": "RES_DOWN",
+      "v": 10,
+      "turns": 1
+     }
+    ],
+    "desc": "Attacks have a 25% chance to lower the target's RES by 10 (about 25%) for 1 turn."
+   }
+  ]
+ },
+ {
+  "slug": "aurora",
+  "skills": [
+   {
+    "name": "Homeland Protector",
+    "state": {
+     "turns": 4,
+     "def": 1.8,
+     "res": 0.5,
+     "taunt": true,
+     "onEnd": [
+      {
+       "on": "self",
+       "type": "debuff",
+       "what": "STUN",
+       "turns": 2
+      }
+     ]
+    },
+    "desc": "For 4 turns: DEF +180%, status RES +50%, and Taunt. Aurora is Stunned for 2 turns afterwards."
+   },
+   {
+    "name": "Artificial Snowfall",
+    "state": {
+     "turns": 2,
+     "atk": 0.6,
+     "spd": -0.16,
+     "basic": {
+      "effects": [
+       {
+        "on": "target",
+        "type": "debuff",
+        "what": "COLD",
+        "turns": 2
+       },
+       {
+        "type": "bonusIf",
+        "cond": "FREEZE",
+        "bonusDmg": 2
+       }
+      ]
+     }
+    },
+    "desc": "For 2 turns: ATK +60%, SPD −16%; basic attacks inflict Cold (2T) and deal 300% damage to Frozen enemies."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Frigid Respite",
+    "on": "turn",
+    "cond": {
+     "skillActive": false
+    },
+    "effects": [
+     {
+      "on": "self",
+      "type": "healPct",
+      "amount": 0.1
+     }
+    ],
+    "desc": "At the start of each turn while no skill is active, Aurora restores 10% max HP."
+   }
+  ]
+ },
+ {
+  "slug": "cement",
+  "skills": [
+   {
+    "name": "Stratum Groundbreaker",
+    "target": "enemies",
+    "n": 3,
+    "mult": 2.4,
+    "desc": "Deals 240% ATK Physical damage to up to 3 enemies."
+   },
+   {
+    "name": "Structural Support",
+    "state": {
+     "turns": 5,
+     "def": 1.7
+    },
+    "desc": "For 5 turns: DEF +170% (stands in for 17 stacks of +17% DEF that wear off one per hit taken)."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Blueprint Corrections",
+    "stats": {
+     "dmgTaken": -0.15
+    },
+    "on": "turn",
+    "every": 4,
+    "once": true,
+    "effects": [
+     {
+      "on": "self",
+      "type": "buff",
+      "what": "DMG_REDUCE",
+      "v": 0.15,
+      "turns": 99
+     }
+    ],
+    "desc": "Takes 15% less damage; from his 4th turn on, takes another 15% less (Shelter)."
+   }
+  ]
+ },
+ {
+  "slug": "eunectes",
+  "skills": [
+   {
+    "name": "Tomahawk",
+    "passive": {
+     "stats": {
+      "atk": 0.18,
+      "def": 0.18
+     }
+    },
+    "desc": "Passive. ATK +18%, DEF +18%."
+   },
+   {
+    "name": "Menacing Slash",
+    "state": {
+     "turns": 2,
+     "atk": 1.3,
+     "spd": -0.25,
+     "basic": {
+      "effects": [
+       {
+        "on": "target",
+        "type": "debuff",
+        "what": "STUN",
+        "turns": 1
+       }
+      ]
+     }
+    },
+    "desc": "For 2 turns: ATK +130%, SPD −25%, and basic attacks Stun the target (1T)."
+   },
+   {
+    "name": "Iron Will",
+    "state": {
+     "turns": 4,
+     "atk": 1.7,
+     "def": 1.2,
+     "regen": 0.12,
+     "onEnd": [
+      {
+       "on": "self",
+       "type": "debuff",
+       "what": "STUN",
+       "turns": 2
+      }
+     ]
+    },
+    "desc": "For 4 turns: ATK +170%, DEF +120%, restores 12% max HP each turn. Eunectes is Stunned for 2 turns afterwards."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Peerless Bravery",
+    "dmgBonus": [
+     {
+      "cond": {
+       "hpAbove": 0.5
+      },
+      "v": 0.17
+     }
+    ],
+    "while": {
+     "hpBelow": 0.5
+    },
+    "whileStats": {
+     "dmgTaken": -0.22
+    },
+    "desc": "Above 50% HP, deals +17% damage; at 50% HP or lower, takes 22% less damage."
+   },
+   {
+    "name": "Resilience",
+    "on": "turn",
+    "every": 4,
+    "effects": [
+     {
+      "on": "self",
+      "type": "cdReduce",
+      "amount": 1
+     }
+    ],
+    "desc": "Every 4th turn, Eunectes's skill cooldowns drop by 1 extra turn."
+   }
+  ]
+ },
+ {
+  "slug": "ashlock",
+  "skills": [
+   {
+    "name": "ATK Up γ",
+    "state": {
+     "turns": 4,
+     "atk": 0.6
+    },
+    "desc": "For 4 turns: ATK +60%."
+   },
+   {
+    "name": "Focused Bombardment",
+    "state": {
+     "turns": 1,
+     "atk": 0.4,
+     "spd": 0.18,
+     "basic": {
+      "n": 3
+     }
+    },
+    "desc": "For 1 turn: ATK +40%, SPD +18%, and basic attacks bombard up to 3 enemies."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Bombardment Studies",
+    "stats": {
+     "atk": 0.18
+    },
+    "desc": "ATK +18%."
+   }
+  ]
+ },
+ {
+  "slug": "firewhistle",
+  "skills": [
+   {
+    "name": "Wildfire",
+    "auto": true,
+    "target": "enemies",
+    "n": 3,
+    "mult": 1.5,
+    "effects": [
+     {
+      "on": "target",
+      "type": "dmg",
+      "mult": 1.6,
+      "dmg": "arts"
+     }
+    ],
+    "desc": "Auto. When ready, the basic attack deals 150% ATK to up to 3 enemies and burns them for 160% ATK Arts damage."
+   },
+   {
+    "name": "Scorched Earth",
+    "state": {
+     "turns": 2,
+     "basic": {
+      "n": 3,
+      "effects": [
+       {
+        "on": "target",
+        "type": "dmg",
+        "mult": 0.65,
+        "dmg": "arts",
+        "hits": 3
+       }
+      ]
+     }
+    },
+    "desc": "For 2 turns, basic attacks hit up to 3 enemies and scorch each for 3 × 65% ATK Arts damage."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Flexible Fighter",
+    "stats": {
+     "atk": 0.14,
+     "def": 0.14
+    },
+    "desc": "ATK +14% and DEF +14%."
+   }
+  ]
+ },
+ {
+  "slug": "horn",
+  "skills": [
+   {
+    "name": "Flare Grenade",
+    "auto": true,
+    "target": "enemies",
+    "n": 3,
+    "mult": 2.2,
+    "desc": "Auto. When ready, the basic attack deals 220% ATK Physical damage to up to 3 enemies."
+   },
+   {
+    "name": "Tempest Command",
+    "state": {
+     "turns": 3,
+     "basic": {
+      "mult": 1.9,
+      "n": 3,
+      "effects": [
+       {
+        "on": "target",
+        "type": "dmg",
+        "mult": 0.4,
+        "dmg": "arts"
+       }
+      ]
+     }
+    },
+    "desc": "For 3 turns, basic attacks deal 190% ATK Physical damage plus 40% ATK Arts damage to up to 3 enemies."
+   },
+   {
+    "name": "Ultimate Line of Defense",
+    "state": {
+     "turns": 3,
+     "atk": 0.6,
+     "spd": 0.64,
+     "drain": 0.1
+    },
+    "desc": "For 3 turns: ATK +60% (40%, rising to 80% in Overload) and SPD +64%. Horn loses 10% max HP each turn."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Military Fortress",
+    "aura": {
+     "who": "class:Defender",
+     "stats": {
+      "atk": 0.23
+     }
+    },
+    "desc": "Allied Defenders gain ATK +23%."
+   },
+   {
+    "name": "Bloodbath",
+    "special": "UNDYING",
+    "amount": 0.5,
+    "turns": 1,
+    "desc": "Once per battle, survives a lethal hit and recovers to 50% max HP, then is Invincible for 1 turn."
+   }
+  ]
+ },
+ {
+  "slug": "blemishine",
+  "skills": [
+   {
+    "name": "Surging Brilliance",
+    "auto": true,
+    "target": "enemy",
+    "mult": 2.2,
+    "effects": [
+     {
+      "on": "lowest",
+      "type": "heal",
+      "amount": 1.2
+     }
+    ],
+    "desc": "Auto. When ready, the basic attack deals 220% ATK and heals the lowest-HP ally for 120% ATK."
+   },
+   {
+    "name": "Deterring Radiance",
+    "target": "enemies",
+    "n": 3,
+    "effects": [
+     {
+      "on": "target",
+      "type": "debuff",
+      "what": "SLEEP",
+      "turns": 2
+     },
+     {
+      "on": "team",
+      "type": "heal",
+      "amount": 1.7
+     }
+    ],
+    "state": {
+     "turns": 1,
+     "atk": 0.7
+    },
+    "desc": "For 1 turn: ATK +70%. Puts up to 3 enemies to Sleep (2T) and heals all allies for 170% ATK."
+   },
+   {
+    "name": "Divine Avatar",
+    "state": {
+     "turns": 3,
+     "atk": 0.8,
+     "def": 0.3,
+     "basic": {
+      "effects": [
+       {
+        "on": "target",
+        "type": "dmg",
+        "mult": 0.7,
+        "dmg": "arts"
+       },
+       {
+        "on": "lowest",
+        "type": "heal",
+        "amount": 0.8
+       }
+      ]
+     }
+    },
+    "desc": "For 3 turns: ATK +80%, DEF +30%; basic attacks add 70% ATK Arts damage and heal the lowest-HP ally for 80% ATK."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Knight of Sword and Shield",
+    "on": "attack",
+    "chance": 0.3,
+    "effects": [
+     {
+      "on": "self",
+      "type": "cdReduce",
+      "amount": 1
+     }
+    ],
+    "triggers": [
+     {
+      "on": "turn",
+      "every": 4,
+      "effects": [
+       {
+        "on": "allies",
+        "type": "cdReduce",
+        "amount": 1
+       }
+      ]
+     }
+    ],
+    "desc": "30% chance after attacking to cut Blemishine's cooldowns by 1 turn; every 4th turn, other allies' cooldowns drop by 1."
+   },
+   {
+    "name": "Mercy",
+    "dmgBonus": [
+     {
+      "cond": {
+       "targetHas": "SLEEP"
+      },
+      "v": 0.44
+     }
+    ],
+    "desc": "Deals +44% damage to Sleeping enemies."
+   }
+  ]
+ },
+ {
+  "slug": "gummy",
+  "skills": [
+   {
+    "name": "Provisions",
+    "auto": true,
+    "target": "enemy",
+    "mult": 1,
+    "effects": [
+     {
+      "on": "lowest",
+      "type": "heal",
+      "amount": 1.3
+     }
+    ],
+    "desc": "Auto. When ready, the basic attack also heals the lowest-HP ally for 130% ATK."
+   },
+   {
+    "name": "Cooking",
+    "basic": false,
+    "state": {
+     "turns": 4,
+     "def": 0.7,
+     "atk": 0.5,
+     "basic": {
+      "heal": 1
+     }
+    },
+    "desc": "Cooks (no action this turn), then for 4 turns: DEF +70%, ATK +50%, and basic attacks heal the lowest-HP ally (100% ATK) instead."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Frying Pan Specialist",
+    "on": "attack",
+    "chance": 0.18,
+    "effects": [
+     {
+      "on": "target",
+      "type": "dmg",
+      "mult": 1,
+      "dmg": "phys"
+     },
+     {
+      "on": "target",
+      "type": "debuff",
+      "what": "STUN",
+      "turns": 1
+     }
+    ],
+    "desc": "18% chance after attacking to deal an extra 100% ATK (200% total) and Stun the target (1T)."
+   }
+  ]
+ },
+ {
+  "slug": "hung",
+  "skills": [
+   {
+    "name": "Treatment Countermeasure",
+    "auto": true,
+    "target": "ally_single",
+    "heal": 1.4,
+    "desc": "Auto. When ready, the basic attack instead heals an ally for 140% ATK."
+   },
+   {
+    "name": "Medical Mode Countermeasure",
+    "state": {
+     "turns": 3,
+     "atk": 0.6,
+     "def": 0.6,
+     "basic": {
+      "heal": 1,
+      "effects": [
+       {
+        "on": "target",
+        "type": "cdReduce",
+        "amount": 1,
+        "chance": 0.3
+       }
+      ]
+     }
+    },
+    "desc": "For 3 turns: ATK +60%, DEF +60%; basic attacks heal the lowest-HP ally (100% ATK) instead, 30% chance to cut their cooldowns by 1."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Gatekeeper",
+    "stats": {
+     "def": 0.08
+    },
+    "desc": "DEF +8%."
+   }
+  ]
+ },
+ {
+  "slug": "nearl",
+  "skills": [
+   {
+    "name": "First Aid",
+    "auto": true,
+    "target": "enemy",
+    "mult": 1,
+    "effects": [
+     {
+      "on": "lowest",
+      "type": "heal",
+      "amount": 1.5
+     }
+    ],
+    "desc": "Auto. When ready, the basic attack also heals the lowest-HP ally for 150% ATK."
+   },
+   {
+    "name": "First Aid Mode",
+    "state": {
+     "turns": 5,
+     "atk": 0.5,
+     "basic": {
+      "heal": 1
+     }
+    },
+    "desc": "For 5 turns: ATK +50%, and basic attacks heal the lowest-HP ally (100% ATK) instead of attacking."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Pegasus's Halo",
+    "aura": {
+     "who": "team",
+     "stats": {
+      "heal": 0.12
+     }
+    },
+    "desc": "All allies gain +12% healing."
+   }
+  ]
+ },
+ {
+  "slug": "saria",
+  "skills": [
+   {
+    "name": "First Aid",
+    "auto": true,
+    "target": "enemy",
+    "mult": 1,
+    "effects": [
+     {
+      "on": "lowest",
+      "type": "heal",
+      "amount": 1.5
+     }
+    ],
+    "desc": "Auto. When ready, the basic attack also heals the lowest-HP ally for 150% ATK."
+   },
+   {
+    "name": "Medicine Dispensing",
+    "auto": true,
+    "target": "team",
+    "heal": 1.1,
+    "desc": "Auto. When ready, heals all allies for 110% ATK instead of attacking."
+   },
+   {
+    "name": "Calcification",
+    "target": "team",
+    "heal": 0.8,
+    "effects": [
+     {
+      "on": "team",
+      "type": "buff",
+      "what": "HOT",
+      "v": 0.1,
+      "turns": 3
+     },
+     {
+      "on": "enemies",
+      "type": "debuff",
+      "what": "FRAGILE",
+      "v": 0.4,
+      "turns": 3
+     }
+    ],
+    "desc": "Heals all allies for 80% ATK and grants HOT (10% max HP per turn, 3T). All enemies take +40% damage (Fragile, 3T)."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Rhine Charged Suit",
+    "stats": {
+     "atk": 0.15,
+     "def": 0.12
+    },
+    "desc": "ATK +15% and DEF +12% (average of +6% ATK / +5% DEF stacks gained over time)."
+   },
+   {
+    "name": "Refreshment",
+    "on": "skill",
+    "effects": [
+     {
+      "on": "allies",
+      "type": "cdReduce",
+      "amount": 1,
+      "chance": 0.3
+     }
+    ],
+    "desc": "After Saria uses a skill, each other ally has a 30% chance to have their cooldowns cut by 1 turn."
+   }
+  ]
+ },
+ {
+  "slug": "spot",
+  "skills": [
+   {
+    "name": "Secondary Healing Mode",
+    "state": {
+     "turns": 3,
+     "atk": 0.45,
+     "basic": {
+      "heal": 1
+     }
+    },
+    "desc": "For 3 turns: ATK +45%, and basic attacks heal the lowest-HP ally (100% ATK) instead of attacking."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Smoke Installation",
+    "on": "turn",
+    "cond": {
+     "skillActive": true
+    },
+    "effects": [
+     {
+      "on": "lowest",
+      "type": "buff",
+      "what": "DODGE",
+      "v": 0.25,
+      "turns": 1
+     }
+    ],
+    "desc": "While healing (skill active), the lowest-HP ally gains 25% Dodge (1T) each turn."
+   }
+  ]
+ },
+ {
+  "slug": "beagle",
+  "skills": [
+   {
+    "name": "DEF Up α",
+    "state": {
+     "turns": 4,
+     "def": 0.5
+    },
+    "desc": "For 4 turns: DEF +50%."
+   }
+  ],
+  "talents": [
+   {
+    "name": "DEF Up",
+    "stats": {
+     "def": 0.1
+    },
+    "desc": "DEF +10%."
+   }
+  ]
+ },
+ {
+  "slug": "bison",
+  "skills": [
+   {
+    "name": "DEF Up γ",
+    "state": {
+     "turns": 5,
+     "def": 0.6
+    },
+    "desc": "For 5 turns: DEF +60%."
+   },
+   {
+    "name": "Intensified Defense",
+    "basic": false,
+    "state": {
+     "turns": 5,
+     "def": 0.8,
+     "taunt": true
+    },
+    "effects": [
+     {
+      "on": "allies",
+      "type": "buff",
+      "what": "DEF_UP",
+      "v": 0.25,
+      "turns": 5
+     }
+    ],
+    "desc": "Stops attacking. For 5 turns: DEF +80% and Taunt; other allies gain DEF +25% (5T)."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Interlocked Shield",
+    "stats": {
+     "def": 0.1
+    },
+    "aura": {
+     "who": "random_ally",
+     "stats": {
+      "def": 0.1
+     }
+    },
+    "desc": "DEF +10% (+70 DEF). A random ally gains the same at battle start."
+   }
+  ]
+ },
+ {
+  "slug": "bubble",
+  "skills": [
+   {
+    "name": "DEF Up β",
+    "state": {
+     "turns": 4,
+     "def": 0.5
+    },
+    "desc": "For 4 turns: DEF +50%."
+   },
+   {
+    "name": "'Beaten Up'",
+    "basic": false,
+    "state": {
+     "turns": 3,
+     "def": 0.85,
+     "taunt": true,
+     "reflect": 1.3
+    },
+    "desc": "Stops attacking. For 3 turns: DEF +85% and Taunt; attackers take Physical damage equal to 40% of her DEF (about 130% ATK)."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Spiked Shield",
+    "on": "hurt",
+    "effects": [
+     {
+      "on": "attacker",
+      "type": "debuff",
+      "what": "ATK_DOWN",
+      "v": 0.08,
+      "turns": 2
+     }
+    ],
+    "desc": "Enemies that hit Bubble get ATK −8% (2T)."
+   }
+  ]
+ },
+ {
+  "slug": "cardigan",
+  "skills": [
+   {
+    "name": "Regeneration α",
+    "target": "self",
+    "effects": [
+     {
+      "on": "self",
+      "type": "healPct",
+      "amount": 0.4
+     }
+    ],
+    "desc": "Restores 40% of Cardigan's max HP."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Max HP Up",
+    "stats": {
+     "hp": 0.12
+    },
+    "desc": "Max HP +12%."
+   }
+  ]
+ },
+ {
+  "slug": "croissant",
+  "skills": [
+   {
+    "name": "Auto Defense",
+    "auto": true,
+    "state": {
+     "turns": 3,
+     "def": 0.4,
+     "dodge": 0.16
+    },
+    "desc": "Auto. For 3 turns: DEF +40% and Talent Dodge ×1.7 (+16% Dodge)."
+   },
+   {
+    "name": "Magnetic Hammer",
+    "target": "enemies",
+    "n": 3,
+    "mult": 3.6,
+    "effects": [
+     {
+      "on": "target",
+      "type": "atkbar-",
+      "amount": 0.2
+     },
+     {
+      "on": "target",
+      "type": "debuff",
+      "what": "STUN",
+      "turns": 1
+     }
+    ],
+    "desc": "Deals 360% ATK Physical damage to up to 3 enemies, knocks them back (−20% turn meter) and Stuns them (1T)."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Miracle Field",
+    "stats": {
+     "dodge": 0.23
+    },
+    "aura": {
+     "who": "allies",
+     "stats": {
+      "dodge": 0.115
+     }
+    },
+    "desc": "23% chance to avoid Physical and Arts hits. Other allies gain half (11.5%)."
+   }
+  ]
+ },
+ {
+  "slug": "cuora",
+  "skills": [
+   {
+    "name": "DEF Up β",
+    "state": {
+     "turns": 4,
+     "def": 0.5
+    },
+    "desc": "For 4 turns: DEF +50%."
+   },
+   {
+    "name": "Shell Defense",
+    "basic": false,
+    "state": {
+     "turns": 4,
+     "def": 0.95,
+     "regen": 0.08,
+     "taunt": true
+    },
+    "desc": "Stops attacking. For 4 turns: DEF +95%, Taunt, and restores 8% max HP each turn."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Defense Specialist",
+    "stats": {
+     "def": 0.12
+    },
+    "desc": "DEF +12%."
+   }
+  ]
+ },
+ {
+  "slug": "friston-3",
+  "skills": [],
+  "talents": [
+   {
+    "name": "Persevere VI",
+    "on": "start",
+    "effects": [
+     {
+      "on": "team",
+      "type": "buff",
+      "what": "DMG_REDUCE",
+      "v": 0.15,
+      "turns": 1
+     }
+    ],
+    "desc": "At battle start, all allies take 15% less damage (Shelter, 1T)."
+   }
+  ]
+ },
+ {
+  "slug": "heavyrain",
+  "skills": [
+   {
+    "name": "Emergency Camouflage",
+    "auto": true,
+    "target": "enemy",
+    "mult": 1,
+    "effects": [
+     {
+      "on": "lowest",
+      "type": "buff",
+      "what": "STEALTH",
+      "turns": 1
+     },
+     {
+      "on": "lowest",
+      "type": "healPct",
+      "amount": 0.08
+     }
+    ],
+    "desc": "Auto. When ready, the basic attack also gives the lowest-HP ally Camouflage (1T) and heals them 8% max HP."
+   },
+   {
+    "name": "Group Camouflage",
+    "basic": false,
+    "state": {
+     "turns": 2,
+     "def": 0.4,
+     "hp": 0.4
+    },
+    "effects": [
+     {
+      "on": "allies",
+      "type": "buff",
+      "what": "STEALTH",
+      "turns": 2
+     }
+    ],
+    "desc": "Stops attacking. For 2 turns: DEF +40%, Max HP +40%; all other allies gain Camouflage (2T)."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Striped Camouflage",
+    "stats": {
+     "dodge": 0.23
+    },
+    "aura": {
+     "who": "ranged",
+     "stats": {
+      "dodge": 0.23
+     }
+    },
+    "desc": "Heavyrain and ranged allies gain 23% Dodge."
+   }
+  ]
+ },
+ {
+  "slug": "matterhorn",
+  "skills": [
+   {
+    "name": "Stamina Enhancement",
+    "state": {
+     "turns": 3,
+     "hp": 0.4,
+     "regen": 0.03
+    },
+    "desc": "For 3 turns: Max HP +40% and restores 3% max HP each turn."
+   },
+   {
+    "name": "Cold Resistance",
+    "state": {
+     "turns": 3,
+     "hp": 0.4,
+     "def": 0.15,
+     "ares": 14
+    },
+    "desc": "For 3 turns: Max HP +40%, DEF +15%, RES +70% (+14 RES)."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Snowfield Guard",
+    "stats": {
+     "ares": 15
+    },
+    "desc": "RES +15."
+   }
+  ]
+ },
+ {
+  "slug": "nian",
+  "skills": [
+   {
+    "name": "Tin Burning",
+    "state": {
+     "turns": 3,
+     "def": 0.55,
+     "atk": 0.3,
+     "basic": {
+      "dmg": "arts"
+     }
+    },
+    "desc": "For 3 turns: DEF +55%, ATK +30%, and basic attacks deal Arts damage."
+   },
+   {
+    "name": "Copper Seal",
+    "basic": false,
+    "state": {
+     "turns": 4,
+     "def": 1.0,
+     "taunt": true,
+     "reflect": 0.7,
+     "reflectDmg": "arts"
+    },
+    "effects": [
+     {
+      "on": "enemies",
+      "type": "debuff",
+      "what": "SILENCE",
+      "turns": 1
+     }
+    ],
+    "desc": "Stops attacking. For 4 turns: DEF +100% and Taunt; attackers take 70% ATK Arts damage. Silences all enemies (1T)."
+   },
+   {
+    "name": "Iron Defense",
+    "state": {
+     "turns": 5,
+     "atk": 0.8,
+     "def": 0.5,
+     "res": 0.5
+    },
+    "effects": [
+     {
+      "on": "allies",
+      "type": "buff",
+      "what": "DEF_UP",
+      "v": 0.5,
+      "turns": 5
+     }
+    ],
+    "desc": "For 5 turns: ATK +80%, DEF +50%, status RES +50%; all other allies gain DEF +50% (5T)."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Tectonic Armor",
+    "aura": {
+     "who": "class:Defender",
+     "stats": {
+      "hp": 0.2
+     }
+    },
+    "desc": "Allied Defenders gain Max HP +20%."
+   },
+   {
+    "name": "Clairvoyance",
+    "on": "start",
+    "effects": [
+     {
+      "on": "self",
+      "type": "shield",
+      "pctHP": 0.3,
+      "turns": 99
+     }
+    ],
+    "desc": "At battle start, gains a Barrier of 30% max HP (stands in for 3 hit-blocking Shields)."
+   }
+  ]
+ },
+ {
+  "slug": "noir-corne",
+  "skills": [],
+  "talents": [
+   {
+    "name": "Improved Armor",
+    "stats": {
+     "hp": 0.12,
+     "def": 0.12
+    },
+    "desc": "Max HP and DEF +12%."
+   }
+  ]
+ }
+]

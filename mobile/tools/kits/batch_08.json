@@ -1,0 +1,357 @@
+[
+{ "slug": "kafka",
+  "skills": [
+    { "name": "Cube of Absurdism",
+      "passive": { "on": "start", "effects": [ { "on": "enemies", "type": "debuff", "what": "SLEEP", "turns": 2 } ],
+        "triggers": [ { "on": "turn", "every": 2, "once": true, "effects": [ { "on": "enemies", "type": "dmg", "mult": 3.5, "dmg": "arts" } ] } ] },
+      "desc": "Passive. At battle start, puts all enemies to Sleep (2 turns); at the start of her 2nd turn, deals 350% ATK Arts damage to all enemies." },
+    { "name": "Shears of Surrealism",
+      "passive": { "on": "start", "effects": [ { "on": "random_enemy", "type": "dmg", "mult": 3.0, "dmg": "arts" } ],
+        "triggers": [ { "on": "turn", "once": true, "effects": [ { "on": "random_enemy", "type": "dmg", "mult": 1.0, "dmg": "arts", "hits": 2 } ] } ] },
+      "desc": "Passive. At battle start, deals 300% ATK Arts damage to a random enemy; on her first turn, strikes a random enemy twice more (100% ATK Arts each)." }
+  ],
+  "talents": [
+    { "name": "Misdirection", "on": "start",
+      "effects": [ { "on": "self", "type": "buff", "what": "ATK_UP", "v": 0.18, "turns": 2 }, { "on": "self", "type": "buff", "what": "STEALTH", "turns": 2 } ],
+      "desc": "At battle start, while her opening skill plays out, gains ATK +18% and Camouflage for 2 turns." }
+  ] },
+{ "slug": "projekt-red",
+  "skills": [
+    { "name": "Execution Mode",
+      "passive": { "on": "start", "effects": [ { "on": "self", "type": "buff", "what": "ATK_UP", "v": 0.65, "turns": 1 }, { "on": "self", "type": "buff", "what": "DODGE", "v": 0.4, "turns": 1 } ] },
+      "desc": "Passive. At battle start, gains ATK +65% and 40% dodge for 1 turn." },
+    { "name": "Wolfpack",
+      "passive": { "on": "start", "effects": [ { "on": "enemies", "type": "dmg", "mult": 2.0, "dmg": "phys" }, { "on": "enemies", "type": "debuff", "what": "STUN", "turns": 1 } ] },
+      "desc": "Passive. At battle start, deals 200% ATK Physical damage to all enemies and Stuns them (1 turn)." }
+  ],
+  "talents": [
+    { "name": "Chill", "on": "attack", "effects": [ { "on": "target", "type": "dmg", "mult": 0.33, "dmg": "true" } ],
+      "desc": "Each attack also deals 33% ATK True damage to the target (stand-in for her 33% ATK minimum damage)." }
+  ] },
+{ "slug": "thrm-ex",
+  "skills": [],
+  "talents": [
+    { "name": "Delayed Detonation 6", "on": "turn", "once": true,
+      "effects": [ { "on": "enemies", "type": "dmg", "mult": 4.0, "dmg": "phys" }, { "on": "enemies", "type": "debuff", "what": "FRAGILE", "v": 0.3, "turns": 1 },
+                   { "on": "self", "type": "retreat" } ],
+      "desc": "On its first turn, explodes: 400% ATK Physical damage to all enemies and Fragile +30% (1 turn), then leaves the battle." }
+  ] },
+{ "slug": "waai-fu",
+  "skills": [
+    { "name": "One-inch Punch",
+      "passive": { "on": "start", "effects": [ { "on": "self", "type": "buff", "what": "ATK_UP", "v": 0.55, "turns": 1 } ],
+        "triggers": [ { "on": "attack", "cond": { "selfHas": "ATK_UP" }, "effects": [ { "on": "target", "type": "debuff", "what": "ATK_DOWN", "v": 0.3, "turns": 1 } ] } ] },
+      "desc": "Passive. At battle start, ATK +55% for 1 turn; while her ATK is boosted, attacks lower the target's ATK by 30% (1 turn)." },
+    { "name": "Seven-styles Kick",
+      "passive": { "on": "start", "effects": [ { "on": "enemies", "type": "dmg", "mult": 2.4, "dmg": "phys" }, { "on": "enemies", "type": "debuff", "what": "SILENCE", "turns": 2 } ] },
+      "desc": "Passive. At battle start, deals 240% ATK Physical damage to all enemies and Silences them (2 turns)." }
+  ],
+  "talents": [
+    { "name": "Hong Mei Wing Chun", "on": "attack", "chance": 0.2,
+      "effects": [ { "on": "target", "type": "dmg", "mult": 0.6, "dmg": "phys" }, { "on": "target", "type": "atkbar-", "amount": 0.1 } ],
+      "desc": "Attacks have a 20% chance to strike harder (160% ATK in total) and push the target's turn meter back 10%." }
+  ] },
+{ "slug": "cliffheart",
+  "skills": [
+    { "name": "Chain Hook", "auto": true, "target": "enemy", "mult": 1.35, "dmg": "arts",
+      "effects": [ { "on": "target", "type": "atkbar-", "amount": 0.2 } ],
+      "desc": "Auto. When ready, the basic attack hooks the target: 135% ATK Arts damage and turn meter −20%." },
+    { "name": "Binding Chains", "target": "enemies", "n": 2, "mult": 1.7, "dmg": "true",
+      "effects": [ { "on": "target", "type": "debuff", "what": "STUN", "turns": 1 }, { "on": "target", "type": "atkbar-", "amount": 0.2 } ],
+      "desc": "Hooks up to 2 enemies: 170% ATK True damage, Stun (1 turn) and turn meter −20%." }
+  ],
+  "talents": [
+    { "name": "Karlan Hunter", "stats": { "atk": 0.14, "def": 0.14 }, "desc": "ATK +14% and DEF +14%." }
+  ] },
+{ "slug": "gladiia",
+  "skills": [
+    { "name": "Waterless Parting of the Great Ocean", "auto": true, "target": "enemy", "mult": 1.8, "dmg": "phys",
+      "effects": [ { "on": "target", "type": "atkbar-", "amount": 0.2 } ],
+      "desc": "Auto. When ready, the basic attack drags the target: 180% ATK Physical damage and turn meter −20%." },
+    { "name": "Waterless Grasp of the Raging Seas",
+      "state": { "turns": 3, "spd": -0.2, "basic": { "n": 2, "mult": 1.5, "dmg": "phys", "reach": true, "effects": [ { "on": "target", "type": "atkbar-", "amount": 0.2 } ] } },
+      "desc": "For 3 turns: SPD −20%; basic attacks reach any enemy and hit 2 enemies for 150% ATK Physical, pushing their turn meters back 20%." },
+    { "name": "Waterless Dance of the Shattered Maelstrom", "target": "enemies", "n": 3, "hits": 6, "mult": 1.0, "dmg": "arts",
+      "effects": [ { "on": "target", "type": "debuff", "what": "BIND", "turns": 1 }, { "on": "target", "type": "atkbar-", "amount": 0.2 } ],
+      "desc": "Tornado: hits up to 3 enemies 6 times (100% ATK Arts each), Binds them (1 turn) and pushes their turn meters back 20%." }
+  ],
+  "talents": [
+    { "name": "Waves of Ægir", "dmgReduce": [ { "cond": { "attackerMelee": true }, "v": 0.25 } ],
+      "on": "turn", "effects": [ { "on": "self", "type": "healPct", "amount": 0.05 } ],
+      "desc": "Gladiia (an Abyssal Hunter) restores 5% max HP each turn and takes 25% less damage from melee enemies (Sea Monster stand-in)." },
+    { "name": "Survival of the Fittest", "dmgBonus": [ { "cond": { "targetBoss": false }, "v": 0.36 } ],
+      "desc": "Deals +36% damage to non-boss enemies (stand-in for light enemies)." }
+  ] },
+{ "slug": "rope",
+  "skills": [
+    { "name": "Hook Shot", "auto": true, "target": "enemy", "mult": 1.6, "dmg": "phys",
+      "effects": [ { "on": "target", "type": "atkbar-", "amount": 0.2 } ],
+      "desc": "Auto. When ready, the basic attack deals 160% ATK Physical damage and drags the target: turn meter −20%." },
+    { "name": "Double Hook", "target": "enemies", "n": 2, "mult": 1.8, "dmg": "phys",
+      "effects": [ { "on": "target", "type": "atkbar-", "amount": 0.2 } ],
+      "desc": "Hooks up to 2 enemies: 180% ATK Physical damage and turn meter −20%." }
+  ],
+  "talents": [
+    { "name": "Auditory Training", "stats": { "dodge": 0.34 }, "desc": "34% chance to dodge hits." }
+  ] },
+{ "slug": "snowsant",
+  "skills": [
+    { "name": "Barbed Clawhook", "auto": true, "target": "enemy", "mult": 1.4, "dmg": "phys",
+      "effects": [ { "on": "target", "type": "atkbar-", "amount": 0.2 }, { "on": "target", "type": "debuff", "what": "SLOW", "turns": 1 } ],
+      "desc": "Auto. When ready, the basic attack deals 140% ATK Physical damage, drags the target (turn meter −20%) and Slows it (1 turn)." },
+    { "name": "Telescoping Electric Net", "target": "aoe_enemies", "mult": 1.6, "dmg": "arts",
+      "effects": [ { "on": "target", "type": "atkbar-", "amount": 0.2 }, { "on": "target", "type": "debuff", "what": "SLOW", "turns": 1 } ],
+      "desc": "Electric net: 160% ATK Arts damage to all enemies, turn meter −20% and Slow (1 turn)." }
+  ],
+  "talents": [
+    { "name": "Bug Catcher", "on": "skill", "chance": 0.5,
+      "effects": [ { "on": "target", "type": "debuff", "what": "SILENCE", "turns": 2 }, { "on": "target", "type": "atkbar-", "amount": 0.1 } ],
+      "desc": "After using a skill, 50% chance (Infected Creature stand-in) to Silence the target (2 turns) and push its turn meter back 10% more." }
+  ] },
+{ "slug": "jaye",
+  "skills": [
+    { "name": "Shell Splitter", "auto": true,
+      "state": { "turns": 99, "atk": 0.45, "basic": { "effects": [ { "on": "target", "type": "debuff", "what": "SILENCE", "turns": 1 } ] } },
+      "desc": "Auto. Toggle: ATK +45% and basic attacks Silence the target (1 turn)." },
+    { "name": "Sashimi Platter", "auto": true,
+      "state": { "turns": 99, "atk": 0.4, "basic": { "effects": [ { "on": "lowest", "type": "heal", "amount": 0.4 } ] } },
+      "desc": "Auto. Toggle: ATK +40% and each basic attack heals the lowest-HP ally for 40% ATK (about 40% of the damage dealt)." }
+  ],
+  "talents": [
+    { "name": "Anatomy Master", "dmgBonus": [ { "cond": { "targetBoss": false }, "v": 0.5 } ],
+      "desc": "Deals +50% damage to non-boss enemies (stand-in for Infected Creatures)." }
+  ] },
+{ "slug": "mr-nothing",
+  "skills": [
+    { "name": "Cautious Retreat", "auto": true, "target": "self",
+      "effects": [ { "on": "self", "type": "healPct", "amount": 0.12 } ],
+      "state": { "turns": 1, "stealth": true },
+      "desc": "Auto. When ready, restores 12% max HP and gains Camouflage for 1 turn (real: an emergency retreat below 20% HP)." },
+    { "name": "Wax and Wane",
+      "state": { "turns": 99, "atk": 0.4, "basic": { "effects": [
+        { "on": "target", "type": "debuff", "what": "SLOW", "v": 0.18, "turns": 1, "chance": 0.33 },
+        { "on": "self", "type": "buff", "what": "SPD_UP", "v": 0.15, "turns": 1, "chance": 0.33 },
+        { "on": "self", "type": "buff", "what": "DODGE", "v": 0.4, "turns": 1, "chance": 0.33 } ] } },
+      "desc": "Toggle: ATK +40%. Each attack has a 33% chance each to Slow the target 18%, gain SPD +15%, or gain 40% dodge (1 turn)." }
+  ],
+  "talents": [
+    { "name": "Unexpected Strike", "on": "attack", "every": 4,
+      "effects": [ { "on": "target", "type": "dmg", "mult": 0.55, "dmg": "phys" }, { "on": "target", "type": "debuff", "what": "STUN", "turns": 2 } ],
+      "desc": "Every 4th attack catches the target off guard: 155% ATK in total and Stun (2 turns)." }
+  ] },
+{ "slug": "feater",
+  "skills": [
+    { "name": "Raging Iron Fist", "auto": true, "target": "enemies", "n": 3, "mult": 1.0, "dmg": "phys",
+      "effects": [ { "on": "target", "type": "atkbar-", "amount": 0.2 }, { "on": "target", "type": "debuff", "what": "SLOW", "v": 0.21, "turns": 1 } ],
+      "desc": "Auto. When ready, the basic attack hits up to 3 enemies (100% ATK), pushes their turn meters back 20% and Slows them 21% (1 turn)." },
+    { "name": "Destructive Fist", "target": "enemies", "n": 3, "mult": 1.9, "dmg": "phys",
+      "effects": [ { "on": "target", "type": "atkbar-", "amount": 0.3 }, { "on": "target", "type": "debuff", "what": "SLOW", "v": 0.21, "turns": 1 } ],
+      "desc": "Rushes in: 190% ATK Physical damage to up to 3 enemies, turn meter −30% and Slow 21% (1 turn)." }
+  ],
+  "talents": [
+    { "name": "Kung Fu", "stats": { "dodge": 0.43 }, "desc": "43% chance to dodge hits." }
+  ] },
+{ "slug": "weedy",
+  "skills": [
+    { "name": "Barrel Burst", "auto": true, "target": "enemies", "n": 3, "mult": 1.35, "dmg": "phys",
+      "effects": [ { "on": "target", "type": "atkbar-", "amount": 0.2 }, { "on": "target", "type": "debuff", "what": "STUN", "turns": 1 } ],
+      "desc": "Auto. When ready, the basic attack hits up to 3 enemies for 135% ATK, pushes their turn meters back 20% and Stuns them (1 turn)." },
+    { "name": "Hydraulics Mode", "auto": true,
+      "state": { "turns": 99, "atk": 1.7, "spd": -0.5, "basic": { "aoe": true, "effects": [ { "on": "target", "type": "atkbar-", "amount": 0.1 } ] } },
+      "desc": "Auto. Toggle: ATK +170%, SPD −50%; basic attacks hit all enemies and push their turn meters back 10%." },
+    { "name": "Liquid Nitrogen Cannon", "target": "enemies", "n": 3, "mult": 3.2, "dmg": "arts",
+      "effects": [ { "on": "target", "type": "atkbar-", "amount": 0.3 }, { "on": "target", "type": "dmg", "mult": 1.8, "dmg": "true" } ],
+      "desc": "Liquid nitrogen blast: 320% ATK Arts damage to up to 3 enemies, turn meter −30%, plus 180% ATK True damage from the impact." }
+  ],
+  "talents": [
+    { "name": "Industrial Water Cannon", "on": "attack", "every": 2,
+      "effects": [ { "on": "target", "type": "dmg", "mult": 1.0, "dmg": "phys" }, { "on": "target", "type": "atkbar-", "amount": 0.1 } ],
+      "desc": "Reserve Water Cannon: every 2nd attack, it also blasts the target for 100% ATK Physical damage and pushes its turn meter back 10%." },
+    { "name": "Upgraded Water Cannon", "on": "turn", "every": 3, "effects": [ { "on": "self", "type": "cdReduce", "amount": 1 } ],
+      "desc": "Every 3rd turn, Weedy's skill cooldowns drop by 1 extra turn (SP from the nearby Water Cannon)." }
+  ] },
+{ "slug": "ethan",
+  "skills": [
+    { "name": "Fancy Maneuvers",
+      "passive": { "on": "hit", "effects": [ { "on": "target", "type": "dmg", "mult": 0.38, "dmg": "arts" } ] },
+      "desc": "Passive. Each hit also poisons the target for an extra 38% ATK Arts damage (70 Arts damage per second for 4s)." },
+    { "name": "Suspended Cross",
+      "state": { "turns": 3, "atk": 0.5, "basic": { "effects": [ { "on": "target", "type": "debuff", "what": "BIND", "turns": 1, "chance": 0.5 } ] } },
+      "desc": "For 3 turns: ATK +50% and Entwined's Bind chance rises to 62.5% (×2.5)." }
+  ],
+  "talents": [
+    { "name": "Entwined", "on": "hit", "chance": 0.25, "effects": [ { "on": "target", "type": "debuff", "what": "BIND", "turns": 1 } ],
+      "desc": "Each hit has a 25% chance to Bind the target (1 turn)." }
+  ] },
+{ "slug": "manticore",
+  "skills": [
+    { "name": "Scorpion Venom",
+      "passive": { "on": "hit", "effects": [ { "on": "target", "type": "debuff", "what": "SLOW", "v": 0.35, "turns": 1 } ] },
+      "desc": "Passive. Hits Slow the target by 35% (1 turn)." },
+    { "name": "Toxic Overload",
+      "state": { "turns": 5, "atk": 0.6, "spd": -0.3, "basic": { "effects": [ { "on": "target", "type": "debuff", "what": "STUN", "turns": 1, "chance": 0.25 } ] } },
+      "desc": "For 5 turns: ATK +60%, SPD −30%; hits have a 25% chance to Stun (1 turn) (real: 0.7s Stun on every slow attack)." }
+  ],
+  "talents": [
+    { "name": "Hidden Killer - Elite", "on": "start", "effects": [ { "on": "self", "type": "buff", "what": "STEALTH", "turns": 1 } ],
+      "triggers": [ { "on": "wave", "effects": [ { "on": "self", "type": "buff", "what": "STEALTH", "turns": 1 } ] } ],
+      "dmgBonus": [ { "cond": { "selfHas": "STEALTH" }, "v": 0.54 } ],
+      "desc": "Starts the battle and each new wave Camouflaged (1 turn). Deals +54% damage while Camouflaged." }
+  ] },
+{ "slug": "mizuki",
+  "skills": [
+    { "name": "Awaken", "auto": true, "target": "enemies", "n": 3, "mult": 2.3, "dmg": "phys",
+      "effects": [ { "on": "target", "type": "dmg", "mult": 0.65, "dmg": "arts" } ],
+      "desc": "Auto. When ready, the basic attack deals 230% ATK Physical to up to 3 enemies, and her talent hit rises to 115% ATK Arts (×2.3)." },
+    { "name": "Prisoner's Dilemma",
+      "state": { "turns": 2, "atk": 0.2, "spd": 0.34, "basic": { "effects": [
+        { "on": "target", "type": "debuff", "what": "BIND", "turns": 1 },
+        { "on": "random_enemy", "type": "dmg", "mult": 0.5, "dmg": "arts" } ] } },
+      "desc": "For 2 turns: ATK +20%, SPD +34%; attacks Bind (1 turn) and her talent hit strikes 1 extra random enemy (50% ATK Arts)." },
+    { "name": "Moon in the Water",
+      "state": { "turns": 4, "atk": 1.05, "drain": 0.15, "basic": { "reach": true, "effects": [
+        { "on": "target", "type": "debuff", "what": "STUN", "turns": 1, "chance": 0.35 },
+        { "on": "random_enemy", "type": "dmg", "mult": 0.5, "dmg": "arts", "hits": 2 } ] } },
+      "desc": "For 4 turns: ATK +105%, attacks reach any enemy, 35% Stun (1T), talent hits 2 extra enemies. Loses 15% max HP each turn." }
+  ],
+  "talents": [
+    { "name": "Traumatic Hysteria", "on": "attack", "effects": [ { "on": "target", "type": "dmg", "mult": 0.5, "dmg": "arts" } ],
+      "desc": "Each attack deals an extra 50% ATK Arts damage to the target." },
+    { "name": "Countertransference", "dmgBonus": [ { "cond": { "targetHpBelow": 0.5 }, "v": 0.12 } ],
+      "desc": "Deals +12% damage to enemies below 50% HP." }
+  ] },
+{ "slug": "frost",
+  "skills": [
+    { "name": "Trap Deployment", "auto": true, "target": "enemy", "mult": 2.8, "dmg": "phys",
+      "effects": [ { "on": "target", "type": "debuff", "what": "STUN", "turns": 1 } ],
+      "desc": "Auto. When ready, a Welcome Mat springs on the target: 280% ATK Physical damage and Stun (1 turn)." },
+    { "name": "Incapacitated Prey", "auto": true, "target": "enemy", "hits": 3, "mult": 1.5, "dmg": "phys",
+      "effects": [ { "on": "target", "type": "dmg", "mult": 1.6, "dmg": "phys" }, { "on": "target", "type": "debuff", "what": "BIND", "turns": 1 } ],
+      "desc": "Auto. When ready, a Welcome Mat deals 160% ATK Physical and Binds the target (1 turn), then Frost strikes it 3 times (150% ATK each)." }
+  ],
+  "talents": [
+    { "name": "Welcome Mat", "on": "wave", "effects": [ { "on": "random_enemy", "type": "atkbar-", "amount": 0.15 } ],
+      "desc": "Plenty of Welcome Mats: at each new wave, a random enemy stumbles on one and loses 15% turn meter." }
+  ] },
+{ "slug": "robin",
+  "skills": [
+    { "name": "Binding 'Clip'", "auto": true, "target": "enemy", "mult": 2.8, "dmg": "phys",
+      "effects": [ { "on": "target", "type": "debuff", "what": "BIND", "turns": 1 } ],
+      "desc": "Auto. When ready, a 'Clip' snaps on the target: 280% ATK Physical damage and Bind (1 turn)." },
+    { "name": "Launching 'Clip'", "auto": true, "target": "enemy", "mult": 3.1, "dmg": "phys",
+      "effects": [ { "on": "target", "type": "atkbar-", "amount": 0.2 } ],
+      "desc": "Auto. When ready, a 'Clip' launches the target: 310% ATK Physical damage and turn meter −20%." }
+  ],
+  "talents": [
+    { "name": "'Clip' Specialist", "on": "wave", "effects": [ { "on": "random_enemy", "type": "atkbar-", "amount": 0.15 } ],
+      "desc": "Plenty of 'Clip' traps: at each new wave, a random enemy stumbles on one and loses 15% turn meter." }
+  ] },
+{ "slug": "heidi",
+  "skills": [
+    { "name": "Tale of Fiction: A Warrior's Anger", "target": "allies",
+      "effects": [ { "on": "allies", "type": "buff", "what": "INSPIRE", "v": 0.9, "turns": 1 } ],
+      "state": { "turns": 1 },
+      "desc": "For 1 turn, other allies gain Inspiration: ATK + 90% of Heidi's ATK. Heidi keeps healing." },
+    { "name": "Tale of Fiction: Rust", "target": "allies",
+      "effects": [ { "on": "allies", "type": "buff", "what": "DEF_UP", "v": 0.3, "turns": 3 }, { "on": "allies", "type": "shield", "pctHP": 0.2, "turns": 3 } ],
+      "state": { "turns": 3, "basic": { "heal": 0.69 } },
+      "desc": "For 3 turns: other allies gain DEF +30% (≈50% of Heidi's DEF) and a Shield (20% of Heidi's max HP); her healing rises to 230%." }
+  ],
+  "talents": [
+    { "name": "Crafty Rebel", "aura": { "who": "team", "stats": { "atk": 0.06, "def": 0.06 } },
+      "desc": "All allies gain ATK +6% and DEF +6% (real: one or the other, depending on the equipped skill)." },
+    { "name": "Private Messenger", "on": "skill", "effects": [ { "on": "allies", "type": "cdReduce", "amount": 1 } ],
+      "desc": "After Heidi uses a skill, other allies' skill cooldowns drop by 1 turn (SP recovery +0.5/s)." }
+  ] },
+{ "slug": "sora",
+  "skills": [
+    { "name": "Hymn of Respite", "target": "aoe_enemies",
+      "effects": [ { "on": "target", "type": "debuff", "what": "SLEEP", "turns": 2 } ],
+      "state": { "turns": 1, "basic": { "heal": 2.1 } },
+      "desc": "Puts all enemies to Sleep (2 turns); for 1 turn her healing of all allies rises to 700%." },
+    { "name": "Hymn of Battle", "target": "allies",
+      "effects": [ { "on": "allies", "type": "buff", "what": "INSPIRE", "v": 0.9, "turns": 3 } ],
+      "state": { "turns": 3 },
+      "desc": "For 3 turns, other allies gain Inspiration: ATK + 90% of Sora's ATK. Sora keeps healing." }
+  ],
+  "talents": [
+    { "name": "Encore", "on": "skill", "chance": 0.5, "effects": [ { "on": "self", "type": "cdReduce", "amount": 3 } ],
+      "desc": "After using a skill, 50% chance to cut her skill cooldowns by 3 turns (half of a recharge)." }
+  ] },
+{ "slug": "nine-colored-deer",
+  "skills": [
+    { "name": "Fortune Bringer of the Mortal Realm", "state": { "turns": 3, "atk": 0.4 },
+      "desc": "For 3 turns: ATK +40%." },
+    { "name": "Return to the Immortal Mountain", "target": "team",
+      "effects": [ { "on": "team", "type": "buff", "what": "DMG_REDUCE", "v": 0.2, "turns": 2 }, { "on": "team", "type": "buff", "what": "DODGE", "v": 0.2, "turns": 2 } ],
+      "state": { "turns": 2, "spd": 0.21 },
+      "desc": "For 2 turns: SPD +21%; all allies get Sanctuary (damage taken −20%) and 20% dodge (real: 40% vs ranged Physical)." }
+  ],
+  "talents": [
+    { "name": "Ethereal Iridescent Clouds", "on": "turn", "effects": [ { "on": "lowest", "type": "buff", "what": "DMG_REDUCE", "v": 0.2, "turns": 1 } ],
+      "desc": "At the start of each turn, the lowest-HP ally gets Sanctuary: damage taken −20% (1 turn)." }
+  ] },
+{ "slug": "quercus",
+  "skills": [
+    { "name": "Earth's Benevolence", "state": { "turns": 99, "atk": 0.3 },
+      "desc": "Toggle: ATK +30%." },
+    { "name": "Echo of Life",
+      "state": { "turns": 2, "spd": 0.27, "basic": { "effects": [ { "on": "lowest", "type": "cdReduce", "amount": 1, "chance": 0.3 } ] } },
+      "desc": "For 2 turns: SPD +27%; each heal has a 30% chance to cut the healed ally's skill cooldowns by 1 (1 SP per heal)." }
+  ],
+  "talents": [
+    { "name": "Forest Sanctuary", "aura": { "who": "team", "stats": { "dmgTaken": -0.16 } },
+      "desc": "All allies get Sanctuary: damage taken −16% (real: only while above 70% HP)." }
+  ] },
+{ "slug": "tsukinogi",
+  "skills": [
+    { "name": "Without a Trace", "target": "team",
+      "effects": [ { "on": "team", "type": "buff", "what": "DODGE", "v": 0.31, "turns": 4 } ],
+      "state": { "turns": 4 },
+      "desc": "For 4 turns: all allies gain 31% dodge." },
+    { "name": "Forest's Embrace", "target": "team",
+      "effects": [ { "on": "team", "type": "buff", "what": "DMG_REDUCE", "v": 0.4, "turns": 2 } ],
+      "state": { "turns": 2, "basic": { "heal": 0.8, "healN": 5 } },
+      "desc": "For 2 turns: basic action heals all allies for 80% ATK; all allies get Sanctuary ×2: damage taken −40%." }
+  ],
+  "talents": [
+    { "name": "Blessing", "on": "turn", "effects": [ { "on": "lowest", "type": "buff", "what": "DMG_REDUCE", "v": 0.2, "turns": 1 } ],
+      "desc": "At the start of each turn, the lowest-HP ally gets Sanctuary: damage taken −20% (1 turn)." }
+  ] },
+{ "slug": "roberta",
+  "skills": [
+    { "name": "Siracusan-Style Makeup", "state": { "turns": 4, "atk": 0.35, "def": 0.35 },
+      "desc": "For 4 turns: ATK +35%, DEF +35%." },
+    { "name": "Full Auto Modeler", "basic": false,
+      "state": { "turns": 3, "def": 0.5, "taunt": true,
+        "onEnd": [ { "on": "lowest", "type": "buff", "what": "DEF_UP", "v": 0.33, "turns": 3 }, { "on": "lowest", "type": "shield", "pctHP": 0.2, "turns": 3 } ] },
+      "desc": "Doesn't attack on use. For 3 turns: DEF +50% and Taunt. When it ends, a Modeler gives the lowest-HP ally DEF +33% and a Shield (3 turns)." }
+  ],
+  "talents": [
+    { "name": "Modeler Debugging", "on": "start",
+      "effects": [ { "on": "lowest", "type": "buff", "what": "DEF_UP", "v": 0.33, "turns": 3 }, { "on": "lowest", "type": "shield", "pctHP": 0.2, "turns": 3 } ],
+      "triggers": [ { "on": "turn", "every": 3, "effects": [ { "on": "lowest", "type": "buff", "what": "DEF_UP", "v": 0.33, "turns": 3 }, { "on": "lowest", "type": "shield", "pctHP": 0.2, "turns": 3 } ] } ],
+      "desc": "Modelers: at battle start and every 3rd turn, the lowest-HP ally gains DEF +33% and a Shield (20% of Roberta's max HP) for 3 turns." }
+  ] },
+{ "slug": "stainless",
+  "skills": [
+    { "name": "Extreme Firepower",
+      "effects": [ { "on": "random_ally", "type": "buff", "what": "ATK_UP", "v": 0.36, "turns": 2 } ],
+      "state": { "turns": 2, "basic": { "mult": 1.7 } },
+      "desc": "For 2 turns: basic attacks deal 170% ATK; a boosted device (×3) gives a random ally ATK +36% (2 turns)." },
+    { "name": "Efficient Resupply",
+      "effects": [ { "on": "random_ally", "type": "cdReduce", "amount": 2 } ],
+      "state": { "turns": 4, "atk": 0.4, "def": 0.4, "basic": { "n": 3 } },
+      "desc": "For 4 turns: ATK +40%, DEF +40%, basic attacks hit up to 3 enemies. A boosted device cuts a random ally's cooldowns by 2." },
+    { "name": "Prototype of Feist's Metal Crab",
+      "state": { "turns": 4, "atk": 0.4, "spd": 0.24, "basic": { "effects": [ { "on": "enemies", "type": "dmg", "mult": 0.5, "dmg": "phys" } ] } },
+      "desc": "For 4 turns: ATK +40%, SPD +24%; each basic attack also sets off the Metal Crab: 50% ATK Physical damage to all enemies." }
+  ],
+  "talents": [
+    { "name": "Battlefield Engineer", "aura": { "who": "random_ally", "stats": { "atk": 0.12 } },
+      "on": "turn", "every": 3, "effects": [ { "on": "random_ally", "type": "cdReduce", "amount": 1 } ],
+      "desc": "Support Devices: a random ally gains ATK +12%, and every 3rd turn a random ally's skill cooldowns drop by 1." },
+    { "name": "Cost Cutting", "on": "wave", "chance": 0.8, "effects": [ { "on": "random_ally", "type": "cdReduce", "amount": 1 } ],
+      "desc": "Recycles devices: at each new wave, 80% chance to cut a random ally's skill cooldowns by 1." }
+  ] }
+]
