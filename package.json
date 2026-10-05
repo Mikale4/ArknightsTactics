@@ -1,9 +1,9 @@
 {
   "name": "arknights-tactics",
   "private": true,
-  "description": "Single-file HTML games: Arknights Tactics (original and mobile) and Galactic Heroes.",
+  "description": "Single-file HTML games: Arknights Tactics (original and mobile), Galactic Heroes, Melty Blood RPG and Pokémon Kanto Squad.",
   "scripts": {
-    "build": "sh mobile/src/build.sh && sh galactic-heroes/src/build.sh && sh melty-blood/src/build.sh",
+    "build": "sh mobile/src/build.sh && sh galactic-heroes/src/build.sh && sh melty-blood/src/build.sh && sh pokemon/src/build.sh",
     "build:mobile": "sh mobile/src/build.sh",
     "build:gh": "sh galactic-heroes/src/build.sh",
     "test:mobile": "node mobile/tests/phone.js",
@@ -11,7 +11,11 @@
     "test:balance": "node mobile/tests/sim.js",
     "serve": "python3 -m http.server 8000",
     "build:mb": "sh melty-blood/src/build.sh",
-    "test:mb": "node melty-blood/tests/phone.js"
+    "test:mb": "node melty-blood/tests/phone.js",
+    "build:pokemon": "sh pokemon/src/build.sh",
+    "test:pokemon": "node pokemon/tests/phone.js",
+    "test:pokemon:data": "node pokemon/tests/figures.js",
+    "test:pokemon:balance": "node pokemon/tests/sim.js"
   },
   "devDependencies": {
     "playwright": "1.56.1"
