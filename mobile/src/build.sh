@@ -7,7 +7,7 @@ SRC=$(cd "$(dirname "$0")" && pwd)
 OUT=$(dirname "$SRC")
 mkdir -p "$OUT/dist"
 cd "$SRC"   # part names below are relative, so paths with spaces work
-BODY="a2_core.js a3a_roster.js a3b_real.js a3c_kits.js a4_story.js a4b_reunion.js a4c_victoria.js a4d_world.js a5_art.js a5b_opfig.js a6_state.js a6b_ladder.js a6c_lines.js a6d_meta.js a6e_people.js a7_engine.js a8a_render.js a8c_sfx.js a8b_battle.js a9a_screens.js a9b_screens.js a9e_arena.js a9f_social.js a9c_title.js a9d_demo.js a10_boot.js"
+BODY="a2_core.js a3a_roster.js a3b_real.js a3c_kits.js a4_story.js a4b_reunion.js a4c_victoria.js a4d_world.js a5_art.js a5b_opfig.js a6_state.js a6b_ladder.js a6c_lines.js a6d_meta.js a6e_people.js a7_engine.js a8a_render.js a8d_sd.js a8c_sfx.js a8b_battle.js a9a_screens.js a9b_screens.js a9e_arena.js a9f_social.js a9c_title.js a9d_demo.js a10_boot.js"
 {
   printf '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
   printf '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">\n'

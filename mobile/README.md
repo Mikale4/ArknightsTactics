@@ -26,7 +26,8 @@ Play: open `mobile/index.html` (on GitHub Pages: `/ArknightsTactics/mobile/`). P
   a basic attack from their branch trait (Centurions hit three enemies, Medics heal, Liberators build ATK…),
   their real skills S1–S3 (unlocked at Elite 0/1/2, with cooldowns from the skill's SP cost and Auto skills
   that fire on their own) and their real talents. Damage is Physical (reduced by DEF), Arts (reduced by RES)
-  or True, as in Arknights. Operators and enemies are drawn figures, coloured from each operator's
+  or True, as in Arknights. Units are the real Arknights SD battle sprites (animated Spine chibis, front and back), seen from a
+  Pokémon-style camera behind your squad. Units without a sprite are drawn figures, coloured from each operator's
   art, with class weapons (spears, shields, bows, crossbows, guns, rods, medic staves, tomes, blades) and
   race features where they're well known (Cautus, Feline, Lupo, Vulpo, Kuranta, Sankta halos, Sarkaz horns…).
 - **Headhunting**: three themed banners every week (Penguin Logistics, Rhine Lab, Abyssal Hunters, Kazimierz, Joint Operations, collaborations…) and the standard banner, ×1 and ×10 with Orundum or

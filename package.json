@@ -12,6 +12,7 @@
     "test:accounts": "node mobile/tests/accounts.js",
     "test:push": "node mobile/tests/push.js",
     "test:social": "node mobile/tests/social.js",
+    "test:sd": "node mobile/tests/sd.js",
     "serve": "python3 -m http.server 8000"
   },
   "devDependencies": {

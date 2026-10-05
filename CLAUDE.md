@@ -22,7 +22,7 @@ sh mobile/src/build.sh            # also writes mobile/dist/index.html (artifact
 `a4_story.js` Main Theme Part 1 Ep 01–05 + speakers · `a4b_reunion.js` Part 1 Ep 06–08 · `a4c_victoria.js` Part 2 Ep 09–14 · `a4d_world.js` stage index, Supplies, SSS, missions, Store ·
 `a5_art.js` figure renderer (poses, weapons, race features) · `a5b_opfig.js` per-operator figures + colour table ·
 `a6_state.js` save, progression, headhunting · `a6b_ladder.js` Contract ladders (simulated Doctors, tiers, draft AI) · `a6c_lines.js` chat line corpus · `a6d_meta.js` weekly banners, Inbox, Achievements · `a6e_people.js` Doctors' personalities, presence, chat engine, guilds, guild boss · `a7_engine.js` battle rules (event-driven) · `a8a_render.js` 3D camera and drawing ·
-`a8c_sfx.js` music, sound effects and voice lines · `a8b_battle.js` battle director and HUD · `a9a/a9b_screens.js` screens · `a9e_arena.js` Contract screens, draft, launchers · `a9f_social.js` Inbox, Achievements, Chat, profiles, Guild, Settings screens ·
+`a8d_sd.js` SD battle sprites · `a8c_sfx.js` music, sound effects and voice lines · `a8b_battle.js` battle director and HUD · `a9a/a9b_screens.js` screens · `a9e_arena.js` Contract screens, draft, launchers · `a9f_social.js` Inbox, Achievements, Chat, profiles, Guild, Settings screens ·
 `a9c_title.js` title screen + local accounts · `a9d_demo.js` Demo runner · `a10_boot.js` launchers, actions, boot.
 All parts share one script, so a later `function` with the same name silently replaces an earlier one; `build.sh` fails on duplicates.
 
@@ -46,7 +46,15 @@ passive → **Talent** · skill rank → **Skill Level** · Arts resistance → 
 Gacha is **Headhunting** (never "summon").
 
 ## Battle look
-Units are drawn, jointed figures (`drawFigure`), not sprites. Operator figures come from `opFig()` in `a5b_opfig.js`:
+Units are the real Arknights SD (battle chibi) Spine sprites where available (`a8d_sd.js`): 202 operators (front + back views)
+and 35 enemies in `assets/sd/` (`python mobile/tools/fetch_sd.py` re-downloads from Aceship/Arknight-Images and writes the
+`@sd-*` lists). Spine 3.5 skeletons go through `mobile/vendor/spine-skeleton-binary.js` + `spine-widget.js` (3.6 runtime), 3.8
+ones through `mobile/vendor/spine-webgl-3.8.js`; both are loaded on demand, renamed apart (both use the global `spine`).
+Each unit renders into an offscreen WebGL canvas and is copied into the 2D battle canvas (`sdDraw`), playing Idle / Attack /
+Skill_N / Move / Die / Start to match the battle poses (`sdWant`). Back sprites show when a unit faces away from the camera.
+Sprites need HTTP(S): opened from file://, units fall back to the drawn figures. `node mobile/tests/sd.js` serves the repo and checks it.
+The home camera is Pokémon-style (`CAM_DEF` in `a8a_render.js`): behind and above your squad, enemies facing you across the field.
+Units without a sprite are drawn, jointed figures (`drawFigure`). Operator figures come from `opFig()` in `a5b_opfig.js`:
 colours sampled from their art, class weapons, and race features only for operators listed in `RACE` (don't guess races).
 Regenerate the colour table after changing sprites: `python3 mobile/tools/colors.py` (needs ImageMagick), then rebuild.
 

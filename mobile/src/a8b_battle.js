@@ -126,6 +126,7 @@ async function handle(e) {
     case "wave": {
       for (const [uid, v] of BT.vus) if (v.team === "E" && v.dead) BT.vus.delete(uid);
       const list = e.units.map(uid => addVU(BT.B.byId(uid), true));
+      if (SD.on) await Promise.race([sdPrepareAll(list), bwait(1500)]);
       banner(`Wave ${e.w + 1} / ${BT.B.waves.length}`, "Incoming", "ds"); sfx("ui_alarm", .7);
       BT.letterboxT = 1;
       camTo({ ...BT.home, tx: 200, yaw: BT.home.yaw - .45, dist: BT.home.dist * .75, pitch: .2 }, 2.2);
@@ -139,6 +140,7 @@ async function handle(e) {
     }
     case "act": {
       BT.act = e; if (!vu) break;
+      vu.sdSlot = e.slot || 0;
       const tv = e.t != null ? VU(e.t) : null;
       if (e.s3) {
         BT.letterboxT = 1; sfx("cast");
@@ -212,6 +214,7 @@ async function handle(e) {
       break;
     }
     case "end": {
+      if (vu) vu.sdSlot = 0;
       await returnHome();
       if (BT.letterboxT) { BT.letterboxT = 0; }
       hideBanner(); camHome(2.4); BT.act = null;
@@ -404,6 +407,7 @@ function unitAt(x, y) {
 
 // ---------- lifecycle ----------
 function addVU(u, hidden) {
+  if (BT.W) slotsFor(camTune());
   const slot = SLOTS[u.slot % SLOTS.length], dir = u.team === "A" ? 1 : -1;
   const vu = { uid: u.uid, u, team: u.team, dir, face: dir, home: { x: -dir * slot[0], z: slot[1] }, pos: { x: -dir * slot[0], z: slot[1] }, y: 0,
     bs: u.boss ? 1.22 : 1, pose: { name: "idle", t0: 0, dur: 0 }, ph: R() * 6, hp: u.hp, lag: u.hp, sh: u.shield, tm: u.atb, tmT: u.atb,
@@ -495,6 +499,7 @@ function closeBattle() {
 }
 async function intro() {
   const h = BT.home;
+  if (SD.on) { const ready = sdPrepareAll([...BT.vus.values()]); BT.sdReady = ready; await Promise.race([ready, new Promise(r => setTimeout(r, 4000))]); }
   banner(BT.cfg.title || "Battle", BT.cfg.sub || "", "ls");
   camTo({ ...h, tx: 230, ty: 70, yaw: h.yaw - 1.05, pitch: .55, dist: h.dist * 1.15 }, 1, true);
   const foes = [...BT.vus.values()].filter(v => v.team === "E"), mine = [...BT.vus.values()].filter(v => v.team === "A");

@@ -4,7 +4,10 @@
 //  World: ground plane y=0, battle axis x (allies -x, enemies +x), depth z.
 //  Camera: orbit (yaw/pitch/dist) around a target point, eased every frame.
 // =====================================================================
-const SLOTS = [[150, -40], [168, 78], [262, -104], [282, 18]];
+const SLOTS0 = [[150, -40], [168, 78], [262, -104], [282, 18]];
+// formation: distance from the centre line (x) and spread across the field (z); tunable while testing camera angles
+const SLOTS = SLOTS0.map(s => s.slice());
+function slotsFor(T) { const zs = T && T.zs != null ? T.zs : 1, xs = T && T.xs != null ? T.xs : 1; SLOTS0.forEach((s, i) => { SLOTS[i][0] = s[0] * xs; SLOTS[i][1] = s[1] * zs; }); }
 const BT = { on: false, cv: null, g: null, W: 0, H: 0, dpr: 1, clock: 0, speed: 1, paused: false, vus: new Map(),
   parts: [], bolts: [], floats: [], arcs: [], rings: [], nades: [], waits: [], tweens: [],
   cam: null, camT: null, camK: 3, home: null, shake: 0, env: null, B: null, target: null, active: null, picking: false,
@@ -227,7 +230,7 @@ function applyCamXform() {
 // ---------- units ----------
 function billboard(vu, lp) {
   const K = BT.K, bs = vu.bs;
-  const lx = lp[0] * vu.face * bs, ly = -lp[1] * bs;
+  const lx = lp[0] * (vu.sface || vu.face) * bs, ly = -lp[1] * bs;
   return [vu.pos.x + K.r[0] * lx + K.u[0] * ly, vu.y + K.r[1] * lx + K.u[1] * ly, vu.pos.z + K.r[2] * lx + K.u[2] * ly];
 }
 const chestW = vu => billboard(vu, (vu.out && vu.out.chest) || [0, -60]);
@@ -249,17 +252,27 @@ function drawUnit(K, vu) {
   if (vu.gone) return;
   let alpha = 1, rot = 0;
   if (vu.spawnT != null) { const k = clamp((BT.clock - vu.spawnT) / 700, 0, 1); alpha = k; if (k >= 1) vu.spawnT = null; }
-  if (vu.dead) { const k = clamp((BT.clock - vu.deathT) / 1000, 0, 1); rot = -ease(Math.min(1, k * 1.6)) * 1.35; alpha = 1 - k; if (k >= 1) vu.gone = true; }
+  const sd = vu.sd && vu.sd.f;
+  if (vu.dead) { const k = clamp((BT.clock - vu.deathT) / (sd ? 1400 : 1000), 0, 1); rot = sd ? 0 : -ease(Math.min(1, k * 1.6)) * 1.35; alpha = sd ? 1 - clamp((k - .55) / .45, 0, 1) : 1 - k; if (k >= 1) vu.gone = true; }
   if (vu.stealth) alpha *= .45;
   const pose = vu.pose;
   const pt = pose.dur ? clamp((BT.clock - pose.t0) / pose.dur, 0, 1) : (BT.clock - pose.t0) / 1000;
   if (pose.dur && pt >= 1 && pose.back) { vu.pose = { name: "idle", t0: BT.clock, dur: 0 }; }
+  // facing on screen (the camera can sit at an angle), and whether we're looking at the unit's back
+  const ahead = proj(K, vu.pos.x + vu.face * 24, vu.y, vu.pos.z);
+  vu.sface = ahead ? Math.sign(ahead[0] - sx) || vu.face : vu.face;
+  const away = K.f[0] * vu.face > .3;
   g.save(); g.globalAlpha = alpha; g.translate(sx, sy);
-  let face = vu.face;
-  if (vu.spin) { const k = (BT.clock - vu.spin) / 140; face *= Math.cos(k * Math.PI) >= 0 ? 1 : -1; }
-  if (rot) g.rotate(rot * vu.face);
-  g.scale(sc * face, sc);
-  vu.out = drawFigure(g, vu.u.def.fig, { name: vu.pose.name, t: pt, time: BT.clock / 1000, ph: vu.ph });
+  let face = vu.sface;
+  if (vu.spin && !sd) { const k = (BT.clock - vu.spin) / 140; face *= Math.cos(k * Math.PI) >= 0 ? 1 : -1; }
+  if (rot) g.rotate(rot * face);
+  if (sd) {
+    g.scale(sc * face * SD_DIR, sc);
+    try { vu.out = sdDraw(g, vu, sc, away); } catch (e) { vu.sd = null; SD.fail[vu.u.key] = e.message; vu.out = drawFigure(g, vu.u.def.fig, { name: vu.pose.name, t: pt, time: BT.clock / 1000, ph: vu.ph }); }
+  } else {
+    g.scale(sc * face, sc);
+    vu.out = drawFigure(g, vu.u.def.fig, { name: vu.pose.name, t: pt, time: BT.clock / 1000, ph: vu.ph });
+  }
   g.restore();
   // saber trail
   if (vu.out.tipc && (vu.pose.name === "swing" || vu.spin)) {
@@ -485,18 +498,29 @@ const btween = (dur, fn, easeOn = true) => new Promise(res => BT.tweens.push({ t
 function setPose(vu, name, dur = 0, back = true) { vu.pose = { name, t0: BT.clock, dur, back }; }
 function camTo(p, k = 3, cut = false) { Object.assign(BT.camT, p); BT.camK = k; if (cut) Object.assign(BT.cam, BT.camT); }
 function camHome(k = 2.6) { BT.orbit = false; camTo({ ...BT.home }, k); }
+// home camera, Pokémon-style: behind and above your squad (back sprites, near the bottom), enemies facing you across the field.
+// zs/xs spread the formation across and along the field; top = unit height to keep in frame; *M = screen margins.
+const CAM_DEF = {
+  land: { yaw: -1.18, pitch: .38, fov: .6, zs: 1.55, xs: 1, top: 125, topM: 42, botM: 76, botNear: 6 },
+  port: { yaw: -1.4, pitch: .62, fov: .7, zs: 1.15, xs: 1.4, top: 125, topM: 84, botM: 140, botNear: 40 },
+};
+const camTune = () => { const land = BT.W / BT.H > 1.05, o = (typeof CAM_TUNE !== "undefined" && CAM_TUNE[land ? "land" : "port"]) || {}; return { ...CAM_DEF[land ? "land" : "port"], ...o }; };
 function fitHome() {
-  const land = BT.W / BT.H > 1.05;
-  const c = { tx: 0, ty: 40, tz: 0, yaw: land ? 0 : -1.2, pitch: land ? .24 : .5, dist: 900, fov: land ? .62 : .7, roll: 0 };
+  const land = BT.W / BT.H > 1.05, T = camTune();
+  const pick = (k, d) => T[k] != null ? T[k] : d;
+  slotsFor(T);
+  // Pokémon-style: behind and above your squad, enemies across the field toward the top right
+  const c = { tx: 0, ty: 40, tz: 0, yaw: T.yaw, pitch: T.pitch, dist: 900, fov: T.fov, roll: 0 };
   const pts = [];
-  // pad each slot along both ground axes (figures, weapons and capes); 170 covers figure height plus overhead bars
-  for (const s of SLOTS) for (const sx of [-1, 1]) for (const [dx, dz] of [[-50, 0], [50, 0], [0, -50], [0, 50]]) pts.push([s[0] * sx + dx, 0, s[1] + dz], [s[0] * sx + dx, 170, s[1] + dz]);
-  const topM = land ? 64 : 84, botM = land ? 112 : 140, sideM = 4;
+  // every slot's top (figure + overhead bars) must show; your squad's feet may run down toward the bottom edge
+  const top = pick("top", 170);
+  for (const s of SLOTS) for (const sx of [-1, 1]) for (const [dx, dz] of [[-50, 0], [50, 0], [0, -50], [0, 50]]) pts.push([s[0] * sx + dx, 0, s[1] + dz, sx < 0], [s[0] * sx + dx, top, s[1] + dz, false]);
+  const topM = pick("topM", land ? 64 : 84), botM = pick("botM", land ? 112 : 140), sideM = 4, botNear = pick("botNear", land ? 60 : 90);
   const fit = () => {
     let lo = 150, hi = 6000;
     for (let k = 0; k < 26; k++) {
       const mid = (lo + hi) / 2; c.dist = mid; const K = camBasis(c); let ok = true;
-      for (const p of pts) { const q = proj(K, ...p); if (!q || q[0] < sideM || q[0] > BT.W - sideM || q[1] < topM || q[1] > BT.H - botM) { ok = false; break; } }
+      for (const p of pts) { const q = proj(K, p[0], p[1], p[2]); if (!q || q[0] < sideM || q[0] > BT.W - sideM || q[1] < topM || q[1] > BT.H - (p[3] ? botNear : botM)) { ok = false; break; } }
       if (ok) hi = mid; else lo = mid;
     }
     c.dist = hi;
@@ -504,7 +528,7 @@ function fitHome() {
   for (let it = 0; it < 5; it++) {
     fit();
     const K = camBasis(c); let y0 = 1e9, y1 = -1e9, x0 = 1e9, x1 = -1e9;
-    for (const p of pts) { const q = proj(K, ...p); if (!q) continue; y0 = Math.min(y0, q[1]); y1 = Math.max(y1, q[1]); x0 = Math.min(x0, q[0]); x1 = Math.max(x1, q[0]); }
+    for (const p of pts) { const q = proj(K, p[0], p[1], p[2]); if (!q) continue; y0 = Math.min(y0, q[1]); y1 = Math.max(y1, q[1]); x0 = Math.min(x0, q[0]); x1 = Math.max(x1, q[0]); }
     const s = K.focal / c.dist;
     const dx = ((x0 + x1) / 2 - BT.W / 2) / s, dy = ((y0 + y1) / 2 - (topM + BT.H - botM) / 2) / s;
     c.tx += K.r[0] * dx - K.u[0] * dy; c.ty += K.r[1] * dx - K.u[1] * dy; c.tz += K.r[2] * dx - K.u[2] * dy;
