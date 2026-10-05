@@ -36,9 +36,9 @@ const P = v => Math.round(v * 100) + "%";
 const statList = st => st.map(([s, n]) => `${STAGE_N[s]} ${n > 0 ? "+" : ""}${n}`).join(", ");
 function moveDesc(sk) {
   const M = sk.M, out = [], who = sk.target === "aoe_enemies" ? "each target" : "the target";
-  const fixed = { dragonrage: "Always deals 40 damage", sonicboom: "Always deals 20 damage", nightshade: "Deals damage equal to the user's level", seismictoss: "Deals damage equal to the user's level",
-    psywave: "Deals random damage between half and 1.5× the user's level", superfang: "Cuts the target's HP in half" }[M.sp];
-  if (fixed) out.push(fixed);
+  const fixed = { dragonrage: "Deals 40 damage", sonicboom: "Deals 20 damage", nightshade: "Deals damage equal to the user's level", seismictoss: "Deals damage equal to the user's level",
+    psywave: "Deals random damage between half and 1.5× the user's level", superfang: "Takes half the target's current HP" }[M.sp];
+  if (fixed) out.push(fixed + " (+6% per Mastery rank)");
   if (sk.weight) out.push("Heavier targets take more damage (20 to 120 power)");
   if (M.n === "High Jump Kick" || M.n === "Jump Kick") out.push("If it misses, the user crashes and loses half its max HP");
   if (sk.target === "aoe_enemies" && M.p) out.push(`Hits every opposing Pokémon (${P(SPREAD)} damage each)`);

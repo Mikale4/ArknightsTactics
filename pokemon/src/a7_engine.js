@@ -221,8 +221,9 @@ function makeBattle(cfg) {
   function damageOf(att, tar, sk, opts = {}) {
     const M = sk.M, e = effOn(att, tar, sk);
     if (e === 0) return { dmg: 0, e: 0 };
-    if (M.sp === "superfang") return { dmg: Math.max(1, Math.floor(tar.hp / 2 * (tar.boss ? .5 : 1))), e: 1 };
-    if (FIXED[M.sp]) return { dmg: Math.max(1, Math.round(FIXED[M.sp](att) * DMG_SCALE * 1.5)), e: 1 };
+    // fixed damage ignores stats, type effectiveness (immunities aside) and boosts, but Mastery still adds its 6% per rank
+    if (M.sp === "superfang") return { dmg: Math.max(1, Math.floor(tar.hp / 2 * (tar.boss ? .5 : 1) * mastery(att, sk))), e: 1 };
+    if (FIXED[M.sp]) return { dmg: Math.max(1, Math.round(FIXED[M.sp](att) * DMG_SCALE * 1.5 * mastery(att, sk))), e: 1 };
     const crit = opts.crit, phys = M.c === "P";
     let pow = (sk.weight ? [[100, 20], [250, 40], [500, 60], [1000, 80], [2000, 100], [1e9, 120]].find(([w]) => (OPS[tar.key] || OPS[tar.spr]).w < w)[1] : sk.pow) * mastery(att, sk);
     if (pv(att, "TECHNICIAN") && sk.pow <= 60) pow *= 1.5;

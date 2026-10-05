@@ -1127,9 +1127,9 @@ const P = v => Math.round(v * 100) + "%";
 const statList = st => st.map(([s, n]) => `${STAGE_N[s]} ${n > 0 ? "+" : ""}${n}`).join(", ");
 function moveDesc(sk) {
   const M = sk.M, out = [], who = sk.target === "aoe_enemies" ? "each target" : "the target";
-  const fixed = { dragonrage: "Always deals 40 damage", sonicboom: "Always deals 20 damage", nightshade: "Deals damage equal to the user's level", seismictoss: "Deals damage equal to the user's level",
-    psywave: "Deals random damage between half and 1.5× the user's level", superfang: "Cuts the target's HP in half" }[M.sp];
-  if (fixed) out.push(fixed);
+  const fixed = { dragonrage: "Deals 40 damage", sonicboom: "Deals 20 damage", nightshade: "Deals damage equal to the user's level", seismictoss: "Deals damage equal to the user's level",
+    psywave: "Deals random damage between half and 1.5× the user's level", superfang: "Takes half the target's current HP" }[M.sp];
+  if (fixed) out.push(fixed + " (+6% per Mastery rank)");
   if (sk.weight) out.push("Heavier targets take more damage (20 to 120 power)");
   if (M.n === "High Jump Kick" || M.n === "Jump Kick") out.push("If it misses, the user crashes and loses half its max HP");
   if (sk.target === "aoe_enemies" && M.p) out.push(`Hits every opposing Pokémon (${P(SPREAD)} damage each)`);
@@ -2497,8 +2497,9 @@ function makeBattle(cfg) {
   function damageOf(att, tar, sk, opts = {}) {
     const M = sk.M, e = effOn(att, tar, sk);
     if (e === 0) return { dmg: 0, e: 0 };
-    if (M.sp === "superfang") return { dmg: Math.max(1, Math.floor(tar.hp / 2 * (tar.boss ? .5 : 1))), e: 1 };
-    if (FIXED[M.sp]) return { dmg: Math.max(1, Math.round(FIXED[M.sp](att) * DMG_SCALE * 1.5)), e: 1 };
+    // fixed damage ignores stats, type effectiveness (immunities aside) and boosts, but Mastery still adds its 6% per rank
+    if (M.sp === "superfang") return { dmg: Math.max(1, Math.floor(tar.hp / 2 * (tar.boss ? .5 : 1) * mastery(att, sk))), e: 1 };
+    if (FIXED[M.sp]) return { dmg: Math.max(1, Math.round(FIXED[M.sp](att) * DMG_SCALE * 1.5 * mastery(att, sk))), e: 1 };
     const crit = opts.crit, phys = M.c === "P";
     let pow = (sk.weight ? [[100, 20], [250, 40], [500, 60], [1000, 80], [2000, 100], [1e9, 120]].find(([w]) => (OPS[tar.key] || OPS[tar.spr]).w < w)[1] : sk.pow) * mastery(att, sk);
     if (pv(att, "TECHNICIAN") && sk.pow <= 60) pow *= 1.5;
