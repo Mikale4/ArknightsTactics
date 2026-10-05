@@ -8,7 +8,7 @@ Single-file HTML games, served by GitHub Pages from `main` (https://mikale4.gith
 | `mobile/` | **Arknights Tactics Mobile**: phone-first rebuild with Epic Seven–style progression, Arknights terminology, and Galactic Heroes–style battles. |
 | `galactic-heroes/` | **Galactic Heroes**: Star Wars Galaxy of Heroes–style mobile squad battler (the battle engine `mobile/` borrows from). |
 | `melty-blood/` | **Melty Blood RPG**: Melty Blood as a turn-based squad RPG, forked from `mobile/`'s engine. All art is procedural; S3 skills are Arc Drives paid with the Magic Circuit gauge. See `melty-blood/README.md`. |
-| `pokemon/` | **Pokémon Kanto Squad**: the 151 Kanto Pokémon on the same engine, everything in Pokémon terminology. Showdown sprites (embedded at build), PokeAPI data, Gym Badges, evolution, Safari Zone. See `pokemon/README.md`. |
+| `pokemon/` | **Pokémon Kanto Squad**: the 151 Kanto Pokémon on the same engine, everything in Pokémon terminology. Showdown's animated Black/White sprites (packed and embedded at build), PokeAPI data, Gym Badges, evolution, Safari Zone. See `pokemon/README.md`. |
 | `assets/sprites/`, `assets/heads/` | Trimmed WebP operator art (`<slug>.webp`, slug = lowercase name, non-alphanumerics → `-`). Used in menus and dialogue. |
 | `assets/data/operators.json` | Operator roster source (UTF-8 BOM; load with `utf-8-sig`). |
 
@@ -44,7 +44,9 @@ Wind, Ether, Imaginary Numbers), Fate class names, Charisma, Personal Skill, Asc
 The whole UI sits inside `#screen` (a CSS size container) in the Game Boy shell: overlays are `position:absolute`, sizes use `cqh`/`cqw`.
 Pokémon text must be Pokémon terminology (Safari Zone, PP, Gems, Poké Dollars, IVs, Mastery, held items, Mail, Medals, Gym Badges; glossary in
 `pokemon/README.md`). Kits must stay inside each Pokémon's Red/Blue/Yellow learnset (the generator checks). Sprites come from Pokémon Showdown
-(`sh pokemon/tools/fetch_sprites.sh`); trainers are the FireRed/LeafGreen set. Tests: `node pokemon/tests/{phone,figures,sim}.js`.
+(`sh pokemon/tools/fetch_sprites.sh`): the animated `gen5ani`/`gen5ani-back` GIFs, which `tools/pack_sprites.py` turns into frame strips,
+first-frame icons and `sprites/anim.json` (the menus' animated GIFs are re-encoded in the browser by `gifOf()` in `a5_sprites.js`);
+trainers are the FireRed/LeafGreen set. Tests: `node pokemon/tests/{phone,figures,sim}.js`.
 
 ## Terminology (the Arknights game's UI must use real Arknights terms)
 Internal identifiers kept their old names; only visible text changed:

@@ -1,6 +1,6 @@
 # Pokémon Kanto Squad
 
-A phone-first squad battler set in Kanto with the original 151 Pokémon. It is built on the same engine as Melty Blood RPG and Arknights Tactics Mobile, re-themed so that every term is Pokémon terminology. It's an unofficial, non-commercial fan game: Pokémon © Nintendo, Game Freak and Creatures Inc. The Pokémon and trainer sprites come from [Pokémon Showdown](https://play.pokemonshowdown.com/sprites/), and the species, move and ability data from [PokeAPI](https://pokeapi.co/).
+A phone-first squad battler set in Kanto with the original 151 Pokémon. It is built on the same engine as Melty Blood RPG and Arknights Tactics Mobile, re-themed so that every term is Pokémon terminology. It's an unofficial, non-commercial fan game: Pokémon © Nintendo, Game Freak and Creatures Inc. The Pokémon sprites (the animated Black/White ones, front and back) and the trainer sprites come from [Pokémon Showdown](https://play.pokemonshowdown.com/sprites/), and the species, move and ability data from [PokeAPI](https://pokeapi.co/).
 
 Open `pokemon/index.html` directly or serve the repo (`npm run serve`, then `http://localhost:8000/pokemon/`). It's a single file: the sprites are embedded.
 
@@ -24,6 +24,9 @@ Keyboard: arrows, Z or Space (A), X or Esc (B), Enter (START), Shift (SELECT). T
   - **S1** has no cooldown.
   - **S2** and **S3** have cooldowns; S3 starts on cooldown.
 - **Abilities:** each Pokémon has one, with a working battle effect, for example Static, Levitate, Intimidate, Sturdy, Swift Swim (in rain), Imposter (Ditto transforms on entry) and Multiscale.
+- **Animated sprites:** every Pokémon uses Showdown's animated Black/White sprites, the front one for opponents and the back one for your side.
+  - In battle they animate the whole time, even while paused. A Pokémon that is asleep or frozen holds still, a paralyzed one moves at half speed, and a fainted one stops.
+  - The big sprites in the summary, Pokédex, Safari Zone, starter choice and evolution animate too. Lists use a still of the first frame.
 - **Battles:**
   - Turn order follows Speed through turn meters, and damage uses the main-series formula: STAB, the 15-type chart, critical hits, accuracy and evasion.
   - Spread moves deal 75% damage, as in Double Battles.
@@ -98,7 +101,7 @@ The engine's internal names stayed; only the visible text changed.
 | `a3b_kits.js` | moves turned into skills, move text, Abilities, held items, the `OPS` table |
 | (sprites) | built from `pokemon/sprites/` |
 | `a4_story.js` | the Journey, Explore, Battle Tower, Link Battles, Daily Research and shops |
-| `a5_sprites.js` | sprite loading, cropping and battle animation |
+| `a5_sprites.js` | sprite loading, animation playback, battle drawing, and the GIF encoder for menu sprites |
 | `a6_state.js` | save, levels, IVs, evolution, Pokédex, Safari odds |
 | `a7_engine.js` | battle rules |
 | `a8a_render.js` | 3D camera and Kanto backdrops |
@@ -113,9 +116,14 @@ Data and sprites are regenerated with two scripts:
 
 ```sh
 python3 pokemon/tools/build_data.py -v   # species, Gen 1 learnsets, evolutions, Abilities and kits (KITS overrides are checked against the learnsets)
-sh pokemon/tools/fetch_sprites.sh        # Showdown sprites into pokemon/sprites/
+sh pokemon/tools/fetch_sprites.sh        # Showdown sprites into pokemon/sprites/ (runs pack_sprites.py, needs ImageMagick)
 sh pokemon/src/build.sh
 ```
+
+The animated sprites are packed rather than embedded as GIFs; together the GIFs come to 9 MB.
+`tools/pack_sprites.py` coalesces each GIF and keeps each distinct frame once. It crops every frame to the area the animation uses and lays the frames side by side in a palette PNG (`sprites/front|back/<id>.png`).
+The playback order and frame times go to `sprites/anim.json`, and each first frame goes to `sprites/icons/<id>.png` for the menus.
+That comes to 2.1 MB, lossless. In the menus, `gifOf()` turns a sheet back into an animated GIF the first time it is shown; `node pokemon/tests/figures.js` decodes every one and compares it with the sheet pixel for pixel.
 
 Tests, run from the repo root:
 

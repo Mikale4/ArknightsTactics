@@ -1,3 +1,4 @@
 dist/
 tools/.pokeapi/
+tools/.showdown/
 tests/shots/

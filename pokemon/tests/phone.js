@@ -62,7 +62,9 @@ const PAGE = 'file://' + path.resolve(__dirname, '../index.html');
     ['28_evolve', v => { UI.opTab = v; rerender(); }, 'evo'], ['29_item', v => { UI.opTab = v; rerender(); }, 'item'], ['30_dex', v => route(v), 'dex'],
     ['31_shop', v => { UI.shopTab = 'mart'; route(v); }, 'shop'], ['32_prize', v => { UI.shopTab = v; rerender(); }, 'prize'], ['33_bag', v => route(v), 'depot'],
     ['34_medals', v => route(v), 'ach'], ['35_card', v => route(v), 'settings']]) { await ev(fn, a); await shot(n); }
-  await ev(() => dexModal('pikachu')); await shot('36_dexentry'); await ev(() => closeModal());
+  await ev(() => dexModal('pikachu')); await shot('36_dexentry');
+  console.log('animated Pokédex sprite:', await page.evaluate(() => /^data:image\/gif/.test(document.querySelector('.dexpic img').getAttribute('src'))));
+  await ev(() => closeModal());
   // Game Boy buttons: START menu, D-pad, A and B
   const btn = async k => { const b = await page.$(`[data-gb="${k}"]`); const r = await b.boundingBox(); await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2); await page.waitForTimeout(300); };
   await ev(() => route('home')); await btn('start'); await shot('36b_startmenu');

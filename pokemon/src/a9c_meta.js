@@ -309,12 +309,12 @@ function titleLoop() {
   hill(H * .66, H * .03, "#6aa86a", 1); hill(H * .74, H * .025, "#5a9a4a", 3); hill(H * .82, H * .02, "#4a8a3a", 5);
   // the parade
   for (const m of TITLE.mons) {
-    const im = sprImg("f", m.k), box = SPR.box["f:" + m.k]; if (!im || !box) continue;
+    const a = SPR.ani["f:" + m.k]; if (!a) continue;
     const x = ((m.x - t * m.sp) % 1.25 + 1.25) % 1.25 * W * 1.1 - W * .1;
     const base = [H * .72, H * .8, H * .9][m.lane], hop = m.fly ? Math.sin(t * 2 + m.ph) * 10 - H * .18 : -Math.abs(Math.sin(t * 5 + m.ph)) * 10;
-    const sc = Math.min(W, H) / 330 * [0.85, 1, 1.15][m.lane], bw = box.x1 - box.x0 + 1, bh = box.y1 - box.y0 + 1;
+    const sc = Math.min(W, H) / 330 * [0.85, 1, 1.15][m.lane], bw = a.w, bh = a.h;
     g.fillStyle = "#00000022"; g.beginPath(); g.ellipse(x, base, bw * sc * .35, 4, 0, 0, 7); g.fill();
-    g.drawImage(im, box.x0, box.y0, bw, bh, x - bw * sc / 2, base + hop - bh * sc, bw * sc, bh * sc);
+    drawAniFrame(g, a, aniFrame(a, (t + m.ph) * 1000), x - bw * sc / 2, base + hop - bh * sc, bw * sc, bh * sc);
   }
 }
 function hideTitle() {

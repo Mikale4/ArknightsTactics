@@ -1,21 +1,24 @@
 #!/bin/sh
-# Download the battle sprites from Pokémon Showdown's sprite server into pokemon/sprites/.
-#   pokemon/sprites/front/<id>.png   Black/White front sprites (opponents, menus)
-#   pokemon/sprites/back/<id>.png    Black/White back sprites (your side of the field)
-#   pokemon/sprites/trainers/<n>.png FireRed/LeafGreen trainer sprites
+# Download the sprites from Pokémon Showdown's sprite server and pack them for the build.
+#   tools/.showdown/gen5ani/<id>.gif       animated Black/White front sprites (opponents, menus)   } cache, gitignored;
+#   tools/.showdown/gen5ani-back/<id>.gif  animated Black/White back sprites (your side)           } packed by
+#   pokemon/sprites/front|back/<id>.png + pokemon/sprites/anim.json                                 } pack_sprites.py
+#   pokemon/sprites/trainers/<n>.png       FireRed/LeafGreen trainer sprites, plus the player looks
 # <id> is Showdown's species id: the lowercase name with everything but a-z0-9 removed (mrmime, nidoranf).
-# build.sh embeds them into index.html as data URIs, so the game stays a single file.
+# build.sh embeds the results into index.html as data URIs, so the game stays a single file.
 set -e
 DIR=$(cd "$(dirname "$0")/.." && pwd)
 BASE=https://play.pokemonshowdown.com/sprites
-mkdir -p "$DIR/sprites/front" "$DIR/sprites/back" "$DIR/sprites/trainers"
+GIF="$DIR/tools/.showdown"
+mkdir -p "$GIF/gen5ani" "$GIF/gen5ani-back" "$DIR/sprites/trainers"
 IDS=$(grep -o '"k":"[a-z0-9]*"' "$DIR/src/a3a_dex.js" | cut -d'"' -f4)
 get() { [ -s "$2" ] || curl -sf --retry 3 -o "$2" "$1" || echo "missing $1"; }
 for id in $IDS; do
-  get "$BASE/gen5/$id.png" "$DIR/sprites/front/$id.png" &
-  get "$BASE/gen5-back/$id.png" "$DIR/sprites/back/$id.png" &
+  get "$BASE/gen5ani/$id.gif" "$GIF/gen5ani/$id.gif" &
+  get "$BASE/gen5ani-back/$id.gif" "$GIF/gen5ani-back/$id.gif" &
   wait
 done
+python3 "$DIR/tools/pack_sprites.py"
 for t in red leaf blue blue-gen3champion oak brock misty ltsurge erika koga sabrina blaine giovanni lorelei bruno agatha lance \
   teamrocketgruntm teamrocketgruntf youngster lass bugcatcher hiker camper picnicker swimmerm swimmerf fisherman sailor gentleman \
   scientist channeler blackbelt birdkeeper juggler tamer psychic beauty biker burglar cueball engineer pokemaniac supernerd rocker \

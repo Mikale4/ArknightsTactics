@@ -266,9 +266,12 @@ function drawUnit(K, vu) {
   const foes = [...BT.vus.values()].filter(v => v.team !== vu.team && !v.gone && v.scr);
   const fx = foes.length ? avgN(foes.map(v => v.scr.x)) : sx + facing * 100;
   if (Math.abs(fx - sx) > 6) vu.want = fx > sx ? 1 : -1; else if (!vu.want) vu.want = facing;
+  // the sprite's own animation runs in real time: still while asleep, frozen or fainting, half speed when paralyzed
+  const now = performance.now(), rate = vu.dead || vu.st === "SLP" || vu.st === "FRZ" ? 0 : vu.st === "PAR" ? .5 : 1;
+  vu.at = (vu.at == null ? vu.ph * 1000 : vu.at) + Math.min(100, now - (vu.atNow || now)) * rate; vu.atNow = now;
   g.save(); g.globalAlpha = alpha; g.translate(sx, sy);
   g.scale(sc * scl, sc * scl);
-  vu.out = drawMonSprite(g, vu.u.spr || vu.u.key, !!vu.back, vu.want, { name: pose.name, t: pt, time: BT.clock / 1000 }, vu.ph, { sink, white });
+  vu.out = drawMonSprite(g, vu.u.spr || vu.u.key, !!vu.back, vu.want, { name: pose.name, t: pt, time: BT.clock / 1000 }, vu.ph, { sink, white, at: vu.at });
   g.restore();
   if (vu.flash > BT.clock) {
     const k = (vu.flash - BT.clock) / 160, c = proj(K, ...chestW(vu));
