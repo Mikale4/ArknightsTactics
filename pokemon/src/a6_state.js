@@ -129,7 +129,8 @@ function autoLevel(key) {
   for (const it of ["rec1", "rec2", "rec3", "rec4"]) while (S.inv[it] > 0 && S.ops[key].lvl < levelCap()) { useRecord(key, it); used++; }
   return used;
 }
-// Mastery: each rank makes the move 6% stronger (and healing 6% bigger); rank ★ also cuts its cooldown by 1
+// Mastery: each rank adds 6% to the move's damage, healing, accuracy or turn meter refund (masteryKind in a3b_kits.js);
+// rank ★ also cuts its cooldown by 1
 const skillCost = r => ({ summ: [0, 1, 2, 3, 5][r], lmd: 800 * r });
 function skillUp(key, i) {
   const p = S.ops[key]; if (!p || p.sk[i] >= MAX_SK || !OPS[key].skills[i]) return false;

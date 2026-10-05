@@ -263,6 +263,7 @@ function makeBattle(cfg) {
     if ((M.n === "Thunder" && inWeather("rain")) || (M.n === "Blizzard" && inWeather("hail"))) return 1;
     let eva = tar.stages.eva; const we = pv(tar, "WEVA"); if (we && inWeather(we.w)) eva += 1;
     let a = M.a / 100 * stageMult(clamp(att.stages.acc - eva, -6, 6), true);
+    if (sk.mk === "acc") a *= mastery(att, sk); // status moves that can miss: Mastery adds accuracy
     const ac = pv(att, "ACC"); if (ac) a *= ac.amount;
     if (pv(att, "HUSTLE") && M.c === "P") a *= .8;
     if (item(att, "widelens")) a *= 1.1;
@@ -529,6 +530,7 @@ function makeBattle(cfg) {
     if (sk.slot > 1) u.cool[sk.slot] = cdOf(u, sk) + (enemies(u).some(f => pv(f, "PRESSURE")) ? 1 : 0);
     useMove(u, sk, targets);
     if (u.alive && M.pri > 0) addATB(u, .3, true);
+    if (u.alive && sk.mk === "tm" && mastery(u, sk) > 1) addATB(u, mastery(u, sk) - 1, true); // status moves that never miss
     ev({ k: "end", u: u.uid });
     endTurn(u);
   }

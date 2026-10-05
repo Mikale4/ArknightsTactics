@@ -28,9 +28,20 @@ function makeSkill(key, slot) {
   if (M.c === "X" && slot === 1) sk.cd = 0;
   if (key === "lowkick") { sk.pow = 60; sk.weight = 1; } // power depends on the target's weight
   if (M.hit) sk.hits = M.hit;
+  sk.mk = masteryKind(sk);
   sk.desc = moveDesc(sk);
   return sk;
 }
+// What each Mastery rank (+6%) improves: damage (attacks, and Metronome's pick), healing, accuracy (status moves
+// that can miss), or else turn meter given back after use (status moves that never miss)
+function masteryKind(sk) {
+  const M = sk.M;
+  if (M.c !== "X" || M.sp === "metronome") return "dmg";
+  if (M.hl || M.sp === "recover" || M.sp === "softboiled") return "heal";
+  if (M.a && M.a < 100 && sk.target !== "self" && sk.target !== "team") return "acc";
+  return "tm";
+}
+const MASTERY_TXT = { acc: "Mastery: +6% accuracy per rank", tm: "Mastery: the user gets 6% turn meter back per rank" };
 // ---------- generated move text ----------
 const P = v => Math.round(v * 100) + "%";
 const statList = st => st.map(([s, n]) => `${STAGE_N[s]} ${n > 0 ? "+" : ""}${n}`).join(", ");
@@ -46,7 +57,10 @@ function moveDesc(sk) {
   if (M.pri > 0) out.push("Priority move: the user gets 30% turn meter back afterwards");
   if (M.cr) out.push("High critical-hit ratio");
   if (M.ail && M.c !== "X") out.push(`${M.ac}% chance to ${{ PAR: "paralyze", BRN: "burn", FRZ: "freeze", PSN: "poison", TOX: "badly poison", SLP: "put to sleep", CNF: "confuse", TRAP: "bind", INFAT: "infatuate" }[M.ail]} ${who}`);
-  if (M.ail && M.c === "X") out.push({ PAR: "Paralyzes", BRN: "Burns", FRZ: "Freezes", PSN: "Poisons", TOX: "Badly poisons", SLP: "Puts to sleep", CNF: "Confuses", INFAT: "Infatuates", DISABLE: "Disables (no S2 or S3 for 2 turns)", SEED: "Plants a Leech Seed on", TRAP: "Binds" }[M.ail] + (sk.target === "aoe_enemies" ? " every opposing Pokémon" : " the target") + (M.ac < 100 && M.ac ? ` (${M.ac}%)` : ""));
+  if (M.ail && M.c === "X") {
+    const obj = sk.target === "aoe_enemies" ? "every opposing Pokémon" : "the target";
+    out.push((M.ail === "SLP" ? `Puts ${obj} to sleep` : { PAR: "Paralyzes", BRN: "Burns", FRZ: "Freezes", PSN: "Poisons", TOX: "Badly poisons", CNF: "Confuses", INFAT: "Infatuates", DISABLE: "Disables (no S2 or S3 for 2 turns)", SEED: "Plants a Leech Seed on", TRAP: "Binds" }[M.ail] + " " + obj) + (M.ac < 100 && M.ac ? ` (${M.ac}%)` : ""));
+  }
   if (M.fl) out.push(`${M.fl}% chance to make ${who} flinch (lose 40% turn meter)`);
   if (M.st) {
     const t = M.sw === "self" ? (sk.target === "team" ? "your team's" : "the user's") : M.sw === "foes" ? "every opposing Pokémon's" : "the target's";
@@ -54,12 +68,12 @@ function moveDesc(sk) {
   }
   if (M.dr > 0) out.push(`The user recovers ${M.dr}% of the damage dealt`);
   if (M.dr < 0) out.push(`The user takes ${-M.dr}% of the damage dealt as recoil`);
-  if (M.hl) out.push(`Restores ${M.hl}% of the user's max HP`);
+  if (M.hl) out.push(`Restores ${M.hl}% of the user's max HP (+6% per Mastery rank)`);
   const sp = { transform: "Transforms into the target: copies its types, stats, stat changes and moves", metronome: "Uses a random damaging move",
     splash: "But nothing happens!", haze: "Resets the stat changes of every Pokémon in battle", rest: "Fully restores HP and cures status, then sleeps for 2 turns",
     reflect: "Reflect: your team takes a third less physical damage for 5 turns", lightscreen: "Light Screen: your team takes a third less special damage for 5 turns",
     substitute: "Uses 1/4 of the user's max HP to make a Substitute that takes hits for it", mist: "Mist: your team's stats can't be lowered for 5 turns",
-    focusenergy: "Focus Energy: the user's critical-hit ratio rises sharply", dreameater: "Only works on a sleeping target; the user recovers half the damage dealt",
+    focusenergy: "Focus Energy: the user's critical-hit ratio rises sharply", dreameater: "Only works on a sleeping target",
     payday: "Coins scatter: extra Poké Dollars after a win", hyperbeam: "The user must recharge and loses its next turn",
     explosion: "The user faints", selfdestruct: "The user faints", roar: "Scares the target off: its turn meter and stat changes reset",
     whirlwind: "Blows the target away: its turn meter and stat changes reset", fissure: "One-hit KO if it lands (30%). Fails against bosses",
@@ -67,6 +81,7 @@ function moveDesc(sk) {
     recover: "", softboiled: "", leechseed: "", disable: "" }[M.sp];
   if (sp) out.push(sp);
   if (!out.length && M.c !== "X") out.push("A plain attack");
+  if (MASTERY_TXT[sk.mk]) out.push(MASTERY_TXT[sk.mk]);
   return out.map(x => x.charAt(0).toUpperCase() + x.slice(1)).join(". ") + ".";
 }
 

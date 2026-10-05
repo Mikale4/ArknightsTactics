@@ -123,11 +123,11 @@ SCREENS.op = key => {
       const r = p.sk[i], c = skillCost(r);
       return `<div class="ab"><div class="abicon" style="--tc:${TC[sk.type]}">${sk.slot === 1 ? "S1" : sk.slot === 2 ? "S2" : "S3"}</div>
         <div class="stack" style="gap:4px;min-width:0"><div class="spread"><b>${esc(sk.name)}</b><span class="row" style="gap:4px">${typeChip(sk.type)}<span class="tag">${CAT_N[sk.cat]}</span></span></div>
-        <div class="tiny dim">${sk.pow ? `Power ${sk.weight ? "varies" : sk.pow} · ` : ""}Accuracy ${sk.acc ? sk.acc + "%" : "—"} · ${sk.slot === 1 ? "No cooldown" : `Cooldown ${sk.cd}${sk.cd0 ? ` (starts at ${sk.cd0})` : ""}`}${op.ml[i] ? ` · learned at Lv ${op.ml[i]}` : " · TM move"}</div>
+        <div class="tiny dim">${sk.pow ? `Power ${sk.weight ? "varies" : sk.pow} · ` : ""}Accuracy ${sk.acc ? (sk.mk === "acc" && r > 1 ? `${Math.min(100, Math.round(sk.acc * (1 + .06 * (r - 1))))}% (base ${sk.acc}%)` : sk.acc + "%") : "—"} ·${sk.slot === 1 ? "No cooldown" : `Cooldown ${sk.cd}${sk.cd0 ? ` (starts at ${sk.cd0})` : ""}`}${op.ml[i] ? ` · learned at Lv ${op.ml[i]}` : " · TM move"}</div>
         <p class="small dim">${esc(sk.desc)}</p>
         <div class="spread"><div class="row" style="gap:6px"><b class="tiny">Mastery ${RANK[r]}</b><div class="pips">${[1, 2, 3, 4, 5].map(k => `<i class="${k <= r ? "on" : ""}"></i>`).join("")}</div></div>
         ${r < MAX_SK ? `<button class="btn sm ghost" data-act="skUp" data-k="${key}" data-i="${i}" ${(S.inv.summ || 0) >= c.summ && S.lmd >= c.lmd ? "" : "disabled"}><span class="cost">${IC.summ}${c.summ}</span><span class="cost">${IC.lmd}${fmt(c.lmd)}</span></button>` : '<span class="tiny good">Mastered</span>'}</div></div></div>`;
-    }).join('<div class="divider"></div>')}<p class="tiny dim">Mastery runs 1 to 5 (★). Each rank makes the move 6% stronger; ★ also cuts its cooldown by one turn. Seeds of Mastery are found while exploring.</p></section>`;
+    }).join('<div class="divider"></div>')}<p class="tiny dim">Mastery runs 1 to 5 (★). Each rank adds 6%: damage for attacks, healing for healing moves, accuracy for status moves that can miss, and turn meter given back for other status moves. ★ also cuts the cooldown by one turn. Seeds of Mastery are found while exploring.</p></section>`;
   else if (tab === "upgrade") {
     const cap = levelCap(), need = xpNeed(p.lvl, key);
     body = `<section class="panel stack" style="gap:8px">

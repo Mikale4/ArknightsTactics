@@ -42,6 +42,12 @@ Keyboard: arrows, Z or Space (A), X or Esc (B), Enter (START), Shift (SELECT). T
   - Then the Elite Four, Cerulean Cave and Mewtwo.
   - Side stages catch Pikachu, Clefairy, Diglett, Snorlax, Articuno, Zapdos and Moltres.
 - **Gym Badges** raise the level cap (Lv 15 at first, then 22, 26, 32, 44, 47, 52, 56, 70, and 100 for the Champion) and give +5% to one stat each.
+- **Mastery** (rank 1 to ★, raised with Seeds of Mastery): each rank adds 6% to a move, and ★ also cuts its cooldown by one turn.
+  - Attacks, including fixed-damage moves like Night Shade and Super Fang (and whatever Metronome picks), deal 6% more damage.
+  - Recover and Soft-Boiled heal 6% more.
+  - Status moves that can miss (Hypnosis, Sleep Powder, Thunder Wave and so on) get 6% more accuracy.
+  - Other status moves (Swords Dance, Agility, Reflect, Confuse Ray and so on) give the user 6% turn meter back after use.
+  - Opponents' Mastery rises with their level.
 - **Evolution** by level, by evolution stone, or with a Linking Cord for the trade evolutions. Eevee can become Vaporeon, Jolteon or Flareon. Evolving into a species you already own merges the two and raises IVs.
 - **Safari Zone** (the gacha):
   - Throw Safari Balls; catches show as a Poké Ball, Great Ball or Ultra Ball by rarity.

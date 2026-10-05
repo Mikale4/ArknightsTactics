@@ -1119,9 +1119,20 @@ function makeSkill(key, slot) {
   if (M.c === "X" && slot === 1) sk.cd = 0;
   if (key === "lowkick") { sk.pow = 60; sk.weight = 1; } // power depends on the target's weight
   if (M.hit) sk.hits = M.hit;
+  sk.mk = masteryKind(sk);
   sk.desc = moveDesc(sk);
   return sk;
 }
+// What each Mastery rank (+6%) improves: damage (attacks, and Metronome's pick), healing, accuracy (status moves
+// that can miss), or else turn meter given back after use (status moves that never miss)
+function masteryKind(sk) {
+  const M = sk.M;
+  if (M.c !== "X" || M.sp === "metronome") return "dmg";
+  if (M.hl || M.sp === "recover" || M.sp === "softboiled") return "heal";
+  if (M.a && M.a < 100 && sk.target !== "self" && sk.target !== "team") return "acc";
+  return "tm";
+}
+const MASTERY_TXT = { acc: "Mastery: +6% accuracy per rank", tm: "Mastery: the user gets 6% turn meter back per rank" };
 // ---------- generated move text ----------
 const P = v => Math.round(v * 100) + "%";
 const statList = st => st.map(([s, n]) => `${STAGE_N[s]} ${n > 0 ? "+" : ""}${n}`).join(", ");
@@ -1137,7 +1148,10 @@ function moveDesc(sk) {
   if (M.pri > 0) out.push("Priority move: the user gets 30% turn meter back afterwards");
   if (M.cr) out.push("High critical-hit ratio");
   if (M.ail && M.c !== "X") out.push(`${M.ac}% chance to ${{ PAR: "paralyze", BRN: "burn", FRZ: "freeze", PSN: "poison", TOX: "badly poison", SLP: "put to sleep", CNF: "confuse", TRAP: "bind", INFAT: "infatuate" }[M.ail]} ${who}`);
-  if (M.ail && M.c === "X") out.push({ PAR: "Paralyzes", BRN: "Burns", FRZ: "Freezes", PSN: "Poisons", TOX: "Badly poisons", SLP: "Puts to sleep", CNF: "Confuses", INFAT: "Infatuates", DISABLE: "Disables (no S2 or S3 for 2 turns)", SEED: "Plants a Leech Seed on", TRAP: "Binds" }[M.ail] + (sk.target === "aoe_enemies" ? " every opposing Pokémon" : " the target") + (M.ac < 100 && M.ac ? ` (${M.ac}%)` : ""));
+  if (M.ail && M.c === "X") {
+    const obj = sk.target === "aoe_enemies" ? "every opposing Pokémon" : "the target";
+    out.push((M.ail === "SLP" ? `Puts ${obj} to sleep` : { PAR: "Paralyzes", BRN: "Burns", FRZ: "Freezes", PSN: "Poisons", TOX: "Badly poisons", CNF: "Confuses", INFAT: "Infatuates", DISABLE: "Disables (no S2 or S3 for 2 turns)", SEED: "Plants a Leech Seed on", TRAP: "Binds" }[M.ail] + " " + obj) + (M.ac < 100 && M.ac ? ` (${M.ac}%)` : ""));
+  }
   if (M.fl) out.push(`${M.fl}% chance to make ${who} flinch (lose 40% turn meter)`);
   if (M.st) {
     const t = M.sw === "self" ? (sk.target === "team" ? "your team's" : "the user's") : M.sw === "foes" ? "every opposing Pokémon's" : "the target's";
@@ -1145,12 +1159,12 @@ function moveDesc(sk) {
   }
   if (M.dr > 0) out.push(`The user recovers ${M.dr}% of the damage dealt`);
   if (M.dr < 0) out.push(`The user takes ${-M.dr}% of the damage dealt as recoil`);
-  if (M.hl) out.push(`Restores ${M.hl}% of the user's max HP`);
+  if (M.hl) out.push(`Restores ${M.hl}% of the user's max HP (+6% per Mastery rank)`);
   const sp = { transform: "Transforms into the target: copies its types, stats, stat changes and moves", metronome: "Uses a random damaging move",
     splash: "But nothing happens!", haze: "Resets the stat changes of every Pokémon in battle", rest: "Fully restores HP and cures status, then sleeps for 2 turns",
     reflect: "Reflect: your team takes a third less physical damage for 5 turns", lightscreen: "Light Screen: your team takes a third less special damage for 5 turns",
     substitute: "Uses 1/4 of the user's max HP to make a Substitute that takes hits for it", mist: "Mist: your team's stats can't be lowered for 5 turns",
-    focusenergy: "Focus Energy: the user's critical-hit ratio rises sharply", dreameater: "Only works on a sleeping target; the user recovers half the damage dealt",
+    focusenergy: "Focus Energy: the user's critical-hit ratio rises sharply", dreameater: "Only works on a sleeping target",
     payday: "Coins scatter: extra Poké Dollars after a win", hyperbeam: "The user must recharge and loses its next turn",
     explosion: "The user faints", selfdestruct: "The user faints", roar: "Scares the target off: its turn meter and stat changes reset",
     whirlwind: "Blows the target away: its turn meter and stat changes reset", fissure: "One-hit KO if it lands (30%). Fails against bosses",
@@ -1158,6 +1172,7 @@ function moveDesc(sk) {
     recover: "", softboiled: "", leechseed: "", disable: "" }[M.sp];
   if (sp) out.push(sp);
   if (!out.length && M.c !== "X") out.push("A plain attack");
+  if (MASTERY_TXT[sk.mk]) out.push(MASTERY_TXT[sk.mk]);
   return out.map(x => x.charAt(0).toUpperCase() + x.slice(1)).join(". ") + ".";
 }
 
@@ -2135,7 +2150,8 @@ function autoLevel(key) {
   for (const it of ["rec1", "rec2", "rec3", "rec4"]) while (S.inv[it] > 0 && S.ops[key].lvl < levelCap()) { useRecord(key, it); used++; }
   return used;
 }
-// Mastery: each rank makes the move 6% stronger (and healing 6% bigger); rank ★ also cuts its cooldown by 1
+// Mastery: each rank adds 6% to the move's damage, healing, accuracy or turn meter refund (masteryKind in a3b_kits.js);
+// rank ★ also cuts its cooldown by 1
 const skillCost = r => ({ summ: [0, 1, 2, 3, 5][r], lmd: 800 * r });
 function skillUp(key, i) {
   const p = S.ops[key]; if (!p || p.sk[i] >= MAX_SK || !OPS[key].skills[i]) return false;
@@ -2539,6 +2555,7 @@ function makeBattle(cfg) {
     if ((M.n === "Thunder" && inWeather("rain")) || (M.n === "Blizzard" && inWeather("hail"))) return 1;
     let eva = tar.stages.eva; const we = pv(tar, "WEVA"); if (we && inWeather(we.w)) eva += 1;
     let a = M.a / 100 * stageMult(clamp(att.stages.acc - eva, -6, 6), true);
+    if (sk.mk === "acc") a *= mastery(att, sk); // status moves that can miss: Mastery adds accuracy
     const ac = pv(att, "ACC"); if (ac) a *= ac.amount;
     if (pv(att, "HUSTLE") && M.c === "P") a *= .8;
     if (item(att, "widelens")) a *= 1.1;
@@ -2805,6 +2822,7 @@ function makeBattle(cfg) {
     if (sk.slot > 1) u.cool[sk.slot] = cdOf(u, sk) + (enemies(u).some(f => pv(f, "PRESSURE")) ? 1 : 0);
     useMove(u, sk, targets);
     if (u.alive && M.pri > 0) addATB(u, .3, true);
+    if (u.alive && sk.mk === "tm" && mastery(u, sk) > 1) addATB(u, mastery(u, sk) - 1, true); // status moves that never miss
     ev({ k: "end", u: u.uid });
     endTurn(u);
   }
@@ -4551,11 +4569,11 @@ SCREENS.op = key => {
       const r = p.sk[i], c = skillCost(r);
       return `<div class="ab"><div class="abicon" style="--tc:${TC[sk.type]}">${sk.slot === 1 ? "S1" : sk.slot === 2 ? "S2" : "S3"}</div>
         <div class="stack" style="gap:4px;min-width:0"><div class="spread"><b>${esc(sk.name)}</b><span class="row" style="gap:4px">${typeChip(sk.type)}<span class="tag">${CAT_N[sk.cat]}</span></span></div>
-        <div class="tiny dim">${sk.pow ? `Power ${sk.weight ? "varies" : sk.pow} · ` : ""}Accuracy ${sk.acc ? sk.acc + "%" : "—"} · ${sk.slot === 1 ? "No cooldown" : `Cooldown ${sk.cd}${sk.cd0 ? ` (starts at ${sk.cd0})` : ""}`}${op.ml[i] ? ` · learned at Lv ${op.ml[i]}` : " · TM move"}</div>
+        <div class="tiny dim">${sk.pow ? `Power ${sk.weight ? "varies" : sk.pow} · ` : ""}Accuracy ${sk.acc ? (sk.mk === "acc" && r > 1 ? `${Math.min(100, Math.round(sk.acc * (1 + .06 * (r - 1))))}% (base ${sk.acc}%)` : sk.acc + "%") : "—"} ·${sk.slot === 1 ? "No cooldown" : `Cooldown ${sk.cd}${sk.cd0 ? ` (starts at ${sk.cd0})` : ""}`}${op.ml[i] ? ` · learned at Lv ${op.ml[i]}` : " · TM move"}</div>
         <p class="small dim">${esc(sk.desc)}</p>
         <div class="spread"><div class="row" style="gap:6px"><b class="tiny">Mastery ${RANK[r]}</b><div class="pips">${[1, 2, 3, 4, 5].map(k => `<i class="${k <= r ? "on" : ""}"></i>`).join("")}</div></div>
         ${r < MAX_SK ? `<button class="btn sm ghost" data-act="skUp" data-k="${key}" data-i="${i}" ${(S.inv.summ || 0) >= c.summ && S.lmd >= c.lmd ? "" : "disabled"}><span class="cost">${IC.summ}${c.summ}</span><span class="cost">${IC.lmd}${fmt(c.lmd)}</span></button>` : '<span class="tiny good">Mastered</span>'}</div></div></div>`;
-    }).join('<div class="divider"></div>')}<p class="tiny dim">Mastery runs 1 to 5 (★). Each rank makes the move 6% stronger; ★ also cuts its cooldown by one turn. Seeds of Mastery are found while exploring.</p></section>`;
+    }).join('<div class="divider"></div>')}<p class="tiny dim">Mastery runs 1 to 5 (★). Each rank adds 6%: damage for attacks, healing for healing moves, accuracy for status moves that can miss, and turn meter given back for other status moves. ★ also cuts the cooldown by one turn. Seeds of Mastery are found while exploring.</p></section>`;
   else if (tab === "upgrade") {
     const cap = levelCap(), need = xpNeed(p.lvl, key);
     body = `<section class="panel stack" style="gap:8px">
