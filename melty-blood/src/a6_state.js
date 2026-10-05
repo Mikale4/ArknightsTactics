@@ -68,7 +68,7 @@ function spendSanity(n) {
   S.sanity -= n; S.daily.sanity += n; S.xp += n * 10;
   let ups = 0;
   while (S.lvl < 120 && S.xp >= pxpNeed(S.lvl)) { S.xp -= pxpNeed(S.lvl); S.lvl++; ups++; }
-  if (ups) { S.sanity = Math.max(S.sanity, maxSanity(S.lvl)); S.orundum += 30 * ups; toast(`Level ${S.lvl}! Prana restored, +${30 * ups} Moon Crystals.`, "gold"); }
+  if (ups) { S.sanity = Math.max(S.sanity, maxSanity(S.lvl)); S.orundum += 30 * ups; toast(`Level ${S.lvl}! Prana restored, +${30 * ups} Jewels.`, "gold"); }
 }
 
 // ---------- operator stats ----------
@@ -96,7 +96,7 @@ function applySetStats(st, sets) {
   if (sets.has("Rage")) st.cd += .4;
   if (sets.has("Endure")) st.res += .2;
 }
-// STAT Talents: percentage boosts to HP/ATK/DEF/SPD, flat boosts to the rate stats
+// STAT Personal Skills: percentage boosts to HP/ATK/DEF/SPD, flat boosts to the rate stats
 function applyStatTalents(st, passives) {
   for (const t of passives || []) if (t.id === "STAT") for (const k in t.stats) {
     if (k === "hp" || k === "atk" || k === "def" || k === "spd") st[k] *= 1 + t.stats[k]; else st[k] += t.stats[k];

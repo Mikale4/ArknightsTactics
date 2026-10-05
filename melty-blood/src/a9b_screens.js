@@ -91,7 +91,7 @@ SCREENS.ops = () => {
     <div class="spread"><h2>Characters</h2><button class="chip ${UI.all ? "on" : ""}" data-act="toggleAll">${UI.all ? "Collection" : "Owned"} · ${Object.keys(S.ops).length}/${OP_KEYS.length}</button></div>
     <div class="filters">${["all", ...ELS].map(e => `<button class="chip ${UI.el === e ? "on" : ""}" data-act="elf" data-e="${e}">${e === "all" ? "All Elements" : e}</button>`).join("")}</div>
     <div class="filters">${["all", ...STYLES].map(e => `<button class="chip ${UI.sty === e ? "on" : ""}" data-act="styf" data-e="${e}">${e === "all" ? "All Moon styles" : styleName(e)}</button>`).join("")}</div>
-    <div class="filters">${["all", ...CLASSES].map(c => `<button class="chip ${UI.cls === c ? "on" : ""}" data-act="clsf" data-c="${c}">${c === "all" ? "All roles" : clsName(c)}</button>`).join("")}</div>
+    <div class="filters">${["all", ...CLASSES].map(c => `<button class="chip ${UI.cls === c ? "on" : ""}" data-act="clsf" data-c="${c}">${c === "all" ? "All classes" : clsName(c)}</button>`).join("")}</div>
     <div class="filters">${["power", "rarity", "level", "name"].map(s => `<button class="chip ${UI.sort === s ? "on" : ""}" data-act="sortf" data-s="${s}">Sort: ${s}</button>`).join("")}</div>
     <div class="roster">${list.map(k => `<button class="rcell ${S.ops[k] && canPromote(k) ? "ready" : ""}" data-act="go" data-v="op" data-a="${k}">${opHTML(k)}${pnameHTML(k)}<div class="pw">${S.ops[k] ? fmt(power(k, S.ops[k])) : clsName(OPS[k].cls)}</div></button>`).join("") || '<p class="small dim">No operators match these filters.</p>'}</div>
   </div>`;
@@ -107,21 +107,21 @@ SCREENS.op = key => {
       <div><span>Crit Rate</span><b>${pct(st.cr)}</b></div><div><span>Crit Damage</span><b>${pct(st.cd)}</b></div>
       <div><span>Accuracy</span><b>${pct(st.acc)}</b></div><div><span>Resistance</span><b>${pct(st.res)}</b></div></div></section>
     <section class="panel stack" style="gap:8px">
-      <div><b class="gold">Leader skill</b><p class="small dim">${op.leader ? leaderText(op.leader) : "None"}</p></div>
-      ${op.passives.length ? `<div><b class="gold">Talent</b><p class="small dim">${op.passives.map(x => esc(x.text)).join(" ")}</p></div>` : ""}
+      <div><b class="gold">Charisma (leader skill)</b><p class="small dim">${op.leader ? leaderText(op.leader) : "None"}</p></div>
+      ${op.passives.length ? `<div><b class="gold">Personal Skill</b><p class="small dim">${op.passives.map(x => esc(x.text)).join(" ")}</p></div>` : ""}
       <div><b class="gold">${styleName(op.style)}</b><p class="small dim">${STYLE[op.style].d}</p></div>
-      <div><b class="gold">${op.el} Element</b><p class="small dim">${op.el === "Holy" || op.el === "Blood" ? `Holy and Blood each deal bonus damage to the other.` : `Strong against ${BEATS[op.el]}, weak to ${weakTo(op.el)}.`} ${ELEMENT_KIT[op.el].d}</p></div>
+      <div><b class="gold">${elName(op.el)} Element</b><p class="small dim">${RARE_ELS.includes(op.el) ? `Ether and Imaginary Numbers each deal bonus damage to the other.` : `Strong against ${BEATS[op.el]}, weak to ${weakTo(op.el)}.`} ${ELEMENT_KIT[op.el].d}</p></div>
       <div><b class="gold">Recommended Mystic Codes</b><p class="small dim">${op.runes.map(r => `${setName(r)} (${RUNE_INFO[r]})`).join(" · ")}</p></div>
-      ${p ? `<div><b class="gold">Resonance ${p.pot}/6</b><p class="small dim">+2% to all stats per level. Raised by Manifesting duplicates.</p></div>` : `<p class="small dim">Manifest this character at the Tatari.</p>`}
+      ${p ? `<div><b class="gold">Spirit Origin ${p.pot}/6</b><p class="small dim">+2% to all stats per level. Raised by Manifesting duplicates.</p></div>` : `<p class="small dim">Manifest this character at the Tatari.</p>`}
     </section>`;
   else if (tab === "skills") body = `<section class="panel stack" style="gap:10px">${op.skills.map((sk, i) => {
       const r = p.sk[i], c = skillCost(r), lock = r >= 4 && p.elite < 1;
       return `<div class="ab"><div class="abicon ${i ? "special" : ""}">${skillIcon({ cls: op.cls }, sk)}</div>
-        <div class="stack" style="gap:4px;min-width:0"><div class="spread"><b>${sk.arc ? "Arc" : "S" + sk.slot} ${esc(sk.name)}</b><span class="tag">${sk.arc ? "Arc Drive" : sk.cd ? "CD " + sk.cd : "Basic"}</span></div>
+        <div class="stack" style="gap:4px;min-width:0"><div class="spread"><b>${sk.arc ? "Arc" : "S" + sk.slot} ${esc(sk.name)}</b><span class="tag">${sk.arc ? "Arc Drive" : sk.cd ? "EX · CD " + sk.cd : "Special"}</span></div>
         <p class="small dim">${esc(sk.desc)}</p>
-        <div class="spread"><div class="pips">${[1, 2, 3, 4, 5, 6, 7].map(k => `<i class="${k <= r ? "on" : ""} ${k >= 5 ? "om" : ""}"></i>`).join("")}</div>
-        ${r < 7 ? `<button class="btn sm ghost" data-act="skUp" data-k="${key}" data-i="${i}" ${!lock && S.inv.summ >= c.summ && S.lmd >= c.lmd ? "" : "disabled"}>${lock ? "Needs Awaken 1" : `<span class="cost">${IC.summ}${c.summ}</span><span class="cost">${IC.lmd}${fmt(c.lmd)}</span>`}</button>` : '<span class="tiny gold">Skill Level 7</span>'}</div></div></div>`;
-    }).join('<div class="divider"></div>')}<p class="tiny dim">Each skill level adds 6% damage and healing. Skill Level 7 reduces the S2 cooldown by one turn. Levels 5 to 7 need Awaken 1. S3 is an Arc Drive: it costs 100% Magic Circuit instead of a cooldown.</p></section>`;
+        <div class="spread"><div class="row" style="gap:6px"><b class="tiny gold">Rank ${RANK[r]}</b><div class="pips">${[1, 2, 3, 4, 5, 6, 7].map(k => `<i class="${k <= r ? "on" : ""} ${k >= 5 ? "om" : ""}"></i>`).join("")}</div></div>
+        ${r < 7 ? `<button class="btn sm ghost" data-act="skUp" data-k="${key}" data-i="${i}" ${!lock && S.inv.summ >= c.summ && S.lmd >= c.lmd ? "" : "disabled"}>${lock ? "Needs Ascension 1" : `<span class="cost">${IC.summ}${c.summ}</span><span class="cost">${IC.lmd}${fmt(c.lmd)}</span>`}</button>` : '<span class="tiny gold">Rank EX</span>'}</div></div></div>`;
+    }).join('<div class="divider"></div>')}<p class="tiny dim">Skill Ranks run E, D, C, B, A, A+ and EX. Each rank adds 6% damage and healing; Rank EX also cuts the S2 cooldown by one turn. Ranks A to EX need Ascension 1. S3 is an Arc Drive: it costs 100% Magic Circuit instead of a cooldown.</p></section>`;
   else if (tab === "upgrade") {
     const cap = LV_CAP[p.elite], need = xpNeed(p.lvl, p.elite), nextE = p.elite + 1, ec = nextE <= op.maxElite ? eliteCost(key, nextE) : null;
     body = `<section class="panel stack" style="gap:8px">
@@ -131,11 +131,11 @@ SCREENS.op = key => {
         <button class="btn sm blue" data-act="autoLv" data-k="${key}" ${p.lvl < cap && ["rec1", "rec2", "rec3", "rec4"].some(i => S.inv[i] > 0) ? "" : "disabled"}>Auto</button></div>
     </section>
     <section class="panel stack" style="gap:8px">
-      <div class="spread"><h3>Awaken ${p.elite}</h3><span class="tiny dim">Max Awaken ${op.maxElite}</span></div>
-      ${ec ? `<p class="small dim">Awaken at level ${cap} to reach Awaken ${nextE}: a higher level cap (${LV_CAP[nextE]}) and stronger base stats.</p>
+      <div class="spread"><h3>Ascension ${p.elite}</h3><span class="tiny dim">Max Ascension ${op.maxElite}</span></div>
+      ${ec ? `<p class="small dim">Ascend at level ${cap} to reach Ascension ${nextE}: a higher level cap (${LV_CAP[nextE]}) and stronger base stats.</p>
         <div class="spread small"><span>Cost</span><span class="row"><span class="cost">${IC.chip}${S.inv.chip}/${ec.chip}</span><span class="cost">${IC.lmd}${fmt(ec.lmd)}</span></span></div>
-        <button class="btn wide" data-act="promote" data-k="${key}" ${canPromote(key) ? "" : "disabled"}>${p.lvl < cap ? `Reach level ${cap} first` : "Awaken to stage " + nextE}</button>`
-      : `<p class="small gold">${op.maxElite === p.elite ? "Fully Awakened." : ""}</p>`}
+        <button class="btn wide" data-act="promote" data-k="${key}" ${canPromote(key) ? "" : "disabled"}>${p.lvl < cap ? `Reach level ${cap} first` : "Ascend to stage " + nextE}</button>`
+      : `<p class="small gold">${op.maxElite === p.elite ? "Fully Ascended." : ""}</p>`}
     </section>`;
   } else if (tab === "runes") {
     const sets = [...new Set(p.runes.map(runeById).filter(Boolean).map(r => r.set))];
@@ -147,18 +147,18 @@ SCREENS.op = key => {
       ${free.length ? free.slice(0, 40).map(r => runeRow(r, `<span class="row"><button class="btn sm ghost" data-act="equip" data-k="${key}" data-s="0" data-id="${r.id}">Slot 1</button><button class="btn sm ghost" data-act="equip" data-k="${key}" data-s="1" data-id="${r.id}">Slot 2</button></span>`)).join("") : '<p class="small dim">No spare Mystic Codes. Night Patrol drops them.</p>'}</section>`;
   }
   return `<div class="stack">
-    <div class="spread">${back("go", "Characters", 'data-v="ops"')}${p ? `<button class="btn ghost sm" data-act="assistant" data-k="${key}" ${S.assistant === key ? "disabled" : ""}>${S.assistant === key ? "Assistant" : "Set assistant"}</button>` : ""}</div>
+    <div class="spread">${back("go", "Characters", 'data-v="ops"')}${p ? `<button class="btn ghost sm" data-act="assistant" data-k="${key}" ${S.assistant === key ? "disabled" : ""}>${S.assistant === key ? "Partner" : "Set as partner"}</button>` : ""}</div>
     <section class="panel" style="padding:12px;overflow:hidden">
       <div class="opart" style="--ecs:${ELC[op.el]}55"><img src="${spriteURL(op)}" alt="${esc(op.n)}">
         <div class="meta">${starRow(op.rar).replace('class="rstars"', 'class="rstars" style="justify-content:flex-start;height:14px"')}
           <h2 style="font-size:26px;text-shadow:0 2px 6px #000">${esc(op.n)}</h2>
           <div class="row" style="gap:4px">${elChip(op.el)}${styleChip(op.style)}<span class="cls">${clsName(op.cls)}</span></div>
-          ${p ? `<div class="small" style="text-shadow:0 1px 3px #000">Awaken ${p.elite} · Lv ${p.lvl} · Power <b class="num" style="color:var(--holo)">${fmtFull(power(key, p))}</b></div>` : `<div class="small dim">Not recruited</div>`}
+          ${p ? `<div class="small" style="text-shadow:0 1px 3px #000">Ascension ${p.elite} · Lv ${p.lvl} · Power <b class="num" style="color:var(--holo)">${fmtFull(power(key, p))}</b></div>` : `<div class="small dim">Not recruited</div>`}
         </div></div>
     </section>
     <section class="panel stack" style="padding:10px 12px;gap:10px">
-      ${verRow("Moon styles · different skills and Talent", variantsOf(op.base).map(f => f + "-" + elKey(op.el)), key, k => styleName(OPS[k].style), () => "var(--moon)")}
-      ${verRow("Elements · same style, slightly different skills", elementsOf(op.fam), key, k => OPS[k].el, k => ELC[OPS[k].el])}
+      ${verRow("Moon styles · different skills and Personal Skill", variantsOf(op.base).map(f => f + "-" + elKey(op.el)), key, k => styleName(OPS[k].style), () => "var(--moon)")}
+      ${verRow("Elements · same style, slightly different skills", elementsOf(op.fam), key, k => elShort(OPS[k].el), k => ELC[OPS[k].el])}
       <p class="tiny dim">Every version is a separate character you Manifest and raise on its own.</p></section>
     ${p ? `<div class="tabs2">${tabs.map(([k, n]) => `<button class="${tab === k ? "on" : ""}" data-act="opTab" data-t="${k}">${n}</button>`).join("")}</div>` : ""}
     ${body}
@@ -197,14 +197,14 @@ SCREENS.hh = () => {
       ${std ? `<p class="small" style="max-width:24ch">Any character in the cast can take shape.</p>` : `<div class="row" style="gap:4px">${starRow(5).replace('class="rstars"', 'class="rstars" style="justify-content:flex-start"')}${elChip(f6.el)}${styleChip(f6.style)}<span class="cls">${clsName(f6.cls)}</span></div>
       <p class="small" style="max-width:26ch">Half of all 5★ results are ${esc(opLabel(f6))}. Featured 4★: ${B.feat5.map(k => esc(opLabel(OPS[k]))).join(", ")}.</p>`}
     </section>
-    <div class="row wrap small dim"><span>5★ 3% · 4★ 18% · 3★ 79% · Holy and Blood versions 5% each</span>${pity ? `<span class="gold">· 5★ rate now ${3 + pity * 3}%</span>` : `<span>· ${Math.max(0, 50 - S.gacha.pity)} Manifests until the 5★ rate starts rising</span>`}</div>
+    <div class="row wrap small dim"><span>5★ 3% · 4★ 18% · 3★ 79% · Ether and Imaginary Numbers versions 5% each</span>${pity ? `<span class="gold">· 5★ rate now ${3 + pity * 3}%</span>` : `<span>· ${Math.max(0, 50 - S.gacha.pity)} Manifests until the 5★ rate starts rising</span>`}</div>
     ${S.gacha.firstTen ? `<div class="hint">${IC.star.replace("<svg", '<svg width="20" height="20"')}<span class="small">Your first ten Manifests guarantee at least one 4★ character.</span></div>` : ""}
     <div class="row" style="gap:10px">
       <button class="btn ghost" style="flex:1" data-act="pull" data-n="1" ${S.permit >= 1 || S.orundum >= 600 ? "" : "disabled"}>Manifest ×1<br><span class="cost">${S.permit >= 1 ? IC.permit + "1" : IC.orundum + "600"}</span></button>
       <button class="btn" style="flex:1" data-act="pull" data-n="10" ${S.permit >= 10 || S.orundum >= 6000 ? "" : "disabled"}>Manifest ×10<br><span class="cost">${S.permit >= 10 ? IC.permit + "10" : IC.orundum + "6,000"}</span></button>
     </div>
     <div class="mats"><span class="mat">${IC.permit}${S.permit}</span><span class="mat">${IC.orundum}${fmt(S.orundum)}</span><span class="mat">${IC.cert}${S.cert}</span></div>
-    <p class="tiny dim">The Tatari gives rumors a body. Duplicates raise a character's Resonance (up to 6) and give Night Coins for the shop.</p>
+    <p class="tiny dim">The Tatari gives rumors a body. Duplicates raise a character's Spirit Origin (up to 6) and leave Tatari Fragments for the shop.</p>
   </div>`;
 };
 function gachaReveal(results) {
@@ -230,7 +230,7 @@ function gachaReveal(results) {
     const show = () => {
       stage = 1; $("#gT").hidden = true; const G = $("#gG"); G.hidden = false;
       if (results.length === 1) { G.style.gridTemplateColumns = "1fr"; G.style.maxWidth = "260px"; }
-      G.innerHTML = results.map((r, i) => { const op = OPS[r.key]; return `<div class="gcard" style="--rc:${RC[op.rar]};animation-delay:${i * .12}s">${r.isNew ? '<span class="gnew">NEW</span>' : ""}<img src="${spriteURL(op)}" alt="${esc(op.n)}"><span class="gst">${"★".repeat(op.rar)}<br>${esc(op.short)}<br><span style="font-size:.85em"><b style="color:${ELC[op.el]}">${op.el}</b> ${op.style}</span></span></div>`; }).join("");
+      G.innerHTML = results.map((r, i) => { const op = OPS[r.key]; return `<div class="gcard" style="--rc:${RC[op.rar]};animation-delay:${i * .12}s">${r.isNew ? '<span class="gnew">NEW</span>' : ""}<img src="${spriteURL(op)}" alt="${esc(op.n)}"><span class="gst">${"★".repeat(op.rar)}<br>${esc(op.short)}<br><span style="font-size:.85em"><b style="color:${ELC[op.el]}">${elShort(op.el)}</b> ${op.style}</span></span></div>`; }).join("");
       if (top >= 5) sfx("win"); else sfx("heal");
       setTimeout(() => { $("#gDone").hidden = false; stage = 2; }, results.length * 120 + 500);
     };
@@ -266,8 +266,8 @@ SCREENS.shop = () => {
   const tab = SHOP[UI.shopTab] ? UI.shopTab : "credit", cur = { credit: ["credit", IC.credit], cert: ["cert", IC.cert], tokens: ["tokens", IC.tokens], prime: ["prime", IC.prime] }[tab];
   return `<div class="stack">
     <div class="spread">${back("go", "Home", 'data-v="home"')}<span class="mat">${cur[1]}${fmt(S[cur[0]])}</span></div>
-    <h2>Shop</h2><p class="small dim">The Ahnenerbe café keeps a little of everything behind the counter.</p>
-    <div class="tabs2">${[["credit", "Café"], ["cert", "Night Coins"], ["tokens", "Versus"], ["prime", "Moonstone"]].map(([k, n]) => `<button class="${tab === k ? "on" : ""}" data-act="shopTab" data-t="${k}">${n}</button>`).join("")}</div>
+    <h2>Ahnenerbe</h2><p class="small dim">The Ahnenerbe café keeps a little of everything behind the counter.</p>
+    <div class="tabs2">${[["credit", "Café"], ["cert", "Tatari Fragments"], ["tokens", "Versus"], ["prime", "Holy Relics"]].map(([k, n]) => `<button class="${tab === k ? "on" : ""}" data-act="shopTab" data-t="${k}">${n}</button>`).join("")}</div>
     <div class="tiles">${SHOP[tab].map(it => `<button class="tile" data-act="buy" data-t="${tab}" data-id="${it.id}" ${S[cur[0]] >= it.cost ? "" : "disabled"} style="min-height:104px">
       <span class="ticon">${it.give.rune ? IC.rune : itemIcon(Object.keys(it.give)[0] === "sanityMax" ? "sanity" : Object.keys(it.give)[0])}</span>
       <h3 style="font-size:15px">${esc(it.n)}</h3>${it.d ? `<span class="tsub">${esc(it.d)}</span>` : ""}<span class="tsub cost">${cur[1]}${fmt(it.cost)}</span></button>`).join("")}</div>
@@ -300,7 +300,7 @@ function settingsModal(confirmReset) {
     <button class="btn wide" data-act="saveName">Done</button></div>`);
 }
 function sanityModal() {
-  openModal(`<div class="stack"><h2>Prana</h2><p class="small dim">Battles cost Prana. You regain 1 every 30 seconds, a level-up refills it, and 1 Moonstone restores it to max.</p>
+  openModal(`<div class="stack"><h2>Prana</h2><p class="small dim">Battles cost Prana. You regain 1 every 30 seconds, a level-up refills it, and 1 Holy Relic restores it to max.</p>
     <div class="spread"><span class="cost">${IC.sanity}<b class="num">${S.sanity}/${maxSanity(S.lvl)}</b></span><span class="tiny dim">${S.sanity < maxSanity(S.lvl) ? "+1 in " + dur(SAN_MS - (Date.now() - S.sTime)) : "Full"}</span></div>
     <button class="btn wide" data-act="buy" data-t="prime" data-id="p_san" ${S.prime >= 1 ? "" : "disabled"}>Restore <span class="cost">${IC.prime}1</span> <span class="tiny">(you have ${S.prime})</span></button>
     <button class="btn ghost wide" data-act="closeModal">Close</button></div>`);

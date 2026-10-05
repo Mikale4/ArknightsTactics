@@ -37,7 +37,7 @@ const PAGE = 'file://' + path.resolve(__dirname, '../index.html');
   if (done1) { await page.click('#rDone'); await page.waitForTimeout(900); await skipDlg(); await page.waitForTimeout(400); }
   for (const [n, fn, a] of [['11_home', v => route(v), 'home'], ['12_story', v => route(v), 'story'], ['13_map', v => route('chapter', v), 'c1'], ['14_battlehub', v => route(v), 'battle'],
     ['15_patrol', v => route('hunt', v), 'alley'], ['16_arcade', v => route(v), 'tower'], ['17_versus', v => route(v), 'arena'], ['18_chars', v => route(v), 'ops'],
-    ['19_char', v => { UI.opTab = 'info'; route('op', homeKey(v)); }, 'shiki-c'], ['20_skills', v => { UI.opTab = v; rerender(); }, 'skills'], ['20b_variant', v => { UI.opTab = 'info'; route('op', v); }, 'arcueid-h-holy'], ['21_tatari', v => route(v), 'hh'],
+    ['19_char', v => { UI.opTab = 'info'; route('op', homeKey(v)); }, 'shiki-c'], ['20_skills', v => { UI.opTab = v; rerender(); }, 'skills'], ['20b_variant', v => { UI.opTab = 'info'; route('op', v); }, 'arcueid-h-ether'], ['21_tatari', v => route(v), 'hh'],
     ['22_shop', v => { UI.shopTab = 'credit'; route(v); }, 'shop'], ['23_items', v => { give({ rune: 4 }); give({ rune: 2 }); route(v); }, 'depot']]) { await ev(fn, a); await shot(n); }
   await page.evaluate(() => { ACT.pull({ n: '10' }); }); await page.waitForTimeout(700); await shot('24_manifest');
   await page.mouse.click(195, 420); await page.waitForTimeout(2300); await shot('25_cards');

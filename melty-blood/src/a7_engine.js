@@ -1,7 +1,7 @@
 
 // =====================================================================
 //  BATTLE ENGINE — turn gauges, Element affinity, Moon-style traits, Mystic Codes,
-//  statuses, Talents (passives), AI styles and the Magic Circuit, emitting events for the renderer.
+//  statuses, Personal Skills (passives), AI styles and the Magic Circuit, emitting events for the renderer.
 // =====================================================================
 let UID = 0;
 const MELEE = new Set(["Vanguard", "Guard", "Defender", "Specialist"]);
@@ -151,7 +151,7 @@ function makeBattle(cfg) {
     const rev = u.passives.find(p => p.id === "REVIVE_ONCE");
     if (rev && !u.flags.revived) {
       u.flags.revived = true; u.hp = Math.max(1, Math.round(u.max.hp * (rev.amount || .3))); u.eff = []; u.shield = 0;
-      ev({ k: "txt", u: u.uid, s: "REVIVED", c: "buff" }); ev({ k: "revive", u: u.uid, hp: u.hp, inPlace: 1 });
+      ev({ k: "txt", u: u.uid, s: "GUTS", c: "buff" }); ev({ k: "revive", u: u.uid, hp: u.hp, inPlace: 1 });
       addEff(u, rev.buff || "INVINCIBLE", rev.turns || 1, u);
       return;
     }
@@ -230,7 +230,7 @@ function makeBattle(cfg) {
     if (tar.alive && att.alive && !isCounter && B.depth < 3) {
       const pc = pv(tar, "COUNTER");
       if ((has(tar, "COUNTER") && R() < .3) || (tar.sets.has("Revenge") && R() < .15) || (pc && R() < pc.chance * per)) {
-        ev({ k: "txt", u: tar.uid, s: "COUNTER", c: "buff" });
+        ev({ k: "txt", u: tar.uid, s: "SHIELD COUNTER", c: "buff" });
         const s1 = tar.skills[0];
         B.depth++; ev({ k: "atk", a: tar.uid, t: [att.uid], anim: animFor(tar, s1), aoe: 0, counter: 1 }); attackOnce(tar, att, s1, true); B.depth--;
       }
@@ -441,7 +441,7 @@ function makeBattle(cfg) {
     const rg = pv(u, "REGEN"); if (u.alive && rg) heal(u, u.max.hp * rg.amount);
     if (u.alive && u.style === "Full") gainMC(u.team, FULL_CHARGE);
     if (!u.alive) { ev({ k: "end", u: u.uid }); endTurn(u); return "acted"; }
-    if (has(u, "STUN")) { removeEff(u, "STUN"); ev({ k: "txt", u: u.uid, s: "STUNNED", c: "debuff" }); ev({ k: "end", u: u.uid }); endTurn(u); return "acted"; }
+    if (has(u, "STUN")) { removeEff(u, "STUN"); ev({ k: "txt", u: u.uid, s: "BOUND", c: "debuff" }); ev({ k: "end", u: u.uid }); endTurn(u); return "acted"; }
     if (has(u, "PROVOKE") && u.provokedBy && u.provokedBy.alive) { act(u, 1, u.provokedBy); return "acted"; }
     if (u.team === "A" && !B.auto) { B.waiting = u; return "input"; }
     const ch = aiChoose(u, u.team === "A" ? B.aiStyle : "balanced"); act(u, ch.slot, ch.t); return "acted";

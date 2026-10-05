@@ -856,7 +856,7 @@ function figHead(id, f, bg) {
 }
 // head icons sit on their Element's colour
 const HEAD_BG = { enemy: ["#7a2a3a", "#3a1220", "#14060a"], Fire: ["#8a3a1a", "#3a1608", "#140604"], Water: ["#1e4a8a", "#0e2244", "#040a16"],
-  Wind: ["#1e6a44", "#0c2e1e", "#04120a"], Holy: ["#7a6a3a", "#3a321a", "#14100a"], Blood: ["#7a1430", "#360a16", "#120408"] };
+  Wind: ["#1e6a44", "#0c2e1e", "#04120a"], Ether: ["#7a6a3a", "#3a321a", "#14100a"], Imaginary: ["#4a2a7a", "#1e1238", "#0a0614"] };
 const enemyArt = key => ({ get full() { return figFull("e:" + key, ENEMY[key].fig).url; }, get head() { return figHead("e:" + key, ENEMY[key].fig, HEAD_BG.enemy); } });
 // a character's Moon styles share a body; non-home Elements glow in their own colour, so art is cached per body + glow
 const opArt = key => { const op = OPS[key], id = "o:" + op.base + "|" + op.fig.sc; return { get full() { return figFull(id, op.fig).url; }, get head() { return figHead(id, op.fig, HEAD_BG[op.el] || HEAD_BG.Fire); } }; };

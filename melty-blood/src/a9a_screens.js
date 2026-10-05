@@ -15,11 +15,11 @@ function opHTML(key, o = {}) {
     ${o.nostars ? "" : starRow(op.rar)}
     <div class="ring"><img src="${headURL(op)}" alt="${esc(op.n)}" loading="lazy" draggable="false"></div>
     ${o.noel ? "" : `<span class="eldot ${op.style}" style="--ec:${ELC[op.el]}"></span>`}
-    ${p && !o.nolv ? `<div class="lv num">${p.lvl}</div>${p.elite ? `<span class="elite">E${p.elite}</span>` : ""}${p.pot > 1 ? `<span class="potb">P${p.pot}</span>` : ""}` : ""}
+    ${p && !o.nolv ? `<div class="lv num">${p.lvl}</div>${p.elite ? `<span class="elite">A${p.elite}</span>` : ""}${p.pot > 1 ? `<span class="potb">SO${p.pot}</span>` : ""}` : ""}
   </div>`;
 }
 // roster label: short name, then Element (in its colour) and Moon style. Badges: moon phase = style, colour = Element.
-const pnameHTML = k => `<div class="pname">${esc(OPS[k].short)}<span class="sty"><b style="color:${ELC[OPS[k].el]}">${OPS[k].el}</b> ${OPS[k].style}</span></div>`;
+const pnameHTML = k => `<div class="pname">${esc(OPS[k].short)}<span class="sty"><b style="color:${ELC[OPS[k].el]}">${elShort(OPS[k].el)}</b> ${OPS[k].style}</span></div>`;
 const elChip = el => `<span class="el ${el}">${el}</span>`;
 const styleChip = st => `<span class="el sty">${styleName(st)}</span>`;
 function enHTML(spec, s = 46) {
@@ -32,7 +32,7 @@ function rewardsHTML(list) {
   const merged = [];
   for (const r of list) { const m = merged.find(x => x.k === r.k && !r.rune && !x.rune && !r.k.startsWith("op:")); if (m) m.n += r.n; else merged.push({ ...r }); }
   return merged.map(r => {
-    if (r.k.startsWith("op:")) { const k = r.k.slice(3); return `<div class="rw">${opHTML(k, { s: 54, nostars: 1, nolv: 1, show: 1 })}<span>${r.isNew === false ? "Resonance +1" : "New character"}</span><span class="tiny dim">${esc(opLabel(OPS[k]))}</span></div>`; }
+    if (r.k.startsWith("op:")) { const k = r.k.slice(3); return `<div class="rw">${opHTML(k, { s: 54, nostars: 1, nolv: 1, show: 1 })}<span>${r.isNew === false ? "Spirit Origin +1" : "New character"}</span><span class="tiny dim">${esc(opLabel(OPS[k]))}</span></div>`; }
     if (r.k === "rune") return `<div class="rw"><div class="ri" style="width:54px;height:54px;color:${RUNE_RC[r.rune.rar]}">${IC.rune}</div><span>${setName(r.rune.set)}</span><span class="tiny dim">${RUNE_RAR[r.rune.rar]}</span></div>`;
     const name = r.k === "xp" ? "Character EXP" : r.k === "rank" ? "Rank" : (ITEMS[r.k] && ITEMS[r.k].n) || r.k;
     return `<div class="rw"><div class="ri" style="width:54px;height:54px">${r.k === "xp" ? IC.boost : r.k === "rank" ? IC.arena : itemIcon(r.k)}</div><span class="num">${r.k === "rank" ? "#" + r.n : "×" + fmt(r.n)}</span><span class="tiny dim">${esc(name)}</span></div>`;
@@ -105,10 +105,10 @@ SCREENS.home = () => {
     <section class="stage">
       <div class="floor"></div><div class="ring3d"></div>
       <img class="assist" src="${spriteURL(op)}" alt="${esc(op.n)}" data-act="poke" draggable="false">
-      <div class="nameplate"><span class="eyebrow">Assistant</span><b>${esc(op.n)}</b><div class="row" style="gap:4px">${elChip(op.el)}${styleChip(op.style)}<span class="cls">${clsName(op.cls)}</span></div></div>
+      <div class="nameplate"><span class="eyebrow">Partner</span><b>${esc(op.n)}</b><div class="row" style="gap:4px">${elChip(op.el)}${styleChip(op.style)}<span class="cls">${clsName(op.cls)}</span></div></div>
       <div class="sidebtns">
         <button class="sidebtn" data-act="missions" aria-label="Missions">${IC.missions}<small>Missions</small>${missionsReady ? '<i class="dot"></i>' : ""}</button>
-        <button class="sidebtn" data-act="go" data-v="shop" aria-label="Ahnenerbe shop">${IC.shop}<small>Shop</small></button>
+        <button class="sidebtn" data-act="go" data-v="shop" aria-label="Ahnenerbe café">${IC.shop}<small>Ahnenerbe</small></button>
         <button class="sidebtn" data-act="go" data-v="depot" aria-label="Items">${IC.depot}<small>Items</small></button>
       </div>
     </section>
@@ -183,7 +183,7 @@ SCREENS.chapter = cid => {
           ${nd.waves ? `<span class="nst">${[1, 2, 3].map(k => k <= st ? IC.star : IC.starOff).join("")}</span>` : ""}</button>`;
       }).join("")}
     </div>
-    <p class="tiny dim">Night reward: ${ch.reward.op ? esc(opLabel(OPS[ch.reward.op])) + " joins your party, plus " : ""}${ch.reward.orundum} Moon Crystals${ch.reward.permit ? ` and ${ch.reward.permit} Rumor Tickets` : ""}.</p>
+    <p class="tiny dim">Night reward: ${ch.reward.op ? esc(opLabel(OPS[ch.reward.op])) + " joins your party, plus " : ""}${ch.reward.orundum} Jewels${ch.reward.permit ? ` and ${ch.reward.permit} Rumor Tickets` : ""}.</p>
   </div>`;
 };
 function nodeSheet(nd) {
@@ -196,7 +196,7 @@ function nodeSheet(nd) {
     ${waves ? waves.map((w, k) => `<div><div class="tiny dim" style="margin-bottom:4px">Wave ${k + 1} of ${waves.length}</div><div class="row wrap">${w.map(s => enHTML(s, s.en && ENEMY[s.en].boss ? 56 : 46)).join("")}</div></div>`).join("") : ""}
     ${nd.waves ? `<div class="stack" style="gap:4px"><div class="tiny dim">Star conditions</div>
       ${["Win the battle", "No ally falls", `Win within ${goal} of your turns`].map((m, k) => `<div class="mission">${k < st ? IC.star : IC.starOff}<span>${m}</span></div>`).join("")}</div>
-      <div><div class="tiny dim" style="margin-bottom:4px">${st ? "Regular drops" : "First clear"}${st < 3 ? " · first 3-star clear adds 1 Moonstone" : ""}</div><div class="rewards" style="justify-content:flex-start">${rewardsHTML(st ? [{ k: "lmd", n: 80 + lv * 15 }, { k: lv < 20 ? "rec1" : lv < 40 ? "rec2" : "rec3", n: 2 }, { k: "summ", n: 1 }] : [{ k: "orundum", n: nd.type === "boss" ? 150 : nd.type === "side" ? 100 : 60 }, { k: "lmd", n: 80 + lv * 15 }, { k: lv < 20 ? "rec1" : lv < 40 ? "rec2" : "rec3", n: 3 }])}</div></div>` : ""}
+      <div><div class="tiny dim" style="margin-bottom:4px">${st ? "Regular drops" : "First clear"}${st < 3 ? " · first 3-star clear adds 1 Holy Relic" : ""}</div><div class="rewards" style="justify-content:flex-start">${rewardsHTML(st ? [{ k: "lmd", n: 80 + lv * 15 }, { k: lv < 20 ? "rec1" : lv < 40 ? "rec2" : "rec3", n: 2 }, { k: "summ", n: 1 }] : [{ k: "orundum", n: nd.type === "boss" ? 150 : nd.type === "side" ? 100 : 60 }, { k: "lmd", n: 80 + lv * 15 }, { k: lv < 20 ? "rec1" : lv < 40 ? "rec2" : "rec3", n: 3 }])}</div></div>` : ""}
     ${nd.type === "chest" ? `<div class="rewards" style="justify-content:flex-start">${rewardsHTML(Object.entries(nd.reward).map(([k, n]) => ({ k, n })))}</div>` : ""}
     <div class="row">
       ${nd.waves && st >= 3 ? `<button class="btn ghost" data-act="sweep" data-id="${nd.id}" data-x="1">Quick Clear</button><button class="btn ghost" data-act="sweep" data-id="${nd.id}" data-x="3">×3</button>` : ""}
@@ -224,7 +224,7 @@ SCREENS.team = arg => {
       const id = ids[k];
       return `<div class="slot">${k === 0 ? `<span class="crown">${IC.crown}</span>` : ""}${id ? `<button data-act="slot" data-k="${k}" aria-label="${esc(OPS[id].n)}">${opHTML(id, { s: 66 })}</button>` : '<div class="empty"></div>'}</div>`;
     }).join("")}</div>
-    <div class="leadtxt small">${lead ? `<b class="gold">Leader: ${esc(opLabel(OPS[ids[0]]))}</b> <span class="dim">${leaderText(lead)}</span>` : ids[0] ? `<span class="dim">${esc(OPS[ids[0]].n)} has no leader skill. Tap a squad member to make them leader.</span>` : `<span class="dim">Pick up to four characters. The first slot leads.</span>`}</div>
+    <div class="leadtxt small">${lead ? `<b class="gold">Charisma · ${esc(opLabel(OPS[ids[0]]))}</b> <span class="dim">${leaderText(lead)}</span>` : ids[0] ? `<span class="dim">${esc(OPS[ids[0]].n)} has no Charisma. The first slot leads the squad.</span>` : `<span class="dim">Pick up to four characters. The first slot leads with their Charisma.</span>`}</div>
     <div class="spread small"><span>Squad power <b class="num">${fmtFull(myPw)}</b></span>${arg.cost ? `<span class="cost">${IC.sanity}${arg.cost}</span>` : ""}</div>
     <button class="btn wide" data-act="deploy" ${ids.length ? "" : "disabled"}>Fight!</button>
     <div class="filters">${["all", ...ELS].map(e => `<button class="chip ${UI.el === e ? "on" : ""}" data-act="elf" data-e="${e}">${e === "all" ? "All Elements" : e}</button>`).join("")}</div>

@@ -30,29 +30,29 @@ const ARC_COST = 100;
 // Home Element per Moon style (Crescent Half Full): the one that fits the kit. Starters, story rewards, bosses
 // and pre-Element saves use it.
 const HOME_EL = {
-  shiki: "Wind Water Fire", nanaya: "Wind Water Blood", arcueid: "Fire Water Blood", "red-arcueid": "Blood Water Fire",
-  ciel: "Holy Water Fire", "powered-ciel": "Holy Water Wind", akiha: "Fire Water Blood", "red-akiha": "Fire Wind Blood",
-  hisui: "Water Holy Fire", kohaku: "Water Fire Wind", "mech-hisui": "Wind Water Fire", satsuki: "Blood Fire Wind",
-  sion: "Wind Water Fire", "sion-tatari": "Blood Water Wind", riesbyfe: "Holy Water Fire", aoko: "Wind Water Fire",
-  chaos: "Blood Wind Water", roa: "Blood Wind Fire", wallachia: "Blood Water Fire", len: "Water Wind Fire",
-  "white-len": "Water Wind Holy", miyako: "Fire Water Wind", kouma: "Fire Water Blood", "neco-arc": "Wind Water Fire",
-  "neco-chaos": "Blood Water Wind", ryougi: "Wind Water Fire", saber: "Holy Water Wind", noel: "Holy Water Fire", vlov: "Fire Water Blood",
+  shiki: "Wind Water Fire", nanaya: "Wind Water Imaginary", arcueid: "Fire Water Imaginary", "red-arcueid": "Imaginary Water Fire",
+  ciel: "Ether Water Fire", "powered-ciel": "Ether Water Wind", akiha: "Fire Water Imaginary", "red-akiha": "Fire Wind Imaginary",
+  hisui: "Water Ether Fire", kohaku: "Water Fire Wind", "mech-hisui": "Wind Water Fire", satsuki: "Imaginary Fire Wind",
+  sion: "Wind Water Fire", "sion-tatari": "Imaginary Water Wind", riesbyfe: "Ether Water Fire", aoko: "Wind Water Fire",
+  chaos: "Imaginary Wind Water", roa: "Imaginary Wind Fire", wallachia: "Imaginary Water Fire", len: "Water Wind Fire",
+  "white-len": "Water Wind Ether", miyako: "Fire Water Wind", kouma: "Fire Water Imaginary", "neco-arc": "Wind Water Fire",
+  "neco-chaos": "Imaginary Water Wind", ryougi: "Wind Water Fire", saber: "Ether Water Wind", noel: "Ether Water Fire", vlov: "Fire Water Imaginary",
 };
 // Element versions differ slightly, like Summoners War: a stat lean, an extra effect on S1, and an Arc Drive tweak.
 const ELEMENT_KIT = {
-  Fire: { d: "+5% ATK. S1 can inflict Bleed. Damaging Arc Drives hit 8% harder (support ones grant ATK Up).",
+  Fire: { d: "+5% ATK. S1 can inflict Curse. Damaging Arc Drives hit 8% harder (support ones grant ATK Up).",
     stat: { atk: 1.05 }, s1: dbf("DOT", .25), arc: sk => sk.mult > 0 ? { mult: 1.08 } : { add: teamBuff("ATK_UP") } },
   Water: { d: "+6% HP. S1 can inflict Slow. Arc Drives also heal all allies.",
     stat: { hp: 1.06 }, s1: dbf("SLOW", .25), arc: () => ({ add: teamHeal(.08) }) },
   Wind: { d: "+4 SPD. S1 reduces turn meter. Arc Drives also give all allies turn meter.",
     stat: { spd: 4 }, s1: tmDown(.1), arc: () => ({ add: teamGain(.1) }) },
-  Holy: { d: "+8% DEF. S1 can inflict Silence. Arc Drives also remove a buff (support ones cleanse).",
+  Ether: { d: "+8% DEF. S1 can inflict Skill Seal. Arc Drives also remove a buff (support ones cleanse).",
     stat: { def: 1.08 }, s1: dbf("SILENCE", .2, 1), arc: sk => ({ add: sk.mult > 0 ? strip(1) : cleanse(1) }) },
-  Blood: { d: "+3% HP and ATK. S1 can inflict Heal Block. Arc Drives also heal this character.",
+  Imaginary: { d: "+3% HP and ATK. S1 can inflict Heal Block. Arc Drives also heal this character.",
     stat: { atk: 1.03, hp: 1.03 }, s1: dbf("HEAL_BLOCK", .25), arc: () => ({ add: selfHeal(.15) }) },
 };
-// Manifest odds by Element: Holy and Blood versions are rare, like Light and Dark in Summoners War
-const EL_WEIGHT = { Fire: .3, Water: .3, Wind: .3, Holy: .05, Blood: .05 };
+// Manifest odds by Element: Ether and Imaginary Numbers versions are rare, like Light and Dark in Summoners War
+const EL_WEIGHT = { Fire: .3, Water: .3, Wind: .3, Ether: .05, Imaginary: .05 };
 // add an effect to a skill, or strengthen the same effect if the skill already has it
 function withEffect(sk, e) {
   const ex = sk.effects.find(x => x.type === e.type && x.on === e.on && x.what === e.what && !x.onKill && !x.perCrit);
@@ -101,6 +101,8 @@ const opLabel = op => `${op.el} ${styleName(op.style)} ${op.short}`;
 const LEGACY = {};
 for (const f of FAMS) LEGACY[f] = homeKey(f);
 for (const c of CHARS) LEGACY[c.k] = homeKey(c.k + "-c");
+// the rare Elements were once called Holy and Blood
+for (const f of FAMS) { LEGACY[f + "-holy"] = f + "-ether"; LEGACY[f + "-blood"] = f + "-imaginary"; }
 // menus show the same drawn figures as battles (rendered once, then cached)
 const spriteURL = op => opArt(op.key).full;
 const headURL = op => opArt(op.key).head;
@@ -124,10 +126,10 @@ const ENEMY = {
   phantom: { n: "Rumor Phantom", cls: "Caster", style: "Crescent", el: "Water", m: { hp: .6, atk: .9, def: .55, spd: 104 },
     fig: { type: "hood", skin: "#d8dce8", col: "#2a2a3e", col2: "#1e1e2e", cape: "#3a3a56", eyes: "#8fd8ff", robe: 1, w: "arts", sc: "#8fd8ff" },
     skills: [S1("Whisper", 2.6, [dbf("SILENCE", .2, 1)]), S2("Spread the Rumor", "aoe_enemies", 1.6, [dbf("ATK_DOWN", .3)])] },
-  wraith: { n: "Tatari Wraith", cls: "Caster", style: "Full", el: "Blood", m: { hp: .7, atk: .95, def: .6, spd: 106 },
+  wraith: { n: "Tatari Wraith", cls: "Caster", style: "Full", el: "Imaginary", m: { hp: .7, atk: .95, def: .6, spd: 106 },
     fig: { type: "hood", skin: "#e0d0d4", col: "#2a0e18", col2: "#1e0a12", cape: "#3a1020", eyes: "#ff3b5c", robe: 1, w: "arts", sc: "#ff3b5c" },
     skills: [S1("Curse", 2.8, [dbf("BRAND", .3)]), S2("Night Terror", "aoe_enemies", 1.8, [dbf("STUN", .2, 1)])] },
-  executor: { n: "Rogue Executor", cls: "Sniper", style: "Crescent", el: "Holy", m: { hp: .6, atk: .9, def: .55, spd: 108 },
+  executor: { n: "Rogue Executor", cls: "Sniper", style: "Crescent", el: "Ether", m: { hp: .6, atk: .9, def: .55, spd: 108 },
     fig: { type: "human", skin: "#efdccc", hair: "#3a3a40", hs: "short", col: "#1a1a24", col2: "#16161f", boot: "#101016", acc: "#c8b06a", trim: "#e8e2d0", robe: "robe", w: "blackkeys", sc: "#f4efe2" },
     skills: [S1("Black Keys", 1.4, [dbf("STUN", .1, 1)], 2)] },
   knight: { n: "Ghoul Knight", cls: "Defender", style: "Half", el: "Fire", m: { hp: 1.05, atk: .62, def: 1.1, spd: 96 },

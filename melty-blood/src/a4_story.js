@@ -46,7 +46,7 @@ const STORY = [{
         { id: "1-6", type: "battle", name: "Plaza of Rumors", lv: 4, waves: [W("ghoul", "phantom", "ghoul"), W("dead", "phantom", "dead")], pre: [
           L("satsuki", "Those ghosts are whispering... they're repeating things people say about this town."),
           L("shiki", "Then let's give them something new to talk about."),
-          L("satsuki", "Oh, and look at everyone's badge. The colour is their Element: Water beats Fire, Fire beats Wind, Wind beats Water, and Holy and Blood beat each other."),
+          L("satsuki", "Oh, and look at everyone's badge. The colour is their magecraft Element: Water beats Fire, Fire beats Wind, Wind beats Water, and the rare Ether and Imaginary Numbers beat each other."),
           L("satsuki", "The moon shape is their Moon style. Same person, different style, totally different moves. I'm a Fire Half Moon, you're a Wind Crescent Moon!") ] },
         { id: "1-7", type: "boss", name: "The Alchemist", lv: 7, waves: [W("phantom", "ghoul"), W("b_sion", "ghoul", "phantom")], pre: [
           L("sion_e", "Shiki Tohno. Holder of the Mystic Eyes of Death Perception. I require your cooperation."),
@@ -240,8 +240,8 @@ const ACHIEVEMENTS = [
   { id: "ops40", n: "Gather 40 characters", test: () => Object.keys(S.ops).length >= 40, reward: { orundum: 600, permit: 2 } },
   { id: "ops100", n: "Gather 100 characters", test: () => Object.keys(S.ops).length >= 100, reward: { orundum: 1000, permit: 3 } },
   { id: "opsAll", n: "Gather every character in every Moon style and Element", test: () => Object.keys(S.ops).length >= OP_KEYS.length, reward: { orundum: 3000, permit: 10 } },
-  { id: "e1", n: "Awaken a character once", test: () => Object.values(S.ops).some(p => p.elite >= 1), reward: { orundum: 150 } },
-  { id: "e2", n: "Fully Awaken a character", test: () => Object.values(S.ops).some(p => p.elite >= 2), reward: { orundum: 400, permit: 1 } },
+  { id: "e1", n: "Ascend a character once", test: () => Object.values(S.ops).some(p => p.elite >= 1), reward: { orundum: 150 } },
+  { id: "e2", n: "Fully Ascend a character", test: () => Object.values(S.ops).some(p => p.elite >= 2), reward: { orundum: 400, permit: 1 } },
   { id: "six", n: "Manifest a 5★ character", test: () => Object.keys(S.ops).some(k => OPS[k].rar === 5), reward: { orundum: 300 } },
   { id: "tw10", n: "Clear Arcade stage 10", test: () => S.tower >= 10, reward: { orundum: 300, permit: 1 } },
   { id: "tw20", n: "Clear Arcade stage 20", test: () => S.tower >= 20, reward: { orundum: 500, permit: 2 } },
@@ -250,25 +250,25 @@ const ACHIEVEMENTS = [
 const SHOP = {
   credit: [
     { id: "r_lmd", n: "Yen ×12,000", cost: 200, give: { lmd: 12000 } },
-    { id: "r_rec", n: "Ancestral Blood ×3", cost: 240, give: { rec4: 3 } },
-    { id: "r_summ", n: "Grimoire Page ×3", cost: 160, give: { summ: 3 } },
-    { id: "r_chip", n: "Moon Shard", cost: 300, give: { chip: 1 } },
+    { id: "r_rec", n: "True Ancestor's Blood ×3", cost: 240, give: { rec4: 3 } },
+    { id: "r_summ", n: "Magic Crest Fragment ×3", cost: 160, give: { summ: 3 } },
+    { id: "r_chip", n: "Crimson Moon Shard", cost: 300, give: { chip: 1 } },
   ],
   cert: [
     { id: "c_permit", n: "Rumor Ticket", cost: 25, give: { permit: 1 } },
-    { id: "c_summ", n: "Grimoire Page ×3", cost: 8, give: { summ: 3 } },
-    { id: "c_chip", n: "Moon Shard ×2", cost: 12, give: { chip: 2 } },
+    { id: "c_summ", n: "Magic Crest Fragment ×3", cost: 8, give: { summ: 3 } },
+    { id: "c_chip", n: "Crimson Moon Shard ×2", cost: 12, give: { chip: 2 } },
     { id: "c_rune", n: "Grade IV Mystic Code", cost: 20, give: { rune: 4 } },
   ],
   tokens: [
     { id: "t_permit", n: "Rumor Ticket", cost: 240, give: { permit: 1 } },
-    { id: "t_chip", n: "Moon Shard ×3", cost: 90, give: { chip: 3 } },
-    { id: "t_summ", n: "Grimoire Page ×4", cost: 60, give: { summ: 4 } },
+    { id: "t_chip", n: "Crimson Moon Shard ×3", cost: 90, give: { chip: 3 } },
+    { id: "t_summ", n: "Magic Crest Fragment ×4", cost: 60, give: { summ: 4 } },
     { id: "t_rune", n: "Grade V Mystic Code", cost: 220, give: { rune: 5 } },
   ],
   prime: [
     { id: "p_san", n: "Restore Prana", d: "Refill Prana to max", cost: 1, give: { sanityMax: 1 } },
-    { id: "p_oru", n: "Exchange for Moon Crystals", d: "1 Moonstone → 180 Moon Crystals", cost: 1, give: { orundum: 180 } },
+    { id: "p_oru", n: "Exchange for Jewels", d: "1 Holy Relic → 180 Jewels", cost: 1, give: { orundum: 180 } },
   ],
 };
 // starters cover all three Moon styles and the Fire/Water/Wind triangle; any Fire, Water or Wind 5★ can headline the banner

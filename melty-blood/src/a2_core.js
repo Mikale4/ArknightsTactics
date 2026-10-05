@@ -37,11 +37,16 @@ const today = () => new Date().toISOString().slice(0, 10);
 // Every character comes in three Moon styles, and every Moon style in all five Elements (Summoners War style).
 //  · Moon style (internal field: style): the kit, role, Talent and a style trait.
 //  · Element (internal field: el): matchups, colour, a small stat lean and kit tweaks (ELEMENT_KIT in a3b_kits.js).
-// Water beats Fire, Fire beats Wind, Wind beats Water; Holy and Blood each beat the other.
-const ELS = ["Fire", "Water", "Wind", "Holy", "Blood"];
-const ELC = { Fire: "#ff7a3c", Water: "#4aa8ff", Wind: "#5fdc8c", Holy: "#ffe6a0", Blood: "#e0244a" };
-const BEATS = { Water: "Fire", Fire: "Wind", Wind: "Water", Holy: "Blood", Blood: "Holy" };
-function elementRel(a, t) { if (BEATS[a] === t) return "adv"; if (BEATS[t] === a && !(a === "Holy" || a === "Blood")) return "dis"; return "neu"; }
+// Elements are the magecraft Elements of the Nasuverse: three of the Five Great Elements form the triangle
+// (Water beats Fire, Fire beats Wind, Wind beats Water), and Ether (the fifth Great Element) and Imaginary Numbers
+// (a rare "imaginary" Element) are the rare pair that each beat the other.
+const ELS = ["Fire", "Water", "Wind", "Ether", "Imaginary"];
+const ELC = { Fire: "#ff7a3c", Water: "#4aa8ff", Wind: "#5fdc8c", Ether: "#ffe6a0", Imaginary: "#a97bff" };
+const BEATS = { Water: "Fire", Fire: "Wind", Wind: "Water", Ether: "Imaginary", Imaginary: "Ether" };
+const RARE_ELS = ["Ether", "Imaginary"];
+const elName = el => el === "Imaginary" ? "Imaginary Numbers" : el;
+const elShort = el => el === "Imaginary" ? "Imag." : el;
+function elementRel(a, t) { if (BEATS[a] === t) return "adv"; if (BEATS[t] === a && !RARE_ELS.includes(a)) return "dis"; return "neu"; }
 const elKey = el => el.toLowerCase();
 const weakTo = el => Object.keys(BEATS).find(k => BEATS[k] === el);
 // Traits follow the fighting game: Crescent fires up Blood Heat at high meter, Half has the toughest guard and an
@@ -55,9 +60,10 @@ const STYLE = {
 const styleName = st => (STYLE[st] || { n: st }).n;
 const CRES_HEAT = .15, CRES_HEAT_AT = 200, HALF_GUARD = .06, FULL_CHARGE = 8, FULL_ARC = .25;
 const RC = { 1: "#c9d1de", 2: "#7fdc8a", 3: "#8fd8ff", 4: "#c39bff", 5: "#f1d07a", 6: "#ff9a3c" };
-// Engine class keys stay internal; players see the names on the right.
+// Engine class keys stay internal; players see TYPE-MOON class names (Fate's Servant classes, plus Magus for
+// magic attackers). As in Fate/Grand Order, Casters are the support class and Rulers the protectors and healers.
 const CLASSES = ["Vanguard", "Guard", "Defender", "Sniper", "Caster", "Medic", "Supporter", "Specialist"];
-const CLASS_NAME = { Vanguard: "Vanguard", Guard: "Striker", Defender: "Guardian", Sniper: "Shooter", Caster: "Magus", Medic: "Healer", Supporter: "Support", Specialist: "Assassin" };
+const CLASS_NAME = { Vanguard: "Lancer", Guard: "Saber", Defender: "Shielder", Sniper: "Archer", Caster: "Magus", Medic: "Ruler", Supporter: "Caster", Specialist: "Assassin" };
 const clsName = c => CLASS_NAME[c] || c;
 
 // ---------- icons ----------
@@ -108,52 +114,54 @@ const IC = {
 };
 const ITEMS = {
   lmd: { n: "Yen", ic: IC.lmd },
-  orundum: { n: "Moon Crystal", ic: IC.orundum, d: "Used to Manifest characters." },
+  orundum: { n: "Jewel", ic: IC.orundum, d: "A gem charged with prana, in the style of jewel magecraft. Used to Manifest characters." },
   permit: { n: "Rumor Ticket", ic: IC.permit, d: "One Manifest each." },
-  cert: { n: "Night Coin", ic: IC.cert, d: "From duplicate Manifests. Spent at the Night Coin counter." },
+  cert: { n: "Tatari Fragment", ic: IC.cert, d: "Left behind when a rumor takes shape twice. Spent at the Tatari Fragment counter." },
   tokens: { n: "Versus Point", ic: IC.tokens, d: "Earned in Versus." },
-  prime: { n: "Moonstone", ic: IC.prime, d: "Restores Prana, or converts to 180 Moon Crystals." },
+  prime: { n: "Holy Relic", ic: IC.prime, d: "A relic from the Burial Agency's vaults. Restores Prana, or converts to 180 Jewels." },
   credit: { n: "Ahnenerbe Coupon", ic: IC.credit, d: "Spent at the Ahnenerbe café counter." },
   sanity: { n: "Prana", ic: IC.sanity },
   rec1: { n: "Blood Drop", ic: IC.rec1, xp: 200 },
   rec2: { n: "Blood Vial", ic: IC.rec2, xp: 400 },
   rec3: { n: "Blood Flask", ic: IC.rec3, xp: 1000 },
-  rec4: { n: "Ancestral Blood", ic: IC.rec4, xp: 2000 },
-  chip: { n: "Moon Shard", ic: IC.chip, d: "Used to Awaken characters." },
-  summ: { n: "Grimoire Page", ic: IC.summ, d: "Used to raise skill levels." },
+  rec4: { n: "True Ancestor's Blood", ic: IC.rec4, xp: 2000 },
+  chip: { n: "Crimson Moon Shard", ic: IC.chip, d: "A sliver of the Crimson Moon. Used for Ascension." },
+  summ: { n: "Magic Crest Fragment", ic: IC.summ, d: "A piece of a family Magic Crest. Used to raise Skill Ranks." },
 };
 
-// ---------- status effects (names follow the original game) ----------
+// ---------- status effects (TYPE-MOON / Fate names where one exists) ----------
 const FX = {
   ATK_UP:       { n: "ATK Up", b: 1, s: "A↑", d: "+50% ATK" },
   DEF_UP:       { n: "DEF Up", b: 1, s: "D↑", d: "+50% DEF" },
   SPD_UP:       { n: "SPD Up", b: 1, s: "S↑", d: "+30% Speed" },
   CRIT_RATE_UP: { n: "Crit Rate Up", b: 1, s: "C↑", d: "+30% Critical Rate" },
-  IMMUNITY:     { n: "Immunity", b: 1, s: "IM", d: "Blocks new debuffs" },
-  HOT:          { n: "Heal over Time", b: 1, s: "HT", d: "Heals 5% Max HP at the start of each turn (stacks)" },
-  SHIELD:       { n: "Shield", b: 1, s: "SH", d: "Absorbs damage before HP" },
+  IMMUNITY:     { n: "Debuff Immunity", b: 1, s: "IM", d: "Blocks new debuffs" },
+  HOT:          { n: "Healing Magecraft", b: 1, s: "HM", d: "Heals 5% Max HP at the start of each turn (stacks)" },
+  SHIELD:       { n: "Bounded Field", b: 1, s: "BF", d: "Absorbs damage before HP" },
   INVINCIBLE:   { n: "Invincible", b: 1, s: "IV", d: "Takes no damage" },
-  COUNTER:      { n: "Counter", b: 1, s: "CT", d: "30% chance to counterattack when hit" },
-  TAUNT:        { n: "Taunt", b: 1, s: "TA", d: "Single-target attacks must target this unit" },
-  STEALTH:      { n: "Stealth", b: 1, s: "SL", d: "Can't be targeted by single-target skills" },
-  DEF_BREAK:    { n: "DEF Break", b: 0, s: "DB", d: "DEF is 40% less effective" },
+  COUNTER:      { n: "Shield Counter", b: 1, s: "SC", d: "30% chance to counterattack when hit" },
+  TAUNT:        { n: "Target Focus", b: 1, s: "TF", d: "Single-target attacks must target this unit" },
+  STEALTH:      { n: "Presence Concealment", b: 1, s: "PC", d: "Can't be targeted by single-target skills" },
+  DEF_BREAK:    { n: "DEF Down", b: 0, s: "D↓", d: "DEF is 40% less effective" },
   ATK_DOWN:     { n: "ATK Down", b: 0, s: "A↓", d: "-30% ATK" },
   BRAND:        { n: "Line of Death", b: 0, s: "LD", d: "Takes 25% more damage" },
   HEAL_BLOCK:   { n: "Heal Block", b: 0, s: "HB", d: "Can't be healed" },
   STUN:         { n: "Bind", b: 0, s: "BD", d: "Loses the next turn" },
   SLOW:         { n: "Slow", b: 0, s: "SW", d: "-30% Speed" },
   GLANCING:     { n: "Glancing", b: 0, s: "GL", d: "50% chance to land glancing hits (-30%, no crit)" },
-  DOT:          { n: "Bleed", b: 0, s: "BL", d: "Loses 5% Max HP per stack at the start of each turn" },
+  DOT:          { n: "Curse", b: 0, s: "CU", d: "Loses 5% Max HP per stack at the start of each turn" },
   PROVOKE:      { n: "Provoke", b: 0, s: "PV", d: "Forced to use S1 on the provoker" },
-  SILENCE:      { n: "Silence", b: 0, s: "SI", d: "Can't use S2 or S3" },
+  SILENCE:      { n: "Skill Seal", b: 0, s: "SS", d: "Can't use S2 or S3" },
 };
 const RUNE_INFO = {
   Swift: "+25% SPD", Fatal: "+35% ATK", Blade: "+12% Crit Rate", Focus: "+20% Accuracy", Energy: "+15% HP", Guard: "+15% DEF",
   Rage: "+40% Crit Damage", Despair: "25% chance to Bind on each hit", Revenge: "15% chance to counterattack", Violent: "22% chance of an extra turn",
-  Will: "Immunity for 1 turn at battle start", Shield: "Team Shield (15% of HP) at battle start", Nemesis: "Gain turn meter when damaged", Endure: "+20% Resistance",
+  Will: "Debuff Immunity for 1 turn at battle start", Shield: "Team Bounded Field (15% of HP) at battle start", Nemesis: "Gain turn meter when damaged", Endure: "+20% Resistance",
 };
 const RUNE_SETS = Object.keys(RUNE_INFO);
 // Mystic Code set names shown to players (internal keys drive the engine)
-const SETN = { Swift: "Time Alteration", Fatal: "Reinforcement", Blade: "Mystic Eyes", Focus: "Hypnosis", Energy: "Regeneration", Guard: "Bounded Field",
-  Rage: "Bloodlust", Despair: "Black Key", Revenge: "Shield Counter", Violent: "Heat", Will: "Holy Shroud", Shield: "Gamaliel", Nemesis: "Impulse", Endure: "Exorcism" };
+const SETN = { Swift: "Time Alteration", Fatal: "Reinforcement", Blade: "Mystic Eyes", Focus: "Hypnosis", Energy: "Regeneration", Guard: "Protection of the Faith",
+  Rage: "Bloodlust", Despair: "Black Key", Revenge: "Reverse Beat", Violent: "Heat", Will: "Holy Shroud", Shield: "Gamaliel", Nemesis: "Inversion Impulse", Endure: "Magic Resistance" };
+// Fate-style skill ranks for Skill Levels 1–7
+const RANK = ["", "E", "D", "C", "B", "A", "A+", "EX"];
 const setName = k => SETN[k] || k;

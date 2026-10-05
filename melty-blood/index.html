@@ -296,7 +296,7 @@ p{margin:0}
 .pt .eldot.Crescent{background:radial-gradient(circle at 70% 36%,#0a0f1c 0 47%,transparent 50%),var(--ec)}
 .pt .eldot.Half{background:linear-gradient(90deg,var(--ec) 50%,#0a0f1c 50%);box-shadow:inset 0 0 0 1.5px var(--ec)}
 .pt .eldot.Full{background:var(--ec);box-shadow:0 0 6px var(--ec)}
-.el.Fire{color:#ff7a3c} .el.Water{color:#4aa8ff} .el.Wind{color:#5fdc8c} .el.Holy{color:#ffe6a0} .el.Blood{color:#ff3b5c}
+.el.Fire{color:#ff7a3c} .el.Water{color:#4aa8ff} .el.Wind{color:#5fdc8c} .el.Ether{color:#ffe6a0} .el.Imaginary{color:#a97bff}
 .el.sty{color:var(--moon);border-style:dashed}
 .pname .sty{display:block;font:700 9px var(--f-display);letter-spacing:.05em;text-transform:uppercase;line-height:1.15;color:var(--moon)}
 .variants{display:flex;gap:10px;align-items:flex-start}
@@ -508,11 +508,16 @@ const today = () => new Date().toISOString().slice(0, 10);
 // Every character comes in three Moon styles, and every Moon style in all five Elements (Summoners War style).
 //  · Moon style (internal field: style): the kit, role, Talent and a style trait.
 //  · Element (internal field: el): matchups, colour, a small stat lean and kit tweaks (ELEMENT_KIT in a3b_kits.js).
-// Water beats Fire, Fire beats Wind, Wind beats Water; Holy and Blood each beat the other.
-const ELS = ["Fire", "Water", "Wind", "Holy", "Blood"];
-const ELC = { Fire: "#ff7a3c", Water: "#4aa8ff", Wind: "#5fdc8c", Holy: "#ffe6a0", Blood: "#e0244a" };
-const BEATS = { Water: "Fire", Fire: "Wind", Wind: "Water", Holy: "Blood", Blood: "Holy" };
-function elementRel(a, t) { if (BEATS[a] === t) return "adv"; if (BEATS[t] === a && !(a === "Holy" || a === "Blood")) return "dis"; return "neu"; }
+// Elements are the magecraft Elements of the Nasuverse: three of the Five Great Elements form the triangle
+// (Water beats Fire, Fire beats Wind, Wind beats Water), and Ether (the fifth Great Element) and Imaginary Numbers
+// (a rare "imaginary" Element) are the rare pair that each beat the other.
+const ELS = ["Fire", "Water", "Wind", "Ether", "Imaginary"];
+const ELC = { Fire: "#ff7a3c", Water: "#4aa8ff", Wind: "#5fdc8c", Ether: "#ffe6a0", Imaginary: "#a97bff" };
+const BEATS = { Water: "Fire", Fire: "Wind", Wind: "Water", Ether: "Imaginary", Imaginary: "Ether" };
+const RARE_ELS = ["Ether", "Imaginary"];
+const elName = el => el === "Imaginary" ? "Imaginary Numbers" : el;
+const elShort = el => el === "Imaginary" ? "Imag." : el;
+function elementRel(a, t) { if (BEATS[a] === t) return "adv"; if (BEATS[t] === a && !RARE_ELS.includes(a)) return "dis"; return "neu"; }
 const elKey = el => el.toLowerCase();
 const weakTo = el => Object.keys(BEATS).find(k => BEATS[k] === el);
 // Traits follow the fighting game: Crescent fires up Blood Heat at high meter, Half has the toughest guard and an
@@ -526,9 +531,10 @@ const STYLE = {
 const styleName = st => (STYLE[st] || { n: st }).n;
 const CRES_HEAT = .15, CRES_HEAT_AT = 200, HALF_GUARD = .06, FULL_CHARGE = 8, FULL_ARC = .25;
 const RC = { 1: "#c9d1de", 2: "#7fdc8a", 3: "#8fd8ff", 4: "#c39bff", 5: "#f1d07a", 6: "#ff9a3c" };
-// Engine class keys stay internal; players see the names on the right.
+// Engine class keys stay internal; players see TYPE-MOON class names (Fate's Servant classes, plus Magus for
+// magic attackers). As in Fate/Grand Order, Casters are the support class and Rulers the protectors and healers.
 const CLASSES = ["Vanguard", "Guard", "Defender", "Sniper", "Caster", "Medic", "Supporter", "Specialist"];
-const CLASS_NAME = { Vanguard: "Vanguard", Guard: "Striker", Defender: "Guardian", Sniper: "Shooter", Caster: "Magus", Medic: "Healer", Supporter: "Support", Specialist: "Assassin" };
+const CLASS_NAME = { Vanguard: "Lancer", Guard: "Saber", Defender: "Shielder", Sniper: "Archer", Caster: "Magus", Medic: "Ruler", Supporter: "Caster", Specialist: "Assassin" };
 const clsName = c => CLASS_NAME[c] || c;
 
 // ---------- icons ----------
@@ -579,61 +585,63 @@ const IC = {
 };
 const ITEMS = {
   lmd: { n: "Yen", ic: IC.lmd },
-  orundum: { n: "Moon Crystal", ic: IC.orundum, d: "Used to Manifest characters." },
+  orundum: { n: "Jewel", ic: IC.orundum, d: "A gem charged with prana, in the style of jewel magecraft. Used to Manifest characters." },
   permit: { n: "Rumor Ticket", ic: IC.permit, d: "One Manifest each." },
-  cert: { n: "Night Coin", ic: IC.cert, d: "From duplicate Manifests. Spent at the Night Coin counter." },
+  cert: { n: "Tatari Fragment", ic: IC.cert, d: "Left behind when a rumor takes shape twice. Spent at the Tatari Fragment counter." },
   tokens: { n: "Versus Point", ic: IC.tokens, d: "Earned in Versus." },
-  prime: { n: "Moonstone", ic: IC.prime, d: "Restores Prana, or converts to 180 Moon Crystals." },
+  prime: { n: "Holy Relic", ic: IC.prime, d: "A relic from the Burial Agency's vaults. Restores Prana, or converts to 180 Jewels." },
   credit: { n: "Ahnenerbe Coupon", ic: IC.credit, d: "Spent at the Ahnenerbe café counter." },
   sanity: { n: "Prana", ic: IC.sanity },
   rec1: { n: "Blood Drop", ic: IC.rec1, xp: 200 },
   rec2: { n: "Blood Vial", ic: IC.rec2, xp: 400 },
   rec3: { n: "Blood Flask", ic: IC.rec3, xp: 1000 },
-  rec4: { n: "Ancestral Blood", ic: IC.rec4, xp: 2000 },
-  chip: { n: "Moon Shard", ic: IC.chip, d: "Used to Awaken characters." },
-  summ: { n: "Grimoire Page", ic: IC.summ, d: "Used to raise skill levels." },
+  rec4: { n: "True Ancestor's Blood", ic: IC.rec4, xp: 2000 },
+  chip: { n: "Crimson Moon Shard", ic: IC.chip, d: "A sliver of the Crimson Moon. Used for Ascension." },
+  summ: { n: "Magic Crest Fragment", ic: IC.summ, d: "A piece of a family Magic Crest. Used to raise Skill Ranks." },
 };
 
-// ---------- status effects (names follow the original game) ----------
+// ---------- status effects (TYPE-MOON / Fate names where one exists) ----------
 const FX = {
   ATK_UP:       { n: "ATK Up", b: 1, s: "A↑", d: "+50% ATK" },
   DEF_UP:       { n: "DEF Up", b: 1, s: "D↑", d: "+50% DEF" },
   SPD_UP:       { n: "SPD Up", b: 1, s: "S↑", d: "+30% Speed" },
   CRIT_RATE_UP: { n: "Crit Rate Up", b: 1, s: "C↑", d: "+30% Critical Rate" },
-  IMMUNITY:     { n: "Immunity", b: 1, s: "IM", d: "Blocks new debuffs" },
-  HOT:          { n: "Heal over Time", b: 1, s: "HT", d: "Heals 5% Max HP at the start of each turn (stacks)" },
-  SHIELD:       { n: "Shield", b: 1, s: "SH", d: "Absorbs damage before HP" },
+  IMMUNITY:     { n: "Debuff Immunity", b: 1, s: "IM", d: "Blocks new debuffs" },
+  HOT:          { n: "Healing Magecraft", b: 1, s: "HM", d: "Heals 5% Max HP at the start of each turn (stacks)" },
+  SHIELD:       { n: "Bounded Field", b: 1, s: "BF", d: "Absorbs damage before HP" },
   INVINCIBLE:   { n: "Invincible", b: 1, s: "IV", d: "Takes no damage" },
-  COUNTER:      { n: "Counter", b: 1, s: "CT", d: "30% chance to counterattack when hit" },
-  TAUNT:        { n: "Taunt", b: 1, s: "TA", d: "Single-target attacks must target this unit" },
-  STEALTH:      { n: "Stealth", b: 1, s: "SL", d: "Can't be targeted by single-target skills" },
-  DEF_BREAK:    { n: "DEF Break", b: 0, s: "DB", d: "DEF is 40% less effective" },
+  COUNTER:      { n: "Shield Counter", b: 1, s: "SC", d: "30% chance to counterattack when hit" },
+  TAUNT:        { n: "Target Focus", b: 1, s: "TF", d: "Single-target attacks must target this unit" },
+  STEALTH:      { n: "Presence Concealment", b: 1, s: "PC", d: "Can't be targeted by single-target skills" },
+  DEF_BREAK:    { n: "DEF Down", b: 0, s: "D↓", d: "DEF is 40% less effective" },
   ATK_DOWN:     { n: "ATK Down", b: 0, s: "A↓", d: "-30% ATK" },
   BRAND:        { n: "Line of Death", b: 0, s: "LD", d: "Takes 25% more damage" },
   HEAL_BLOCK:   { n: "Heal Block", b: 0, s: "HB", d: "Can't be healed" },
   STUN:         { n: "Bind", b: 0, s: "BD", d: "Loses the next turn" },
   SLOW:         { n: "Slow", b: 0, s: "SW", d: "-30% Speed" },
   GLANCING:     { n: "Glancing", b: 0, s: "GL", d: "50% chance to land glancing hits (-30%, no crit)" },
-  DOT:          { n: "Bleed", b: 0, s: "BL", d: "Loses 5% Max HP per stack at the start of each turn" },
+  DOT:          { n: "Curse", b: 0, s: "CU", d: "Loses 5% Max HP per stack at the start of each turn" },
   PROVOKE:      { n: "Provoke", b: 0, s: "PV", d: "Forced to use S1 on the provoker" },
-  SILENCE:      { n: "Silence", b: 0, s: "SI", d: "Can't use S2 or S3" },
+  SILENCE:      { n: "Skill Seal", b: 0, s: "SS", d: "Can't use S2 or S3" },
 };
 const RUNE_INFO = {
   Swift: "+25% SPD", Fatal: "+35% ATK", Blade: "+12% Crit Rate", Focus: "+20% Accuracy", Energy: "+15% HP", Guard: "+15% DEF",
   Rage: "+40% Crit Damage", Despair: "25% chance to Bind on each hit", Revenge: "15% chance to counterattack", Violent: "22% chance of an extra turn",
-  Will: "Immunity for 1 turn at battle start", Shield: "Team Shield (15% of HP) at battle start", Nemesis: "Gain turn meter when damaged", Endure: "+20% Resistance",
+  Will: "Debuff Immunity for 1 turn at battle start", Shield: "Team Bounded Field (15% of HP) at battle start", Nemesis: "Gain turn meter when damaged", Endure: "+20% Resistance",
 };
 const RUNE_SETS = Object.keys(RUNE_INFO);
 // Mystic Code set names shown to players (internal keys drive the engine)
-const SETN = { Swift: "Time Alteration", Fatal: "Reinforcement", Blade: "Mystic Eyes", Focus: "Hypnosis", Energy: "Regeneration", Guard: "Bounded Field",
-  Rage: "Bloodlust", Despair: "Black Key", Revenge: "Shield Counter", Violent: "Heat", Will: "Holy Shroud", Shield: "Gamaliel", Nemesis: "Impulse", Endure: "Exorcism" };
+const SETN = { Swift: "Time Alteration", Fatal: "Reinforcement", Blade: "Mystic Eyes", Focus: "Hypnosis", Energy: "Regeneration", Guard: "Protection of the Faith",
+  Rage: "Bloodlust", Despair: "Black Key", Revenge: "Reverse Beat", Violent: "Heat", Will: "Holy Shroud", Shield: "Gamaliel", Nemesis: "Inversion Impulse", Endure: "Magic Resistance" };
+// Fate-style skill ranks for Skill Levels 1–7
+const RANK = ["", "E", "D", "C", "B", "A", "A+", "EX"];
 const setName = k => SETN[k] || k;
 
 // =====================================================================
 //  CHARACTERS — the Melty Blood cast. Each character has a Crescent, Half and Full Moon style; every style is a
-//  separate unit with its own role, three skills and Talent (skill names follow each style's move list).
+//  separate unit with its own class, three skills and Personal Skill (skill names follow each style's move list).
 //  Skill format: {slot, name, cd, target, hits, mult, ignoreDef, effects[]}; S3 is an Arc Drive that
-//  costs 100% Magic Circuit instead of a cooldown. Skill and Talent text is generated from the data (skillDesc, passiveDesc).
+//  costs 100% Magic Circuit instead of a cooldown. Skill and Personal Skill text is generated from the data (skillDesc, passiveDesc).
 // =====================================================================
 const dbf = (what, chance = 1, turns = 2) => ({ on: "target", type: "debuff", what, chance, turns });
 const tmDown = (amount, chance) => ({ on: "target", type: "atkbar-", amount, chance });
@@ -678,26 +686,26 @@ function skillDesc(sk) {
     else if (e.type === "bonusPerDebuff") out.push(`+${P(e.per)} damage per debuff on the target (up to +${P(e.cap)})`);
     else if (e.type === "bonusIf") out.push(`+${P(e.bonusDmg)} damage against targets with ${FX[e.cond].n}`);
     else if (e.type === "buff") out.push(`${e.on === "self" ? "Gains" : sk.target === "ally_single" ? "Grants the ally" : "Grants all allies"} ${nm}${T}`);
-    else if (e.type === "taunt") out.push(`Gains Taunt${T}`);
+    else if (e.type === "taunt") out.push(`Gains ${FX.TAUNT.n}${T}`);
     else if (e.type === "atkbar+") out.push(`${e.on === "self" ? (e.onKill ? "On a kill, gains" : "Gains") : "All allies gain"} ${P(e.amount)} turn meter${e.perCrit ? " per critical hit" : ""}`);
     else if (e.type === "healPct") out.push(ch ? `${ch}heal ${P(e.amount)} of Max HP` : `Heals ${P(e.amount)} of Max HP`);
     else if (e.type === "healPctTarget") out.push(`Heals ${sk.target === "ally_single" ? "the ally" : "all allies"} for ${P(e.amount)} of their Max HP`);
     else if (e.type === "healFlatCasterHP") out.push(`Heals all allies for ${P(e.amount)} of this character's Max HP`);
     else if (e.type === "cleanse") out.push(`Cleanses ${e.amount} debuff${e.amount > 1 ? "s" : ""} from ${sk.target === "ally_single" ? "the ally" : "all allies"}`);
-    else if (e.type === "shieldCasterHP") out.push(`${e.on === "self" ? "Gains" : "Grants all allies"} a Shield worth ${P(e.amount)} of this character's Max HP${T}`);
+    else if (e.type === "shieldCasterHP") out.push(`${e.on === "self" ? "Gains" : "Grants all allies"} a ${FX.SHIELD.n} worth ${P(e.amount)} of this character's Max HP${T}`);
     else if (e.type === "reviveOne") out.push(`Revives one fallen ally at ${P(e.amount)} HP`);
   }
   if (sk.arc) out.push(`Arc Drive: costs ${sk.arc}% Magic Circuit`);
   return out.map(x => x.charAt(0).toUpperCase() + x.slice(1)).join(". ") + ".";
 }
 
-// ---------- Talents (passives) ----------
+// ---------- Personal Skills (passives) ----------
 const T = (name, id, x = {}) => ({ name, id, ...x });
 const STATN = { hp: "HP", atk: "ATK", def: "DEF", spd: "SPD", cr: "Crit Rate", cd: "Crit Damage", acc: "Accuracy", res: "Resistance" };
 const fxList = l => l.map(x => FX[x].n).join(" and ");
 const PASSIVE_TEXT = {
   LIFESTEAL: p => `heals for ${P(p.amount)} of damage dealt`,
-  REVIVE_ONCE: p => `once per battle, revives at ${P(p.amount)} HP with ${FX[p.buff || "INVINCIBLE"].n} (${p.turns || 1}T)`,
+  REVIVE_ONCE: p => `revives once per battle with Guts, at ${P(p.amount)} HP and ${FX[p.buff || "INVINCIBLE"].n} (${p.turns || 1}T)`,
   TEAM_ATB_START: p => `all allies start battle with ${P(p.amount)} turn meter`,
   SELF_ATB_START: p => `starts battle with ${P(p.amount)} turn meter`,
   MC_START: p => `the team starts battle with ${P(p.amount)} Magic Circuit`,
@@ -1197,29 +1205,29 @@ const ARC_COST = 100;
 // Home Element per Moon style (Crescent Half Full): the one that fits the kit. Starters, story rewards, bosses
 // and pre-Element saves use it.
 const HOME_EL = {
-  shiki: "Wind Water Fire", nanaya: "Wind Water Blood", arcueid: "Fire Water Blood", "red-arcueid": "Blood Water Fire",
-  ciel: "Holy Water Fire", "powered-ciel": "Holy Water Wind", akiha: "Fire Water Blood", "red-akiha": "Fire Wind Blood",
-  hisui: "Water Holy Fire", kohaku: "Water Fire Wind", "mech-hisui": "Wind Water Fire", satsuki: "Blood Fire Wind",
-  sion: "Wind Water Fire", "sion-tatari": "Blood Water Wind", riesbyfe: "Holy Water Fire", aoko: "Wind Water Fire",
-  chaos: "Blood Wind Water", roa: "Blood Wind Fire", wallachia: "Blood Water Fire", len: "Water Wind Fire",
-  "white-len": "Water Wind Holy", miyako: "Fire Water Wind", kouma: "Fire Water Blood", "neco-arc": "Wind Water Fire",
-  "neco-chaos": "Blood Water Wind", ryougi: "Wind Water Fire", saber: "Holy Water Wind", noel: "Holy Water Fire", vlov: "Fire Water Blood",
+  shiki: "Wind Water Fire", nanaya: "Wind Water Imaginary", arcueid: "Fire Water Imaginary", "red-arcueid": "Imaginary Water Fire",
+  ciel: "Ether Water Fire", "powered-ciel": "Ether Water Wind", akiha: "Fire Water Imaginary", "red-akiha": "Fire Wind Imaginary",
+  hisui: "Water Ether Fire", kohaku: "Water Fire Wind", "mech-hisui": "Wind Water Fire", satsuki: "Imaginary Fire Wind",
+  sion: "Wind Water Fire", "sion-tatari": "Imaginary Water Wind", riesbyfe: "Ether Water Fire", aoko: "Wind Water Fire",
+  chaos: "Imaginary Wind Water", roa: "Imaginary Wind Fire", wallachia: "Imaginary Water Fire", len: "Water Wind Fire",
+  "white-len": "Water Wind Ether", miyako: "Fire Water Wind", kouma: "Fire Water Imaginary", "neco-arc": "Wind Water Fire",
+  "neco-chaos": "Imaginary Water Wind", ryougi: "Wind Water Fire", saber: "Ether Water Wind", noel: "Ether Water Fire", vlov: "Fire Water Imaginary",
 };
 // Element versions differ slightly, like Summoners War: a stat lean, an extra effect on S1, and an Arc Drive tweak.
 const ELEMENT_KIT = {
-  Fire: { d: "+5% ATK. S1 can inflict Bleed. Damaging Arc Drives hit 8% harder (support ones grant ATK Up).",
+  Fire: { d: "+5% ATK. S1 can inflict Curse. Damaging Arc Drives hit 8% harder (support ones grant ATK Up).",
     stat: { atk: 1.05 }, s1: dbf("DOT", .25), arc: sk => sk.mult > 0 ? { mult: 1.08 } : { add: teamBuff("ATK_UP") } },
   Water: { d: "+6% HP. S1 can inflict Slow. Arc Drives also heal all allies.",
     stat: { hp: 1.06 }, s1: dbf("SLOW", .25), arc: () => ({ add: teamHeal(.08) }) },
   Wind: { d: "+4 SPD. S1 reduces turn meter. Arc Drives also give all allies turn meter.",
     stat: { spd: 4 }, s1: tmDown(.1), arc: () => ({ add: teamGain(.1) }) },
-  Holy: { d: "+8% DEF. S1 can inflict Silence. Arc Drives also remove a buff (support ones cleanse).",
+  Ether: { d: "+8% DEF. S1 can inflict Skill Seal. Arc Drives also remove a buff (support ones cleanse).",
     stat: { def: 1.08 }, s1: dbf("SILENCE", .2, 1), arc: sk => ({ add: sk.mult > 0 ? strip(1) : cleanse(1) }) },
-  Blood: { d: "+3% HP and ATK. S1 can inflict Heal Block. Arc Drives also heal this character.",
+  Imaginary: { d: "+3% HP and ATK. S1 can inflict Heal Block. Arc Drives also heal this character.",
     stat: { atk: 1.03, hp: 1.03 }, s1: dbf("HEAL_BLOCK", .25), arc: () => ({ add: selfHeal(.15) }) },
 };
-// Manifest odds by Element: Holy and Blood versions are rare, like Light and Dark in Summoners War
-const EL_WEIGHT = { Fire: .3, Water: .3, Wind: .3, Holy: .05, Blood: .05 };
+// Manifest odds by Element: Ether and Imaginary Numbers versions are rare, like Light and Dark in Summoners War
+const EL_WEIGHT = { Fire: .3, Water: .3, Wind: .3, Ether: .05, Imaginary: .05 };
 // add an effect to a skill, or strengthen the same effect if the skill already has it
 function withEffect(sk, e) {
   const ex = sk.effects.find(x => x.type === e.type && x.on === e.on && x.what === e.what && !x.onKill && !x.perCrit);
@@ -1268,6 +1276,8 @@ const opLabel = op => `${op.el} ${styleName(op.style)} ${op.short}`;
 const LEGACY = {};
 for (const f of FAMS) LEGACY[f] = homeKey(f);
 for (const c of CHARS) LEGACY[c.k] = homeKey(c.k + "-c");
+// the rare Elements were once called Holy and Blood
+for (const f of FAMS) { LEGACY[f + "-holy"] = f + "-ether"; LEGACY[f + "-blood"] = f + "-imaginary"; }
 // menus show the same drawn figures as battles (rendered once, then cached)
 const spriteURL = op => opArt(op.key).full;
 const headURL = op => opArt(op.key).head;
@@ -1291,10 +1301,10 @@ const ENEMY = {
   phantom: { n: "Rumor Phantom", cls: "Caster", style: "Crescent", el: "Water", m: { hp: .6, atk: .9, def: .55, spd: 104 },
     fig: { type: "hood", skin: "#d8dce8", col: "#2a2a3e", col2: "#1e1e2e", cape: "#3a3a56", eyes: "#8fd8ff", robe: 1, w: "arts", sc: "#8fd8ff" },
     skills: [S1("Whisper", 2.6, [dbf("SILENCE", .2, 1)]), S2("Spread the Rumor", "aoe_enemies", 1.6, [dbf("ATK_DOWN", .3)])] },
-  wraith: { n: "Tatari Wraith", cls: "Caster", style: "Full", el: "Blood", m: { hp: .7, atk: .95, def: .6, spd: 106 },
+  wraith: { n: "Tatari Wraith", cls: "Caster", style: "Full", el: "Imaginary", m: { hp: .7, atk: .95, def: .6, spd: 106 },
     fig: { type: "hood", skin: "#e0d0d4", col: "#2a0e18", col2: "#1e0a12", cape: "#3a1020", eyes: "#ff3b5c", robe: 1, w: "arts", sc: "#ff3b5c" },
     skills: [S1("Curse", 2.8, [dbf("BRAND", .3)]), S2("Night Terror", "aoe_enemies", 1.8, [dbf("STUN", .2, 1)])] },
-  executor: { n: "Rogue Executor", cls: "Sniper", style: "Crescent", el: "Holy", m: { hp: .6, atk: .9, def: .55, spd: 108 },
+  executor: { n: "Rogue Executor", cls: "Sniper", style: "Crescent", el: "Ether", m: { hp: .6, atk: .9, def: .55, spd: 108 },
     fig: { type: "human", skin: "#efdccc", hair: "#3a3a40", hs: "short", col: "#1a1a24", col2: "#16161f", boot: "#101016", acc: "#c8b06a", trim: "#e8e2d0", robe: "robe", w: "blackkeys", sc: "#f4efe2" },
     skills: [S1("Black Keys", 1.4, [dbf("STUN", .1, 1)], 2)] },
   knight: { n: "Ghoul Knight", cls: "Defender", style: "Half", el: "Fire", m: { hp: 1.05, atk: .62, def: 1.1, spd: 96 },
@@ -1364,7 +1374,7 @@ const STORY = [{
         { id: "1-6", type: "battle", name: "Plaza of Rumors", lv: 4, waves: [W("ghoul", "phantom", "ghoul"), W("dead", "phantom", "dead")], pre: [
           L("satsuki", "Those ghosts are whispering... they're repeating things people say about this town."),
           L("shiki", "Then let's give them something new to talk about."),
-          L("satsuki", "Oh, and look at everyone's badge. The colour is their Element: Water beats Fire, Fire beats Wind, Wind beats Water, and Holy and Blood beat each other."),
+          L("satsuki", "Oh, and look at everyone's badge. The colour is their magecraft Element: Water beats Fire, Fire beats Wind, Wind beats Water, and the rare Ether and Imaginary Numbers beat each other."),
           L("satsuki", "The moon shape is their Moon style. Same person, different style, totally different moves. I'm a Fire Half Moon, you're a Wind Crescent Moon!") ] },
         { id: "1-7", type: "boss", name: "The Alchemist", lv: 7, waves: [W("phantom", "ghoul"), W("b_sion", "ghoul", "phantom")], pre: [
           L("sion_e", "Shiki Tohno. Holder of the Mystic Eyes of Death Perception. I require your cooperation."),
@@ -1558,8 +1568,8 @@ const ACHIEVEMENTS = [
   { id: "ops40", n: "Gather 40 characters", test: () => Object.keys(S.ops).length >= 40, reward: { orundum: 600, permit: 2 } },
   { id: "ops100", n: "Gather 100 characters", test: () => Object.keys(S.ops).length >= 100, reward: { orundum: 1000, permit: 3 } },
   { id: "opsAll", n: "Gather every character in every Moon style and Element", test: () => Object.keys(S.ops).length >= OP_KEYS.length, reward: { orundum: 3000, permit: 10 } },
-  { id: "e1", n: "Awaken a character once", test: () => Object.values(S.ops).some(p => p.elite >= 1), reward: { orundum: 150 } },
-  { id: "e2", n: "Fully Awaken a character", test: () => Object.values(S.ops).some(p => p.elite >= 2), reward: { orundum: 400, permit: 1 } },
+  { id: "e1", n: "Ascend a character once", test: () => Object.values(S.ops).some(p => p.elite >= 1), reward: { orundum: 150 } },
+  { id: "e2", n: "Fully Ascend a character", test: () => Object.values(S.ops).some(p => p.elite >= 2), reward: { orundum: 400, permit: 1 } },
   { id: "six", n: "Manifest a 5★ character", test: () => Object.keys(S.ops).some(k => OPS[k].rar === 5), reward: { orundum: 300 } },
   { id: "tw10", n: "Clear Arcade stage 10", test: () => S.tower >= 10, reward: { orundum: 300, permit: 1 } },
   { id: "tw20", n: "Clear Arcade stage 20", test: () => S.tower >= 20, reward: { orundum: 500, permit: 2 } },
@@ -1568,25 +1578,25 @@ const ACHIEVEMENTS = [
 const SHOP = {
   credit: [
     { id: "r_lmd", n: "Yen ×12,000", cost: 200, give: { lmd: 12000 } },
-    { id: "r_rec", n: "Ancestral Blood ×3", cost: 240, give: { rec4: 3 } },
-    { id: "r_summ", n: "Grimoire Page ×3", cost: 160, give: { summ: 3 } },
-    { id: "r_chip", n: "Moon Shard", cost: 300, give: { chip: 1 } },
+    { id: "r_rec", n: "True Ancestor's Blood ×3", cost: 240, give: { rec4: 3 } },
+    { id: "r_summ", n: "Magic Crest Fragment ×3", cost: 160, give: { summ: 3 } },
+    { id: "r_chip", n: "Crimson Moon Shard", cost: 300, give: { chip: 1 } },
   ],
   cert: [
     { id: "c_permit", n: "Rumor Ticket", cost: 25, give: { permit: 1 } },
-    { id: "c_summ", n: "Grimoire Page ×3", cost: 8, give: { summ: 3 } },
-    { id: "c_chip", n: "Moon Shard ×2", cost: 12, give: { chip: 2 } },
+    { id: "c_summ", n: "Magic Crest Fragment ×3", cost: 8, give: { summ: 3 } },
+    { id: "c_chip", n: "Crimson Moon Shard ×2", cost: 12, give: { chip: 2 } },
     { id: "c_rune", n: "Grade IV Mystic Code", cost: 20, give: { rune: 4 } },
   ],
   tokens: [
     { id: "t_permit", n: "Rumor Ticket", cost: 240, give: { permit: 1 } },
-    { id: "t_chip", n: "Moon Shard ×3", cost: 90, give: { chip: 3 } },
-    { id: "t_summ", n: "Grimoire Page ×4", cost: 60, give: { summ: 4 } },
+    { id: "t_chip", n: "Crimson Moon Shard ×3", cost: 90, give: { chip: 3 } },
+    { id: "t_summ", n: "Magic Crest Fragment ×4", cost: 60, give: { summ: 4 } },
     { id: "t_rune", n: "Grade V Mystic Code", cost: 220, give: { rune: 5 } },
   ],
   prime: [
     { id: "p_san", n: "Restore Prana", d: "Refill Prana to max", cost: 1, give: { sanityMax: 1 } },
-    { id: "p_oru", n: "Exchange for Moon Crystals", d: "1 Moonstone → 180 Moon Crystals", cost: 1, give: { orundum: 180 } },
+    { id: "p_oru", n: "Exchange for Jewels", d: "1 Holy Relic → 180 Jewels", cost: 1, give: { orundum: 180 } },
   ],
 };
 // starters cover all three Moon styles and the Fire/Water/Wind triangle; any Fire, Water or Wind 5★ can headline the banner
@@ -2450,7 +2460,7 @@ function figHead(id, f, bg) {
 }
 // head icons sit on their Element's colour
 const HEAD_BG = { enemy: ["#7a2a3a", "#3a1220", "#14060a"], Fire: ["#8a3a1a", "#3a1608", "#140604"], Water: ["#1e4a8a", "#0e2244", "#040a16"],
-  Wind: ["#1e6a44", "#0c2e1e", "#04120a"], Holy: ["#7a6a3a", "#3a321a", "#14100a"], Blood: ["#7a1430", "#360a16", "#120408"] };
+  Wind: ["#1e6a44", "#0c2e1e", "#04120a"], Ether: ["#7a6a3a", "#3a321a", "#14100a"], Imaginary: ["#4a2a7a", "#1e1238", "#0a0614"] };
 const enemyArt = key => ({ get full() { return figFull("e:" + key, ENEMY[key].fig).url; }, get head() { return figHead("e:" + key, ENEMY[key].fig, HEAD_BG.enemy); } });
 // a character's Moon styles share a body; non-home Elements glow in their own colour, so art is cached per body + glow
 const opArt = key => { const op = OPS[key], id = "o:" + op.base + "|" + op.fig.sc; return { get full() { return figFull(id, op.fig).url; }, get head() { return figHead(id, op.fig, HEAD_BG[op.el] || HEAD_BG.Fire); } }; };
@@ -2524,7 +2534,7 @@ function spendSanity(n) {
   S.sanity -= n; S.daily.sanity += n; S.xp += n * 10;
   let ups = 0;
   while (S.lvl < 120 && S.xp >= pxpNeed(S.lvl)) { S.xp -= pxpNeed(S.lvl); S.lvl++; ups++; }
-  if (ups) { S.sanity = Math.max(S.sanity, maxSanity(S.lvl)); S.orundum += 30 * ups; toast(`Level ${S.lvl}! Prana restored, +${30 * ups} Moon Crystals.`, "gold"); }
+  if (ups) { S.sanity = Math.max(S.sanity, maxSanity(S.lvl)); S.orundum += 30 * ups; toast(`Level ${S.lvl}! Prana restored, +${30 * ups} Jewels.`, "gold"); }
 }
 
 // ---------- operator stats ----------
@@ -2552,7 +2562,7 @@ function applySetStats(st, sets) {
   if (sets.has("Rage")) st.cd += .4;
   if (sets.has("Endure")) st.res += .2;
 }
-// STAT Talents: percentage boosts to HP/ATK/DEF/SPD, flat boosts to the rate stats
+// STAT Personal Skills: percentage boosts to HP/ATK/DEF/SPD, flat boosts to the rate stats
 function applyStatTalents(st, passives) {
   for (const t of passives || []) if (t.id === "STAT") for (const k in t.stats) {
     if (k === "hp" || k === "atk" || k === "def" || k === "spd") st[k] *= 1 + t.stats[k]; else st[k] += t.stats[k];
@@ -2724,7 +2734,7 @@ function nextNode() {
 
 // =====================================================================
 //  BATTLE ENGINE — turn gauges, Element affinity, Moon-style traits, Mystic Codes,
-//  statuses, Talents (passives), AI styles and the Magic Circuit, emitting events for the renderer.
+//  statuses, Personal Skills (passives), AI styles and the Magic Circuit, emitting events for the renderer.
 // =====================================================================
 let UID = 0;
 const MELEE = new Set(["Vanguard", "Guard", "Defender", "Specialist"]);
@@ -2874,7 +2884,7 @@ function makeBattle(cfg) {
     const rev = u.passives.find(p => p.id === "REVIVE_ONCE");
     if (rev && !u.flags.revived) {
       u.flags.revived = true; u.hp = Math.max(1, Math.round(u.max.hp * (rev.amount || .3))); u.eff = []; u.shield = 0;
-      ev({ k: "txt", u: u.uid, s: "REVIVED", c: "buff" }); ev({ k: "revive", u: u.uid, hp: u.hp, inPlace: 1 });
+      ev({ k: "txt", u: u.uid, s: "GUTS", c: "buff" }); ev({ k: "revive", u: u.uid, hp: u.hp, inPlace: 1 });
       addEff(u, rev.buff || "INVINCIBLE", rev.turns || 1, u);
       return;
     }
@@ -2953,7 +2963,7 @@ function makeBattle(cfg) {
     if (tar.alive && att.alive && !isCounter && B.depth < 3) {
       const pc = pv(tar, "COUNTER");
       if ((has(tar, "COUNTER") && R() < .3) || (tar.sets.has("Revenge") && R() < .15) || (pc && R() < pc.chance * per)) {
-        ev({ k: "txt", u: tar.uid, s: "COUNTER", c: "buff" });
+        ev({ k: "txt", u: tar.uid, s: "SHIELD COUNTER", c: "buff" });
         const s1 = tar.skills[0];
         B.depth++; ev({ k: "atk", a: tar.uid, t: [att.uid], anim: animFor(tar, s1), aoe: 0, counter: 1 }); attackOnce(tar, att, s1, true); B.depth--;
       }
@@ -3164,7 +3174,7 @@ function makeBattle(cfg) {
     const rg = pv(u, "REGEN"); if (u.alive && rg) heal(u, u.max.hp * rg.amount);
     if (u.alive && u.style === "Full") gainMC(u.team, FULL_CHARGE);
     if (!u.alive) { ev({ k: "end", u: u.uid }); endTurn(u); return "acted"; }
-    if (has(u, "STUN")) { removeEff(u, "STUN"); ev({ k: "txt", u: u.uid, s: "STUNNED", c: "debuff" }); ev({ k: "end", u: u.uid }); endTurn(u); return "acted"; }
+    if (has(u, "STUN")) { removeEff(u, "STUN"); ev({ k: "txt", u: u.uid, s: "BOUND", c: "debuff" }); ev({ k: "end", u: u.uid }); endTurn(u); return "acted"; }
     if (has(u, "PROVOKE") && u.provokedBy && u.provokedBy.alive) { act(u, 1, u.provokedBy); return "acted"; }
     if (u.team === "A" && !B.auto) { B.waiting = u; return "input"; }
     const ch = aiChoose(u, u.team === "A" ? B.aiStyle : "balanced"); act(u, ch.slot, ch.t); return "acted";
@@ -4098,14 +4108,14 @@ function unitPop(u) {
   return `<div class="row"><img class="bpt" src="${u.isOp ? opArt(u.key).head : enemyArt(u.key).head}" alt=""><div><div class="eyebrow">${u.team === "A" ? "Your squad" : "Enemy"}${u.boss ? " · Boss" : ""}</div><h3>${esc(u.n)}</h3>
     <div class="row" style="gap:4px;margin-top:3px"><span class="el ${u.el}">${u.el}</span>${u.style ? `<span class="el sty">${styleName(u.style)}</span>` : ""}<span class="cls">${clsName(u.cls)}</span></div></div></div>
     <div class="statgrid" style="margin-top:10px">
-      <div><span>HP</span><b>${fmtFull(u.hp)} / ${fmtFull(u.max.hp)}</b></div><div><span>Shield</span><b>${fmtFull(u.shield)}</b></div>
+      <div><span>HP</span><b>${fmtFull(u.hp)} / ${fmtFull(u.max.hp)}</b></div><div><span>Bounded Field</span><b>${fmtFull(u.shield)}</b></div>
       <div><span>ATK</span><b>${fmtFull(e.atk(u))}</b></div><div><span>DEF</span><b>${fmtFull(e.def(u))}</b></div>
       <div><span>SPD</span><b>${Math.round(e.spd(u))}</b></div><div><span>Crit Rate</span><b>${pct(e.cr(u))}</b></div>
       <div><span>Accuracy</span><b>${pct(u.max.acc)}</b></div><div><span>Resistance</span><b>${pct(u.max.res)}</b></div>
     </div>
     ${u.eff.length ? `<div class="stack" style="gap:4px;margin-top:10px">${u.eff.map(x => `<div class="small"><span class="tag ${FX[x.id].b ? "ls" : "ds"}">${FX[x.id].n}</span> <span class="dim">${FX[x.id].d} · ${x.turns}T</span></div>`).join("")}</div>` : `<p class="tiny dim" style="margin-top:10px">No active effects.</p>`}
     ${[...u.sets].length ? `<p class="small" style="margin-top:8px"><b class="gold">Mystic Codes:</b> <span class="dim">${[...u.sets].map(s => `${setName(s)} (${RUNE_INFO[s]})`).join(", ")}</span></p>` : ""}
-    ${u.passives.length ? `<p class="small" style="margin-top:6px"><b class="gold">Talent:</b> <span class="dim">${u.passives.map(p => esc(p.text || p.id)).join(" ")}</span></p>` : ""}`;
+    ${u.passives.length ? `<p class="small" style="margin-top:6px"><b class="gold">Personal Skill:</b> <span class="dim">${u.passives.map(p => esc(p.text || p.id)).join(" ")}</span></p>` : ""}`;
 }
 function popup(html) {
   const p = $("#bPop"); if (!p) return;
@@ -4176,7 +4186,7 @@ function startBattle(cfg) {
     <div class="turnstrip" id="bStrip"></div>
     ${mcHTML("mcA", false)}${mcHTML("mcE", true)}
     <div class="bban" id="bBan"></div>
-    <div class="bctl" id="bCtl"><div class="bwait">Deploying…</div></div>
+    <div class="bctl" id="bCtl"><div class="bwait">Ready…</div></div>
     <div class="bpop" id="bPop" hidden></div>
   </div>`;
   root.hidden = false;
@@ -4295,7 +4305,7 @@ async function outro() {
     <h1 class="${res.win ? "gold" : "ds"}">${res.win ? "You Win" : "You Lose"}</h1>
     ${missions ? `<div class="bigstars">${[0, 1, 2].map(k => `<span class="${missions[k].ok ? "on" : ""}">${missions[k].ok ? IC.star : IC.starOff}</span>`).join("")}</div>
       <div class="stack" style="gap:4px;text-align:left">${missions.map(m => `<div class="mission">${m.ok ? IC.check : IC.cross}<span>${esc(m.n)}</span></div>`).join("")}</div>` : ""}
-    ${!res.win ? `<p class="small dim" style="max-width:34ch">Level up and Awaken your characters, equip Mystic Codes, or try a different leader and Moon-style matchup.</p>` : ""}
+    ${!res.win ? `<p class="small dim" style="max-width:34ch">Level up and Ascend your characters, equip Mystic Codes, or try a different Charisma leader and Element matchup.</p>` : ""}
     ${out.rewards && out.rewards.length ? `<div class="rewards">${rewardsHTML(out.rewards)}</div>` : ""}
     <div class="row" style="gap:10px;margin-top:6px">
       ${BT.cfg.retry ? `<button class="btn ghost" id="rRetry">Retry</button>` : ""}
@@ -4322,11 +4332,11 @@ function opHTML(key, o = {}) {
     ${o.nostars ? "" : starRow(op.rar)}
     <div class="ring"><img src="${headURL(op)}" alt="${esc(op.n)}" loading="lazy" draggable="false"></div>
     ${o.noel ? "" : `<span class="eldot ${op.style}" style="--ec:${ELC[op.el]}"></span>`}
-    ${p && !o.nolv ? `<div class="lv num">${p.lvl}</div>${p.elite ? `<span class="elite">E${p.elite}</span>` : ""}${p.pot > 1 ? `<span class="potb">P${p.pot}</span>` : ""}` : ""}
+    ${p && !o.nolv ? `<div class="lv num">${p.lvl}</div>${p.elite ? `<span class="elite">A${p.elite}</span>` : ""}${p.pot > 1 ? `<span class="potb">SO${p.pot}</span>` : ""}` : ""}
   </div>`;
 }
 // roster label: short name, then Element (in its colour) and Moon style. Badges: moon phase = style, colour = Element.
-const pnameHTML = k => `<div class="pname">${esc(OPS[k].short)}<span class="sty"><b style="color:${ELC[OPS[k].el]}">${OPS[k].el}</b> ${OPS[k].style}</span></div>`;
+const pnameHTML = k => `<div class="pname">${esc(OPS[k].short)}<span class="sty"><b style="color:${ELC[OPS[k].el]}">${elShort(OPS[k].el)}</b> ${OPS[k].style}</span></div>`;
 const elChip = el => `<span class="el ${el}">${el}</span>`;
 const styleChip = st => `<span class="el sty">${styleName(st)}</span>`;
 function enHTML(spec, s = 46) {
@@ -4339,7 +4349,7 @@ function rewardsHTML(list) {
   const merged = [];
   for (const r of list) { const m = merged.find(x => x.k === r.k && !r.rune && !x.rune && !r.k.startsWith("op:")); if (m) m.n += r.n; else merged.push({ ...r }); }
   return merged.map(r => {
-    if (r.k.startsWith("op:")) { const k = r.k.slice(3); return `<div class="rw">${opHTML(k, { s: 54, nostars: 1, nolv: 1, show: 1 })}<span>${r.isNew === false ? "Resonance +1" : "New character"}</span><span class="tiny dim">${esc(opLabel(OPS[k]))}</span></div>`; }
+    if (r.k.startsWith("op:")) { const k = r.k.slice(3); return `<div class="rw">${opHTML(k, { s: 54, nostars: 1, nolv: 1, show: 1 })}<span>${r.isNew === false ? "Spirit Origin +1" : "New character"}</span><span class="tiny dim">${esc(opLabel(OPS[k]))}</span></div>`; }
     if (r.k === "rune") return `<div class="rw"><div class="ri" style="width:54px;height:54px;color:${RUNE_RC[r.rune.rar]}">${IC.rune}</div><span>${setName(r.rune.set)}</span><span class="tiny dim">${RUNE_RAR[r.rune.rar]}</span></div>`;
     const name = r.k === "xp" ? "Character EXP" : r.k === "rank" ? "Rank" : (ITEMS[r.k] && ITEMS[r.k].n) || r.k;
     return `<div class="rw"><div class="ri" style="width:54px;height:54px">${r.k === "xp" ? IC.boost : r.k === "rank" ? IC.arena : itemIcon(r.k)}</div><span class="num">${r.k === "rank" ? "#" + r.n : "×" + fmt(r.n)}</span><span class="tiny dim">${esc(name)}</span></div>`;
@@ -4412,10 +4422,10 @@ SCREENS.home = () => {
     <section class="stage">
       <div class="floor"></div><div class="ring3d"></div>
       <img class="assist" src="${spriteURL(op)}" alt="${esc(op.n)}" data-act="poke" draggable="false">
-      <div class="nameplate"><span class="eyebrow">Assistant</span><b>${esc(op.n)}</b><div class="row" style="gap:4px">${elChip(op.el)}${styleChip(op.style)}<span class="cls">${clsName(op.cls)}</span></div></div>
+      <div class="nameplate"><span class="eyebrow">Partner</span><b>${esc(op.n)}</b><div class="row" style="gap:4px">${elChip(op.el)}${styleChip(op.style)}<span class="cls">${clsName(op.cls)}</span></div></div>
       <div class="sidebtns">
         <button class="sidebtn" data-act="missions" aria-label="Missions">${IC.missions}<small>Missions</small>${missionsReady ? '<i class="dot"></i>' : ""}</button>
-        <button class="sidebtn" data-act="go" data-v="shop" aria-label="Ahnenerbe shop">${IC.shop}<small>Shop</small></button>
+        <button class="sidebtn" data-act="go" data-v="shop" aria-label="Ahnenerbe café">${IC.shop}<small>Ahnenerbe</small></button>
         <button class="sidebtn" data-act="go" data-v="depot" aria-label="Items">${IC.depot}<small>Items</small></button>
       </div>
     </section>
@@ -4490,7 +4500,7 @@ SCREENS.chapter = cid => {
           ${nd.waves ? `<span class="nst">${[1, 2, 3].map(k => k <= st ? IC.star : IC.starOff).join("")}</span>` : ""}</button>`;
       }).join("")}
     </div>
-    <p class="tiny dim">Night reward: ${ch.reward.op ? esc(opLabel(OPS[ch.reward.op])) + " joins your party, plus " : ""}${ch.reward.orundum} Moon Crystals${ch.reward.permit ? ` and ${ch.reward.permit} Rumor Tickets` : ""}.</p>
+    <p class="tiny dim">Night reward: ${ch.reward.op ? esc(opLabel(OPS[ch.reward.op])) + " joins your party, plus " : ""}${ch.reward.orundum} Jewels${ch.reward.permit ? ` and ${ch.reward.permit} Rumor Tickets` : ""}.</p>
   </div>`;
 };
 function nodeSheet(nd) {
@@ -4503,7 +4513,7 @@ function nodeSheet(nd) {
     ${waves ? waves.map((w, k) => `<div><div class="tiny dim" style="margin-bottom:4px">Wave ${k + 1} of ${waves.length}</div><div class="row wrap">${w.map(s => enHTML(s, s.en && ENEMY[s.en].boss ? 56 : 46)).join("")}</div></div>`).join("") : ""}
     ${nd.waves ? `<div class="stack" style="gap:4px"><div class="tiny dim">Star conditions</div>
       ${["Win the battle", "No ally falls", `Win within ${goal} of your turns`].map((m, k) => `<div class="mission">${k < st ? IC.star : IC.starOff}<span>${m}</span></div>`).join("")}</div>
-      <div><div class="tiny dim" style="margin-bottom:4px">${st ? "Regular drops" : "First clear"}${st < 3 ? " · first 3-star clear adds 1 Moonstone" : ""}</div><div class="rewards" style="justify-content:flex-start">${rewardsHTML(st ? [{ k: "lmd", n: 80 + lv * 15 }, { k: lv < 20 ? "rec1" : lv < 40 ? "rec2" : "rec3", n: 2 }, { k: "summ", n: 1 }] : [{ k: "orundum", n: nd.type === "boss" ? 150 : nd.type === "side" ? 100 : 60 }, { k: "lmd", n: 80 + lv * 15 }, { k: lv < 20 ? "rec1" : lv < 40 ? "rec2" : "rec3", n: 3 }])}</div></div>` : ""}
+      <div><div class="tiny dim" style="margin-bottom:4px">${st ? "Regular drops" : "First clear"}${st < 3 ? " · first 3-star clear adds 1 Holy Relic" : ""}</div><div class="rewards" style="justify-content:flex-start">${rewardsHTML(st ? [{ k: "lmd", n: 80 + lv * 15 }, { k: lv < 20 ? "rec1" : lv < 40 ? "rec2" : "rec3", n: 2 }, { k: "summ", n: 1 }] : [{ k: "orundum", n: nd.type === "boss" ? 150 : nd.type === "side" ? 100 : 60 }, { k: "lmd", n: 80 + lv * 15 }, { k: lv < 20 ? "rec1" : lv < 40 ? "rec2" : "rec3", n: 3 }])}</div></div>` : ""}
     ${nd.type === "chest" ? `<div class="rewards" style="justify-content:flex-start">${rewardsHTML(Object.entries(nd.reward).map(([k, n]) => ({ k, n })))}</div>` : ""}
     <div class="row">
       ${nd.waves && st >= 3 ? `<button class="btn ghost" data-act="sweep" data-id="${nd.id}" data-x="1">Quick Clear</button><button class="btn ghost" data-act="sweep" data-id="${nd.id}" data-x="3">×3</button>` : ""}
@@ -4531,7 +4541,7 @@ SCREENS.team = arg => {
       const id = ids[k];
       return `<div class="slot">${k === 0 ? `<span class="crown">${IC.crown}</span>` : ""}${id ? `<button data-act="slot" data-k="${k}" aria-label="${esc(OPS[id].n)}">${opHTML(id, { s: 66 })}</button>` : '<div class="empty"></div>'}</div>`;
     }).join("")}</div>
-    <div class="leadtxt small">${lead ? `<b class="gold">Leader: ${esc(opLabel(OPS[ids[0]]))}</b> <span class="dim">${leaderText(lead)}</span>` : ids[0] ? `<span class="dim">${esc(OPS[ids[0]].n)} has no leader skill. Tap a squad member to make them leader.</span>` : `<span class="dim">Pick up to four characters. The first slot leads.</span>`}</div>
+    <div class="leadtxt small">${lead ? `<b class="gold">Charisma · ${esc(opLabel(OPS[ids[0]]))}</b> <span class="dim">${leaderText(lead)}</span>` : ids[0] ? `<span class="dim">${esc(OPS[ids[0]].n)} has no Charisma. The first slot leads the squad.</span>` : `<span class="dim">Pick up to four characters. The first slot leads with their Charisma.</span>`}</div>
     <div class="spread small"><span>Squad power <b class="num">${fmtFull(myPw)}</b></span>${arg.cost ? `<span class="cost">${IC.sanity}${arg.cost}</span>` : ""}</div>
     <button class="btn wide" data-act="deploy" ${ids.length ? "" : "disabled"}>Fight!</button>
     <div class="filters">${["all", ...ELS].map(e => `<button class="chip ${UI.el === e ? "on" : ""}" data-act="elf" data-e="${e}">${e === "all" ? "All Elements" : e}</button>`).join("")}</div>
@@ -4718,7 +4728,7 @@ SCREENS.ops = () => {
     <div class="spread"><h2>Characters</h2><button class="chip ${UI.all ? "on" : ""}" data-act="toggleAll">${UI.all ? "Collection" : "Owned"} · ${Object.keys(S.ops).length}/${OP_KEYS.length}</button></div>
     <div class="filters">${["all", ...ELS].map(e => `<button class="chip ${UI.el === e ? "on" : ""}" data-act="elf" data-e="${e}">${e === "all" ? "All Elements" : e}</button>`).join("")}</div>
     <div class="filters">${["all", ...STYLES].map(e => `<button class="chip ${UI.sty === e ? "on" : ""}" data-act="styf" data-e="${e}">${e === "all" ? "All Moon styles" : styleName(e)}</button>`).join("")}</div>
-    <div class="filters">${["all", ...CLASSES].map(c => `<button class="chip ${UI.cls === c ? "on" : ""}" data-act="clsf" data-c="${c}">${c === "all" ? "All roles" : clsName(c)}</button>`).join("")}</div>
+    <div class="filters">${["all", ...CLASSES].map(c => `<button class="chip ${UI.cls === c ? "on" : ""}" data-act="clsf" data-c="${c}">${c === "all" ? "All classes" : clsName(c)}</button>`).join("")}</div>
     <div class="filters">${["power", "rarity", "level", "name"].map(s => `<button class="chip ${UI.sort === s ? "on" : ""}" data-act="sortf" data-s="${s}">Sort: ${s}</button>`).join("")}</div>
     <div class="roster">${list.map(k => `<button class="rcell ${S.ops[k] && canPromote(k) ? "ready" : ""}" data-act="go" data-v="op" data-a="${k}">${opHTML(k)}${pnameHTML(k)}<div class="pw">${S.ops[k] ? fmt(power(k, S.ops[k])) : clsName(OPS[k].cls)}</div></button>`).join("") || '<p class="small dim">No operators match these filters.</p>'}</div>
   </div>`;
@@ -4734,21 +4744,21 @@ SCREENS.op = key => {
       <div><span>Crit Rate</span><b>${pct(st.cr)}</b></div><div><span>Crit Damage</span><b>${pct(st.cd)}</b></div>
       <div><span>Accuracy</span><b>${pct(st.acc)}</b></div><div><span>Resistance</span><b>${pct(st.res)}</b></div></div></section>
     <section class="panel stack" style="gap:8px">
-      <div><b class="gold">Leader skill</b><p class="small dim">${op.leader ? leaderText(op.leader) : "None"}</p></div>
-      ${op.passives.length ? `<div><b class="gold">Talent</b><p class="small dim">${op.passives.map(x => esc(x.text)).join(" ")}</p></div>` : ""}
+      <div><b class="gold">Charisma (leader skill)</b><p class="small dim">${op.leader ? leaderText(op.leader) : "None"}</p></div>
+      ${op.passives.length ? `<div><b class="gold">Personal Skill</b><p class="small dim">${op.passives.map(x => esc(x.text)).join(" ")}</p></div>` : ""}
       <div><b class="gold">${styleName(op.style)}</b><p class="small dim">${STYLE[op.style].d}</p></div>
-      <div><b class="gold">${op.el} Element</b><p class="small dim">${op.el === "Holy" || op.el === "Blood" ? `Holy and Blood each deal bonus damage to the other.` : `Strong against ${BEATS[op.el]}, weak to ${weakTo(op.el)}.`} ${ELEMENT_KIT[op.el].d}</p></div>
+      <div><b class="gold">${elName(op.el)} Element</b><p class="small dim">${RARE_ELS.includes(op.el) ? `Ether and Imaginary Numbers each deal bonus damage to the other.` : `Strong against ${BEATS[op.el]}, weak to ${weakTo(op.el)}.`} ${ELEMENT_KIT[op.el].d}</p></div>
       <div><b class="gold">Recommended Mystic Codes</b><p class="small dim">${op.runes.map(r => `${setName(r)} (${RUNE_INFO[r]})`).join(" · ")}</p></div>
-      ${p ? `<div><b class="gold">Resonance ${p.pot}/6</b><p class="small dim">+2% to all stats per level. Raised by Manifesting duplicates.</p></div>` : `<p class="small dim">Manifest this character at the Tatari.</p>`}
+      ${p ? `<div><b class="gold">Spirit Origin ${p.pot}/6</b><p class="small dim">+2% to all stats per level. Raised by Manifesting duplicates.</p></div>` : `<p class="small dim">Manifest this character at the Tatari.</p>`}
     </section>`;
   else if (tab === "skills") body = `<section class="panel stack" style="gap:10px">${op.skills.map((sk, i) => {
       const r = p.sk[i], c = skillCost(r), lock = r >= 4 && p.elite < 1;
       return `<div class="ab"><div class="abicon ${i ? "special" : ""}">${skillIcon({ cls: op.cls }, sk)}</div>
-        <div class="stack" style="gap:4px;min-width:0"><div class="spread"><b>${sk.arc ? "Arc" : "S" + sk.slot} ${esc(sk.name)}</b><span class="tag">${sk.arc ? "Arc Drive" : sk.cd ? "CD " + sk.cd : "Basic"}</span></div>
+        <div class="stack" style="gap:4px;min-width:0"><div class="spread"><b>${sk.arc ? "Arc" : "S" + sk.slot} ${esc(sk.name)}</b><span class="tag">${sk.arc ? "Arc Drive" : sk.cd ? "EX · CD " + sk.cd : "Special"}</span></div>
         <p class="small dim">${esc(sk.desc)}</p>
-        <div class="spread"><div class="pips">${[1, 2, 3, 4, 5, 6, 7].map(k => `<i class="${k <= r ? "on" : ""} ${k >= 5 ? "om" : ""}"></i>`).join("")}</div>
-        ${r < 7 ? `<button class="btn sm ghost" data-act="skUp" data-k="${key}" data-i="${i}" ${!lock && S.inv.summ >= c.summ && S.lmd >= c.lmd ? "" : "disabled"}>${lock ? "Needs Awaken 1" : `<span class="cost">${IC.summ}${c.summ}</span><span class="cost">${IC.lmd}${fmt(c.lmd)}</span>`}</button>` : '<span class="tiny gold">Skill Level 7</span>'}</div></div></div>`;
-    }).join('<div class="divider"></div>')}<p class="tiny dim">Each skill level adds 6% damage and healing. Skill Level 7 reduces the S2 cooldown by one turn. Levels 5 to 7 need Awaken 1. S3 is an Arc Drive: it costs 100% Magic Circuit instead of a cooldown.</p></section>`;
+        <div class="spread"><div class="row" style="gap:6px"><b class="tiny gold">Rank ${RANK[r]}</b><div class="pips">${[1, 2, 3, 4, 5, 6, 7].map(k => `<i class="${k <= r ? "on" : ""} ${k >= 5 ? "om" : ""}"></i>`).join("")}</div></div>
+        ${r < 7 ? `<button class="btn sm ghost" data-act="skUp" data-k="${key}" data-i="${i}" ${!lock && S.inv.summ >= c.summ && S.lmd >= c.lmd ? "" : "disabled"}>${lock ? "Needs Ascension 1" : `<span class="cost">${IC.summ}${c.summ}</span><span class="cost">${IC.lmd}${fmt(c.lmd)}</span>`}</button>` : '<span class="tiny gold">Rank EX</span>'}</div></div></div>`;
+    }).join('<div class="divider"></div>')}<p class="tiny dim">Skill Ranks run E, D, C, B, A, A+ and EX. Each rank adds 6% damage and healing; Rank EX also cuts the S2 cooldown by one turn. Ranks A to EX need Ascension 1. S3 is an Arc Drive: it costs 100% Magic Circuit instead of a cooldown.</p></section>`;
   else if (tab === "upgrade") {
     const cap = LV_CAP[p.elite], need = xpNeed(p.lvl, p.elite), nextE = p.elite + 1, ec = nextE <= op.maxElite ? eliteCost(key, nextE) : null;
     body = `<section class="panel stack" style="gap:8px">
@@ -4758,11 +4768,11 @@ SCREENS.op = key => {
         <button class="btn sm blue" data-act="autoLv" data-k="${key}" ${p.lvl < cap && ["rec1", "rec2", "rec3", "rec4"].some(i => S.inv[i] > 0) ? "" : "disabled"}>Auto</button></div>
     </section>
     <section class="panel stack" style="gap:8px">
-      <div class="spread"><h3>Awaken ${p.elite}</h3><span class="tiny dim">Max Awaken ${op.maxElite}</span></div>
-      ${ec ? `<p class="small dim">Awaken at level ${cap} to reach Awaken ${nextE}: a higher level cap (${LV_CAP[nextE]}) and stronger base stats.</p>
+      <div class="spread"><h3>Ascension ${p.elite}</h3><span class="tiny dim">Max Ascension ${op.maxElite}</span></div>
+      ${ec ? `<p class="small dim">Ascend at level ${cap} to reach Ascension ${nextE}: a higher level cap (${LV_CAP[nextE]}) and stronger base stats.</p>
         <div class="spread small"><span>Cost</span><span class="row"><span class="cost">${IC.chip}${S.inv.chip}/${ec.chip}</span><span class="cost">${IC.lmd}${fmt(ec.lmd)}</span></span></div>
-        <button class="btn wide" data-act="promote" data-k="${key}" ${canPromote(key) ? "" : "disabled"}>${p.lvl < cap ? `Reach level ${cap} first` : "Awaken to stage " + nextE}</button>`
-      : `<p class="small gold">${op.maxElite === p.elite ? "Fully Awakened." : ""}</p>`}
+        <button class="btn wide" data-act="promote" data-k="${key}" ${canPromote(key) ? "" : "disabled"}>${p.lvl < cap ? `Reach level ${cap} first` : "Ascend to stage " + nextE}</button>`
+      : `<p class="small gold">${op.maxElite === p.elite ? "Fully Ascended." : ""}</p>`}
     </section>`;
   } else if (tab === "runes") {
     const sets = [...new Set(p.runes.map(runeById).filter(Boolean).map(r => r.set))];
@@ -4774,18 +4784,18 @@ SCREENS.op = key => {
       ${free.length ? free.slice(0, 40).map(r => runeRow(r, `<span class="row"><button class="btn sm ghost" data-act="equip" data-k="${key}" data-s="0" data-id="${r.id}">Slot 1</button><button class="btn sm ghost" data-act="equip" data-k="${key}" data-s="1" data-id="${r.id}">Slot 2</button></span>`)).join("") : '<p class="small dim">No spare Mystic Codes. Night Patrol drops them.</p>'}</section>`;
   }
   return `<div class="stack">
-    <div class="spread">${back("go", "Characters", 'data-v="ops"')}${p ? `<button class="btn ghost sm" data-act="assistant" data-k="${key}" ${S.assistant === key ? "disabled" : ""}>${S.assistant === key ? "Assistant" : "Set assistant"}</button>` : ""}</div>
+    <div class="spread">${back("go", "Characters", 'data-v="ops"')}${p ? `<button class="btn ghost sm" data-act="assistant" data-k="${key}" ${S.assistant === key ? "disabled" : ""}>${S.assistant === key ? "Partner" : "Set as partner"}</button>` : ""}</div>
     <section class="panel" style="padding:12px;overflow:hidden">
       <div class="opart" style="--ecs:${ELC[op.el]}55"><img src="${spriteURL(op)}" alt="${esc(op.n)}">
         <div class="meta">${starRow(op.rar).replace('class="rstars"', 'class="rstars" style="justify-content:flex-start;height:14px"')}
           <h2 style="font-size:26px;text-shadow:0 2px 6px #000">${esc(op.n)}</h2>
           <div class="row" style="gap:4px">${elChip(op.el)}${styleChip(op.style)}<span class="cls">${clsName(op.cls)}</span></div>
-          ${p ? `<div class="small" style="text-shadow:0 1px 3px #000">Awaken ${p.elite} · Lv ${p.lvl} · Power <b class="num" style="color:var(--holo)">${fmtFull(power(key, p))}</b></div>` : `<div class="small dim">Not recruited</div>`}
+          ${p ? `<div class="small" style="text-shadow:0 1px 3px #000">Ascension ${p.elite} · Lv ${p.lvl} · Power <b class="num" style="color:var(--holo)">${fmtFull(power(key, p))}</b></div>` : `<div class="small dim">Not recruited</div>`}
         </div></div>
     </section>
     <section class="panel stack" style="padding:10px 12px;gap:10px">
-      ${verRow("Moon styles · different skills and Talent", variantsOf(op.base).map(f => f + "-" + elKey(op.el)), key, k => styleName(OPS[k].style), () => "var(--moon)")}
-      ${verRow("Elements · same style, slightly different skills", elementsOf(op.fam), key, k => OPS[k].el, k => ELC[OPS[k].el])}
+      ${verRow("Moon styles · different skills and Personal Skill", variantsOf(op.base).map(f => f + "-" + elKey(op.el)), key, k => styleName(OPS[k].style), () => "var(--moon)")}
+      ${verRow("Elements · same style, slightly different skills", elementsOf(op.fam), key, k => elShort(OPS[k].el), k => ELC[OPS[k].el])}
       <p class="tiny dim">Every version is a separate character you Manifest and raise on its own.</p></section>
     ${p ? `<div class="tabs2">${tabs.map(([k, n]) => `<button class="${tab === k ? "on" : ""}" data-act="opTab" data-t="${k}">${n}</button>`).join("")}</div>` : ""}
     ${body}
@@ -4824,14 +4834,14 @@ SCREENS.hh = () => {
       ${std ? `<p class="small" style="max-width:24ch">Any character in the cast can take shape.</p>` : `<div class="row" style="gap:4px">${starRow(5).replace('class="rstars"', 'class="rstars" style="justify-content:flex-start"')}${elChip(f6.el)}${styleChip(f6.style)}<span class="cls">${clsName(f6.cls)}</span></div>
       <p class="small" style="max-width:26ch">Half of all 5★ results are ${esc(opLabel(f6))}. Featured 4★: ${B.feat5.map(k => esc(opLabel(OPS[k]))).join(", ")}.</p>`}
     </section>
-    <div class="row wrap small dim"><span>5★ 3% · 4★ 18% · 3★ 79% · Holy and Blood versions 5% each</span>${pity ? `<span class="gold">· 5★ rate now ${3 + pity * 3}%</span>` : `<span>· ${Math.max(0, 50 - S.gacha.pity)} Manifests until the 5★ rate starts rising</span>`}</div>
+    <div class="row wrap small dim"><span>5★ 3% · 4★ 18% · 3★ 79% · Ether and Imaginary Numbers versions 5% each</span>${pity ? `<span class="gold">· 5★ rate now ${3 + pity * 3}%</span>` : `<span>· ${Math.max(0, 50 - S.gacha.pity)} Manifests until the 5★ rate starts rising</span>`}</div>
     ${S.gacha.firstTen ? `<div class="hint">${IC.star.replace("<svg", '<svg width="20" height="20"')}<span class="small">Your first ten Manifests guarantee at least one 4★ character.</span></div>` : ""}
     <div class="row" style="gap:10px">
       <button class="btn ghost" style="flex:1" data-act="pull" data-n="1" ${S.permit >= 1 || S.orundum >= 600 ? "" : "disabled"}>Manifest ×1<br><span class="cost">${S.permit >= 1 ? IC.permit + "1" : IC.orundum + "600"}</span></button>
       <button class="btn" style="flex:1" data-act="pull" data-n="10" ${S.permit >= 10 || S.orundum >= 6000 ? "" : "disabled"}>Manifest ×10<br><span class="cost">${S.permit >= 10 ? IC.permit + "10" : IC.orundum + "6,000"}</span></button>
     </div>
     <div class="mats"><span class="mat">${IC.permit}${S.permit}</span><span class="mat">${IC.orundum}${fmt(S.orundum)}</span><span class="mat">${IC.cert}${S.cert}</span></div>
-    <p class="tiny dim">The Tatari gives rumors a body. Duplicates raise a character's Resonance (up to 6) and give Night Coins for the shop.</p>
+    <p class="tiny dim">The Tatari gives rumors a body. Duplicates raise a character's Spirit Origin (up to 6) and leave Tatari Fragments for the shop.</p>
   </div>`;
 };
 function gachaReveal(results) {
@@ -4857,7 +4867,7 @@ function gachaReveal(results) {
     const show = () => {
       stage = 1; $("#gT").hidden = true; const G = $("#gG"); G.hidden = false;
       if (results.length === 1) { G.style.gridTemplateColumns = "1fr"; G.style.maxWidth = "260px"; }
-      G.innerHTML = results.map((r, i) => { const op = OPS[r.key]; return `<div class="gcard" style="--rc:${RC[op.rar]};animation-delay:${i * .12}s">${r.isNew ? '<span class="gnew">NEW</span>' : ""}<img src="${spriteURL(op)}" alt="${esc(op.n)}"><span class="gst">${"★".repeat(op.rar)}<br>${esc(op.short)}<br><span style="font-size:.85em"><b style="color:${ELC[op.el]}">${op.el}</b> ${op.style}</span></span></div>`; }).join("");
+      G.innerHTML = results.map((r, i) => { const op = OPS[r.key]; return `<div class="gcard" style="--rc:${RC[op.rar]};animation-delay:${i * .12}s">${r.isNew ? '<span class="gnew">NEW</span>' : ""}<img src="${spriteURL(op)}" alt="${esc(op.n)}"><span class="gst">${"★".repeat(op.rar)}<br>${esc(op.short)}<br><span style="font-size:.85em"><b style="color:${ELC[op.el]}">${elShort(op.el)}</b> ${op.style}</span></span></div>`; }).join("");
       if (top >= 5) sfx("win"); else sfx("heal");
       setTimeout(() => { $("#gDone").hidden = false; stage = 2; }, results.length * 120 + 500);
     };
@@ -4893,8 +4903,8 @@ SCREENS.shop = () => {
   const tab = SHOP[UI.shopTab] ? UI.shopTab : "credit", cur = { credit: ["credit", IC.credit], cert: ["cert", IC.cert], tokens: ["tokens", IC.tokens], prime: ["prime", IC.prime] }[tab];
   return `<div class="stack">
     <div class="spread">${back("go", "Home", 'data-v="home"')}<span class="mat">${cur[1]}${fmt(S[cur[0]])}</span></div>
-    <h2>Shop</h2><p class="small dim">The Ahnenerbe café keeps a little of everything behind the counter.</p>
-    <div class="tabs2">${[["credit", "Café"], ["cert", "Night Coins"], ["tokens", "Versus"], ["prime", "Moonstone"]].map(([k, n]) => `<button class="${tab === k ? "on" : ""}" data-act="shopTab" data-t="${k}">${n}</button>`).join("")}</div>
+    <h2>Ahnenerbe</h2><p class="small dim">The Ahnenerbe café keeps a little of everything behind the counter.</p>
+    <div class="tabs2">${[["credit", "Café"], ["cert", "Tatari Fragments"], ["tokens", "Versus"], ["prime", "Holy Relics"]].map(([k, n]) => `<button class="${tab === k ? "on" : ""}" data-act="shopTab" data-t="${k}">${n}</button>`).join("")}</div>
     <div class="tiles">${SHOP[tab].map(it => `<button class="tile" data-act="buy" data-t="${tab}" data-id="${it.id}" ${S[cur[0]] >= it.cost ? "" : "disabled"} style="min-height:104px">
       <span class="ticon">${it.give.rune ? IC.rune : itemIcon(Object.keys(it.give)[0] === "sanityMax" ? "sanity" : Object.keys(it.give)[0])}</span>
       <h3 style="font-size:15px">${esc(it.n)}</h3>${it.d ? `<span class="tsub">${esc(it.d)}</span>` : ""}<span class="tsub cost">${cur[1]}${fmt(it.cost)}</span></button>`).join("")}</div>
@@ -4927,7 +4937,7 @@ function settingsModal(confirmReset) {
     <button class="btn wide" data-act="saveName">Done</button></div>`);
 }
 function sanityModal() {
-  openModal(`<div class="stack"><h2>Prana</h2><p class="small dim">Battles cost Prana. You regain 1 every 30 seconds, a level-up refills it, and 1 Moonstone restores it to max.</p>
+  openModal(`<div class="stack"><h2>Prana</h2><p class="small dim">Battles cost Prana. You regain 1 every 30 seconds, a level-up refills it, and 1 Holy Relic restores it to max.</p>
     <div class="spread"><span class="cost">${IC.sanity}<b class="num">${S.sanity}/${maxSanity(S.lvl)}</b></span><span class="tiny dim">${S.sanity < maxSanity(S.lvl) ? "+1 in " + dur(SAN_MS - (Date.now() - S.sTime)) : "Full"}</span></div>
     <button class="btn wide" data-act="buy" data-t="prime" data-id="p_san" ${S.prime >= 1 ? "" : "disabled"}>Restore <span class="cost">${IC.prime}1</span> <span class="tiny">(you have ${S.prime})</span></button>
     <button class="btn ghost wide" data-act="closeModal">Close</button></div>`);
@@ -5152,7 +5162,7 @@ function introModal() {
     <img src="${spriteURL(OPS[STARTERS[0]])}" alt="Shiki Tohno" style="height:230px;max-width:100%;object-fit:contain;filter:drop-shadow(0 12px 20px #000)">
     <div class="eyebrow">Misaki Town · After midnight</div>
     <h1>Melty Blood<span style="display:block;color:var(--moon);font-size:18px;letter-spacing:.24em;margin-top:4px">Night of Rumors</span></h1>
-    <p class="small dim" style="max-width:36ch">Lead a squad of four through the Tatari incident. Every action charges your Magic Circuit; at 100%, unleash an Arc Drive. Each character comes in Crescent, Half and Full Moon styles with their own skills and Talent, and every style in five Elements. Water beats Fire, Fire beats Wind, Wind beats Water; Holy and Blood beat each other.</p>
+    <p class="small dim" style="max-width:36ch">Lead a squad of four through the Tatari incident. Every action charges your Magic Circuit; at 100%, unleash an Arc Drive. Each character comes in Crescent, Half and Full Moon styles with their own skills and Talent, and every style in five Elements. Elements follow magecraft: Water beats Fire, Fire beats Wind, Wind beats Water, and the rare Ether and Imaginary Numbers beat each other.</p>
     <button class="btn wide" data-act="introGo">Begin the night</button>
     <p class="tiny dim">Unofficial, non-commercial fan game. Melty Blood and Tsukihime belong to TYPE-MOON and French-Bread. All art here is drawn by the game.</p>
   </div>`);
@@ -5233,11 +5243,11 @@ const ACT = {
   clsf: d => { UI.cls = d.c; rerender(); },
   sortf: d => { UI.sort = d.s; rerender(); },
   opTab: d => { UI.opTab = d.t; rerender(); },
-  skUp: d => { if (skillUp(d.k, +d.i)) { sfx("heal"); toast(`Skill ${+d.i + 1} raised to Skill Level ${S.ops[d.k].sk[+d.i]}.`); } rerender(); },
+  skUp: d => { if (skillUp(d.k, +d.i)) { sfx("heal"); toast(`Skill ${+d.i + 1} raised to Rank ${RANK[S.ops[d.k].sk[+d.i]]}.`); } rerender(); },
   rec: d => { const lv = S.ops[d.k].lvl; if (useRecord(d.k, d.it)) { sfx("tap"); if (S.ops[d.k].lvl > lv) { S.daily.upgrade++; toast(`${OPS[d.k].n} reached level ${S.ops[d.k].lvl}.`); } } rerender(); },
-  autoLv: d => { const lv = S.ops[d.k].lvl, n = autoLevel(d.k); if (n) { sfx("heal"); if (S.ops[d.k].lvl > lv) S.daily.upgrade++; toast(`Used ${n} records. Level ${lv} → ${S.ops[d.k].lvl}.`); } rerender(); },
-  promote: d => { if (promote(d.k)) { sfx("win"); toast(`${OPS[d.k].n} Awakened to stage ${S.ops[d.k].elite}!`, "gold"); } rerender(); },
-  assistant: d => { S.assistant = d.k; toast(`${OPS[d.k].n} is now your assistant.`); rerender(); },
+  autoLv: d => { const lv = S.ops[d.k].lvl, n = autoLevel(d.k); if (n) { sfx("heal"); if (S.ops[d.k].lvl > lv) S.daily.upgrade++; toast(`Used ${n} Blood items. Level ${lv} → ${S.ops[d.k].lvl}.`); } rerender(); },
+  promote: d => { if (promote(d.k)) { sfx("win"); toast(`${OPS[d.k].n} reached Ascension ${S.ops[d.k].elite}!`, "gold"); } rerender(); },
+  assistant: d => { S.assistant = d.k; toast(`${OPS[d.k].n} is now your partner.`); rerender(); },
 
   // runes
   runeSheet: d => { const r = runeById(+d.id); if (r) runeSheet(r); },
@@ -5245,8 +5255,8 @@ const ACT = {
   enhance: d => { const r = runeById(+d.id); if (r && enhanceRune(r)) { sfx("zap"); rerender(); runeSheet(r); } },
   enhanceMax: d => { const r = runeById(+d.id); let n = 0; while (r && enhanceRune(r)) n++; if (n) { sfx("special"); toast(`${setName(r.set)} upgraded to +${r.lvl}.`); } rerender(); runeSheet(r); },
   unequip: d => { const r = runeById(+d.id); if (r && r.eq) unequipRune(r.eq.k, r.eq.s); rerender(); runeSheet(r); },
-  sell: d => { const r = runeById(+d.id); if (!r) return; const v = sellValue(r); sellRune(r); closeModal(); toast(`Sold for ${fmtFull(v)} LMD.`); rerender(); },
-  sellJunk: () => { const junk = S.runes.filter(r => !r.eq && r.rar <= 2); let v = 0; for (const r of junk) { v += sellValue(r); sellRune(r); } toast(`Sold ${junk.length} Mystic Codes for ${fmtFull(v)} LMD.`); rerender(); },
+  sell: d => { const r = runeById(+d.id); if (!r) return; const v = sellValue(r); sellRune(r); closeModal(); toast(`Sold for ${fmtFull(v)} Yen.`); rerender(); },
+  sellJunk: () => { const junk = S.runes.filter(r => !r.eq && r.rar <= 2); let v = 0; for (const r of junk) { v += sellValue(r); sellRune(r); } toast(`Sold ${junk.length} Mystic Codes for ${fmtFull(v)} Yen.`); rerender(); },
   runeSetF: d => { UI.runeSet = d.s; rerender(); },
   depotTab: d => { UI.depotTab = d.t; rerender(); },
 
@@ -5256,7 +5266,7 @@ const ACT = {
     const n = +d.n;
     if (S.permit >= n) S.permit -= n;
     else if (S.orundum >= 600 * n) S.orundum -= 600 * n;
-    else { toast("Not enough Moon Crystals or Rumor Tickets."); return; }
+    else { toast("Not enough Jewels or Rumor Tickets."); return; }
     const res = headhunt(n, !UI.hhStd); save(); renderTop();
     await gachaReveal(res);
     rerender();

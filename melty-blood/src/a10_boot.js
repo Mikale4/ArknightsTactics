@@ -214,7 +214,7 @@ function introModal() {
     <img src="${spriteURL(OPS[STARTERS[0]])}" alt="Shiki Tohno" style="height:230px;max-width:100%;object-fit:contain;filter:drop-shadow(0 12px 20px #000)">
     <div class="eyebrow">Misaki Town · After midnight</div>
     <h1>Melty Blood<span style="display:block;color:var(--moon);font-size:18px;letter-spacing:.24em;margin-top:4px">Night of Rumors</span></h1>
-    <p class="small dim" style="max-width:36ch">Lead a squad of four through the Tatari incident. Every action charges your Magic Circuit; at 100%, unleash an Arc Drive. Each character comes in Crescent, Half and Full Moon styles with their own skills and Talent, and every style in five Elements. Water beats Fire, Fire beats Wind, Wind beats Water; Holy and Blood beat each other.</p>
+    <p class="small dim" style="max-width:36ch">Lead a squad of four through the Tatari incident. Every action charges your Magic Circuit; at 100%, unleash an Arc Drive. Each character comes in Crescent, Half and Full Moon styles with their own skills and Talent, and every style in five Elements. Elements follow magecraft: Water beats Fire, Fire beats Wind, Wind beats Water, and the rare Ether and Imaginary Numbers beat each other.</p>
     <button class="btn wide" data-act="introGo">Begin the night</button>
     <p class="tiny dim">Unofficial, non-commercial fan game. Melty Blood and Tsukihime belong to TYPE-MOON and French-Bread. All art here is drawn by the game.</p>
   </div>`);
@@ -295,11 +295,11 @@ const ACT = {
   clsf: d => { UI.cls = d.c; rerender(); },
   sortf: d => { UI.sort = d.s; rerender(); },
   opTab: d => { UI.opTab = d.t; rerender(); },
-  skUp: d => { if (skillUp(d.k, +d.i)) { sfx("heal"); toast(`Skill ${+d.i + 1} raised to Skill Level ${S.ops[d.k].sk[+d.i]}.`); } rerender(); },
+  skUp: d => { if (skillUp(d.k, +d.i)) { sfx("heal"); toast(`Skill ${+d.i + 1} raised to Rank ${RANK[S.ops[d.k].sk[+d.i]]}.`); } rerender(); },
   rec: d => { const lv = S.ops[d.k].lvl; if (useRecord(d.k, d.it)) { sfx("tap"); if (S.ops[d.k].lvl > lv) { S.daily.upgrade++; toast(`${OPS[d.k].n} reached level ${S.ops[d.k].lvl}.`); } } rerender(); },
-  autoLv: d => { const lv = S.ops[d.k].lvl, n = autoLevel(d.k); if (n) { sfx("heal"); if (S.ops[d.k].lvl > lv) S.daily.upgrade++; toast(`Used ${n} records. Level ${lv} → ${S.ops[d.k].lvl}.`); } rerender(); },
-  promote: d => { if (promote(d.k)) { sfx("win"); toast(`${OPS[d.k].n} Awakened to stage ${S.ops[d.k].elite}!`, "gold"); } rerender(); },
-  assistant: d => { S.assistant = d.k; toast(`${OPS[d.k].n} is now your assistant.`); rerender(); },
+  autoLv: d => { const lv = S.ops[d.k].lvl, n = autoLevel(d.k); if (n) { sfx("heal"); if (S.ops[d.k].lvl > lv) S.daily.upgrade++; toast(`Used ${n} Blood items. Level ${lv} → ${S.ops[d.k].lvl}.`); } rerender(); },
+  promote: d => { if (promote(d.k)) { sfx("win"); toast(`${OPS[d.k].n} reached Ascension ${S.ops[d.k].elite}!`, "gold"); } rerender(); },
+  assistant: d => { S.assistant = d.k; toast(`${OPS[d.k].n} is now your partner.`); rerender(); },
 
   // runes
   runeSheet: d => { const r = runeById(+d.id); if (r) runeSheet(r); },
@@ -307,8 +307,8 @@ const ACT = {
   enhance: d => { const r = runeById(+d.id); if (r && enhanceRune(r)) { sfx("zap"); rerender(); runeSheet(r); } },
   enhanceMax: d => { const r = runeById(+d.id); let n = 0; while (r && enhanceRune(r)) n++; if (n) { sfx("special"); toast(`${setName(r.set)} upgraded to +${r.lvl}.`); } rerender(); runeSheet(r); },
   unequip: d => { const r = runeById(+d.id); if (r && r.eq) unequipRune(r.eq.k, r.eq.s); rerender(); runeSheet(r); },
-  sell: d => { const r = runeById(+d.id); if (!r) return; const v = sellValue(r); sellRune(r); closeModal(); toast(`Sold for ${fmtFull(v)} LMD.`); rerender(); },
-  sellJunk: () => { const junk = S.runes.filter(r => !r.eq && r.rar <= 2); let v = 0; for (const r of junk) { v += sellValue(r); sellRune(r); } toast(`Sold ${junk.length} Mystic Codes for ${fmtFull(v)} LMD.`); rerender(); },
+  sell: d => { const r = runeById(+d.id); if (!r) return; const v = sellValue(r); sellRune(r); closeModal(); toast(`Sold for ${fmtFull(v)} Yen.`); rerender(); },
+  sellJunk: () => { const junk = S.runes.filter(r => !r.eq && r.rar <= 2); let v = 0; for (const r of junk) { v += sellValue(r); sellRune(r); } toast(`Sold ${junk.length} Mystic Codes for ${fmtFull(v)} Yen.`); rerender(); },
   runeSetF: d => { UI.runeSet = d.s; rerender(); },
   depotTab: d => { UI.depotTab = d.t; rerender(); },
 
@@ -318,7 +318,7 @@ const ACT = {
     const n = +d.n;
     if (S.permit >= n) S.permit -= n;
     else if (S.orundum >= 600 * n) S.orundum -= 600 * n;
-    else { toast("Not enough Moon Crystals or Rumor Tickets."); return; }
+    else { toast("Not enough Jewels or Rumor Tickets."); return; }
     const res = headhunt(n, !UI.hhStd); save(); renderTop();
     await gachaReveal(res);
     rerender();

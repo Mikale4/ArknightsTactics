@@ -1,9 +1,9 @@
 
 // =====================================================================
 //  CHARACTERS — the Melty Blood cast. Each character has a Crescent, Half and Full Moon style; every style is a
-//  separate unit with its own role, three skills and Talent (skill names follow each style's move list).
+//  separate unit with its own class, three skills and Personal Skill (skill names follow each style's move list).
 //  Skill format: {slot, name, cd, target, hits, mult, ignoreDef, effects[]}; S3 is an Arc Drive that
-//  costs 100% Magic Circuit instead of a cooldown. Skill and Talent text is generated from the data (skillDesc, passiveDesc).
+//  costs 100% Magic Circuit instead of a cooldown. Skill and Personal Skill text is generated from the data (skillDesc, passiveDesc).
 // =====================================================================
 const dbf = (what, chance = 1, turns = 2) => ({ on: "target", type: "debuff", what, chance, turns });
 const tmDown = (amount, chance) => ({ on: "target", type: "atkbar-", amount, chance });
@@ -48,26 +48,26 @@ function skillDesc(sk) {
     else if (e.type === "bonusPerDebuff") out.push(`+${P(e.per)} damage per debuff on the target (up to +${P(e.cap)})`);
     else if (e.type === "bonusIf") out.push(`+${P(e.bonusDmg)} damage against targets with ${FX[e.cond].n}`);
     else if (e.type === "buff") out.push(`${e.on === "self" ? "Gains" : sk.target === "ally_single" ? "Grants the ally" : "Grants all allies"} ${nm}${T}`);
-    else if (e.type === "taunt") out.push(`Gains Taunt${T}`);
+    else if (e.type === "taunt") out.push(`Gains ${FX.TAUNT.n}${T}`);
     else if (e.type === "atkbar+") out.push(`${e.on === "self" ? (e.onKill ? "On a kill, gains" : "Gains") : "All allies gain"} ${P(e.amount)} turn meter${e.perCrit ? " per critical hit" : ""}`);
     else if (e.type === "healPct") out.push(ch ? `${ch}heal ${P(e.amount)} of Max HP` : `Heals ${P(e.amount)} of Max HP`);
     else if (e.type === "healPctTarget") out.push(`Heals ${sk.target === "ally_single" ? "the ally" : "all allies"} for ${P(e.amount)} of their Max HP`);
     else if (e.type === "healFlatCasterHP") out.push(`Heals all allies for ${P(e.amount)} of this character's Max HP`);
     else if (e.type === "cleanse") out.push(`Cleanses ${e.amount} debuff${e.amount > 1 ? "s" : ""} from ${sk.target === "ally_single" ? "the ally" : "all allies"}`);
-    else if (e.type === "shieldCasterHP") out.push(`${e.on === "self" ? "Gains" : "Grants all allies"} a Shield worth ${P(e.amount)} of this character's Max HP${T}`);
+    else if (e.type === "shieldCasterHP") out.push(`${e.on === "self" ? "Gains" : "Grants all allies"} a ${FX.SHIELD.n} worth ${P(e.amount)} of this character's Max HP${T}`);
     else if (e.type === "reviveOne") out.push(`Revives one fallen ally at ${P(e.amount)} HP`);
   }
   if (sk.arc) out.push(`Arc Drive: costs ${sk.arc}% Magic Circuit`);
   return out.map(x => x.charAt(0).toUpperCase() + x.slice(1)).join(". ") + ".";
 }
 
-// ---------- Talents (passives) ----------
+// ---------- Personal Skills (passives) ----------
 const T = (name, id, x = {}) => ({ name, id, ...x });
 const STATN = { hp: "HP", atk: "ATK", def: "DEF", spd: "SPD", cr: "Crit Rate", cd: "Crit Damage", acc: "Accuracy", res: "Resistance" };
 const fxList = l => l.map(x => FX[x].n).join(" and ");
 const PASSIVE_TEXT = {
   LIFESTEAL: p => `heals for ${P(p.amount)} of damage dealt`,
-  REVIVE_ONCE: p => `once per battle, revives at ${P(p.amount)} HP with ${FX[p.buff || "INVINCIBLE"].n} (${p.turns || 1}T)`,
+  REVIVE_ONCE: p => `revives once per battle with Guts, at ${P(p.amount)} HP and ${FX[p.buff || "INVINCIBLE"].n} (${p.turns || 1}T)`,
   TEAM_ATB_START: p => `all allies start battle with ${P(p.amount)} turn meter`,
   SELF_ATB_START: p => `starts battle with ${P(p.amount)} turn meter`,
   MC_START: p => `the team starts battle with ${P(p.amount)} Magic Circuit`,

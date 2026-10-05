@@ -350,14 +350,14 @@ function unitPop(u) {
   return `<div class="row"><img class="bpt" src="${u.isOp ? opArt(u.key).head : enemyArt(u.key).head}" alt=""><div><div class="eyebrow">${u.team === "A" ? "Your squad" : "Enemy"}${u.boss ? " · Boss" : ""}</div><h3>${esc(u.n)}</h3>
     <div class="row" style="gap:4px;margin-top:3px"><span class="el ${u.el}">${u.el}</span>${u.style ? `<span class="el sty">${styleName(u.style)}</span>` : ""}<span class="cls">${clsName(u.cls)}</span></div></div></div>
     <div class="statgrid" style="margin-top:10px">
-      <div><span>HP</span><b>${fmtFull(u.hp)} / ${fmtFull(u.max.hp)}</b></div><div><span>Shield</span><b>${fmtFull(u.shield)}</b></div>
+      <div><span>HP</span><b>${fmtFull(u.hp)} / ${fmtFull(u.max.hp)}</b></div><div><span>Bounded Field</span><b>${fmtFull(u.shield)}</b></div>
       <div><span>ATK</span><b>${fmtFull(e.atk(u))}</b></div><div><span>DEF</span><b>${fmtFull(e.def(u))}</b></div>
       <div><span>SPD</span><b>${Math.round(e.spd(u))}</b></div><div><span>Crit Rate</span><b>${pct(e.cr(u))}</b></div>
       <div><span>Accuracy</span><b>${pct(u.max.acc)}</b></div><div><span>Resistance</span><b>${pct(u.max.res)}</b></div>
     </div>
     ${u.eff.length ? `<div class="stack" style="gap:4px;margin-top:10px">${u.eff.map(x => `<div class="small"><span class="tag ${FX[x.id].b ? "ls" : "ds"}">${FX[x.id].n}</span> <span class="dim">${FX[x.id].d} · ${x.turns}T</span></div>`).join("")}</div>` : `<p class="tiny dim" style="margin-top:10px">No active effects.</p>`}
     ${[...u.sets].length ? `<p class="small" style="margin-top:8px"><b class="gold">Mystic Codes:</b> <span class="dim">${[...u.sets].map(s => `${setName(s)} (${RUNE_INFO[s]})`).join(", ")}</span></p>` : ""}
-    ${u.passives.length ? `<p class="small" style="margin-top:6px"><b class="gold">Talent:</b> <span class="dim">${u.passives.map(p => esc(p.text || p.id)).join(" ")}</span></p>` : ""}`;
+    ${u.passives.length ? `<p class="small" style="margin-top:6px"><b class="gold">Personal Skill:</b> <span class="dim">${u.passives.map(p => esc(p.text || p.id)).join(" ")}</span></p>` : ""}`;
 }
 function popup(html) {
   const p = $("#bPop"); if (!p) return;
@@ -428,7 +428,7 @@ function startBattle(cfg) {
     <div class="turnstrip" id="bStrip"></div>
     ${mcHTML("mcA", false)}${mcHTML("mcE", true)}
     <div class="bban" id="bBan"></div>
-    <div class="bctl" id="bCtl"><div class="bwait">Deploying…</div></div>
+    <div class="bctl" id="bCtl"><div class="bwait">Ready…</div></div>
     <div class="bpop" id="bPop" hidden></div>
   </div>`;
   root.hidden = false;
@@ -547,7 +547,7 @@ async function outro() {
     <h1 class="${res.win ? "gold" : "ds"}">${res.win ? "You Win" : "You Lose"}</h1>
     ${missions ? `<div class="bigstars">${[0, 1, 2].map(k => `<span class="${missions[k].ok ? "on" : ""}">${missions[k].ok ? IC.star : IC.starOff}</span>`).join("")}</div>
       <div class="stack" style="gap:4px;text-align:left">${missions.map(m => `<div class="mission">${m.ok ? IC.check : IC.cross}<span>${esc(m.n)}</span></div>`).join("")}</div>` : ""}
-    ${!res.win ? `<p class="small dim" style="max-width:34ch">Level up and Awaken your characters, equip Mystic Codes, or try a different leader and Moon-style matchup.</p>` : ""}
+    ${!res.win ? `<p class="small dim" style="max-width:34ch">Level up and Ascend your characters, equip Mystic Codes, or try a different Charisma leader and Element matchup.</p>` : ""}
     ${out.rewards && out.rewards.length ? `<div class="rewards">${rewardsHTML(out.rewards)}</div>` : ""}
     <div class="row" style="gap:10px;margin-top:6px">
       ${BT.cfg.retry ? `<button class="btn ghost" id="rRetry">Retry</button>` : ""}
