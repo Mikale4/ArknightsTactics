@@ -60,8 +60,9 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--holo);outl
 #view{overflow-y:auto;overflow-x:hidden;padding:14px 16px 24px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 #tabs{display:grid;grid-template-columns:repeat(5,1fr);background:#080e1b;border-top:1px solid var(--line)}
 #tabs button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0 9px;color:var(--faint);
-  font:700 11px var(--f-display);letter-spacing:.08em;text-transform:uppercase;position:relative}
+  font:700 11px var(--f-display);letter-spacing:.06em;text-transform:uppercase;position:relative;white-space:nowrap}
 #tabs button svg{width:22px;height:22px}
+@media (max-width:400px){#tabs button{font-size:10px;letter-spacing:.03em}}
 #tabs button.on{color:var(--gold)}
 #tabs button.on::before{content:"";position:absolute;top:-1px;left:25%;right:25%;height:2px;background:var(--gold);box-shadow:0 0 10px var(--gold)}
 .dot{position:absolute;top:5px;right:calc(50% - 18px);width:8px;height:8px;border-radius:50%;background:var(--ds);box-shadow:0 0 6px var(--ds)}
@@ -122,7 +123,8 @@ p{margin:0}
 .tile{position:relative;text-align:left;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;min-height:96px;padding:12px;
   background:var(--hull2);border:1px solid var(--line);overflow:hidden;
   clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px))}
-.tile h3{font-size:17px}
+.tile h3{font-size:17px;padding-right:30px}
+.tile h3.long{font-size:15px;line-height:1.1}
 .tile .tsub{font-size:12px;color:var(--dim)}
 .tile .ticon{position:absolute;right:8px;top:8px;width:40px;height:40px;opacity:.85}
 .tile .ticon svg{width:100%;height:100%}
@@ -241,7 +243,7 @@ p{margin:0}
 .bban{position:absolute;left:0;right:0;top:22%;text-align:center;pointer-events:none;opacity:0;transform:translateY(8px);transition:opacity .25s,transform .25s}
 .bban.show{opacity:1;transform:none}
 .bban small{display:block;font:700 12px var(--f-display);letter-spacing:.3em;text-transform:uppercase;color:#d8e2f2;text-shadow:0 1px 4px #000}
-.bban b{display:inline-block;margin-top:2px;padding:2px 26px;font:800 clamp(24px,7vw,40px)/1.1 var(--f-display);letter-spacing:.1em;text-transform:uppercase;color:var(--gold);
+.bban b{display:inline-block;max-width:94vw;margin-top:2px;padding:2px 26px;font:800 clamp(24px,7vw,40px)/1.1 var(--f-display);letter-spacing:.1em;text-transform:uppercase;color:var(--gold);
   background:linear-gradient(90deg,transparent,#000b 18%,#000b 82%,transparent);text-shadow:0 0 18px #f2c14e88}
 .bban.ls b{color:#bfe0ff;text-shadow:0 0 18px #4aa3ffaa} .bban.ds b{color:#ffc2c2;text-shadow:0 0 18px #ff4b4baa}
 .bctl{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;padding:10px 14px 14px;
@@ -268,7 +270,7 @@ p{margin:0}
 .bpopbox .bpt{width:46px;height:46px}
 .result{position:absolute;inset:0;z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px 16px;
   background:radial-gradient(70% 50% at 50% 40%,#0d1a33e6,#000000f0);animation:rise .3s ease-out;text-align:center;overflow:auto}
-.result h1{font-size:50px;letter-spacing:.12em}
+.result h1{font-size:clamp(30px,9vw,48px);line-height:1.02;letter-spacing:.1em;text-align:center}
 .bigstars{display:flex;gap:6px}
 .bigstars span{width:48px;height:48px;display:block}
 .bigstars svg{width:100%;height:100%}
@@ -507,7 +509,9 @@ const IC = {
   depot: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8 12 3l9 5v9l-9 5-9-5z"/><path d="M3 8l9 5 9-5M12 13v9"/></svg>',
   gearIc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>',
   back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 4 7 12l8 8"/></svg>',
-  rune: '<svg viewBox="0 0 24 24"><path fill="#5fd4ff" d="M12 2 21 7v10l-9 5-9-5V7z"/><path fill="#04121f" d="M12 6 17 9v6l-5 3-5-3V9z"/></svg>',
+  rune: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" fill="#5fd4ff"/><rect x="6" y="8" width="7" height="8" rx="1" fill="#04121f"/><path d="M15 9h3M15 12h3M15 15h2M9.5 8v8" stroke="#04121f" stroke-width="1.6"/></svg>',
+  prime: '<svg viewBox="0 0 24 24"><path fill="#ff7a2a" d="M9 2h6l3 6-6 14L6 8z"/><path fill="#ffd0a8" d="M9 2h6l-3 6z"/><path fill="#b8401a" d="M12 22 18 8h-6z"/></svg>',
+  credit: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#3fb3a0"/><circle cx="12" cy="12" r="6.5" fill="none" stroke="#0f4a40" stroke-width="1.6"/><path d="M14.5 9.5a3.2 3.2 0 1 0 0 5" stroke="#0f4a40" stroke-width="2" fill="none"/></svg>',
   lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
   check: '<svg viewBox="0 0 24 24" fill="none" stroke="#43d67e" stroke-width="3"><path d="m5 12 5 5 9-10"/></svg>',
   cross: '<svg viewBox="0 0 24 24" fill="none" stroke="#5b6886" stroke-width="3"><path d="M6 6l12 12M18 6 6 18"/></svg>',
@@ -517,14 +521,16 @@ const ITEMS = {
   orundum: { n: "Orundum", ic: IC.orundum },
   permit: { n: "Headhunting Permit", ic: IC.permit },
   cert: { n: "Distinction Certificate", ic: IC.cert },
-  tokens: { n: "Arena Medals", ic: IC.tokens },
+  tokens: { n: "Contract Bounty", ic: IC.tokens },
+  prime: { n: "Originite Prime", ic: IC.prime, d: "Restores Sanity, or converts to 180 Orundum." },
+  credit: { n: "Credits", ic: IC.credit, d: "Spent in the Credit Store." },
   sanity: { n: "Sanity", ic: IC.sanity },
   rec1: { n: "Drill Battle Record", ic: IC.rec1, xp: 200 },
   rec2: { n: "Frontline Battle Record", ic: IC.rec2, xp: 400 },
   rec3: { n: "Tactical Battle Record", ic: IC.rec3, xp: 1000 },
   rec4: { n: "Strategic Battle Record", ic: IC.rec4, xp: 2000 },
-  chip: { n: "Elite Chip Pack", ic: IC.chip, d: "Used for Elite Promotion." },
-  summ: { n: "Skill Summary", ic: IC.summ, d: "Used to raise skill ranks." },
+  chip: { n: "Chip Pack", ic: IC.chip, d: "Used for Elite Promotion." },
+  summ: { n: "Skill Summary", ic: IC.summ, d: "Used to raise skill levels." },
 };
 
 // ---------- status effects (names follow the original game) ----------
@@ -1045,14 +1051,14 @@ const ENEMY = {
     skills: [{ slot: 1, name: "Molotov", cd: 0, target: "enemy", hits: 1, mult: 2.4, effects: [{ on: "target", type: "debuff", what: "DOT", chance: .4, turns: 2 }], desc: "240% ATK. 40% chance to Burn (2T)." },
       { slot: 2, name: "Firebomb", cd: 3, target: "aoe_enemies", hits: 1, mult: 1.6, effects: [{ on: "target", type: "debuff", what: "DOT", chance: .3, turns: 2 }], desc: "Hits all enemies (160% ATK). 30% chance to Burn (2T)." }] },
   crossbow: { n: "Reunion Crossbowman", cls: "Sniper", el: "Wind", m: { hp: .6, atk: .85, def: .55, spd: 106 },
-    fig: { type: "trooper", col: "#e6e1d6", col2: "#5a5048", acc: "#b03a2a", boot: "#3a342e", w: "rifle" },
+    fig: { type: "hood", skin: "#d9cbb8", col: "#4a4038", col2: "#2e2a26", cape: "#5a4a3a", eyes: "#ff5a3a", mask: 1, w: "bowcaster" },
     skills: [{ slot: 1, name: "Bolt", cd: 0, target: "enemy", hits: 1, mult: 2.8, effects: [], desc: "280% ATK." }] },
   caster: { n: "Reunion Caster", cls: "Caster", el: "Dark", m: { hp: .6, atk: .9, def: .55, spd: 102 },
     fig: { type: "hood", skin: "#cfc3b4", col: "#2a2240", col2: "#1e1830", cape: "#3a2e5a", eyes: "#b98aff", robe: 1, w: "none" },
     skills: [{ slot: 1, name: "Arts Bolt", cd: 0, target: "enemy", hits: 1, mult: 2.8, effects: [{ on: "target", type: "debuff", what: "ATK_DOWN", chance: .3, turns: 2 }], desc: "280% ATK. 30% chance of ATK Down (2T)." },
       { slot: 2, name: "Arts Wave", cd: 3, target: "aoe_enemies", hits: 1, mult: 1.8, effects: [], desc: "Hits all enemies (180% ATK)." }] },
   shield: { n: "Reunion Shieldguard", cls: "Defender", el: "Water", m: { hp: 1.05, atk: .6, def: 1.1, spd: 96 },
-    fig: { type: "trooper", col: "#cfd6de", col2: "#4a5260", acc: "#2a6ab0", boot: "#2a2e36", bulk: 1.2, w: "staff" },
+    fig: { type: "hood", skin: "#d9cbb8", col: "#3a4656", col2: "#2a323e", cape: "#4a5668", eyes: "#5fd4ff", mask: 1, bulk: 1.2, w: "shield", sc: "#4aa3ff", shc: "#5a6a7e" },
     skills: [{ slot: 1, name: "Shield Bash", cd: 0, target: "enemy", hits: 1, mult: 2.2, effects: [{ on: "target", type: "debuff", what: "PROVOKE", chance: .3, turns: 1 }], desc: "220% ATK. 30% chance to Provoke (1T)." },
       { slot: 2, name: "Hold the Line", cd: 3, target: "self", effects: [{ on: "self", type: "buff", what: "TAUNT", turns: 2 }, { on: "self", type: "buff", what: "DEF_UP", turns: 2 }], desc: "Gain Taunt and DEF Up (2T)." }] },
   hound: { n: "Infected Hound", cls: "Specialist", el: "Dark", m: { hp: .55, atk: .8, def: .45, spd: 122 },
@@ -1065,7 +1071,7 @@ const ENEMY = {
     fig: { type: "slug", col: "#8ad06a", acc: "#e6ff6a" },
     skills: [{ slot: 1, name: "Acid Spit", cd: 0, target: "enemy", hits: 1, mult: 2.2, effects: [{ on: "target", type: "debuff", what: "DEF_BREAK", chance: .35, turns: 2 }], desc: "220% ATK. 35% chance of DEF Break (2T)." }] },
   sarkaz: { n: "Sarkaz Swordsman", cls: "Guard", el: "Dark", m: { hp: .9, atk: 1.0, def: .8, spd: 108 },
-    fig: { type: "zabrak", skin: "#b8b0a8", col: "#2a2228", col2: "#1e181c", acc: "#8a2a3a", boot: "#141014", cape: "#3a1a24", w: "saber", sc: "#ff4a6a" },
+    fig: { type: "human", skin: "#d8ccc4", hair: "#2a2028", hs: "long", col: "#2a2228", col2: "#1e181c", acc: "#8a2a3a", boot: "#141014", cape: "#3a1a24", coat: 1, horns: "sarkaz", hornc: "#1a1216", eyec: "#ff4a4a", w: "saber", sc: "#ff4a6a" },
     skills: [{ slot: 1, name: "Grim Slash", cd: 0, target: "enemy", hits: 1, mult: 3.0, effects: [{ on: "target", type: "debuff", what: "BRAND", chance: .3, turns: 2 }], desc: "300% ATK. 30% chance to Brand (2T)." },
       { slot: 2, name: "Bloodlust", cd: 3, target: "self", effects: [{ on: "self", type: "buff", what: "ATK_UP", turns: 2 }, { on: "self", type: "atkbar+", amount: .2 }], desc: "Gain ATK Up (2T) and 20% turn meter." }] },
   wraith: { n: "Frost Wraith", cls: "Caster", el: "Water", m: { hp: .75, atk: .95, def: .6, spd: 104 },
@@ -1074,12 +1080,12 @@ const ENEMY = {
       { slot: 2, name: "Blizzard", cd: 3, target: "aoe_enemies", hits: 1, mult: 1.8, effects: [{ on: "target", type: "atkbar-", amount: .15 }], desc: "Hits all enemies (180% ATK) and reduces turn meter by 15%." }] },
   // ---- named bosses ----
   crownslayer: { n: "Crownslayer", boss: 1, cls: "Specialist", el: "Wind", m: { hp: 2.4, atk: 1.15, def: .8, spd: 126 },
-    fig: { type: "hood", skin: "#e8d6c4", col: "#2a2a30", col2: "#1e1e24", cape: "#c84a2a", eyes: "#ff8a3a", w: "staff" },
+    fig: { type: "hood", skin: "#e8d6c4", col: "#2a2a30", col2: "#1e1e24", cape: "#c84a2a", eyes: "#ff8a3a", mask: 1, w: "dagger", sc: "#ff8a3a" },
     skills: [{ slot: 1, name: "Twin Daggers", cd: 0, target: "enemy", hits: 2, mult: 1.6, effects: [{ on: "target", type: "debuff", what: "DOT", chance: .3, turns: 2 }], desc: "2 hits (160% each). 30% chance per hit to Burn." },
       { slot: 2, name: "Smoke Step", cd: 3, target: "self", effects: [{ on: "self", type: "buff", what: "STEALTH", turns: 1 }, { on: "self", type: "atkbar+", amount: .4 }], desc: "Gain Stealth (1T) and 40% turn meter." },
       { slot: 3, name: "Crowning Strike", cd: 4, target: "enemy", hits: 1, mult: 4.4, ignoreDef: .3, effects: [{ on: "target", type: "debuff", what: "HEAL_BLOCK", chance: .8, turns: 2 }], desc: "440% ATK, ignoring 30% DEF. 80% chance of Heal Block." }] },
   skullshatterer: { n: "Skullshatterer", boss: 1, cls: "Sniper", el: "Fire", m: { hp: 2.8, atk: 1.1, def: 1.0, spd: 100 },
-    fig: { type: "trooper", col: "#5a5048", col2: "#3a342e", acc: "#c83a2a", boot: "#2a2420", bulk: 1.3, h: 1.12, w: "rifle" },
+    fig: { type: "hood", skin: "#d9cbb8", col: "#5a5048", col2: "#3a342e", cape: "#4a3a30", eyes: "#ff6a3a", mask: 1, bulk: 1.3, h: 1.12, w: "rifle" },
     skills: [{ slot: 1, name: "Grenade Launcher", cd: 0, target: "enemy", hits: 1, mult: 2.8, effects: [{ on: "target", type: "debuff", what: "DEF_BREAK", chance: .4, turns: 2 }], desc: "280% ATK. 40% chance of DEF Break." },
       { slot: 2, name: "Barrage", cd: 3, target: "aoe_enemies", hits: 2, mult: 1.4, effects: [{ on: "target", type: "debuff", what: "DOT", chance: .35, turns: 2 }], desc: "Hits all enemies twice (140% each). 35% chance per hit to Burn." },
       { slot: 3, name: "Last Stand", cd: 5, target: "self", effects: [{ on: "self", type: "buff", what: "ATK_UP", turns: 2 }, { on: "self", type: "shieldCasterHP", amount: .25, turns: 2 }], desc: "Gain ATK Up (2T) and a Shield (25% HP)." }] },
@@ -1104,12 +1110,12 @@ const ENEMY = {
     skills: [{ slot: 1, name: "Crush", cd: 0, target: "enemy", hits: 1, mult: 2.8, effects: [{ on: "target", type: "debuff", what: "STUN", chance: .2, turns: 1 }], desc: "280% ATK. 20% chance to Stun." },
       { slot: 2, name: "Originium Burst", cd: 3, target: "aoe_enemies", hits: 1, mult: 2.0, effects: [{ on: "target", type: "debuff", what: "DOT", chance: .5, turns: 2 }], desc: "Hits all enemies (200%). 50% chance to Burn." }] },
   centurion: { n: "Sarkaz Centurion", boss: 1, cls: "Guard", el: "Dark", m: { hp: 3.2, atk: 1.25, def: 1.0, spd: 106 },
-    fig: { type: "zabrak", skin: "#a8a098", col: "#1e1a20", col2: "#141016", acc: "#c83a4a", boot: "#0e0c10", cape: "#5a1a2a", bulk: 1.25, h: 1.15, w: "staffsaber", sc: "#ff3a5a" },
+    fig: { type: "human", skin: "#c8beb6", hair: "#1a1418", hs: "short", col: "#1e1a20", col2: "#141016", acc: "#c83a4a", boot: "#0e0c10", cape: "#5a1a2a", coat: 1, horns: "sarkaz", hornc: "#100c0e", eyec: "#ff3a3a", bulk: 1.25, h: 1.15, w: "greatsword", sc: "#ff3a5a" },
     skills: [{ slot: 1, name: "Cleave", cd: 0, target: "enemy", hits: 1, mult: 3.2, effects: [{ on: "target", type: "debuff", what: "BRAND", chance: .5, turns: 2 }], desc: "320% ATK. 50% chance to Brand." },
       { slot: 2, name: "War Cry", cd: 3, target: "team", effects: [{ on: "ally", type: "buff", what: "ATK_UP", turns: 2 }, { on: "ally", type: "atkbar+", amount: .15 }], desc: "Allies gain ATK Up and 15% turn meter." },
       { slot: 3, name: "Doom Spin", cd: 4, target: "aoe_enemies", hits: 2, mult: 1.9, effects: [{ on: "target", type: "debuff", what: "DEF_BREAK", chance: .5, turns: 2 }], desc: "Hits all enemies twice (190% each), 50% chance of DEF Break." }] },
   yeti: { n: "Yeti Icecleaver", boss: 1, cls: "Guard", el: "Water", m: { hp: 3.4, atk: 1.15, def: 1.1, spd: 100 },
-    fig: { type: "wookiee", skin: "#e6eef6", hair: "#c8d4e0", acc: "#5a6a7a", h: 1.25, bulk: 1.35, w: "staff" },
+    fig: { type: "hood", skin: "#e6eef6", col: "#c8d4e0", col2: "#8aa0b8", cape: "#e6eef6", eyes: "#5fd4ff", mask: 1, h: 1.25, bulk: 1.35, w: "greatsword", sc: "#9fe0ff" },
     skills: [{ slot: 1, name: "Ice Cleaver", cd: 0, target: "enemy", hits: 1, mult: 3.0, effects: [{ on: "target", type: "debuff", what: "SLOW", chance: .5, turns: 2 }], desc: "300% ATK. 50% chance to Slow." },
       { slot: 2, name: "Permafrost Armor", cd: 3, target: "self", effects: [{ on: "self", type: "buff", what: "DEF_UP", turns: 2 }, { on: "self", type: "buff", what: "COUNTER", turns: 2 }], desc: "Gain DEF Up and Counter (2T)." },
       { slot: 3, name: "Avalanche", cd: 4, target: "aoe_enemies", hits: 1, mult: 3.0, effects: [{ on: "target", type: "debuff", what: "STUN", chance: .35, turns: 1 }], desc: "Hits all enemies (300%). 35% chance to Stun." }] },
@@ -1304,9 +1310,13 @@ const STORY = [{
       ] },
   ],
 }];
-// Flatten for lookups
+// Flatten for lookups. Stage codes follow Arknights: main stages 1-1…1-6, side stages S1-1.
 const NODES = {};
-for (const ep of STORY) for (const ch of ep.chapters) ch.nodes.forEach((nd, i) => { nd.ch = ch; nd.ep = ep; nd.idx = i; NODES[nd.id] = nd; });
+for (const ep of STORY) ep.chapters.forEach((ch, ci) => {
+  let mc = 0, sc = 0;
+  ch.no = String(ci + 1).padStart(2, "0");
+  ch.nodes.forEach((nd, i) => { nd.legacy = nd.id; nd.id = nd.type === "side" ? `S${ci + 1}-${++sc}` : `${ci + 1}-${++mc}`; nd.ch = ch; nd.ep = ep; nd.idx = i; NODES[nd.id] = nd; });
+});
 const nodeCost = nd => nd.type === "story" || nd.type === "chest" ? 0 : 6 + Math.floor(nd.lv / 10) * 2;
 const nodeTurnGoal = nd => (nd.waves ? nd.waves.length : 1) * 9 + (nd.type === "boss" ? 4 : 0);
 
@@ -1314,11 +1324,11 @@ const nodeTurnGoal = nd => (nd.waves ? nd.waves.length : 1) * 9 + (nd.type === "
 //  HUNTS · TOWER · ARENA · MISSIONS · SHOPS
 // =====================================================================
 const HUNTS = [
-  { id: "slug", n: "Slug Swarm", sub: "Originium Slug nest beneath Chernobog", env: "ruins", sets: ["Swift", "Energy", "Focus", "Will", "Endure"],
+  { id: "slug", code: "SN", n: "Slug Nest", sub: "Originium Slug colony beneath Chernobog", env: "ruins", sets: ["Swift", "Energy", "Focus", "Will", "Endure"],
     waves: lv => [W("slug", "acidslug", "slug"), W("queenslug", "acidslug", "slug")] },
-  { id: "crypt", n: "Sarkaz Crypt", sub: "Mercenary warband in the old catacombs", env: "temple", sets: ["Fatal", "Blade", "Rage", "Violent", "Revenge"],
+  { id: "crypt", code: "SC", n: "Sarkaz Catacombs", sub: "Mercenary warband in the old catacombs", env: "temple", sets: ["Fatal", "Blade", "Rage", "Violent", "Revenge"],
     waves: lv => [W("sarkaz", "caster", "sarkaz"), W("centurion", "sarkaz", "caster")] },
-  { id: "frost", n: "Frozen Wastes", sub: "The Icecleaver's hunting ground", env: "snow", sets: ["Guard", "Shield", "Nemesis", "Despair", "Endure"],
+  { id: "frost", code: "FW", n: "Frozen Wastes", sub: "The Icecleaver's hunting ground", env: "snow", sets: ["Guard", "Shield", "Nemesis", "Despair", "Endure"],
     waves: lv => [W("wraith", "shield", "wraith"), W("yeti", "wraith", "shield")] },
 ];
 const HUNT_LV = [10, 22, 34, 46, 58, 70];
@@ -1346,43 +1356,48 @@ const ARENA_N2 = ["Guard", "Courier", "Knight", "Hunter", "Ranger", "Doctor", "B
 const ARENA_MS = 10 * 60000, PAYOUT_MS = 6 * 3600000;
 
 const DAILIES = [
-  { id: "clear", n: "Win 3 battles", goal: 3, reward: { orundum: 60, lmd: 2000 } },
-  { id: "sanity", n: "Spend 60 Sanity", goal: 60, reward: { orundum: 60 } },
+  { id: "clear", n: "Clear 3 operations", goal: 3, reward: { orundum: 60, lmd: 2000, credit: 80 } },
+  { id: "sanity", n: "Spend 60 Sanity", goal: 60, reward: { orundum: 60, credit: 40 } },
   { id: "hh", n: "Headhunt once", goal: 1, reward: { orundum: 80 } },
   { id: "upgrade", n: "Upgrade operators 3 times", goal: 3, reward: { rec2: 3 } },
-  { id: "arena", n: "Win an Arena battle", goal: 1, reward: { tokens: 30, orundum: 40 } },
-  { id: "rune", n: "Enhance a rune", goal: 1, reward: { lmd: 3000 } },
+  { id: "arena", n: "Win a Contingency Contract battle", goal: 1, reward: { tokens: 30, orundum: 40 } },
+  { id: "rune", n: "Upgrade a module", goal: 1, reward: { lmd: 3000, credit: 40 } },
 ];
 const DAILY_ALL = { permit: 1 };
 const ACHIEVEMENTS = [
-  ...STORY[0].chapters.map((c, i) => ({ id: "ch" + (i + 1), n: `Clear Chapter ${i + 1}: ${c.title}`, test: () => chapterCleared(c), reward: i === 4 ? { orundum: 600, permit: 3 } : { orundum: 300 } })),
+  ...STORY[0].chapters.map((c, i) => ({ id: "ch" + (i + 1), n: `Clear Episode ${String(i + 1).padStart(2, "0")}: ${c.title}`, test: () => chapterCleared(c), reward: i === 4 ? { orundum: 600, permit: 3 } : { orundum: 300 } })),
   { id: "ops10", n: "Recruit 10 operators", test: () => Object.keys(S.ops).length >= 10, reward: { orundum: 200 } },
   { id: "ops25", n: "Recruit 25 operators", test: () => Object.keys(S.ops).length >= 25, reward: { orundum: 400, permit: 1 } },
   { id: "ops50", n: "Recruit 50 operators", test: () => Object.keys(S.ops).length >= 50, reward: { orundum: 800, permit: 2 } },
   { id: "e1", n: "Promote an operator to Elite 1", test: () => Object.values(S.ops).some(p => p.elite >= 1), reward: { orundum: 150 } },
   { id: "e2", n: "Promote an operator to Elite 2", test: () => Object.values(S.ops).some(p => p.elite >= 2), reward: { orundum: 400, permit: 1 } },
   { id: "six", n: "Recruit a 6★ operator", test: () => Object.keys(S.ops).some(k => OPS[k].rar === 6), reward: { orundum: 300 } },
-  { id: "tw10", n: "Reach Tower floor 10", test: () => S.tower >= 10, reward: { orundum: 300, permit: 1 } },
-  { id: "tw20", n: "Reach Tower floor 20", test: () => S.tower >= 20, reward: { orundum: 500, permit: 2 } },
-  { id: "tw30", n: "Conquer the Tower", test: () => S.tower >= 30, reward: { orundum: 1000, permit: 3 } },
+  { id: "tw10", n: "Clear Stationary Security Service floor 10", test: () => S.tower >= 10, reward: { orundum: 300, permit: 1 } },
+  { id: "tw20", n: "Clear Stationary Security Service floor 20", test: () => S.tower >= 20, reward: { orundum: 500, permit: 2 } },
+  { id: "tw30", n: "Clear all 30 Stationary Security Service floors", test: () => S.tower >= 30, reward: { orundum: 1000, permit: 3 } },
 ];
 const SHOP = {
-  orundum: [
-    { id: "o_san", n: "Sanity refill", d: "Restore Sanity to max", cost: 120, give: { sanityMax: 1 } },
-    { id: "o_lmd", n: "LMD crate", d: "30,000 LMD", cost: 200, give: { lmd: 30000 } },
-    { id: "o_rec", n: "Battle Record pack", d: "6 Strategic Battle Records", cost: 300, give: { rec4: 6 } },
+  credit: [
+    { id: "r_lmd", n: "LMD ×12,000", cost: 200, give: { lmd: 12000 } },
+    { id: "r_rec", n: "Strategic Battle Record ×3", cost: 240, give: { rec4: 3 } },
+    { id: "r_summ", n: "Skill Summary ×3", cost: 160, give: { summ: 3 } },
+    { id: "r_chip", n: "Chip Pack", cost: 300, give: { chip: 1 } },
   ],
   cert: [
     { id: "c_permit", n: "Headhunting Permit", cost: 25, give: { permit: 1 } },
-    { id: "c_summ", n: "Skill Summaries ×3", cost: 8, give: { summ: 3 } },
-    { id: "c_chip", n: "Elite Chip Packs ×2", cost: 12, give: { chip: 2 } },
-    { id: "c_rune", n: "Heroic rune", cost: 20, give: { rune: 4 } },
+    { id: "c_summ", n: "Skill Summary ×3", cost: 8, give: { summ: 3 } },
+    { id: "c_chip", n: "Chip Pack ×2", cost: 12, give: { chip: 2 } },
+    { id: "c_rune", n: "T4 Module", cost: 20, give: { rune: 4 } },
   ],
   tokens: [
     { id: "t_permit", n: "Headhunting Permit", cost: 240, give: { permit: 1 } },
-    { id: "t_chip", n: "Elite Chip Packs ×3", cost: 90, give: { chip: 3 } },
-    { id: "t_summ", n: "Skill Summaries ×4", cost: 60, give: { summ: 4 } },
-    { id: "t_rune", n: "Epic rune", cost: 220, give: { rune: 5 } },
+    { id: "t_chip", n: "Chip Pack ×3", cost: 90, give: { chip: 3 } },
+    { id: "t_summ", n: "Skill Summary ×4", cost: 60, give: { summ: 4 } },
+    { id: "t_rune", n: "T5 Module", cost: 220, give: { rune: 5 } },
+  ],
+  prime: [
+    { id: "p_san", n: "Restore Sanity", d: "Refill Sanity to max", cost: 1, give: { sanityMax: 1 } },
+    { id: "p_oru", n: "Exchange for Orundum", d: "1 Originite Prime → 180 Orundum", cost: 1, give: { orundum: 180 } },
   ],
 };
 const STARTERS = ["amiya", "fang", "kroos", "melantha", "ansel"];
@@ -1428,6 +1443,7 @@ const KEY = {
   wind:   { fu: 2.7, ff: 3.05, wa: 3.7, lean: -.1 },
   strike: { fu: 1.15, ff: 1.3, wa: .85, lean: .32 },
 };
+const BLADES = new Set(["saber", "saber2", "saber4", "dagger", "greatsword"]);
 function figPose(f, pose) {
   const w = f.w, T = pose.time || 0, k = clamp(pose.t || 0, 0, 1), name = pose.name || "idle";
   const P = { lean: .05, bt: -.18, bs: -.04, ft: .3, fs: .1, bu: -.15, bf: .25, fu: .55, ff: 1.45, wa: 2.35, bwa: -.5,
@@ -1437,8 +1453,15 @@ function figPose(f, pose) {
     if (w === "rifle" || w === "bowcaster") { P.fu = .75; P.ff = 1.45; P.wa = 1.52; P.bu = .55; P.bf = 1.35; }
     if (w === "pistols") { P.bu = .35; P.bf = .95; P.bwa = 1.2; }
   }
-  if (w === "none") { P.fu = .25; P.ff = .55; }
+  if (w === "none" || w === "arts") { P.fu = .25; P.ff = .55; }
+  if (w === "arts") { P.fu = .45; P.ff = 1.15; }
   if (w === "staff" || w === "staffsaber") { P.fu = .6; P.ff = 1.25; P.wa = 2.0; }
+  if (w === "rod" || w === "medrod") { P.fu = .5; P.ff = 1.05; P.wa = 2.95; }
+  if (w === "spear") { P.fu = .7; P.ff = 1.3; P.wa = 2.55; }
+  if (w === "book") { P.fu = .85; P.ff = 2.15; P.wa = 1.57; }
+  if (w === "bow") { P.fu = .45; P.ff = .75; P.wa = 1.15; }
+  if (w === "shield") { P.fu = 1.0; P.ff = 1.55; P.bu = .25; P.bf = .85; P.bwa = 2.4; }
+  if (w === "greatsword") { P.wa = 2.6; }
   if (w === "saber2") { P.bu = .2; P.bf = .7; P.bwa = -.55; }
   if (w === "saber4") { P.bu = .5; P.bf = 1.2; P.bwa = 2.6; }
   if (f.type === "grievous") P.lean = .22;
@@ -1449,20 +1472,36 @@ function figPose(f, pose) {
     const s = Math.sin(T * 15);
     P.bt = -.55 * s; P.ft = .55 * s; P.bs = P.bt - .45 * (1 + s) / 2 - .1; P.fs = P.ft - .45 * (1 - s) / 2 - .1;
     P.lean = .28; P.bu = .6 * s; P.bf = P.bu + .8;
+    if (w === "shield") { P.bu = .3; P.bf = .9; }
+  } else if (name === "swing" && w === "spear") {
+    // thrust: draw back, drive the point forward, recover
+    const draw = { fu: .35, ff: .9, wa: 1.75, lean: -.06 }, lunge = { fu: 1.45, ff: 1.55, wa: 1.6, lean: .34 };
+    if (k < .3) mix(base, draw, ease(k / .3));
+    else if (k < .5) { mix(base, draw, 1); mix(draw, lunge, ease((k - .3) / .2)); }
+    else { mix(base, lunge, 1); mix(lunge, base, ease((k - .5) / .5)); }
+    P.ft = lerp(base.ft, .6, Math.sin(k * Math.PI)); P.bt = lerp(base.bt, -.45, Math.sin(k * Math.PI));
   } else if (name === "swing") {
     if (k < .35) mix(base, KEY.wind, ease(k / .35));
     else if (k < .55) { mix(base, KEY.wind, 1); mix(KEY.wind, KEY.strike, ease((k - .35) / .2)); }
     else { mix(base, KEY.strike, 1); mix(KEY.strike, base, ease((k - .55) / .45)); }
     P.ft = lerp(base.ft, .55, Math.sin(k * Math.PI)); P.bt = lerp(base.bt, -.4, Math.sin(k * Math.PI));
+    if (w === "shield") {
+      // the blade arm strikes from behind the shield while the shield shoves forward
+      P.bu = P.fu; P.bf = P.ff; P.bwa = P.wa;
+      const s = Math.sin(k * Math.PI); P.fu = lerp(base.fu, 1.35, s); P.ff = lerp(base.ff, 1.6, s); P.wa = base.wa;
+    }
   } else if (name === "shoot") {
     const rec = k > .08 && k < .3 ? Math.sin((k - .08) / .22 * Math.PI) * .18 : 0;
     P.fu = 1.5 - rec; P.ff = 1.56 - rec * .5; P.wa = 1.57 - rec;
     if (w === "rifle" || w === "bowcaster") { P.bu = 1.15; P.bf = 1.6; }
     if (w === "pistols") { P.bu = 1.35 - rec; P.bf = 1.5; P.bwa = 1.57; }
+    if (w === "bow") { const pull = k < .25 ? k / .25 : 0; P.bu = 1.5; P.bf = 1.57 + .9 * pull; P.wa = 1.57; }
     P.lean = .02 - rec * .3;
   } else if (name === "cast") {
     const s = Math.sin(clamp(k * 1.4, 0, 1) * Math.PI / 2);
     P.fu = lerp(P.fu, 1.55, s); P.ff = lerp(P.ff, 1.65, s); P.bu = lerp(P.bu, 1.3, s); P.bf = lerp(P.bf, 1.62, s);
+    if (w === "rod" || w === "medrod") { P.fu = lerp(base.fu, 1.9, s); P.ff = lerp(base.ff, 2.6, s); P.wa = lerp(base.wa, 2.4, s); }
+    if (w === "book") { P.fu = lerp(base.fu, 1.4, s); P.ff = lerp(base.ff, 1.8, s); }
     P.lean = lerp(P.lean, .14, s);
   } else if (name === "choke") {
     const s = Math.sin(clamp(k * 1.6, 0, 1) * Math.PI / 2);
@@ -1476,9 +1515,11 @@ function figPose(f, pose) {
   } else if (name === "buff") {
     const s = Math.sin(clamp(k * 1.5, 0, 1) * Math.PI / 2);
     P.fu = lerp(P.fu, 2.3, s); P.ff = lerp(P.ff, 2.7, s); P.bu = lerp(P.bu, -2.2, s); P.bf = lerp(P.bf, -2.6, s); P.lean = lerp(P.lean, -.12, s);
-    if (w === "saber" || w === "staff") P.wa = lerp(P.wa, 3.1, s);
+    if (BLADES.has(w) || w === "staff" || w === "spear" || w === "rod" || w === "medrod") P.wa = lerp(P.wa, 3.1, s);
+    if (w === "shield") { P.fu = lerp(base.fu, 1.2, s); P.ff = lerp(base.ff, 1.5, s); P.bu = lerp(base.bu, 2.6, s); P.bf = lerp(base.bf, 2.9, s); P.bwa = lerp(base.bwa, 3.1, s); }
   } else if (name === "victory") {
     P.fu = 2.85; P.ff = 3.05; P.wa = 3.12; P.lean = -.05;
+    if (w === "shield") { P.fu = 1.1; P.ff = 1.5; P.bu = 2.85; P.bf = 3.05; P.bwa = 3.12; }
   }
   return P;
 }
@@ -1490,10 +1531,10 @@ function drawFigure(g, f, pose) {
   if (f.type === "r2") { drawR2(g, f, pose, out); g.restore(); return scaleOut(out, H); }
   if (f.type === "slug") { drawSlug(g, f, pose, out); g.restore(); return scaleOut(out, H); }
   if (f.type === "hound") { drawHound(g, f, pose, out); g.restore(); return scaleOut(out, H); }
-  const thin = f.type === "b1" ? .55 : f.type === "grievous" ? .72 : f.type === "wookiee" ? 1.25 : 1;
+  const thin = f.type === "b1" ? .55 : f.type === "grievous" ? .72 : f.type === "wookiee" ? 1.25 : f.slim ? .88 : 1;
   const skin = f.skin || "#e8c4a0";
-  const armored = ["trooper", "mando", "vader", "kylo", "grievous", "b1"].includes(f.type);
-  const glove = f.type === "wookiee" ? f.skin : armored ? (f.type === "trooper" && !f.chrome ? "#1d2026" : shade(f.col, -.45)) : skin;
+  const armored = ["trooper", "mando", "vader", "kylo", "grievous", "b1", "robot"].includes(f.type);
+  const glove = f.type === "wookiee" ? f.skin : armored ? (f.type === "trooper" && !f.chrome ? "#1d2026" : shade(f.col, -.45)) : f.glove || skin;
   const col = f.col || "#888888", col2 = f.col2 || col, boot = f.boot || shade(col2, -.45);
   // legs
   const hip0 = [0, -48];
@@ -1504,12 +1545,17 @@ function drawFigure(g, f, pose) {
   const S = [hip[0] + Math.sin(P.lean) * 32, hip[1] - Math.cos(P.lean) * 32 + P.bob];
   const HC = [S[0] + 3 + Math.sin(P.lean) * 4, S[1] - 13 * (f.hsz || 1) + 2];
   const shoulder = [S[0], S[1] + 3];
-  // cape
+  const sway = Math.sin(T * 2.6 + (pose.ph || 0));
+  // tail, wings and long hair sit behind everything else
+  if (f.tail) drawTail(g, f, hip, sway);
+  if (f.wings) drawWings(g, f, S, sway);
+  if (f.type === "human" && (f.hs === "long" || f.hs === "pony" || f.hs === "twin")) drawBackHair(g, f, HC, S, sway);
+  // cape / coat tails
   if (f.cape) {
-    const wv = Math.sin(T * 3 + (pose.ph || 0)) * 3;
+    const wv = sway * 3;
     g.fillStyle = f.cape;
-    g.beginPath(); g.moveTo(S[0] - 6, S[1] - 2); g.quadraticCurveTo(S[0] - 20, hip[1] - 6, S[0] - 24 + wv, -10);
-    g.lineTo(S[0] - 4 + wv * .5, -8); g.quadraticCurveTo(hip[0] - 2, hip[1], S[0] + 6, S[1]); g.closePath(); g.fill();
+    g.beginPath(); g.moveTo(S[0] - 6, S[1] - 2); g.quadraticCurveTo(S[0] - 20, hip[1] - 6, S[0] - 24 + wv, f.coat ? hip[1] + 22 : -10);
+    g.lineTo(S[0] - 4 + wv * .5, f.coat ? hip[1] + 26 : -8); g.quadraticCurveTo(hip[0] - 2, hip[1], S[0] + 6, S[1]); g.closePath(); g.fill();
   }
   // jetpack
   if (f.type === "mando") {
@@ -1522,6 +1568,7 @@ function drawFigure(g, f, pose) {
   capsule(g, be, bh, 6.5 * thin, shade(col, -.35), false);
   if (f.w === "saber2" || f.w === "saber4") drawSaber(g, bh, P.bwa, f.sc, out, "tip2");
   if (f.w === "pistols") drawGun(g, bh, P.bwa, 11, out, "tip2");
+  if (f.w === "shield") drawSaber(g, bh, P.bwa, f.sc, out, "tip", 36);
   circ(g, bh[0], bh[1], 3.3 * Math.max(thin, .8), shade(glove, -.25));
   // grievous extra arms
   if (f.w === "saber4") {
@@ -1537,7 +1584,7 @@ function drawFigure(g, f, pose) {
   capsule(g, bb, bft, 8.5 * thin, shade(boot, -.25), false);
   g.fillStyle = shade(boot, -.3); g.beginPath(); g.ellipse(bft[0] + 3, bft[1] - 1.5, 6 * Math.max(thin, .7), 3, 0, 0, 7); g.fill();
   // torso
-  const bw = (f.type === "b1" ? 5 : f.type === "grievous" ? 7 : 8) * B, sw = (f.type === "b1" ? 6 : 11) * B;
+  const bw = (f.type === "b1" ? 5 : f.type === "grievous" ? 7 : 8) * B * thin, sw = (f.type === "b1" ? 6 : 11) * B * (f.slim ? .92 : 1);
   const tg = g.createLinearGradient(S[0] - sw, 0, S[0] + sw, 0);
   tg.addColorStop(0, shade(col, -.35)); tg.addColorStop(.6, col); tg.addColorStop(1, shade(col, .18));
   g.fillStyle = tg;
@@ -1550,7 +1597,13 @@ function drawFigure(g, f, pose) {
   if (f.vest) {
     g.fillStyle = f.vest; g.beginPath(); g.moveTo(hip[0] - bw, hip[1]); g.lineTo(hip[0] - 1, hip[1]); g.lineTo(S[0] - 2, S[1] + 1); g.lineTo(S[0] - sw * .9, S[1]); g.closePath(); g.fill();
   }
-  if (f.type === "trooper") {
+  if (f.trim) {
+    // jacket zip line and collar in the operator's accent colour
+    g.strokeStyle = f.trim; g.lineWidth = 1.6; g.lineCap = "round";
+    g.beginPath(); g.moveTo(S[0] + sw * .55, S[1] + 2); g.quadraticCurveTo(S[0] + sw * .75, lerp(hip[1], S[1], .5), hip[0] + bw * .7, hip[1]); g.stroke();
+    g.beginPath(); g.moveTo(S[0] - sw * .6, S[1] + .5); g.lineTo(S[0] + sw * .5, S[1] + 2.5); g.stroke();
+  }
+  if (f.type === "trooper" || f.type === "robot") {
     g.strokeStyle = f.chrome ? "#6b7280" : "#30343c"; g.lineWidth = 1.2;
     g.beginPath(); g.moveTo(S[0] - 6, S[1] + 9); g.lineTo(S[0] + 8, S[1] + 9); g.moveTo(hip[0] - 5, hip[1] - 7); g.lineTo(hip[0] + 6, hip[1] - 7); g.stroke();
     if (f.acc && f.acc !== "#1b1d22") { g.fillStyle = f.acc; g.fillRect(S[0] - 6, S[1] + 1, 4, 6); }
@@ -1572,54 +1625,71 @@ function drawFigure(g, f, pose) {
   capsule(g, fb, fft, 8.5 * thin, boot);
   g.fillStyle = boot; g.beginPath(); g.ellipse(fft[0] + 3, fft[1] - 1.5, 6 * Math.max(thin, .7), 3, 0, 0, 7); g.fill();
   if (f.type === "trooper" && !f.chrome) { g.fillStyle = "#30343c"; g.fillRect(fk[0] - 3, fk[1] - 1, 6, 2); }
-  // robe skirt
+  // robe / skirt
   if (f.robe) {
     const rg = g.createLinearGradient(-14, 0, 14, 0);
     rg.addColorStop(0, shade(col2, -.4)); rg.addColorStop(.65, col2); rg.addColorStop(1, shade(col2, .15));
     g.fillStyle = rg;
-    const sway = Math.sin(T * 2.4 + (pose.ph || 0)) * 1.5;
+    const sw2 = sway * 1.5, hem = f.robe === "skirt" ? hip[1] + 20 : -3;
     g.beginPath(); g.moveTo(hip[0] - bw - 1, hip[1] - 3); g.lineTo(hip[0] + bw + 1, hip[1] - 3);
-    g.quadraticCurveTo(Math.max(fft[0], hip[0]) + 10, -14, Math.max(fft[0], bft[0]) + 9 + sway, -3);
-    g.lineTo(Math.min(fft[0], bft[0]) - 10 + sway, -3);
-    g.quadraticCurveTo(Math.min(bft[0], hip[0]) - 10, -16, hip[0] - bw - 1, hip[1] - 3); g.fill();
-    g.strokeStyle = shade(col2, -.5); g.lineWidth = 1; g.beginPath(); g.moveTo(hip[0] + 2, hip[1]); g.lineTo(hip[0] + 4 + sway, -4); g.stroke();
+    if (f.robe === "skirt") { g.lineTo(hip[0] + bw + 9 + sw2, hem); g.lineTo(hip[0] - bw - 9 + sw2, hem); }
+    else {
+      g.quadraticCurveTo(Math.max(fft[0], hip[0]) + 10, -14, Math.max(fft[0], bft[0]) + 9 + sw2, hem);
+      g.lineTo(Math.min(fft[0], bft[0]) - 10 + sw2, hem);
+      g.quadraticCurveTo(Math.min(bft[0], hip[0]) - 10, -16, hip[0] - bw - 1, hip[1] - 3);
+    }
+    g.closePath(); g.fill();
+    g.strokeStyle = shade(col2, -.5); g.lineWidth = 1; g.beginPath(); g.moveTo(hip[0] + 2, hip[1]); g.lineTo(hip[0] + 4 + sw2, hem - 1); g.stroke();
+    if (f.trim) { g.strokeStyle = f.trim; g.lineWidth = 1.4; g.beginPath(); g.moveTo(hip[0] - bw - 8 + sw2, hem - 1); g.lineTo(hip[0] + bw + 8 + sw2, hem - 1); g.stroke(); }
   }
   // neck + head
   if (f.type !== "b1") capsule(g, [S[0] + 1, S[1] + 1], [HC[0] - 1, HC[1] + 4], 6, armored ? shade(col, -.4) : shade(skin, -.12), false);
   else capsule(g, [S[0], S[1]], [HC[0] - 3, HC[1] + 6], 3, col2, false);
-  drawHead(g, f, HC, T, pose);
+  const top = drawHead(g, f, HC, T, pose);
   out.head = HC; out.chest = [lerp(hip[0], S[0], .6), lerp(hip[1], S[1], .6)];
+  out.top = [HC[0], HC[1] - (top || 12)];
   // front arm + weapon
   const fe = seg(shoulder, P.fu, 17), fh = seg(fe, P.ff, 16);
   if (f.w === "rifle" || f.w === "bowcaster") drawGun(g, fh, P.wa, 24, out, "tip", f.w === "bowcaster");
+  if (f.w === "bow") drawBow(g, fh, P.wa, bh, pose.name === "shoot" && (pose.t || 0) < .25, f, out);
   capsule(g, shoulder, fe, 7.2 * thin, col);
-  capsule(g, fe, fh, 6.6 * thin, armored ? col : col);
+  capsule(g, fe, fh, 6.6 * thin, col);
+  if (f.cuff) capsule(g, [lerp(fe[0], fh[0], .7), lerp(fe[1], fh[1], .7)], fh, 7, f.cuff, false);
   if (f.type === "trooper" || f.type === "vader" || f.type === "kylo") capsule(g, [lerp(fe[0], fh[0], .55), lerp(fe[1], fh[1], .55)], fh, 6.8, glove, false);
   circ(g, fh[0], fh[1], 3.4 * Math.max(thin, .8), glove);
   out.hand = fh;
-  if (f.w === "saber" || f.w === "saber2" || f.w === "saber4") drawSaber(g, fh, P.wa, f.sc, out, "tip");
-  else if (f.w === "staffsaber") drawStaff(g, fh, P.wa, f.sc, out);
-  else if (f.w === "staff") drawStaff(g, fh, P.wa, null, out);
-  else if (f.w === "pistol" || f.w === "pistols") drawGun(g, fh, P.wa, 11, out, "tip");
+  switch (f.w) {
+    case "saber": case "saber2": case "saber4": drawSaber(g, fh, P.wa, f.sc, out, "tip"); break;
+    case "dagger": drawSaber(g, fh, P.wa, f.sc, out, "tip", 27); break;
+    case "greatsword": drawSaber(g, fh, P.wa, f.sc, out, "tip", 64, 1.5); break;
+    case "staffsaber": drawStaff(g, fh, P.wa, f.sc, out); break;
+    case "staff": drawStaff(g, fh, P.wa, null, out); break;
+    case "spear": drawSpear(g, fh, P.wa, f.sc, out); break;
+    case "rod": case "medrod": drawRod(g, fh, P.wa, f.sc, out, f.w === "medrod", T); break;
+    case "book": drawBook(g, fh, f, out, T); break;
+    case "arts": drawArtsOrb(g, fh, f.sc, out, T); break;
+    case "shield": drawShieldFront(g, fh, f); break;
+    case "pistol": case "pistols": drawGun(g, fh, P.wa, 11, out, "tip"); break;
+  }
   if (!out.tip) out.tip = fh;
   g.restore();
   return scaleOut(out, H);
 }
-function scaleOut(out, H) { for (const k in out) out[k] = [out[k][0] * H, out[k][1] * H]; return out; }
+function scaleOut(out, H) { for (const k in out) if (Array.isArray(out[k])) out[k] = [out[k][0] * H, out[k][1] * H]; return out; }
 
-function drawSaber(g, hand, a, color, out, key) {
+function drawSaber(g, hand, a, color, out, key, len = 50, wide = 1) {
   const d = Dv(a), n = [-d[1], d[0]];
   const h0 = [hand[0] - d[0] * 4, hand[1] - d[1] * 4], h1 = [hand[0] + d[0] * 6, hand[1] + d[1] * 6];
-  const tip = [hand[0] + d[0] * 50, hand[1] + d[1] * 50];
-  bladeStroke(g, h1, tip, color);
-  capsule(g, [h1[0] - n[0] * 7, h1[1] - n[1] * 7], [h1[0] + n[0] * 7, h1[1] + n[1] * 7], 3, "#2a2430", false);
+  const tip = [hand[0] + d[0] * len, hand[1] + d[1] * len];
+  bladeStroke(g, h1, tip, color, wide);
+  capsule(g, [h1[0] - n[0] * 7 * wide, h1[1] - n[1] * 7 * wide], [h1[0] + n[0] * 7 * wide, h1[1] + n[1] * 7 * wide], 3, "#2a2430", false);
   capsule(g, h0, h1, 3.6, "#4a3430", false);
   out[key] = tip; out[key + "c"] = color;
 }
 // steel blade, tapered to a point, with a faint originium-tinted edge
-function bladeStroke(g, a, b, color) {
+function bladeStroke(g, a, b, color, wide = 1) {
   const dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1, d = [dx / L, dy / L], n = [-d[1], d[0]];
-  const w0 = 4.2, w1 = 3.2, nk = [b[0] - d[0] * 9, b[1] - d[1] * 9];
+  const w0 = 4.2 * wide, w1 = 3.2 * wide, nk = [b[0] - d[0] * 9 * wide, b[1] - d[1] * 9 * wide];
   g.save();
   g.beginPath();
   g.moveTo(a[0] + n[0] * w0, a[1] + n[1] * w0); g.lineTo(nk[0] + n[0] * w1, nk[1] + n[1] * w1); g.lineTo(b[0], b[1]);
@@ -1645,6 +1715,73 @@ function drawStaff(g, hand, a, color, out) {
   }
   capsule(g, [hand[0] - d[0] * 7, hand[1] - d[1] * 7], [hand[0] + d[0] * 7, hand[1] + d[1] * 7], 3.6, "#9aa0aa", false);
 }
+function drawSpear(g, hand, a, color, out) {
+  const d = Dv(a), b0 = [hand[0] - d[0] * 30, hand[1] - d[1] * 30], s1 = [hand[0] + d[0] * 40, hand[1] + d[1] * 40], tip = [hand[0] + d[0] * 58, hand[1] + d[1] * 58];
+  capsule(g, b0, s1, 3.4, "#2c2830", false);
+  capsule(g, [hand[0] + d[0] * 30, hand[1] + d[1] * 30], s1, 4.2, shade(color, -.3), false);
+  bladeStroke(g, s1, tip, color, .8);
+  out.tip = tip; out.tipc = color;
+}
+function glowOrb(g, p, r, color, T) {
+  const pr = r * (1 + Math.sin(T * 5) * .12);
+  g.save(); g.globalCompositeOperation = "lighter";
+  const gr = g.createRadialGradient(p[0], p[1], 0, p[0], p[1], pr * 3);
+  gr.addColorStop(0, color + "cc"); gr.addColorStop(.4, color + "44"); gr.addColorStop(1, color + "00");
+  g.fillStyle = gr; g.beginPath(); g.arc(p[0], p[1], pr * 3, 0, 7); g.fill();
+  g.restore();
+  circ(g, p[0], p[1], pr, shade(color, .55));
+  circ(g, p[0] - pr * .3, p[1] - pr * .3, pr * .35, "#ffffff");
+}
+function drawRod(g, hand, a, color, out, med, T) {
+  const d = Dv(a), n = [-d[1], d[0]], b0 = [hand[0] - d[0] * 26, hand[1] - d[1] * 26], hd = [hand[0] + d[0] * 30, hand[1] + d[1] * 30];
+  capsule(g, b0, hd, 3, med ? "#d8dde6" : "#2a2733", false);
+  const orb = [hand[0] + d[0] * 36, hand[1] + d[1] * 36];
+  g.strokeStyle = med ? "#b8c4d2" : shade(color, -.2); g.lineWidth = 1.8;
+  g.beginPath(); g.moveTo(hd[0] + n[0] * 6, hd[1] + n[1] * 6); g.quadraticCurveTo(orb[0] + n[0] * 9 + d[0] * 4, orb[1] + n[1] * 9 + d[1] * 4, orb[0] + d[0] * 6, orb[1] + d[1] * 6);
+  g.moveTo(hd[0] - n[0] * 6, hd[1] - n[1] * 6); g.quadraticCurveTo(orb[0] - n[0] * 9 + d[0] * 4, orb[1] - n[1] * 9 + d[1] * 4, orb[0] + d[0] * 6, orb[1] + d[1] * 6); g.stroke();
+  glowOrb(g, orb, 4.2, med ? "#7dffb0" : color, T);
+  if (med) { g.strokeStyle = "#ffffff"; g.lineWidth = 1.6; g.beginPath(); g.moveTo(orb[0] - 2.5, orb[1]); g.lineTo(orb[0] + 2.5, orb[1]); g.moveTo(orb[0], orb[1] - 2.5); g.lineTo(orb[0], orb[1] + 2.5); g.stroke(); }
+  out.tip = orb;
+}
+function drawBook(g, hand, f, out, T) {
+  const x = hand[0] + 2, y = hand[1] - 3;
+  g.save(); g.translate(x, y); g.rotate(-.25);
+  g.fillStyle = shade(f.acc || "#6a4a8a", -.25); g.fillRect(-9, -6, 18, 12);
+  g.fillStyle = "#efe8d8"; g.fillRect(-8, -5, 7.5, 10); g.fillRect(.5, -5, 7.5, 10);
+  g.strokeStyle = "#9a8f7a"; g.lineWidth = .6;
+  for (let k = -3; k <= 3; k += 2) { g.beginPath(); g.moveTo(-7, k); g.lineTo(-2, k); g.moveTo(1.5, k); g.lineTo(6.5, k); g.stroke(); }
+  g.restore();
+  const orb = [x + 2, y - 12 - Math.sin(T * 3) * 2];
+  glowOrb(g, orb, 2.6, f.sc, T);
+  out.tip = orb;
+}
+function drawArtsOrb(g, hand, color, out, T) {
+  const orb = [hand[0] + 7, hand[1] - 3 + Math.sin(T * 4) * 1.5];
+  glowOrb(g, orb, 3.6, color, T);
+  out.tip = orb;
+}
+function drawBow(g, hand, a, back, drawn, f, out) {
+  const d = Dv(a), n = [-d[1], d[0]], L = 23;
+  const t1 = [hand[0] + n[0] * L - d[0] * 6, hand[1] + n[1] * L - d[1] * 6], t2 = [hand[0] - n[0] * L - d[0] * 6, hand[1] - n[1] * L - d[1] * 6];
+  const mid = [hand[0] + d[0] * 5, hand[1] + d[1] * 5];
+  g.strokeStyle = "#3a2e2a"; g.lineWidth = 3; g.lineCap = "round";
+  g.beginPath(); g.moveTo(t1[0], t1[1]); g.quadraticCurveTo(mid[0] + n[0] * 14, mid[1] + n[1] * 14, mid[0], mid[1]); g.quadraticCurveTo(mid[0] - n[0] * 14, mid[1] - n[1] * 14, t2[0], t2[1]); g.stroke();
+  g.strokeStyle = f.sc; g.lineWidth = 1.2; g.stroke();
+  const nock = drawn ? back : [hand[0] - d[0] * 8, hand[1] - d[1] * 8];
+  g.strokeStyle = "#e8e2d4"; g.lineWidth = .8; g.beginPath(); g.moveTo(t1[0], t1[1]); g.lineTo(nock[0], nock[1]); g.lineTo(t2[0], t2[1]); g.stroke();
+  if (drawn) { g.strokeStyle = "#cfc6b4"; g.lineWidth = 1.4; g.beginPath(); g.moveTo(nock[0], nock[1]); g.lineTo(hand[0] + d[0] * 12, hand[1] + d[1] * 12); g.stroke(); }
+  out.tip = [hand[0] + d[0] * 12, hand[1] + d[1] * 12];
+}
+function drawShieldFront(g, hand, f) {
+  const x = hand[0] + 4, y = hand[1] - 2, w = 15, h = 40;
+  const gr = g.createLinearGradient(x - w / 2, 0, x + w / 2, 0);
+  gr.addColorStop(0, shade(f.shc || f.col, -.35)); gr.addColorStop(.55, f.shc || f.col); gr.addColorStop(1, shade(f.shc || f.col, .25));
+  g.fillStyle = gr; g.beginPath();
+  g.moveTo(x - w / 2, y - h * .5); g.lineTo(x + w / 2, y - h * .55); g.lineTo(x + w / 2, y + h * .38); g.quadraticCurveTo(x, y + h * .58, x - w / 2, y + h * .42); g.closePath(); g.fill();
+  g.strokeStyle = "#1a1c22"; g.lineWidth = 1.5; g.stroke();
+  g.strokeStyle = f.sc; g.lineWidth = 1.6; g.beginPath(); g.moveTo(x - w / 2 + 2.5, y - h * .44); g.lineTo(x + w / 2 - 2.5, y - h * .48); g.lineTo(x + w / 2 - 2.5, y + h * .32); g.stroke();
+  circ(g, x + 1, y - 2, 3, f.trim || f.sc);
+}
 function drawGun(g, hand, a, len, out, key, bow) {
   const d = Dv(a), back = len > 15 ? 9 : 2;
   const b0 = [hand[0] - d[0] * back, hand[1] - d[1] * back], b1 = [hand[0] + d[0] * len, hand[1] + d[1] * len];
@@ -1657,6 +1794,128 @@ function drawGun(g, hand, a, len, out, key, bow) {
     g.strokeStyle = "#8a6a44"; g.lineWidth = 2.2; g.beginPath(); g.moveTo(c[0] + p[0] * 9 - d[0] * 4, c[1] + p[1] * 9 - d[1] * 4); g.lineTo(c[0], c[1]); g.lineTo(c[0] - p[0] * 9 - d[0] * 4, c[1] - p[1] * 9 - d[1] * 4); g.stroke();
   }
   out[key] = [b1[0] + d[0] * 2, b1[1] + d[1] * 2];
+}
+
+// ---------- race features (Arknights: Feline, Lupo, Cautus, Sankta, Sarkaz…) ----------
+function drawTail(g, f, hip, sw) {
+  const hc = f.tailc || f.hair || "#3a2a1a", x = hip[0] - 6, y = hip[1] + 2;
+  g.save(); g.lineCap = "round";
+  if (f.tail === "cat") {
+    g.strokeStyle = shade(hc, -.15); g.lineWidth = 3.6;
+    g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x - 20, y + 14 + sw * 2, x - 24 + sw * 3, y - 10); g.stroke();
+  } else if (f.tail === "bushy" || f.tail === "fox") {
+    const n = f.tails || 1;
+    for (let k = n - 1; k >= 0; k--) {
+      const rot = .75 + k * .32 + sw * .08;
+      g.save(); g.translate(x, y); g.rotate(rot);
+      const gr = g.createLinearGradient(0, 0, 0, 30); gr.addColorStop(0, shade(hc, -.2)); gr.addColorStop(.75, hc); gr.addColorStop(1, f.tail === "fox" ? "#f4f1ea" : shade(hc, .2));
+      g.fillStyle = gr; g.beginPath(); g.moveTo(-2, 0); g.quadraticCurveTo(-11, 14, -3, 30); g.quadraticCurveTo(9, 18, 3, 0); g.closePath(); g.fill();
+      g.restore();
+    }
+  } else if (f.tail === "horse") {
+    g.strokeStyle = shade(hc, -.1); g.lineWidth = 5;
+    g.beginPath(); g.moveTo(x, y - 2); g.quadraticCurveTo(x - 14, y + 4, x - 12 + sw * 3, y + 30); g.stroke();
+    g.strokeStyle = shade(hc, .15); g.lineWidth = 1.5; g.stroke();
+  } else if (f.tail === "dragon") {
+    g.fillStyle = shade(f.tailc || f.col, -.1);
+    g.beginPath(); g.moveTo(x + 2, y - 5); g.quadraticCurveTo(x - 18, y + 8, x - 30 + sw * 2, y + 36); g.quadraticCurveTo(x - 10, y + 14, x + 3, y + 4); g.closePath(); g.fill();
+  }
+  g.restore();
+}
+function drawWings(g, f, S, sw) {
+  const c = f.wingc || "#f2f4ff", x = S[0] - 6, y = S[1] + 5, flap = sw * .06;
+  g.save(); g.translate(x, y); g.rotate(-.25 + flap);
+  if (f.wings === "sankta") {
+    g.globalCompositeOperation = "lighter";
+    for (let k = 0; k < 3; k++) {
+      g.fillStyle = c + (k ? "88" : "cc");
+      g.beginPath(); g.moveTo(0, 0); g.lineTo(-14 - k * 5, -8 + k * 7); g.lineTo(-6 - k * 4, 3 + k * 3); g.closePath(); g.fill();
+    }
+  } else {
+    g.fillStyle = shade(c, -.1);
+    g.beginPath(); g.moveTo(0, -2); g.quadraticCurveTo(-24, -10, -26, 18); g.quadraticCurveTo(-14, 10, -4, 26); g.quadraticCurveTo(-2, 10, 2, 4); g.closePath(); g.fill();
+    g.strokeStyle = shade(c, -.35); g.lineWidth = .8;
+    for (let k = 0; k < 4; k++) { g.beginPath(); g.moveTo(-3, 2 + k * 3); g.lineTo(-20 + k * 4, 12 + k * 4); g.stroke(); }
+  }
+  g.restore();
+}
+function drawBackHair(g, f, c, S, sw) {
+  const [x, y] = c, r = 10 * (f.hsz || 1), hc = shade(f.hair || "#3a2a1a", -.12), len = f.hlen || 30;
+  g.fillStyle = hc;
+  if (f.hs === "long") {
+    g.beginPath(); g.moveTo(x - 2, y - r); g.quadraticCurveTo(x - r - 6, y, x - r - 3 + sw * 1.5, y + len);
+    g.lineTo(x - 4 + sw, y + len - 4); g.quadraticCurveTo(x - 2, y + 8, x + 2, y + 2); g.closePath(); g.fill();
+  } else if (f.hs === "pony") {
+    g.beginPath(); g.moveTo(x - r + 2, y - r * .6); g.quadraticCurveTo(x - r - 12, y - r * .2, x - r - 8 + sw * 2, y + len * .8);
+    g.quadraticCurveTo(x - r - 4, y + 6, x - r + 4, y - r * .2); g.closePath(); g.fill();
+  } else if (f.hs === "twin") {
+    for (const [ox, oy] of [[-4, -2], [2, 0]]) {
+      g.beginPath(); g.moveTo(x - r * .6 + ox, y - r * .7 + oy); g.quadraticCurveTo(x - r - 10 + ox, y + oy, x - r - 6 + ox + sw * 2, y + len * .85 + oy);
+      g.quadraticCurveTo(x - r + ox, y + 8, x - r * .4 + ox, y - r * .3 + oy); g.closePath(); g.fill();
+      g.fillStyle = f.hair || "#3a2a1a";
+    }
+  }
+}
+function drawEars(g, f, x, y, r) {
+  const hc = f.hair || "#3a2a1a", inner = f.earIn || "#f0b8c0", e = f.ears;
+  const tri = (bx, by, w, h, lean, col, inC) => {
+    g.fillStyle = col; g.beginPath(); g.moveTo(bx - w / 2, by); g.lineTo(bx + lean, by - h); g.lineTo(bx + w / 2, by); g.closePath(); g.fill();
+    if (inC) { g.fillStyle = inC; g.beginPath(); g.moveTo(bx - w / 4, by - 1); g.lineTo(bx + lean * .8, by - h * .72); g.lineTo(bx + w / 4, by - 1); g.closePath(); g.fill(); }
+  };
+  if (e === "cat") { tri(x - 6, y - r + 3, 7, 8, -1, shade(hc, -.25)); tri(x + 1, y - r + 1.5, 7.5, 9, 0, hc, inner); return 9; }
+  if (e === "wolf") { tri(x - 6, y - r + 3, 8, 11, -3, shade(hc, -.25)); tri(x + 1, y - r + 2, 8.5, 12, -2, hc, inner); return 12; }
+  if (e === "fox") { tri(x - 6, y - r + 3, 9, 13, -3, shade(hc, -.25)); tri(x + 1, y - r + 2, 9.5, 14, -2, hc, "#f6efe6"); return 14; }
+  if (e === "horse") { tri(x - 5, y - r + 3, 6, 10, -2, shade(hc, -.25)); tri(x + 1, y - r + 2, 6.5, 11, -1.5, hc, inner); return 11; }
+  if (e === "dog") {
+    for (const [ox, k] of [[-7, -.25], [-1, 0]]) { g.fillStyle = shade(hc, k); g.beginPath(); g.ellipse(x + ox, y - r + 6, 3.6, 8, -.5, 0, 7); g.fill(); }
+    return 4;
+  }
+  if (e === "rabbit") {
+    g.fillStyle = shade(hc, -.25); g.beginPath(); g.ellipse(x - 9, y - r - 8, 3.4, 12, -.45, 0, 7); g.fill();
+    g.fillStyle = hc; g.beginPath(); g.ellipse(x - 3, y - r - 9, 3.6, 13, -.32, 0, 7); g.fill();
+    g.fillStyle = inner; g.beginPath(); g.ellipse(x - 3, y - r - 9, 1.5, 9, -.32, 0, 7); g.fill();
+    return 22;
+  }
+  if (e === "round") { circ(g, x - 6, y - r + 2, 3.6, shade(hc, -.25)); circ(g, x + 1, y - r + 1, 3.8, hc); circ(g, x + 1, y - r + 1, 1.8, inner); return 5; }
+  if (e === "owl") { tri(x - 6, y - r + 2, 5, 9, -4, shade(hc, -.25)); tri(x, y - r + 1, 5, 10, -3, hc); return 10; }
+  return 0;
+}
+function drawHorns(g, f, x, y, r) {
+  const hc = f.hornc || "#2a2226", h = f.horns;
+  g.save(); g.lineCap = "round";
+  if (h === "sarkaz") {
+    for (const [ox, k] of [[-5, -.3], [1, 0]]) {
+      g.strokeStyle = shade(hc, k); g.lineWidth = 3.2;
+      g.beginPath(); g.moveTo(x + ox, y - r + 3); g.quadraticCurveTo(x + ox - 3, y - r - 8, x + ox - 11, y - r - 7); g.stroke();
+    }
+    g.restore(); return 9;
+  }
+  if (h === "dragon") {
+    for (const [ox, k] of [[-5, -.3], [1, 0]]) {
+      g.strokeStyle = shade(hc, k); g.lineWidth = 2.6;
+      g.beginPath(); g.moveTo(x + ox, y - r + 3); g.quadraticCurveTo(x + ox - 6, y - r - 4, x + ox - 16, y - r - 3); g.stroke();
+      g.lineWidth = 1.8; g.beginPath(); g.moveTo(x + ox - 7, y - r - 2); g.lineTo(x + ox - 9, y - r - 8); g.stroke();
+    }
+    g.restore(); return 8;
+  }
+  if (h === "oni") {
+    g.fillStyle = hc; g.beginPath(); g.moveTo(x + 2, y - r + 1); g.lineTo(x + 5, y - r - 10); g.lineTo(x + 7, y - r + 1.5); g.closePath(); g.fill();
+    g.restore(); return 10;
+  }
+  if (h === "goat") {
+    g.strokeStyle = hc; g.lineWidth = 3.4;
+    g.beginPath(); g.arc(x - 4, y - r + 6, 6, Math.PI * 1.05, Math.PI * 2.35); g.stroke();
+    g.restore(); return 3;
+  }
+  g.restore(); return 0;
+}
+function drawHalo(g, f, x, y, r, T) {
+  const c = f.halo, hy = y - r - 8 + Math.sin(T * 2) * 1;
+  g.save(); g.globalCompositeOperation = "lighter";
+  g.strokeStyle = c + "55"; g.lineWidth = 4.5; g.beginPath(); g.ellipse(x - 1, hy, 8, 2.6, -.12, 0, 7); g.stroke();
+  g.strokeStyle = shade(c, .4); g.lineWidth = 1.6; g.stroke();
+  g.restore();
+  return 12;
 }
 
 function drawHead(g, f, c, T, pose) {
@@ -1676,12 +1935,19 @@ function drawHead(g, f, c, T, pose) {
       g.fillStyle = "rgba(0,0,0,.22)"; g.beginPath(); g.arc(x, y, r, Math.PI * 1.1, Math.PI * 1.9); g.fill();
       circ(g, x + 5.5, y + .5, 1.6, f.eyes || "#222");
       g.strokeStyle = shade(skin, -.45); g.lineWidth = .8; g.beginPath(); g.moveTo(x + 2, y + 5); g.lineTo(x + 7, y + 4); g.stroke();
-      return;
+      if (f.mask) {
+        // Reunion respirator
+        g.fillStyle = "#1c1e22"; g.beginPath(); g.ellipse(x + 5, y + 4.5, 5.6, 4.3, -.2, 0, 7); g.fill();
+        circ(g, x + 9, y + 6.5, 2.3, "#3a3e46"); circ(g, x + 9, y + 6.5, 1, "#15171a");
+      }
+      return 14;
     }
     face(skin);
     // nose + mouth
     g.fillStyle = shade(skin, -.12); g.beginPath(); g.moveTo(x + r - 1, y - 1); g.lineTo(x + r + 2, y + 3); g.lineTo(x + r - 1, y + 3.5); g.fill();
-    eye(); g.strokeStyle = shade(skin, -.4); g.lineWidth = .9; g.beginPath(); g.moveTo(x + 4, y + 6); g.lineTo(x + 7.5, y + 5.5); g.stroke();
+    if (f.eyec) { circ(g, x + 5.6, y - 1, 1.9, "#1a1410"); circ(g, x + 5.9, y - 1.1, 1.1, f.eyec); }
+    else eye();
+    g.strokeStyle = shade(skin, -.4); g.lineWidth = .9; g.beginPath(); g.moveTo(x + 4, y + 6); g.lineTo(x + 7.5, y + 5.5); g.stroke();
     const hc = f.hair || "#3a2a1a", hs = f.hs;
     g.fillStyle = hc;
     if (hs !== "bald") {
@@ -1697,7 +1963,35 @@ function drawHead(g, f, c, T, pose) {
     if (hs === "beard" || hs === "old") {
       g.fillStyle = hc; g.beginPath(); g.moveTo(x - 2, y + 2); g.quadraticCurveTo(x + 2, y + (hs === "old" ? 14 : 12), x + 9, y + 6); g.lineTo(x + 9, y + 3.5); g.quadraticCurveTo(x + 4, y + 5, x + 1, y + 1); g.fill();
     }
-    return;
+    if (hs === "bob" || hs === "long" || hs === "twin") {
+      // side locks framing the face
+      g.fillStyle = hc; g.beginPath(); g.moveTo(x - 3, y - r + 2); g.quadraticCurveTo(x - r - 3, y - 2, x - r + 1, y + (hs === "bob" ? 8 : 11));
+      g.lineTo(x - 2, y + 4); g.closePath(); g.fill();
+    }
+    if (hs && hs !== "bald" && hs !== "old" && hs !== "short") {
+      // fringe over the forehead
+      g.fillStyle = hc; g.beginPath(); g.moveTo(x - 1, y - r + .5); g.quadraticCurveTo(x + r * .75, y - r * 1.05, x + r * .98, y - r * .48);
+      g.lineTo(x + r * .62, y - r * .58); g.lineTo(x + r * .42, y - r * .36); g.lineTo(x + r * .1, y - r * .66); g.closePath(); g.fill();
+    }
+    let ext = 2;
+    if (f.horns) ext = Math.max(ext, drawHorns(g, f, x, y, r));
+    if (f.ears) ext = Math.max(ext, drawEars(g, f, x, y, r));
+    if (f.halo) ext = Math.max(ext, drawHalo(g, f, x, y, r, T));
+    if (f.hat) {
+      g.fillStyle = f.hat; g.beginPath(); g.ellipse(x - 1, y - r + 2, r + 5, 3, -.08, 0, 7); g.fill();
+      g.beginPath(); g.arc(x - 1, y - r + 1, r * .8, Math.PI, Math.PI * 2); g.fill();
+      ext = Math.max(ext, r * .8);
+    }
+    return r + ext;
+  }
+  if (t === "robot") {
+    const c0 = f.col || "#c8ccd4";
+    const gr = g.createLinearGradient(x - r, y - r, x + r, y + r); gr.addColorStop(0, shade(c0, .3)); gr.addColorStop(1, shade(c0, -.35));
+    g.fillStyle = gr; g.beginPath(); g.roundRect ? g.roundRect(x - r, y - r, r * 2 + 2, r * 1.9, 4) : g.rect(x - r, y - r, r * 2 + 2, r * 1.9); g.fill();
+    g.save(); g.globalCompositeOperation = "lighter"; g.fillStyle = (f.acc || "#5fd4ff") + "cc"; g.fillRect(x + 1, y - 4, r, 4); g.restore();
+    g.strokeStyle = shade(c0, -.4); g.lineWidth = 1.4; g.beginPath(); g.moveTo(x - 3, y - r); g.lineTo(x - 5, y - r - 7); g.stroke();
+    circ(g, x - 5, y - r - 7, 1.8, f.acc || "#5fd4ff");
+    return r + 8;
   }
   if (t === "trooper") {
     const base = f.chrome ? "#d9dee6" : "#f2f4f7";
@@ -1852,43 +2146,13 @@ function drawHound(g, f, pose, out) {
   out.head = [38, -54]; out.chest = [10, -40]; out.hand = [50, -50]; out.tip = [58, -50];
 }
 
-// ---------- art helpers (operator sprites + procedural enemies) ----------
-const IMG = {};
-function opImg(op) {
-  let e = IMG[op.slug];
-  if (!e) {
-    e = IMG[op.slug] = { img: new Image(), ok: false };
-    e.img.decoding = "async";
-    e.img.onload = () => { e.ok = true; };
-    e.img.src = spriteURL(op);
-  }
-  return e;
-}
-function silhouette(e) {
-  if (!e.sil && e.ok) {
-    try {
-      const c = document.createElement("canvas"), w = e.img.naturalWidth, h = e.img.naturalHeight, s = Math.min(1, 320 / h);
-      c.width = Math.max(1, Math.round(w * s)); c.height = Math.max(1, Math.round(h * s));
-      const g = c.getContext("2d"); g.drawImage(e.img, 0, 0, c.width, c.height);
-      g.globalCompositeOperation = "source-in"; g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
-      e.sil = c;
-    } catch (err) { e.sil = null; }
-  }
-  return e.sil;
-}
-function preloadOps(keys) {
-  return Promise.all(keys.map(k => new Promise(res => {
-    const e = opImg(OPS[k]); if (e.ok) return res();
-    e.img.addEventListener("load", res, { once: true }); e.img.addEventListener("error", res, { once: true }); setTimeout(res, 8000);
-  })));
-}
+// ---------- figure portraits (battle cut-ins, enemy icons) ----------
 const EART = {};
-function enemyArt(key) {
-  if (EART[key]) return EART[key];
-  const def = ENEMY[key], f = def.fig;
+function figArt(id, f) {
+  if (EART[id]) return EART[id];
   const mk = (W, H, sc, fx, fy, bg) => {
     const cv = document.createElement("canvas"); cv.width = W; cv.height = H; const g = cv.getContext("2d");
-    if (bg) { const gr = g.createRadialGradient(W * .55, H * .35, 4, W / 2, H / 2, W * .8); gr.addColorStop(0, "#7a2a3a"); gr.addColorStop(.6, "#3a1220"); gr.addColorStop(1, "#14060a"); g.fillStyle = gr; g.fillRect(0, 0, W, H); }
+    if (bg) { const gr = g.createRadialGradient(W * .55, H * .35, 4, W / 2, H / 2, W * .8); gr.addColorStop(0, bg[0]); gr.addColorStop(.6, bg[1]); gr.addColorStop(1, bg[2]); g.fillStyle = gr; g.fillRect(0, 0, W, H); }
     g.save(); g.translate(fx, fy); g.scale(sc, sc); const out = drawFigure(g, f, { name: "idle", time: .6 }); g.restore();
     return { cv, out };
   };
@@ -1896,13 +2160,343 @@ function enemyArt(key) {
   const probe = full.out.head;
   const hr = (f.type === "slug" ? 14 : f.type === "hound" ? 12 : 10) * (f.h || 1);
   const sc = 128 * .2 / hr;
-  const head = mk(128, 128, sc, 64 - probe[0] * sc, 56 - probe[1] * sc, true);
+  const head = mk(128, 128, sc, 64 - probe[0] * sc, 60 - probe[1] * sc, id[0] === "e" ? ["#7a2a3a", "#3a1220", "#14060a"] : ["#2a4a7a", "#122038", "#060a14"]);
   let fullURL = "", headURL = "";
   try { fullURL = full.cv.toDataURL("image/png"); headURL = head.cv.toDataURL("image/png"); } catch (e) { /* canvas export blocked */ }
-  return (EART[key] = { full: fullURL, head: headURL });
+  return (EART[id] = { full: fullURL, head: headURL });
 }
-const artOf = spec => spec.op ? spriteURL(OPS[spec.op]) : enemyArt(spec.en).full;
-const headOf = spec => spec.op ? headURL(OPS[spec.op]) : enemyArt(spec.en).head;
+const enemyArt = key => figArt("e:" + key, ENEMY[key].fig);
+const opArt = key => figArt("o:" + key, OPS[key].fig);
+
+// =====================================================================
+//  OPERATOR FIGURES — each operator drawn as a jointed figure (like the
+//  Galactic Heroes cast), coloured from their own art: hair, skin, top,
+//  bottom, boots, accent. Race features follow Arknights lore.
+// =====================================================================
+const OPCOL_RAW = `12f|f6efd9|cbaa8e|2f2c2b|171716|191715|e8d7bb
+absinthe|968f86|a89a92|2f2e30|2f2c2f|493131|5fd4ff
+adnachiel|f2eeef|f6f3f1|f4f1f4|2c2933|675771|5fd4ff
+akafuyu|8e7472|d1b5aa|4b3332|34252a|482f2e|912526
+ambriel|b27177|edcfd2|2e302f|312c2d|272a2a|561a1c
+amiya|6c5653|aca295|2a2f35|2a2b2f|2c2e31|1a256b
+angelina|76554e|b78f84|6c534d|4a3630|50312c|6c231c
+ansel|cbadb7|e7d1cf|2d2830|2c2832|16141c|eed1c3
+april|51504e|b08f8f|edeced|988e8c|b2b0af|ec676d
+archetto|2b2c2f|d7a88c|2b2e32|4d4a50|756e6f|d8a78a
+arene|8e8e8d|b1a69c|313131|292a2b|28292b|a5c15a
+aroma|8d7673|f7ebe4|cccbd1|4b4a53|293032|5589c4
+asbestos|afb3b1|d6ccbe|939191|514d52|726d6d|efb30a
+ash|504f52|d0c8c4|292a31|121315|30272e|5fd4ff
+ashlock|3a2a2a|f3dccb|706e6c|2f2f2f|2b2b2c|5fd4ff
+astesia|49566f|d7c8c5|4b4b50|0f1629|303030|2b75aa
+astgenne|505767|f3e3e3|4a4a50|2c2c2e|352d2c|cfba67
+aurora|d2d1d4|d6cecc|acacb1|272c33|444c59|c4dfe9
+ayerscarpe|a29b8e|c6beb1|8f8678|0a090e|58554e|ead8bc
+bagpipe|3a2a2a|ecc792|4e4a53|322a2e|2b2f34|ce6a51
+beagle|d16952|f1d0c8|322e2e|2e292a|c7b6cb|e67672
+beanstalk|4f463a|b7a896|54524b|737269|535249|b08d2c
+beehunter|544c34|ecd1b0|2f2c2b|f8dab7|2a2a30|f1d2ad
+beeswax|3a2a2a|e4dbd5|2f2e2d|312f34|2a2837|6e4f1a
+bena|978675|c8b6a8|4f494c|6c6c72|6c6a74|eebdb7
+bibeak|d0cfce|cfc6bc|8f8f91|eaeaea|4b4c50|868ed8
+bison|8d6853|cba88e|665452|352f31|4f4c50|eac7bb
+blaze|2e2932|e2d4c7|302831|2c2a31|100f10|561b24
+blemishine|ab8b75|cdaa91|2f2d2f|2e2e33|6a6a74|e5ccb5
+blitz|4f4e4d|ab9c94|2f3030|161616|151515|5fd4ff
+blue-poison|ce94ae|f4e5d9|32344a|333348|2a2d47|273174
+breeze|cbb892|ccb797|312c29|2c2c2b|2e2e2b|edceb2
+broca|4e4d4d|c9c2bf|2f302f|2d2d2c|2a2c2b|5e4922
+bryophyta|302a27|e8b9ac|312f2b|94655a|53362f|703424
+bubble|8f726c|b0908a|2a2e32|262c2f|8e8a8c|daaa92
+cantabile|555b64|d9d0c4|302b2a|afadad|2b2b2d|581a1c
+cardigan|736674|ceb1b3|484752|292933|af90b3|933448
+castle-3|6f6759|f3dccb|736a5a|716959|0f100e|6f6c26
+cement|8d8a91|c3b6b0|58504c|36302e|171512|d28f37
+ceobe|a87851|d3a572|6d5034|4d3827|45372a|714e25
+ceylon|d0d5d2|d2b4af|afaead|1a334c|d1d1cc|1c3854
+chiave|91564a|c8b2ab|2d141a|2e151a|2a2a2a|6d282f
+chongyue|766e65|e7d8ce|322e29|2f2c29|524c4a|893a2d
+click|313133|f3dccb|313130|2f2f2f|72726f|b2af2d
+cliffheart|b4b1ad|b7afa6|31302e|fef6ec|2d2d2d|e9c6bb
+conviction|10244a|d6aa88|130429|2a0b26|6e5150|ecb88b
+corroserum|505050|afa59c|2e2e2f|2c2c2d|151515|cdac74
+courier|322e2a|d7a789|342c29|191717|171515|710808
+croissant|6d4e4c|d1a895|2c2c33|322d2b|12131a|efcbb6
+cuora|6d5652|c9b7a4|2e2a32|fceecf|574a4d|ce8b77
+cutter|51484b|b59789|2d2b32|514d52|352f36|eec8b4
+czerny|55463d|c5a793|2f2e2c|2d2d2d|484c4d|eecfb8
+dagda|323434|ad9c95|282c32|4e4d4f|2e2e2e|e9ab9b
+deepcolor|11110e|edd0c9|141413|fdeae3|0e0e0b|edef03
+delphine|282e36|f1e7e4|2e2f32|2a2e33|b4b3af|918b2c
+diamante|101010|d5ccbb|514e4b|111110|2f2f2d|5fd4ff
+dur-nar|554b52|b59296|2e2a31|2c292e|2a282a|edc9bc
+durin|f9e9c7|ead1b5|312933|352c37|352b34|e9d0b5
+dusk|484d55|b29c93|2c2d36|11131c|525a63|d1544b
+earthspirit|433332|d1b3a9|2e2c35|262734|4d4d51|6e2532
+ebenholz|524f4d|dad0cb|312c2d|2d2a2f|161616|ce784b
+elysium|36322f|b6aea6|2f2e2e|2c2b2d|141212|0d4f6b
+estelle|cdc5af|c7c2b9|706d70|4c4a55|4d4e59|edd2ac
+ethan|908f89|c4bbb3|e8ebf0|171817|0e100f|a7eee6
+eunectes|4c4437|d8ccc5|302d2b|4e4e53|92776e|e9cbad
+executor|928e8b|c8b8b0|4d4b50|0d0e16|0e0e13|ae5625
+exusiai|bda3aa|af8b8b|afabab|2e2c32|312f34|702642
+eyjafjalla|a5867b|ceb0a5|938893|544b4c|584c49|90322d
+fang|8d93ad|f1d4cb|302c34|26324d|453436|e9ccbe
+fartooth|b0b0ad|b1a79a|73706c|96928c|717271|eadac6
+feater|2c2f33|cdb4b0|0e1014|101114|2f2e2f|193d62
+firewatch|7a7367|b1a594|4f4832|504934|2a241c|5fd4ff
+firewhistle|9a8779|ae9a8f|2e3232|0c0d0e|6b6d6e|f2d9a9
+flamebringer|1c1a35|bba690|131012|100f15|2d292e|6f2c0d
+flametail|96423b|b2968f|afafae|8d6f6d|716e68|973935
+flint|504c45|f3dccb|323635|2f2c2a|6a7276|5fd4ff
+folinic|897372|ad918f|b3adaf|d1cece|2b3131|77ccd4
+franka|aa7769|cea89a|4b4c4f|362c28|312d31|5fd4ff
+friston-3|343030|f3dccb|332d2d|2d2c2b|161616|924c2f
+frost|2e2d33|ecd4ce|2a2b30|2b2c30|323232|5fd4ff
+frostleaf|cecccf|f3dccb|362430|2d1728|3b3344|6d1b32
+gavial|56684b|d8cbb9|2d3330|2e3331|2c2f2e|e6cdba
+gitano|865b62|e8d4cd|35252c|332a2f|463239|6a1a2c
+gladiia|3a2a2a|f3dccb|303348|272835|282734|5fd4ff
+glaucus|3a2a2a|f3dccb|2d2e35|2c2c33|2e2d32|23338c
+gnosis|46362f|b7afa8|2b2b2a|2a2a2e|1a1b21|723528
+goldenglow|3a2a2a|b39190|6b5769|f3f2f5|d3cfe9|ebaeb4
+grani|656d69|ccbcaf|2a3035|272e35|4e5153|aa6913
+gravel|8d6656|cd9988|342e29|4e372d|2e2b28|e8b9a9
+greythroat|6f6e6d|dacfcd|2d2e2f|2f2f2f|272c2d|357d8f
+greyy|967466|cfaa90|302d2c|342e31|7b6f6b|e9cbac
+gummy|fbedc8|edcfb1|34282e|362a31|36272b|cc4521
+harmonie|cdd6c3|eadcce|52504e|191919|2f3231|6f242d
+haze|322930|d1b7a6|332830|352b32|25161b|6d0e25
+heavyrain|c9c9c7|aba19b|b5b3b1|989595|2c2c31|5fd4ff
+heidi|722c2d|bd9388|766e6c|6f504f|724a48|902e2c
+hellagur|d2c9cd|d8ccc8|2d2930|2d292d|2f2c2f|e2c164
+hibiscus|946ea9|efc9cf|332933|fbd5cd|af93aa|edb5b3
+highmore|6f72a0|ccb9b4|2b2c31|b5b0aa|747070|6852cb
+honeyberry|746b6a|c5b2ab|2d2b2b|d3d0ce|2e2d2d|edcbc2
+horn|ae936f|c8b093|35322a|33322c|30302a|5fd4ff
+hoshiguma|54ab94|ccb7a9|2a2d2e|151516|2a2c30|e8c6b5
+hung|b85948|d8c4b6|363431|2f2b27|4e4d4d|d68d6f
+ifrit|d7caad|ccaf90|b5b0a6|f9cfaa|2e2b2b|f3cfac
+indigo|3d3a3d|d7c7b5|726c6e|908c8c|322e2f|e9cebc
+indra|97948d|d7c8b8|2d3133|30302f|701721|69151d
+ines|2e2c2b|f5e8e2|332e2e|332929|303031|631516
+irene|d4d5d0|b3a599|504f4d|adadad|4d4d4d|5fd4ff
+iris|353435|c5ad90|4f4a4d|50778e|504d51|58aaca
+istina|cad4c8|f5e7d1|4e3132|2a1b2a|4a3139|0d7888
+jackie|4d484c|af9992|2b2b33|fee1d4|2d2d34|ebb7ab
+jaye|ced0d1|d5cfc6|2a2d2e|4c4e52|90908f|cfae63
+jessica|4e556e|eed5d5|2a3132|2a2d30|2c3132|f7c7b8
+kafka|4f4c4c|f5e8d8|322d2a|4f514e|4f7b6b|e9c9ae
+kjera|323030|f4ece7|4d4b4a|2b2d32|0f1625|accbea
+kroos|f6d2aa|d7aa88|392c2c|f9ceb8|595046|f2c8ae
+la-pluma|4c4c4e|e4d3ce|2d2e2f|4d4c4d|706969|5fd4ff
+lancet-2|ececeb|f3dccb|86827a|504f47|10100f|d07877
+lappland|d1cfcd|d9d4d1|2d2c2d|6e6d6e|2c2c30|5fd4ff
+lava|94698f|f1d2cd|382f36|352a34|332339|71294e
+leizi|d4c393|c2af8d|917452|2a2830|2d2a2f|d8c68f
+leonhardt|b88655|cca475|4d4b50|2b2c35|544d51|f0cca6
+lin|ab9298|d9c6c6|181727|4d4b73|2c2c31|482b90
+ling|454856|ba9f9c|cfcecf|8e8c90|2a2e2c|ebccb7
+liskarm|948e96|cab5a7|292a2e|4d3a3a|2d2e36|eaccb2
+logos|4a4c55|f1e9e4|292d32|292d34|161a23|2d5291
+lumen|4e596d|c8b7b2|2b2f34|2e2e2d|2d2c30|326a98
+magallan|736858|ab9f8d|95866f|32302f|4e5252|936f33
+manticore|cc91dc|f3dccb|2e2a31|34314a|2c2c50|e8acf0
+marcille|ad8d6e|f6e3cf|2d3648|2c374a|746964|e9d4ad
+matoimaru|8e8679|ccad94|545450|4f514f|121419|e5ceaf
+matterhorn|574c49|cb9d87|2f2c2d|100f10|141313|e3b098
+may|ad8a96|d6aaad|4d2a34|4d2c36|543846|e8ac8e
+melantha|52334b|cdb6b5|332834|1a1819|282431|730f32
+midnight|333331|c8b190|2d282f|26262c|292d32|ebd2b0
+mint|d4ced0|d2c9c7|2e2e30|484c50|898f92|ecc4b3
+miss-christine|b69066|d2b28a|132d2d|162826|6b6f71|d9b38c
+mizuki|11174c|f3e2db|2d354c|2b2d36|2b2e47|18296d
+morgan|c3b691|b7a27d|303128|2d2f2e|141514|e8debb
+mostima|32364e|c6a69b|2c2a32|4d4e50|2a2d31|e9c7b3
+mountain|756b6c|ccbab6|322b2b|8f8c8d|6d6967|5fd4ff
+mr-nothing|2c2c30|cbb0a5|2b2c31|151b24|2a2c2e|1a384f
+mudrock|494949|d9d2d2|2b2e2f|2a2f2f|2a3030|9a5239
+muelsyse|877b63|c5af93|918b72|282a2b|2e3132|e8d6b6
+mulberry|2e2a2a|b6878e|504b4d|322f2f|141111|662331
+myrrh|d25157|e56e6f|704c4e|f7d1cc|896874|d66e6e
+myrtle|d0c4d2|f3dccb|894c4e|928795|948896|edc9ba
+nearl|e9d9b3|d7c5ae|2a2a2b|2c2b2d|161516|ead7b3
+necrass|3a2a2a|f3dccb|c9c8cc|cdcdd3|353448|7053d0
+nian|adaaa5|eed8ce|726c6c|4f4f4d|111313|8f322b
+nightingale|2e2928|efe3d5|f8e9cf|efe8d9|958c8a|e9ceb7
+nightmare|f4f3ef|f4f1ec|edd48a|32292d|f0ede5|edd489
+nine-colored-deer|3a2a2a|d4cfcb|ccccce|c8ccd3|b5aeb4|74262c
+noir-corne|5d4f4d|b8a996|2d2d30|313132|2d2c2e|184f6e
+nymph|472433|f3dccb|8d8d93|6a6e75|6c6a70|902d4a
+orchid|2f2b35|cfb1ac|2c2832|2c2931|887770|153075
+pallas|393837|ad998e|4c4c4f|2e2c27|2c2b2e|e9d3c1
+passenger|a8746a|b3968e|928e8d|4b4b52|2b2c32|183355
+penance|938885|d8ccc8|322e2c|2d2828|2f2c30|e7d1b5
+perfumer|524b4d|b89584|323248|948f8f|f6ccba|eec7b5
+pith|2f2f2f|f3dccb|293033|0d0f10|2a2b2f|5fd4ff
+platinum|f7f3e6|f0e6d7|f8f6ea|4d4a4c|2c282a|e5c7b3
+plume|3a2a2a|cec3b8|332e2c|161211|171413|e8cdb3
+podenco|f0e8d0|d6c8b3|0c3338|292f35|2d2e2e|8f5032
+poncirus|b5b18a|c5b3ac|32282f|2b2728|2e272e|5fd4ff
+popukar|4e3147|c9b4ad|322938|2e1926|4f4654|712539
+pramanix|90928f|f5f0ea|4f504e|928f8a|31312d|5fd4ff
+projekt-red|adabaa|b3a8a3|332c2b|2e2c2c|2c2728|6f1a28
+provence|aea8ce|e3cecc|463850|756691|312a38|eacdc1
+ptilopsis|cbcbd5|f4eeec|f7f8fa|eb8b13|2b2b32|ec8a12
+pudding|3a2a2a|edd5d5|b0adb0|8d8990|4e4d4d|eaceb9
+purestream|e2eeed|b39191|faecd0|faedcf|ced7d5|eed1b4
+puzzle|aeadb1|beabac|2b2a2f|2a2b30|4b2e32|5fd4ff
+qanipalaat|3a2a2a|f3dccb|8c8f94|cccdd2|2b2b34|252d6b
+qiubai|544e4c|ebdbd3|312d2c|312c29|282726|702628
+quartz|b3b1b0|a79d8f|283233|2f3130|2f2f2e|5fd4ff
+quercus|ad9767|bdab8f|534834|302717|2f2b27|705025
+rangers|89808c|e5d5cd|2c2e31|2b2c2f|2f2c2e|1a3951
+rathalos-s-noir-corne|72665b|c7b09a|4e3430|302e2d|493130|ba5544
+reed|3d3935|ccc3b5|b4b0ab|313030|312d2a|f08d53
+roberta|8e7575|f3e7e5|d0ccd1|35262d|abaaaf|671416
+robin|565147|d6c7b4|94928c|363329|353028|5fd4ff
+rockrock|4f5052|f5e5e4|2f2e2f|2c2d33|47474c|702525
+rope|5a5172|dac6c6|2c292d|2f282a|313032|66571c
+rosa|b2b3ad|cbbbb0|2b2b33|292b32|6c6d70|55171a
+saga|313039|c5bab8|32324c|11102d|383547|1a1a55
+saileach|283454|a89b8c|6e6c73|2d2d38|8d8e95|f6e6b6
+santalla|f8f8f9|e2dcdc|ada9b5|e6e5ea|161730|191370
+saria|8b746c|baafa6|2e2a30|12111a|443635|e7cab7
+savage|1b1c24|d9d2cd|2d2c2c|2f2c2a|2e2a25|ead2c4
+scavenger|d2cdd4|d4b8b0|4e474b|363444|303746|e9c5b7
+scene|efe8d5|ded4c2|e9ead5|554c46|30302d|e5c7a7
+schwarz|727173|d9cfcb|2d3233|2f3533|283131|d5857d
+shalem|aba7b8|e5d7d7|31302d|161616|171717|507fbd
+sharp|120e0c|f3dccb|282d2f|151719|141a1c|5fd4ff
+shirayuki|eff1ee|e4e0dc|2c2d2e|101111|18191b|5fd4ff
+sideroca|966c8b|d3b9b6|0f1113|2d2c2f|151416|a8eeed
+siege|8c704a|cbb38d|312f2c|fae5d9|2a1918|eacbb7
+silence|998268|cbae92|6e6754|918770|6d6756|f0ccab
+silverash|4c4e50|f3eae3|2d2c2f|131316|131317|5fd4ff
+skadi|142531|ecdbd6|2a2e31|2b2b2d|322b29|1a3954
+skyfire|50443a|edd5c5|302b2b|4b3333|312f2e|e9d3c4
+snowsant|aca796|d0c3af|4f514d|515652|333229|edceab
+sora|af8d70|d0ad8b|352829|2f2a2a|ae99a8|eccdb2
+specter|322b30|d0c4ba|302a31|2d282f|282329|e5c0af
+spot|534f4d|f3dccb|2b2b2c|171716|181818|342575
+stainless|6d554d|b5988b|4e4e4f|2d2b2c|2f3030|6d2617
+steward|edecf4|f6ebe5|322c4b|1a1824|181626|221e5b
+surtr|af3235|cb948f|493336|4d2629|38232e|ad3135
+suzuran|eee4e7|e6d7ca|ebecf2|afb3ce|303743|e5d5b4
+swire|322c30|d1a98e|302b2b|68544c|27252b|cd7144
+tachanka|31352c|f3dccb|2a2e2d|29312a|2e3230|5fd4ff
+tecno|342c2e|c5b2ab|2f2b2e|2f2b28|4a484e|ce5059
+tequila|b5ae8d|c2b096|aab5af|adb1b1|4f4d49|725127
+texas|6b6974|d6c1b4|2f3038|2d292e|4b4d53|a78839
+thorns|2d2827|ae9a95|121315|504f4f|141313|e7d6b1
+thrm-ex|2a2626|f3dccb|302a2a|2c2c2c|282828|673819
+togawa-sakiko|aeb5cb|eed7d2|b2a9b0|756575|32252b|eccac4
+tomimi|36393a|f3dccb|2c2c2d|2e2f30|151516|5fd4ff
+tsukinogi|87726b|b19c9d|2e2b2e|6b504e|483230|5fd4ff
+tulip|101619|c7babb|272c32|0f1114|0e1011|5fd4ff
+utage|a59377|b7a591|e9ebf2|2f283a|767186|cab649
+vanilla|af8f6c|d2b087|2d2e30|2f2a2f|2e2b30|ebd4ae
+vermeil|f5d8a3|eac896|4b352e|45362f|4c3730|eecd98
+vigil|757c83|e4d4d2|282932|32334a|2b2d32|3a318e
+vigna|362e37|b48e8f|514a50|332a36|302a34|742635
+viviana-droste|342b29|f3dccb|928c8d|0f0c11|05040b|e3cab3
+vulcan|e7e6e7|f2e5d6|312e2d|343130|312f2d|e5c7b8
+waai-fu|d0742d|cbaa91|4d362f|362e2f|f8a847|f3a94b
+warfarin|d1ced0|efe9e7|332d31|302b33|594753|8c2e36
+warmy|a38685|cbb5b1|958a8b|d4d1d3|4c4d4e|d08a67
+weedy|cacac9|e8ddd3|514f4b|504e4c|70726d|eccdb0
+whislash|6a5449|d0af97|554c4c|52484a|2f2a2a|e8cdad
+whisperain|9090aa|fcf7f6|0c0c0f|0f1016|16171d|a09dda
+wild-mane|3a2a2a|b2aa9e|96908b|928d88|51504e|e7d2b6
+wind-chimes|4a4c4e|bb9793|4c4f50|292c35|312e36|e6baae
+windflit|32354a|dcc8bd|4d4d52|2a2a32|272734|72671c
+yato|473439|d3ab96|312b34|352429|140f12|dbab95
+zima|8b716b|b0988d|4c2e31|752530|24181a|752430`;
+const OPCOL = {};
+for (const ln of OPCOL_RAW.split("\n")) { const [k, ...c] = ln.split("|"); OPCOL[k] = c.map(x => "#" + x); }
+const RACE = {
+  amiya: "rabbit", kroos: "rabbit", ansel: "rabbit", savage: "rabbit",
+  melantha: "cat", silverash: "cat", pramanix: "cat", cliffheart: "cat", blaze: "cat", schwarz: "cat", haze: "cat", jessica: "cat", mountain: "cat", indra: "cat",
+  texas: "wolf", lappland: "wolf", "projekt-red": "wolf", provence: "wolf", penance: "wolf", vigil: "wolf",
+  angelina: "fox", suzuran: "fox", frostleaf: "fox", vermeil: "fox", perfumer: "fox",
+  nearl: "horse", fang: "horse", courier: "horse", grani: "horse", platinum: "horse", blemishine: "horse",
+  ceobe: "dog", beagle: "dog", cardigan: "dog", vigna: "dog", podenco: "dog",
+  siege: "lion", zima: "bear", istina: "bear", rosa: "bear", gummy: "bear",
+  ifrit: "sarkaz", surtr: "sarkaz", mudrock: "sarkaz", lava: "sarkaz",
+  bagpipe: "dragon", ling: "dragon", nian: "dragon", dusk: "dragon", chongyue: "dragon",
+  hoshiguma: "oni", eyjafjalla: "goat",
+  exusiai: "sankta", mostima: "sankta", archetto: "sankta", executor: "sankta",
+  ptilopsis: "owl", silence: "owl", plume: "liberi",
+  "lancet-2": "robot", "castle-3": "robot", "thrm-ex": "robot", "friston-3": "robot",
+};
+const MALE = new Set(["silverash", "thorns", "mountain", "12f", "adnachiel", "matoimaru", "midnight", "noir-corne", "rathalos-s-noir-corne", "steward", "broca", "ethan",
+  "hung", "mr-nothing", "elysium", "ebenholz", "chongyue", "tachanka", "gnosis", "ayerscarpe", "hellagur", "tequila", "jaye", "courier", "executor", "sharp",
+  "stainless", "bison", "rangers", "leonhardt", "logos", "chiave", "bryophyta", "lumen", "mizuki"]);
+const FIG_HAIR = { exusiai: "#e0474c", silverash: "#dfe3e8", nightingale: "#e9e6ee", skadi: "#e8e8f0", specter: "#ecebf0", mudrock: "#e8e2dc", texas: "#26262c",
+  lappland: "#ecebea", surtr: "#c8323a", ifrit: "#f0d58a", siege: "#f2cf6a", nearl: "#f2d27a", schwarz: "#2a2830", mostima: "#3a5aa8", hoshiguma: "#4a8a5a",
+  suzuran: "#f2d27a", amiya: "#7a5a48", ptilopsis: "#eceaf0", weedy: "#e9eef4", kroos: "#f2c49a", rangers: "#d8d8d8", hellagur: "#d0d0d4" };
+const FIG_W = { amiya: "arts", exusiai: "pistols", texas: "saber", lappland: "saber", silverash: "greatsword", surtr: "greatsword", saria: "shield", ifrit: "arts",
+  skadi: "greatsword", nightingale: "medrod", angelina: "rod", blaze: "greatsword", schwarz: "bowcaster", hoshiguma: "shield", eyjafjalla: "rod", mostima: "rod",
+  thorns: "saber", ptilopsis: "medrod", specter: "greatsword", nearl: "shield", mudrock: "greatsword", suzuran: "rod", mountain: "none", bagpipe: "spear",
+  ash: "rifle", kroos: "bowcaster", melantha: "saber", fang: "spear", ansel: "medrod", ling: "rod", ceobe: "arts", siege: "greatsword", archetto: "bow", fartooth: "bow" };
+const FIG_HS = { amiya: "long", exusiai: "bob", texas: "long", lappland: "long", silverash: "short", surtr: "long", skadi: "long", kroos: "bob", fang: "pony", melantha: "long",
+  ansel: "bob", ifrit: "twin", blaze: "long", saria: "long", nightingale: "long", ptilopsis: "long", specter: "long", nearl: "pony", schwarz: "bob", hoshiguma: "long",
+  eyjafjalla: "long", mostima: "long", mudrock: "long", suzuran: "long", mountain: "short", thorns: "short", rangers: "old" };
+const HALO = { exusiai: "#ff6a6a", mostima: "#7a9aff", archetto: "#ffd76b", executor: "#ffd76b" };
+function hexHSL(h) {
+  const n = parseInt(h.slice(1), 16), r = (n >> 16 & 255) / 255, g = (n >> 8 & 255) / 255, b = (n & 255) / 255;
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, dd = mx - mn;
+  let hh = 0, s = 0;
+  if (dd) { s = dd / (1 - Math.abs(2 * l - 1)); hh = mx === r ? ((g - b) / dd + 6) % 6 : mx === g ? (b - r) / dd + 2 : (r - g) / dd + 4; hh /= 6; }
+  return [hh, s, l];
+}
+function hslHex(hh, s, l) {
+  const f = k => { const a = s * Math.min(l, 1 - l), t = (k + hh * 12) % 12; return Math.round(255 * (l - a * Math.max(-1, Math.min(t - 3, 9 - t, 1)))); };
+  return "#" + [f(0), f(8), f(4)].map(v => v.toString(16).padStart(2, "0")).join("");
+}
+const liftL = (h, lo, hi = 1) => { const [a, s, l] = hexHSL(h); return hslHex(a, s, clamp(l, lo, hi)); };
+const skinish = h => { const [a, s, l] = hexHSL(h); return (a < .11 || a > .97) && l > .6 && s < .75; };
+function opFig(op) {
+  const k = op.slug, c = OPCOL[k] || ["#3a2a2a", "#f3dccb", "#4a5060", "#3a3f4a", "#2a2a30", ELC[op.el]];
+  const rng = seeded(hash(k + "fig")), race = RACE[k], male = MALE.has(k), cls = op.cls;
+  const el = ELC[op.el];
+  const acc = skinish(c[5]) || hexHSL(c[5])[1] < .4 ? el : c[5];
+  const f = {
+    type: race === "robot" ? "robot" : "human",
+    skin: liftL(c[1], .72, .9), hair: FIG_HAIR[k] || liftL(c[0], .16, .92),
+    col: liftL(c[2], .24, .88), col2: liftL(c[3], .2, .85), boot: liftL(c[4], .13, .7),
+    acc: shade(acc, -.25), trim: acc, sc: el, eyec: acc,
+  };
+  if (race === "robot") { f.col = liftL(c[2], .45, .85); f.acc = el; f.bulk = 1.1; }
+  // silhouette
+  f.hs = FIG_HS[k] || (male ? pick2(rng, ["short", "short", "swoop"]) : pick2(rng, ["long", "long", "pony", "twin", "bob", "bob"]));
+  f.hlen = 22 + rng() * 18;
+  if (!male) { f.slim = 1; if (rng() < .5 && cls !== "Defender") f.robe = (cls === "Caster" || cls === "Medic" || cls === "Supporter") && rng() < .6 ? "robe" : "skirt"; }
+  if (!f.robe && rng() < .55) { f.cape = shade(f.col, -.12); f.coat = 1; }
+  if (cls === "Defender") { f.bulk = 1.18; f.shc = shade(f.col2, .1); }
+  if (male) f.h = 1.06;
+  // race
+  const ears = { rabbit: "rabbit", cat: "cat", wolf: "wolf", fox: "fox", horse: "horse", dog: "dog", lion: "round", bear: "round", owl: "owl" }[race];
+  if (ears) f.ears = ears;
+  if (race === "cat" || race === "lion") f.tail = "cat";
+  if (race === "wolf" || race === "dog") f.tail = "bushy";
+  if (race === "fox") { f.tail = "fox"; if (k === "suzuran") f.tails = 3; }
+  if (race === "horse") f.tail = "horse";
+  if (race === "sarkaz") f.horns = "sarkaz";
+  if (race === "dragon") { f.horns = "dragon"; f.hornc = "#d8cbb0"; f.tail = "dragon"; f.tailc = f.hair; }
+  if (race === "oni") { f.horns = "oni"; f.hornc = "#e8d8c4"; }
+  if (race === "goat") { f.horns = "goat"; f.hornc = "#cbb89a"; }
+  if (HALO[k]) { f.halo = HALO[k]; f.wings = k === "mostima" ? "feather" : "sankta"; f.wingc = k === "mostima" ? "#2a2a44" : "#fff4f4"; }
+  if (race === "liberi") { f.wings = "feather"; f.wingc = f.hair; }
+  if (k === "skadi") f.hat = shade(f.col, -.25);
+  // equipment by class, with signature weapons for well-known operators
+  const W = { Vanguard: ["spear", "spear", "saber"], Guard: ["saber", "saber", "saber2", "greatsword", "spear"], Defender: ["shield"],
+    Sniper: ["bowcaster", "rifle", "bow"], Caster: ["rod", "rod", "arts"], Medic: ["medrod"], Supporter: ["rod", "book"], Specialist: ["dagger", "saber"] }[cls] || ["saber"];
+  f.w = FIG_W[k] || pick2(rng, W);
+  return f;
+}
+function pick2(rng, a) { return a[Math.floor(rng() * a.length)]; }
+for (const k of OP_KEYS) OPS[k].fig = opFig(OPS[k]);
 
 // =====================================================================
 //  SAVE STATE + PROGRESSION
@@ -1919,9 +2513,9 @@ const mkProg = () => ({ lvl: 1, xp: 0, elite: 0, pot: 1, sk: [1, 1, 1], runes: [
 
 function newSave() {
   const s = {
-    v: 1, name: "Doctor", lvl: 1, xp: 0, seenIntro: false,
+    v: 1, codes2: 1, name: "Doctor", lvl: 1, xp: 0, seenIntro: false,
     sanity: maxSanity(1), sTime: Date.now(),
-    lmd: 20000, orundum: 6000, permit: 10, cert: 0, tokens: 0,
+    lmd: 20000, orundum: 6000, permit: 10, cert: 0, tokens: 0, prime: 6, credit: 300,
     inv: { rec1: 20, rec2: 6, rec3: 0, rec4: 0, chip: 4, summ: 6 },
     ops: {}, runes: [], runeSeq: 1,
     story: {}, team: { story: STARTERS.slice(0, 4), hunt: STARTERS.slice(0, 4), tower: STARTERS.slice(0, 4), arena: STARTERS.slice(0, 4) },
@@ -1954,7 +2548,7 @@ function tickTimers() {
 }
 
 // ---------- inventory ----------
-const WALLET = ["lmd", "orundum", "permit", "cert", "tokens"];
+const WALLET = ["lmd", "orundum", "permit", "cert", "tokens", "prime", "credit"];
 function have(k) { return WALLET.includes(k) ? S[k] : k === "sanity" ? S.sanity : (S.inv[k] || 0); }
 function spend(k, n) { if (WALLET.includes(k)) S[k] -= n; else if (k === "sanity") S.sanity -= n; else S.inv[k] -= n; }
 function give(rw) {
@@ -1982,7 +2576,7 @@ const MAINS = {
   spd: { n: "SPD", p: 0, a: 3, b: 18 }, cr: { n: "Crit Rate", p: 1, a: .04, b: .24 }, cd: { n: "Crit Dmg", p: 1, a: .07, b: .38 },
   acc: { n: "Accuracy", p: 1, a: .06, b: .32 }, res: { n: "Resistance", p: 1, a: .06, b: .32 },
 };
-const RUNE_RAR = ["", "Normal", "Good", "Rare", "Heroic", "Epic"];
+const RUNE_RAR = ["", "T1", "T2", "T3", "T4", "T5"];
 const RUNE_RC = ["", "#9aa4b8", "#4fd17f", "#3fa7ff", "#b26bff", "#ff9a3c"];
 const runeMain = r => { const m = MAINS[r.main]; return (m.a + (m.b - m.a) * r.lvl / 15) * [0, .6, .7, .8, .9, 1][r.rar]; };
 const runeMainText = r => { const m = MAINS[r.main], v = runeMain(r); return `${m.n} +${m.p ? Math.round(v * 100) + "%" : Math.round(v)}`; };
@@ -2790,7 +3384,7 @@ const tipW = (vu, key = "tip") => billboard(vu, (vu.out && (vu.out[key] || vu.ou
 function drawUnitShadow(K, vu) {
   if (vu.gone) return;
   const a = vu.dead ? .25 * (1 - clamp((BT.clock - vu.deathT) / 900, 0, 1)) : .38;
-  const wide = vu.sprite ? clamp(vu.asp * 1.2, .7, 1.5) : ((vu.u.def.fig && vu.u.def.fig.bulk) || 1) * (vu.u.def.fig && (vu.u.def.fig.type === "slug" || vu.u.def.fig.type === "hound") ? 1.5 : 1);
+  const wide = ((vu.u.def.fig && vu.u.def.fig.bulk) || 1) * (vu.u.def.fig && (vu.u.def.fig.type === "slug" || vu.u.def.fig.type === "hound") ? 1.5 : 1);
   groundEllipse(K, vu.pos.x, vu.pos.z, 26 * vu.bs * wide, `rgba(0,0,0,${a})`, true);
 }
 function drawUnit(K, vu) {
@@ -2812,7 +3406,7 @@ function drawUnit(K, vu) {
   if (vu.spin) { const k = (BT.clock - vu.spin) / 140; face *= Math.cos(k * Math.PI) >= 0 ? 1 : -1; }
   if (rot) g.rotate(rot * vu.face);
   g.scale(sc * face, sc);
-  vu.out = vu.sprite ? drawSprite(g, vu, pt) : drawFigure(g, vu.u.def.fig, { name: vu.pose.name, t: pt, time: BT.clock / 1000, ph: vu.ph });
+  vu.out = drawFigure(g, vu.u.def.fig, { name: vu.pose.name, t: pt, time: BT.clock / 1000, ph: vu.ph });
   g.restore();
   // saber trail
   if (vu.out.tipc && (vu.pose.name === "swing" || vu.spin)) {
@@ -2863,23 +3457,6 @@ function drawOverhead(K, vu) {
     g.fillStyle = "#fff"; g.fillText(FX[id].s + (st > 1 ? st : ""), ex + sz / 2, ey + sz / 2);
   });
 }
-function drawSprite(g, vu, pt) {
-  const e = vu.img, H = 124, Wd = H * vu.asp, T = BT.clock / 1000, ph = vu.ph, name = vu.pose.name;
-  let dx = 0, dy = 0, rot = 0, sx = 1 - Math.sin(T * 2.2 + ph) * .006, sy = 1 + Math.sin(T * 2.2 + ph) * .014;
-  if (name === "run") { rot = .1; dy = -Math.abs(Math.sin(T * 14)) * 5; }
-  else if (name === "swing") { const k = pt; rot = k < .3 ? -.1 * (k / .3) : k < .55 ? -.1 + .4 * ((k - .3) / .25) : .3 * (1 - (k - .55) / .45); dx = Math.sin(k * Math.PI) * 16; }
-  else if (name === "shoot") { const k = pt; rot = -.07 * Math.sin(Math.min(1, k / .3) * Math.PI); dx = -Math.sin(Math.min(1, k / .3) * Math.PI) * 6; }
-  else if (name === "cast" || name === "choke") { const s = Math.sin(Math.min(1, pt * 1.4) * Math.PI / 2) * (pt < .85 ? 1 : (1 - pt) / .15); dy = -10 * s; sy *= 1 + .02 * s; }
-  else if (name === "hit") { const k = 1 - pt; rot = -.22 * k; dx = -12 * k; }
-  else if (name === "buff" || name === "throw") { const k = Math.sin(Math.min(1, pt) * Math.PI); sx *= 1 + .05 * k; sy *= 1 + .06 * k; dy = -8 * k; }
-  else if (name === "victory") { dy = -Math.abs(Math.sin(T * 4 + ph)) * 10; }
-  g.translate(dx, dy); g.rotate(rot); g.scale(sx, sy);
-  if (e.ok) g.drawImage(e.img, -Wd / 2, -H, Wd, H);
-  else { g.fillStyle = ELC[vu.u.el] + "55"; g.beginPath(); g.ellipse(0, -H * .5, Wd * .35, H * .48, 0, 0, 7); g.fill(); }
-  if (vu.flash > BT.clock) { const sil = silhouette(e); if (sil) { const a = g.globalAlpha; g.globalAlpha = a * clamp((vu.flash - BT.clock) / 160, 0, 1) * .85; g.drawImage(sil, -Wd / 2, -H, Wd, H); g.globalAlpha = a; } }
-  return { top: [0, -H * 1.02], head: [0, -H * .86], chest: [0, -H * .55], hand: [Wd * .3, -H * .55], tip: [Wd * .42, -H * .6] };
-}
-
 // ---------- fx ----------
 function addParts(p, n, o) {
   for (let k = 0; k < n; k++) {
@@ -3058,7 +3635,7 @@ function fitHome() {
   const land = BT.W / BT.H > 1.05;
   const c = { tx: 0, ty: 40, tz: 0, yaw: land ? 0 : -1.2, pitch: land ? .24 : .5, dist: 900, fov: land ? .62 : .7, roll: 0 };
   const pts = [];
-  // sprites are billboards ~100 wide, so pad each slot along both ground axes; 170 covers sprite height plus overhead bars
+  // pad each slot along both ground axes (figures, weapons and capes); 170 covers figure height plus overhead bars
   for (const s of SLOTS) for (const sx of [-1, 1]) for (const [dx, dz] of [[-50, 0], [50, 0], [0, -50], [0, 50]]) pts.push([s[0] * sx + dx, 0, s[1] + dz], [s[0] * sx + dx, 170, s[1] + dz]);
   const topM = land ? 64 : 84, botM = land ? 112 : 140, sideM = 4;
   const fit = () => {
@@ -3103,7 +3680,10 @@ function sfx(kind) {
       g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur); s.start(t); s.stop(t + dur);
     };
     if (kind === "blaster") osc("square", 1500 + R() * 300, 160, .17, .05);
-    else if (kind === "saber") { osc("sawtooth", 95, 170, .14, .06); osc("sawtooth", 170, 70, .28, .045, .12); }
+    else if (kind === "saber") { noise(.16, .2, 2600); osc("sine", 1100, 320, .14, .02); }
+    else if (kind === "bow") { noise(.06, .22, 3200); osc("triangle", 240, 110, .14, .06); }
+    else if (kind === "shot") { noise(.11, .38, 3400); osc("square", 190, 55, .09, .06); }
+    else if (kind === "arts") { osc("sine", 620, 1500, .18, .045); osc("triangle", 310, 920, .22, .03, .03); }
     else if (kind === "hit") noise(.12, .18, 900);
     else if (kind === "crit") { noise(.2, .28, 1600); osc("square", 300, 90, .2, .05); }
     else if (kind === "boom") { noise(.7, .45, 420); osc("sine", 120, 30, .6, .25); }
@@ -3195,7 +3775,7 @@ async function fireBolt(a, t, opts = {}) {
   const d = Math.hypot(to[0] - from[0], to[1] - from[1], to[2] - from[2]), dur = clamp(d / (opts.speed || 2.4), 80, 320);
   BT.bolts.push({ from, to, t0: BT.clock, dur, col: opts.col || elc(a), len: opts.len || .32, w: opts.w || 1 });
   addParts(from, 5, { col: "#ffe2a0", speed: 60, life: 160, size: 3, g: 0 });
-  sfx(opts.sound || "blaster");
+  if (opts.sound !== "none") sfx(opts.sound || "arts");
   await bwait(dur);
   addParts(to, opts.big ? 22 : 9, { col: opts.col || elc(a), speed: opts.big ? 220 : 160, life: 340, size: opts.big ? 3.6 : 2.4, g: 200 });
 }
@@ -3211,7 +3791,7 @@ function warpFx(v) {
 function cutIn(vu, skillName) {
   const wrap = $(".bwrap"); if (!wrap) return;
   const d = (950 / BT.speed / 1000).toFixed(2) + "s";
-  const src = vu.u.isOp ? spriteURL(vu.u.def) : enemyArt(vu.u.key).full;
+  const src = (vu.u.isOp ? opArt(vu.u.key) : enemyArt(vu.u.key)).full;
   const el = document.createElement("div");
   el.className = "cutin"; el.style.setProperty("--ec", elc(vu));
   el.innerHTML = `<div class="band" style="animation-duration:${d}"></div><div class="lines" style="animation-duration:${d}"></div>
@@ -3228,7 +3808,7 @@ async function play(evs) {
 }
 function updateStrip() {
   const el = $("#bStrip"); if (!el || !BT.B) return;
-  el.innerHTML = BT.B.predictOrder(7).map(uid => { const u = BT.B.byId(uid); return `<img class="${u.team === "E" ? "en" : ""}" src="${u.isOp ? headURL(u.def) : enemyArt(u.key).head}" alt="">`; }).join("");
+  el.innerHTML = BT.B.predictOrder(7).map(uid => { const u = BT.B.byId(uid); return `<img class="${u.team === "E" ? "en" : ""}" src="${u.isOp ? opArt(u.key).head : enemyArt(u.key).head}" alt="">`; }).join("");
 }
 async function handle(e) {
   const vu = e.u != null ? VU(e.u) : null;
@@ -3244,7 +3824,6 @@ async function handle(e) {
     case "wave": {
       for (const [uid, v] of BT.vus) if (v.team === "E" && v.dead) BT.vus.delete(uid);
       const list = e.units.map(uid => addVU(BT.B.byId(uid), true));
-      await preloadOps(list.filter(v => v.sprite).map(v => v.u.key));
       banner(`Wave ${e.w + 1} / ${BT.B.waves.length}`, "Incoming", "ds");
       BT.letterboxT = 1;
       camTo({ ...BT.home, tx: 200, yaw: BT.home.yaw - .45, dist: BT.home.dist * .75, pitch: .2 }, 2.2);
@@ -3335,6 +3914,13 @@ async function handle(e) {
     }
   }
 }
+// projectile look and sound follow the weapon: arrows and bolts, gunfire tracers, or Originium Arts
+function shotStyle(a, col) {
+  const w = a.u.def.fig && a.u.def.fig.w;
+  if (w === "bow" || w === "bowcaster" || a.u.key === "crossbow") return { col: "#efe6d2", len: .09, w: .5, speed: 3.6, sound: "bow" };
+  if (w === "rifle" || w === "pistols" || w === "pistol") return { col: "#ffe2a0", len: .16, w: .42, speed: 4.6, sound: "shot" };
+  return { col, sound: "arts", speed: 2.6 };
+}
 async function doAttack(e) {
   const a = VU(e.a), ts = e.t.map(VU).filter(v => v && !v.dead);
   if (!a || a.dead || !ts.length) return;
@@ -3362,20 +3948,21 @@ async function doAttack(e) {
       if (sp && first) camTo(impactShot(a, main), 4);
       setPose(a, "shoot", 260);
       await bwait(40);
-      await fireBolt(a, main, { col, sound: "blaster", speed: 3 });
+      await fireBolt(a, main, shotStyle(a, col));
       break;
     }
     case "volley": {
       if (first && sp) camTo(aoeShot(ts, a), 4);
       setPose(a, "shoot", 300);
-      await Promise.all(ts.map(async (t, k) => { await bwait(k * 70); await fireBolt(a, t, { col, speed: 3 }); }));
+      const st = shotStyle(a, col);
+      await Promise.all(ts.map(async (t, k) => { await bwait(k * 70); await fireBolt(a, t, { ...st, sound: k ? "none" : st.sound }); }));
       break;
     }
     case "orb": {
       if (sp && first) camTo(impactShot(a, main), 4);
       setPose(a, "cast", 520);
       await bwait(150);
-      await fireBolt(a, main, { col, len: .14, w: 2.6, speed: 1.7, big: true, sound: "zap" });
+      await fireBolt(a, main, { col, len: .14, w: 2.6, speed: 1.7, big: true, sound: "arts" });
       BT.rings.push({ x: main.pos.x, z: main.pos.z, r0: 8, r1: 60, t0: BT.clock, dur: 400, col, w: 4 });
       break;
     }
@@ -3389,7 +3976,7 @@ async function doAttack(e) {
       if (first) { BT.flash = .35; BT.flashCol = col; BT.shake = Math.max(BT.shake, 10); }
       break;
     }
-    default: { setPose(a, "shoot", 300); await fireBolt(a, main, { col }); }
+    default: { setPose(a, "shoot", 300); await fireBolt(a, main, shotStyle(a, col)); }
   }
 }
 
@@ -3416,7 +4003,7 @@ function showControls(u) {
     BT.target = best ? VU(best.uid) : null;
   }
   const c = $("#bCtl");
-  c.innerHTML = `<div class="bwho"><img class="bpt" src="${headURL(u.def)}" alt=""><div class="bwn"><b>${esc(u.n)}</b><small id="bHint">Tap an enemy to target · hold for details</small></div></div>
+  c.innerHTML = `<div class="bwho"><img class="bpt" src="${opArt(u.key).head}" alt=""><div class="bwn"><b>${esc(u.n)}</b><small id="bHint">Tap an enemy to target · hold for details</small></div></div>
     <div class="babs">${[1, 2, 3].map(slot => {
       const sk = u.skills.find(s => s.slot === slot); if (!sk) return "";
       const ok = B.usable(u, slot), cd = u.cool[slot] || 0;
@@ -3445,7 +4032,7 @@ function skillPop(u, sk) {
 }
 function unitPop(u) {
   const B = BT.B, e = B.effStat;
-  return `<div class="row"><img class="bpt" src="${u.isOp ? headURL(u.def) : enemyArt(u.key).head}" alt=""><div><div class="eyebrow">${u.team === "A" ? "Your squad" : "Enemy"}${u.boss ? " · Boss" : ""}</div><h3>${esc(u.n)}</h3>
+  return `<div class="row"><img class="bpt" src="${u.isOp ? opArt(u.key).head : enemyArt(u.key).head}" alt=""><div><div class="eyebrow">${u.team === "A" ? "Your squad" : "Enemy"}${u.boss ? " · Boss" : ""}</div><h3>${esc(u.n)}</h3>
     <div class="row" style="gap:4px;margin-top:3px"><span class="el ${u.el}">${u.el}</span><span class="cls">${u.cls}</span></div></div></div>
     <div class="statgrid" style="margin-top:10px">
       <div><span>HP</span><b>${fmtFull(u.hp)} / ${fmtFull(u.max.hp)}</b></div><div><span>Shield</span><b>${fmtFull(u.shield)}</b></div>
@@ -3454,8 +4041,8 @@ function unitPop(u) {
       <div><span>Accuracy</span><b>${pct(u.max.acc)}</b></div><div><span>Resistance</span><b>${pct(u.max.res)}</b></div>
     </div>
     ${u.eff.length ? `<div class="stack" style="gap:4px;margin-top:10px">${u.eff.map(x => `<div class="small"><span class="tag ${FX[x.id].b ? "ls" : "ds"}">${FX[x.id].n}</span> <span class="dim">${FX[x.id].d} · ${x.turns}T</span></div>`).join("")}</div>` : `<p class="tiny dim" style="margin-top:10px">No active effects.</p>`}
-    ${[...u.sets].length ? `<p class="small" style="margin-top:8px"><b class="gold">Runes:</b> <span class="dim">${[...u.sets].map(s => `${s} (${RUNE_INFO[s]})`).join(", ")}</span></p>` : ""}
-    ${u.passives.length ? `<p class="small" style="margin-top:6px"><b class="gold">Passive:</b> <span class="dim">${u.passives.map(p => esc(p.text || p.id)).join(" ")}</span></p>` : ""}`;
+    ${[...u.sets].length ? `<p class="small" style="margin-top:8px"><b class="gold">Modules:</b> <span class="dim">${[...u.sets].map(s => `${s} (${RUNE_INFO[s]})`).join(", ")}</span></p>` : ""}
+    ${u.passives.length ? `<p class="small" style="margin-top:6px"><b class="gold">Talent:</b> <span class="dim">${u.passives.map(p => esc(p.text || p.id)).join(" ")}</span></p>` : ""}`;
 }
 function popup(html) {
   const p = $("#bPop"); if (!p) return;
@@ -3477,7 +4064,7 @@ function unitAt(x, y) {
   for (const vu of BT.vus.values()) {
     if (!vu.scr || vu.dead || vu.gone) continue;
     const s = vu.scr.s, top = vu.scr.y + ((vu.out && (vu.out.top || vu.out.head) ? (vu.out.top || vu.out.head)[1] : -100)) * s;
-    const half = Math.max(26, (vu.sprite ? 124 * vu.asp * .4 : 30)) * s;
+    const half = 30 * s;
     if (x > vu.scr.x - half - 6 && x < vu.scr.x + half + 6 && y > top - 10 && y < vu.scr.y + 10) {
       const d = Math.abs(x - vu.scr.x) + Math.abs(y - (top + vu.scr.y) / 2) * .5;
       if (d < bd) { bd = d; best = vu; }
@@ -3492,7 +4079,7 @@ function addVU(u, hidden) {
   const vu = { uid: u.uid, u, team: u.team, dir, face: dir, home: { x: -dir * slot[0], z: slot[1] }, pos: { x: -dir * slot[0], z: slot[1] }, y: 0,
     bs: u.boss ? 1.22 : 1, pose: { name: "idle", t0: 0, dur: 0 }, ph: R() * 6, hp: u.hp, lag: u.hp, sh: u.shield, tm: u.atb, tmT: u.atb,
     effs: [], stealth: false, dead: false, gone: false, trail: [], spawnT: hidden ? 1e15 : null, out: null,
-    sprite: u.isOp, img: u.isOp ? opImg(u.def) : null, asp: u.isOp ? u.def.asp : 1 };
+    sprite: false, asp: 1 };
   BT.vus.set(u.uid, vu);
   return vu;
 }
@@ -3544,7 +4131,7 @@ function startBattle(cfg) {
       <div class="stack" style="gap:8px"><button class="btn wide" id="bRes">Resume</button>
       <button class="btn ghost wide" id="bAi">Auto AI: ${S.settings.ai}</button>
       <button class="btn ghost wide" id="bSnd">Sound: ${S.settings.sound ? "On" : "Off"}</button>
-      <button class="btn red wide" id="bQuit">Retreat</button></div>`);
+      <button class="btn red wide" id="bQuit">Give Up</button></div>`);
     $("#bPopX").remove();
     const close = () => { $("#bPop").hidden = true; BT.paused = false; };
     $("#bPop").onclick = ev => { if (ev.target === $("#bPop")) close(); };
@@ -3580,7 +4167,6 @@ async function intro() {
   banner(BT.cfg.title || "Battle", BT.cfg.sub || "", "ls");
   camTo({ ...h, tx: 230, ty: 70, yaw: h.yaw - 1.05, pitch: .55, dist: h.dist * 1.15 }, 1, true);
   const foes = [...BT.vus.values()].filter(v => v.team === "E"), mine = [...BT.vus.values()].filter(v => v.team === "A");
-  await preloadOps([...BT.vus.values()].filter(v => v.sprite).map(v => v.u.key));
   foes.forEach((v, k) => { v.spawnT = BT.clock + 200 + k * 120; bwait(200 + k * 120).then(() => warpFx(v)); });
   camTo({ ...h, tx: 160, yaw: h.yaw - .5, pitch: .3, dist: h.dist * .78 }, 1.25);
   sfx("warp");
@@ -3625,12 +4211,12 @@ async function outro() {
   if (res.win) {
     for (const v of mine) setPose(v, "victory", 0, false);
     camTo({ tx: avg(mine.map(v => v.pos.x)), ty: 60, tz: avg(mine.map(v => v.pos.z)), yaw: h.yaw + .55, pitch: .1, dist: fitDist(320, 360), fov: .62, roll: 0 }, 1.8);
-    BT.orbit = true; sfx("win"); banner("Victory", "", "ls");
+    BT.orbit = true; sfx("win"); banner("Mission Accomplished", "", "ls");
   } else {
     const foes = [...BT.vus.values()].filter(v => v.team === "E" && !v.dead);
     for (const v of foes) setPose(v, "victory", 0, false);
     camTo({ tx: avg(foes.map(v => v.pos.x)), ty: 60, tz: 0, yaw: h.yaw - .5, pitch: .14, dist: fitDist(320, 380), fov: .62, roll: 0 }, 1.4);
-    sfx("lose"); banner("Defeat", "", "ds");
+    sfx("lose"); banner("Mission Failed", "", "ds");
   }
   BT.letterboxT = 1;
   await bwait(1600);
@@ -3641,10 +4227,10 @@ async function outro() {
   el.className = "result";
   const missions = out.missions || null;
   el.innerHTML = `<div class="eyebrow">${esc(BT.cfg.sub || "")}</div>
-    <h1 class="${res.win ? "gold" : "ds"}">${res.win ? "Victory" : "Defeat"}</h1>
+    <h1 class="${res.win ? "gold" : "ds"}">${res.win ? "Mission<br>Accomplished" : "Mission<br>Failed"}</h1>
     ${missions ? `<div class="bigstars">${[0, 1, 2].map(k => `<span class="${missions[k].ok ? "on" : ""}">${missions[k].ok ? IC.star : IC.starOff}</span>`).join("")}</div>
       <div class="stack" style="gap:4px;text-align:left">${missions.map(m => `<div class="mission">${m.ok ? IC.check : IC.cross}<span>${esc(m.n)}</span></div>`).join("")}</div>` : ""}
-    ${!res.win ? `<p class="small dim" style="max-width:34ch">Level up and promote your operators, equip runes, or try a different leader and element matchup.</p>` : ""}
+    ${!res.win ? `<p class="small dim" style="max-width:34ch">Level up and promote your operators, equip modules, or try a different leader and element matchup.</p>` : ""}
     ${out.rewards && out.rewards.length ? `<div class="rewards">${rewardsHTML(out.rewards)}</div>` : ""}
     <div class="row" style="gap:10px;margin-top:6px">
       ${BT.cfg.retry ? `<button class="btn ghost" id="rRetry">Retry</button>` : ""}
@@ -3658,7 +4244,7 @@ async function outro() {
 // =====================================================================
 //  SCREENS (1/2): shell, lobby, story map, node sheet, team, dialogue
 // =====================================================================
-const UI = { view: "home", arg: null, el: "all", cls: "all", sort: "power", all: false, opTab: "info", team: null, depotTab: "runes", shopTab: "orundum", runeSet: "all", hhStd: false };
+const UI = { view: "home", arg: null, el: "all", cls: "all", sort: "power", all: false, opTab: "info", team: null, depotTab: "runes", shopTab: "credit", runeSet: "all", hhStd: false };
 
 function toast(msg, cls = "") { const t = document.createElement("div"); t.className = "toast " + cls; t.textContent = msg; $("#toast").appendChild(t); setTimeout(() => t.remove(), 2600); }
 function openModal(html) { const m = $("#modal"); m.innerHTML = `<div class="mbox" role="dialog">${html}</div>`; m.hidden = false; m.onclick = e => { if (e.target === m) closeModal(); }; }
@@ -3686,7 +4272,7 @@ function rewardsHTML(list) {
   return merged.map(r => {
     if (r.k.startsWith("op:")) { const k = r.k.slice(3); return `<div class="rw">${opHTML(k, { s: 54, nostars: 1, nolv: 1, show: 1 })}<span>${r.isNew === false ? "Potential +1" : "New operator"}</span></div>`; }
     if (r.k === "rune") return `<div class="rw"><div class="ri" style="width:54px;height:54px;color:${RUNE_RC[r.rune.rar]}">${IC.rune.replace('fill="#5fd4ff"', `fill="${RUNE_RC[r.rune.rar]}"`)}</div><span>${r.rune.set}</span><span class="tiny dim">${RUNE_RAR[r.rune.rar]}</span></div>`;
-    const name = r.k === "xp" ? "Operator EXP" : r.k === "rank" ? "New rank" : (ITEMS[r.k] && ITEMS[r.k].n) || r.k;
+    const name = r.k === "xp" ? "Operator EXP" : r.k === "rank" ? "Rank" : (ITEMS[r.k] && ITEMS[r.k].n) || r.k;
     return `<div class="rw"><div class="ri" style="width:54px;height:54px">${r.k === "xp" ? IC.boost : r.k === "rank" ? IC.arena : itemIcon(r.k)}</div><span class="num">${r.k === "rank" ? "#" + r.n : "×" + fmt(r.n)}</span><span class="tiny dim">${esc(name)}</span></div>`;
   }).join("");
 }
@@ -3699,14 +4285,14 @@ function renderTop() {
   $("#topbar").innerHTML = `
     <button class="me" data-act="settings" aria-label="Profile and settings">
       <div class="me-badge num">${S.lvl}</div>
-      <div style="min-width:0;text-align:left"><div class="me-name">Dr. ${esc(S.name)}</div><div class="me-xp"><i style="width:${S.xp / pxpNeed(S.lvl) * 100}%"></i></div></div>
+      <div style="min-width:0;text-align:left"><div class="me-name">${S.name === "Doctor" ? "Doctor" : "Dr. " + esc(S.name)}</div><div class="me-xp"><i style="width:${S.xp / pxpNeed(S.lvl) * 100}%"></i></div></div>
     </button>
     <div class="res">
       <button class="pill" data-act="sanity" aria-label="Sanity">${IC.sanity}<span id="sanPill">${S.sanity}<small>/${mx}</small></span></button>
       <div class="pill">${IC.lmd}<span>${fmt(S.lmd)}</span></div>
       <div class="pill">${IC.orundum}<span>${fmt(S.orundum)}</span></div>
     </div>`;
-  const tabs = [["home", "Lobby", IC.home], ["story", "Story", IC.story], ["battle", "Battle", IC.battles], ["ops", "Operators", IC.ops], ["hh", "Headhunt", IC.permit.replace('viewBox', 'fill="currentColor" viewBox')]];
+  const tabs = [["home", "Home", IC.home], ["story", "Main Theme", IC.story], ["battle", "Terminal", IC.battles], ["ops", "Operator", IC.ops], ["hh", "Headhunt", IC.permit.replace('viewBox', 'fill="currentColor" viewBox')]];
   const on = { op: "ops", team: UI.arg && UI.arg.from || "story", hunt: "battle", tower: "battle", arena: "battle", chapter: "story", missions: "home", shop: "home", depot: "home" }[UI.view] || UI.view;
   $("#tabs").innerHTML = tabs.map(([v, n, ic]) => `<button class="${on === v ? "on" : ""}" data-act="go" data-v="${v}">${ic}<span>${n}</span>${badge(v) ? '<i class="dot"></i>' : ""}</button>`).join("");
 }
@@ -3741,8 +4327,8 @@ function nextHint() {
   const nd = nextNode();
   if (DAILIES.some(d => !S.daily.claimed[d.id] && S.daily[d.id] >= d.goal) || ACHIEVEMENTS.some(a => !S.ach[a.id] && a.test())) return { act: "missions", text: "Mission rewards are ready to claim." };
   if (S.gacha.total === 0) return { act: "go", data: 'data-v="hh"', text: "Try your first <b>Headhunt</b>. Your first ten-pull guarantees a 5★ or better." };
-  if (nd) return { act: "openNode", data: `data-id="${nd.id}"`, text: `Continue the story: <b>${nd.id} ${esc(nd.name)}</b>.` };
-  return { act: "go", data: 'data-v="battle"', text: "Farm runes in the <b>Hunts</b> or climb the <b>Tower</b>." };
+  if (nd) return { act: "openNode", data: `data-id="${nd.id}"`, text: `Continue the Main Theme: <b>${nd.id} ${esc(nd.name)}</b>.` };
+  return { act: "go", data: 'data-v="battle"', text: "Farm modules in <b>Supplies</b> or take on the <b>Stationary Security Service</b>." };
 }
 const SCREENS = {};
 SCREENS.home = () => {
@@ -3756,16 +4342,16 @@ SCREENS.home = () => {
       <div class="nameplate"><span class="eyebrow">Assistant</span><b>${esc(op.n)}</b><div class="row" style="gap:4px"><span class="el ${op.el}">${op.el}</span><span class="cls">${op.cls}</span></div></div>
       <div class="sidebtns">
         <button class="sidebtn" data-act="missions" aria-label="Missions">${IC.missions}<small>Missions</small>${missionsReady ? '<i class="dot"></i>' : ""}</button>
-        <button class="sidebtn" data-act="go" data-v="shop" aria-label="Shop">${IC.shop}<small>Shop</small></button>
+        <button class="sidebtn" data-act="go" data-v="shop" aria-label="Store">${IC.shop}<small>Store</small></button>
         <button class="sidebtn" data-act="go" data-v="depot" aria-label="Depot">${IC.depot}<small>Depot</small></button>
       </div>
     </section>
     ${hint ? `<button class="hint" data-act="${hint.act}" ${hint.data || ""}>${IC.boost.replace("<svg", '<svg width="22" height="22"')}<div><div class="eyebrow">Next objective</div><div class="small">${hint.text}</div></div></button>` : ""}
     <div class="tiles">
-      <button class="tile ls-t" data-act="go" data-v="story"><span class="ticon" style="color:var(--holo)">${IC.story}</span><h3>Story</h3><span class="tsub">${nd ? "Next: " + nd.id + " " + esc(nd.name) : "Episode 1 complete"}</span></button>
-      <button class="tile ds-t" data-act="go" data-v="battle"><span class="ticon" style="color:var(--ds)">${IC.battles}</span><h3>Battle</h3><span class="tsub">Hunts · Tower · Arena</span></button>
+      <button class="tile ls-t" data-act="go" data-v="story"><span class="ticon" style="color:var(--holo)">${IC.story}</span><h3>Main Theme</h3><span class="tsub">${nd ? "Next: " + nd.id + " " + esc(nd.name) : "All episodes cleared"}</span></button>
+      <button class="tile ds-t" data-act="go" data-v="battle"><span class="ticon" style="color:var(--ds)">${IC.battles}</span><h3>Terminal</h3><span class="tsub">Supplies · SSS · Contract</span></button>
       <button class="tile" data-act="go" data-v="hh"><span class="ticon">${IC.permit}</span><h3>Headhunt</h3><span class="tsub">${S.permit} permits · ${fmt(S.orundum)} Orundum</span></button>
-      <button class="tile" data-act="go" data-v="ops"><span class="ticon" style="color:var(--gold)">${IC.ops}</span><h3>Operators</h3><span class="tsub">${Object.keys(S.ops).length}/${OP_KEYS.length} recruited</span></button>
+      <button class="tile" data-act="go" data-v="ops"><span class="ticon" style="color:var(--gold)">${IC.ops}</span><h3>Operator</h3><span class="tsub">${Object.keys(S.ops).length}/${OP_KEYS.length} recruited</span></button>
     </div>
     <p class="tiny dim" style="text-align:center;padding:4px 8px">Arknights Tactics is an unofficial, non-commercial fan game. Arknights characters and art belong to Hypergryph and Yostar.</p>
   </div>`;
@@ -3776,7 +4362,7 @@ SCREENS.story = () => {
   const ep = STORY[0];
   return `<div class="stack">
     <section class="panel ep-card" style="background:radial-gradient(90% 120% at 100% 0%,#5a1e14,transparent 60%),var(--hull)">
-      <div class="eyebrow">${ep.sub}</div><h1 style="margin-top:4px;font-size:30px">${esc(ep.title)}</h1>
+      <div class="eyebrow">Main Theme</div><h1 style="margin-top:4px;font-size:30px">${esc(ep.title)}</h1>
       <p class="small dim" style="margin-top:6px;max-width:42ch">${esc(ep.blurb)}</p>
     </section>
     ${ep.chapters.map((ch, i) => {
@@ -3784,8 +4370,8 @@ SCREENS.story = () => {
       const battles = ch.nodes.filter(n => n.waves), stars = battles.reduce((a, n) => a + nodeStars(n.id), 0);
       return `<button class="tile wide" data-act="chapter" data-c="${ch.id}" ${open ? "" : "disabled"} style="min-height:88px;background:linear-gradient(120deg,${mapTheme(ch.map).a},var(--hull2) 70%)">
         <span class="ticon" style="width:auto;height:auto;font:800 40px var(--f-display);opacity:.25;top:2px">${i + 1}</span>
-        <div class="eyebrow">Chapter ${i + 1}${done ? " · Cleared" : ""}</div><h3>${esc(ch.title)}</h3>
-        <span class="tsub">${open ? `${stars}/${battles.length * 3} stars` : "Clear the previous chapter to unlock"}</span></button>`;
+        <div class="eyebrow">Episode ${ch.no}${done ? " · Cleared" : ""}</div><h3>${esc(ch.title)}</h3>
+        <span class="tsub">${open ? `${stars}/${battles.length * 3} stars` : "Clear the previous episode to unlock"}</span></button>`;
     }).join("")}
   </div>`;
 };
@@ -3817,7 +4403,7 @@ SCREENS.chapter = cid => {
   const icon = t => t === "boss" ? IC.skull : t === "story" ? IC.book : t === "chest" ? IC.chest : IC.sword;
   const nx = nextNode();
   return `<div class="stack">
-    <div class="spread">${back("go", "Episode", 'data-v="story"')}<span class="eyebrow">Chapter ${ci + 1}</span></div>
+    <div class="spread">${back("go", "Main Theme", 'data-v="story"')}<span class="eyebrow">Episode ${ch.no}</span></div>
     <h2>${esc(ch.title)}</h2>
     <div class="mapwrap" style="background:linear-gradient(180deg,${th.a},${th.b})">
       <svg class="map" viewBox="0 0 400 ${H}" preserveAspectRatio="none" style="height:${H}px">${deco}
@@ -3829,7 +4415,7 @@ SCREENS.chapter = cid => {
           ${nd.waves ? `<span class="nst">${[1, 2, 3].map(k => k <= st ? IC.star : IC.starOff).join("")}</span>` : ""}</button>`;
       }).join("")}
     </div>
-    <p class="tiny dim">Chapter reward: ${ch.reward.op ? esc(OPS[ch.reward.op].n) + " joins Rhodes Island, plus " : ""}${ch.reward.orundum} Orundum${ch.reward.permit ? ` and ${ch.reward.permit} Headhunting Permits` : ""}.</p>
+    <p class="tiny dim">Episode reward: ${ch.reward.op ? esc(OPS[ch.reward.op].n) + " joins Rhodes Island, plus " : ""}${ch.reward.orundum} Orundum${ch.reward.permit ? ` and ${ch.reward.permit} Headhunting Permits` : ""}.</p>
   </div>`;
 };
 function nodeSheet(nd) {
@@ -3837,18 +4423,18 @@ function nodeSheet(nd) {
   const waves = nd.waves ? nd.waves.map(w => w.map(s => ({ ...s, LV: lv + (s.e && ENEMY[s.e].boss ? 3 : 0), en: s.e }))) : null;
   const goal = nodeTurnGoal(nd);
   openModal(`<div class="stack">
-    <div class="spread"><div><div class="eyebrow">${nd.id} · ${{ story: "Story", battle: "Battle", side: "Side story", chest: "Supplies", boss: "Boss" }[nd.type]}</div><h2 style="margin-top:4px">${esc(nd.name)}</h2></div>
+    <div class="spread"><div><div class="eyebrow">${nd.id} · ${{ story: "Story", battle: "Operation", side: "Side Story", chest: "Supply Cache", boss: "Boss Operation" }[nd.type]}</div><h2 style="margin-top:4px">${esc(nd.name)}</h2></div>
       ${nd.waves ? `<div class="nstars">${[1, 2, 3].map(k => k <= st ? IC.star : IC.starOff).join("")}</div>` : ""}</div>
     ${waves ? waves.map((w, k) => `<div><div class="tiny dim" style="margin-bottom:4px">Wave ${k + 1} of ${waves.length}</div><div class="row wrap">${w.map(s => enHTML(s, s.en && ENEMY[s.en].boss ? 56 : 46)).join("")}</div></div>`).join("") : ""}
-    ${nd.waves ? `<div class="stack" style="gap:4px"><div class="tiny dim">Missions</div>
-      ${["Win the battle", "No operator falls", `Win within ${goal} of your turns`].map((m, k) => `<div class="mission">${k < st ? IC.star : IC.starOff}<span>${m}</span></div>`).join("")}</div>
-      <div><div class="tiny dim" style="margin-bottom:4px">${st ? "Drops" : "First clear"}</div><div class="rewards" style="justify-content:flex-start">${rewardsHTML(st ? [{ k: "lmd", n: 80 + lv * 15 }, { k: lv < 20 ? "rec1" : lv < 40 ? "rec2" : "rec3", n: 2 }, { k: "summ", n: 1 }] : [{ k: "orundum", n: nd.type === "boss" ? 150 : nd.type === "side" ? 100 : 60 }, { k: "lmd", n: 80 + lv * 15 }, { k: lv < 20 ? "rec1" : lv < 40 ? "rec2" : "rec3", n: 3 }])}</div></div>` : ""}
+    ${nd.waves ? `<div class="stack" style="gap:4px"><div class="tiny dim">3-star conditions</div>
+      ${["Complete the operation", "No operator falls", `Clear within ${goal} of your turns`].map((m, k) => `<div class="mission">${k < st ? IC.star : IC.starOff}<span>${m}</span></div>`).join("")}</div>
+      <div><div class="tiny dim" style="margin-bottom:4px">${st ? "Regular drops" : "First clear"}${st < 3 ? " · first 3-star clear adds 1 Originite Prime" : ""}</div><div class="rewards" style="justify-content:flex-start">${rewardsHTML(st ? [{ k: "lmd", n: 80 + lv * 15 }, { k: lv < 20 ? "rec1" : lv < 40 ? "rec2" : "rec3", n: 2 }, { k: "summ", n: 1 }] : [{ k: "orundum", n: nd.type === "boss" ? 150 : nd.type === "side" ? 100 : 60 }, { k: "lmd", n: 80 + lv * 15 }, { k: lv < 20 ? "rec1" : lv < 40 ? "rec2" : "rec3", n: 3 }])}</div></div>` : ""}
     ${nd.type === "chest" ? `<div class="rewards" style="justify-content:flex-start">${rewardsHTML(Object.entries(nd.reward).map(([k, n]) => ({ k, n })))}</div>` : ""}
     <div class="row">
-      ${nd.waves && st >= 3 ? `<button class="btn ghost" data-act="sweep" data-id="${nd.id}" data-x="1">Sweep</button><button class="btn ghost" data-act="sweep" data-id="${nd.id}" data-x="3">×3</button>` : ""}
-      <button class="btn" style="flex:1" data-act="startNode" data-id="${nd.id}" ${nd.type === "chest" && st ? "disabled" : ""}>${nd.type === "story" ? (st ? "Replay story" : "Read story") : nd.type === "chest" ? (st ? "Collected" : "Collect") : `Battle <span class="cost">${IC.sanity}${cost}</span>`}</button>
+      ${nd.waves && st >= 3 ? `<button class="btn ghost" data-act="sweep" data-id="${nd.id}" data-x="1">Auto Deploy</button><button class="btn ghost" data-act="sweep" data-id="${nd.id}" data-x="3">×3</button>` : ""}
+      <button class="btn" style="flex:1" data-act="startNode" data-id="${nd.id}" ${nd.type === "chest" && st ? "disabled" : ""}>${nd.type === "story" ? (st ? "Replay story" : "Read story") : nd.type === "chest" ? (st ? "Collected" : "Collect") : `Start <span class="cost">${IC.sanity}${cost}</span>`}</button>
     </div>
-    ${nd.waves && st < 3 ? '<p class="tiny dim">Earn 3 stars to unlock sweeps.</p>' : ""}
+    ${nd.waves && st < 3 ? '<p class="tiny dim">Clear with 3 stars to unlock Auto Deploy.</p>' : ""}
   </div>`);
 }
 
@@ -3864,7 +4450,7 @@ SCREENS.team = arg => {
   const counter = foeEls.map(e => Object.keys(BEATS).find(k => BEATS[k] === e && !(k === "Light" || k === "Dark")) || (e === "Light" ? "Dark" : e === "Dark" ? "Light" : null)).filter(Boolean);
   return `<div class="stack">
     <div class="spread">${back("teamBack", "Back")}<div class="eyebrow">${esc(arg.title || "")}</div></div>
-    <h2>Deploy Your Squad</h2>
+    <h2>Squad</h2>
     ${foeEls.length ? `<div class="small">Enemy elements: ${foeEls.map(e => `<span class="el ${e}">${e}</span>`).join(" ")} ${counter.length ? `<span class="dim">· Strong picks:</span> ${[...new Set(counter)].map(e => `<span class="el ${e}">${e}</span>`).join(" ")}` : ""}</div>` : ""}
     <div class="squad">${[0, 1, 2, 3].map(k => {
       const id = ids[k];
@@ -3872,7 +4458,7 @@ SCREENS.team = arg => {
     }).join("")}</div>
     <div class="leadtxt small">${lead ? `<b class="gold">Leader: ${esc(OPS[ids[0]].n)}</b> <span class="dim">${leaderText(lead)}</span>` : ids[0] ? `<span class="dim">${esc(OPS[ids[0]].n)} has no leader skill. Tap a squad member to make them leader.</span>` : `<span class="dim">Pick up to four operators. The first slot leads.</span>`}</div>
     <div class="spread small"><span>Squad power <b class="num">${fmtFull(myPw)}</b></span>${arg.cost ? `<span class="cost">${IC.sanity}${arg.cost}</span>` : ""}</div>
-    <button class="btn wide" data-act="deploy" ${ids.length ? "" : "disabled"}>Start Battle</button>
+    <button class="btn wide" data-act="deploy" ${ids.length ? "" : "disabled"}>Mission Start</button>
     <div class="filters">${["all", ...ELS].map(e => `<button class="chip ${UI.el === e ? "on" : ""}" data-act="elf" data-e="${e}">${e === "all" ? "All" : e}</button>`).join("")}</div>
     <div class="roster">${pool.map(k => `<button class="rcell ${ids.includes(k) ? "sel" : ""}" data-act="pickTeam" data-k="${k}">${opHTML(k)}<div class="pname">${esc(OPS[k].n)}</div><div class="pw">${fmt(power(k, S.ops[k]))}</div></button>`).join("")}</div>
   </div>`;
@@ -3957,23 +4543,25 @@ function playScene(lines, title, env) {
 }
 
 // =====================================================================
-//  SCREENS (2/2): battle hub, operators, runes, headhunt, missions, shop
+//  SCREENS (2/2): Terminal, operators, modules, headhunting, missions, store
 // =====================================================================
 SCREENS.battle = () => {
-  const A = S.arena, payReady = Date.now() - A.payTime >= PAYOUT_MS;
+  const A = S.arena, payReady = Date.now() - A.payTime >= PAYOUT_MS, nd = nextNode();
   return `<div class="stack">
-    <h2>Battle</h2>
-    <div class="eyebrow">Hunts · rune farming</div>
+    <h2>Terminal</h2>
+    <button class="tile wide ls-t" data-act="go" data-v="story" style="min-height:76px"><span class="ticon" style="color:var(--holo)">${IC.story}</span>
+      <div class="eyebrow">Main Theme</div><h3>${esc(STORY[0].title)}</h3><span class="tsub">${nd ? "Next: " + nd.id + " " + esc(nd.name) : "All episodes cleared"}</span></button>
+    <div class="eyebrow">Supplies · module operations</div>
     ${HUNTS.map(h => {
       const best = (S.hunt && S.hunt[h.id]) || 0, boss = h.waves(1)[1][0].e;
       return `<button class="tile wide" data-act="go" data-v="hunt" data-a="${h.id}" style="min-height:96px;background:linear-gradient(120deg,${mapTheme(h.env === "temple" ? "slums" : h.env).a},var(--hull2) 70%)">
         <span class="ticon" style="width:56px;height:56px;right:10px;top:10px"><img src="${enemyArt(boss).head}" alt="" style="width:100%;border-radius:50%"></span>
-        <div class="eyebrow">Hunt · Level ${best}/6 cleared</div><h3>${esc(h.n)}</h3><span class="tsub">${esc(h.sub)}</span>
-        <span class="tsub">Drops: ${h.sets.join(", ")}</span></button>`;
+        <div class="eyebrow">${h.code}-1 to ${h.code}-6 · ${best ? h.code + "-" + best + " cleared" : "not cleared"}</div><h3>${esc(h.n)}</h3><span class="tsub">${esc(h.sub)}</span>
+        <span class="tsub">Module sets: ${h.sets.join(", ")}</span></button>`;
     }).join("")}
     <div class="tiles">
-      <button class="tile" data-act="go" data-v="tower"><span class="ticon" style="color:var(--holo)">${IC.tower}</span><h3>Tower of Trials</h3><span class="tsub">Floor ${Math.min(S.tower + 1, TOWER_FLOORS)}/${TOWER_FLOORS}</span></button>
-      <button class="tile" data-act="go" data-v="arena"><span class="ticon" style="color:var(--gold)">${IC.arena}</span><h3>Arena</h3><span class="tsub">Rank #${A.rank} · ${A.attempts}/5${payReady ? " · payout ready" : ""}</span></button>
+      <button class="tile" data-act="go" data-v="tower"><span class="ticon" style="color:var(--holo)">${IC.tower}</span><h3 class="long">Stationary Security Service</h3><span class="tsub">Floor ${Math.min(S.tower + 1, TOWER_FLOORS)}/${TOWER_FLOORS}</span></button>
+      <button class="tile" data-act="go" data-v="arena"><span class="ticon" style="color:var(--gold)">${IC.arena}</span><h3 class="long">Contingency Contract</h3><span class="tsub">Rank #${A.rank} · ${A.attempts}/5${payReady ? " · bounty ready" : ""}</span></button>
     </div>
   </div>`;
 };
@@ -3982,16 +4570,16 @@ SCREENS.hunt = id => {
   const lvl = UI.huntLv && UI.huntLv[id] || Math.min(6, best + 1);
   const lv = HUNT_LV[lvl - 1], waves = h.waves(lv).map(w => w.map(s => ({ en: s.e, LV: lv + (ENEMY[s.e].boss ? 3 : 0) })));
   return `<div class="stack">
-    <div class="spread">${back("go", "Battle", 'data-v="battle"')}<span class="eyebrow">Hunt</span></div>
-    <h2>${esc(h.n)}</h2><p class="small dim">${esc(h.sub)}. Enemies are level ${lv}; the boss is level ${lv + 3}.</p>
-    <div class="chips">${[1, 2, 3, 4, 5, 6].map(k => `<button class="chip ${k === lvl ? "on" : ""}" data-act="huntLv" data-h="${id}" data-l="${k}" ${k <= best + 1 ? "" : "disabled"}>Lv ${k}</button>`).join("")}</div>
+    <div class="spread">${back("go", "Terminal", 'data-v="battle"')}<span class="eyebrow">Supplies</span></div>
+    <h2>${h.code}-${lvl} ${esc(h.n)}</h2><p class="small dim">${esc(h.sub)}. Enemies are level ${lv}; the boss is level ${lv + 3}.</p>
+    <div class="chips">${[1, 2, 3, 4, 5, 6].map(k => `<button class="chip ${k === lvl ? "on" : ""}" data-act="huntLv" data-h="${id}" data-l="${k}" ${k <= best + 1 ? "" : "disabled"}>${h.code}-${k}</button>`).join("")}</div>
     ${waves.map((w, k) => `<div><div class="tiny dim" style="margin-bottom:4px">Wave ${k + 1}</div><div class="row wrap">${w.map(s => enHTML(s, ENEMY[s.en].boss ? 56 : 46)).join("")}</div></div>`).join("")}
-    <section class="sub stack" style="gap:6px"><div class="small"><b>Rune drops</b> <span class="dim">· 2–3 runes per clear</span></div>
+    <section class="sub stack" style="gap:6px"><div class="small"><b>Module drops</b> <span class="dim">· 2–3 modules per clear</span></div>
       <div class="chips">${h.sets.map(s => `<span class="chip" title="${esc(RUNE_INFO[s])}">${s}</span>`).join("")}</div>
       <div class="tiny dim">${HUNT_RAR[lvl - 1].map((p, i) => p ? `${RUNE_RAR[i + 1]} ${Math.round(p * 100)}%` : "").filter(Boolean).join(" · ")}</div></section>
     <div class="row">
-      ${best >= lvl ? `<button class="btn ghost" data-act="huntSweep" data-h="${id}" data-l="${lvl}">Sweep ×3</button>` : ""}
-      <button class="btn" style="flex:1" data-act="huntGo" data-h="${id}" data-l="${lvl}">Battle <span class="cost">${IC.sanity}${HUNT_COST[lvl - 1]}</span></button>
+      ${best >= lvl ? `<button class="btn ghost" data-act="huntSweep" data-h="${id}" data-l="${lvl}">Auto Deploy ×3</button>` : ""}
+      <button class="btn" style="flex:1" data-act="huntGo" data-h="${id}" data-l="${lvl}">Start <span class="cost">${IC.sanity}${HUNT_COST[lvl - 1]}</span></button>
     </div>
   </div>`;
 };
@@ -4000,16 +4588,16 @@ SCREENS.tower = () => {
   const floors = [];
   for (let f = Math.min(TOWER_FLOORS, cur + 2); f >= Math.max(1, cur - 3); f--) floors.push(towerFloor(f));
   return `<div class="stack">
-    <div class="spread">${back("go", "Battle", 'data-v="battle"')}<span class="eyebrow">Tower of Trials</span></div>
-    <h2>${done ? "Tower conquered" : "Floor " + cur}</h2>
-    <p class="small dim">Each floor can be cleared once. Every fifth floor holds a boss and a Headhunting Permit.</p>
+    <div class="spread">${back("go", "Terminal", 'data-v="battle"')}<span class="eyebrow">SSS</span></div>
+    <h2>${done ? "All floors cleared" : "Stationary Security Service"}</h2>
+    <p class="small dim">${done ? "" : `Floor ${cur} of ${TOWER_FLOORS}. `}Each floor can be cleared once. Every fifth floor holds a boss and a Headhunting Permit.</p>
     ${floors.map(T => {
       const state = T.f <= S.tower ? "done" : T.f === cur ? "next" : "locked";
       return `<section class="panel stack" style="gap:8px;${state === "next" ? "box-shadow:inset 0 0 0 2px var(--gold)" : state === "locked" ? "opacity:.5" : ""}">
         <div class="spread"><b>Floor ${T.f}${T.f % 5 === 0 ? " · Boss" : ""}</b><span class="tiny dim">Lv ${T.lv}</span></div>
         <div class="row wrap">${T.waves[T.waves.length - 1].map(s => enHTML(s.op ? { op: s.op, LV: T.lv } : { en: s.e, LV: T.lv }, 40)).join("")}</div>
         <div class="spread"><div class="rewards" style="justify-content:flex-start;transform:scale(.85);transform-origin:left">${rewardsHTML(Object.entries(T.reward).map(([k, n]) => ({ k, n })))}</div>
-        ${state === "next" ? `<button class="btn sm" data-act="towerGo" data-f="${T.f}">Battle</button>` : state === "done" ? `<span class="tiny gold">Cleared</span>` : ""}</div>
+        ${state === "next" ? `<button class="btn sm" data-act="towerGo" data-f="${T.f}">Start</button>` : state === "done" ? `<span class="tiny gold">Cleared</span>` : ""}</div>
       </section>`;
     }).join("")}
   </div>`;
@@ -4019,20 +4607,20 @@ SCREENS.arena = () => {
   if (!S.arena.opps) genOpps();
   const A = S.arena, now = Date.now(), payReady = now - A.payTime >= PAYOUT_MS, po = payout(A.rank);
   return `<div class="stack">
-    <div class="spread">${back("go", "Battle", 'data-v="battle"')}<span class="eyebrow">Arena</span></div>
+    <div class="spread">${back("go", "Terminal", 'data-v="battle"')}<span class="eyebrow">Contingency Contract</span></div>
     <section class="panel" style="background:radial-gradient(100% 120% at 100% 0%,#3a2a08,var(--hull) 60%)">
-      <div class="spread"><div><div class="eyebrow" style="color:var(--gold)">Rank</div><div style="font:800 44px var(--f-display);line-height:1" class="num gold">#${A.rank}</div></div>
+      <div class="spread"><div><div class="eyebrow" style="color:var(--gold)">Contract rank</div><div style="font:800 44px var(--f-display);line-height:1" class="num gold">#${A.rank}</div></div>
       <div style="text-align:right" class="small"><div>Attempts <b class="num">${A.attempts}/5</b></div>${A.attempts < 5 ? `<div class="tiny dim num">+1 in <span data-cd="att">${dur(ARENA_MS - (now - A.aTime))}</span></div>` : ""}<div class="row" style="justify-content:flex-end;margin-top:4px"><span class="cost">${IC.tokens}${fmt(S.tokens)}</span></div></div></div>
       <div class="divider" style="margin:10px 0"></div>
-      <div class="spread small"><span>Payout: <span class="cost">${IC.orundum}${po.orundum}</span> <span class="cost">${IC.tokens}${po.tokens}</span></span>
+      <div class="spread small"><span>Bounty: <span class="cost">${IC.orundum}${po.orundum}</span> <span class="cost">${IC.tokens}${po.tokens}</span></span>
         <button class="btn sm" data-act="payout" ${payReady ? "" : "disabled"}>${payReady ? "Claim" : `<span data-cd="pay">${dur(PAYOUT_MS - (now - A.payTime))}</span>`}</button></div>
     </section>
-    <div class="spread"><h3>Opponents</h3><button class="btn ghost sm" data-act="newOpps">Refresh</button></div>
+    <div class="spread"><h3>Rival squads</h3><button class="btn ghost sm" data-act="newOpps">Refresh</button></div>
     ${A.opps.map((o, k) => `<section class="panel stack" style="gap:8px">
       <div class="spread"><div><b>${esc(o.name)}</b><div class="tiny dim">Rank #${o.rank} · Power <span class="num">${fmtFull(o.pw)}</span></div></div>
-      <button class="btn sm" data-act="arenaGo" data-k="${k}" ${A.attempts > 0 ? "" : "disabled"}>Battle</button></div>
+      <button class="btn sm" data-act="arenaGo" data-k="${k}" ${A.attempts > 0 ? "" : "disabled"}>Start</button></div>
       <div class="row">${o.team.map(u => opHTML(u.op, { s: 48, prog: progForLV(u.op, u.LV) })).join("")}</div></section>`).join("")}
-    <p class="tiny dim">Spend Arena Medals in the Shop.</p>
+    <p class="tiny dim">Spend Contract Bounty in the Contract Store.</p>
   </div>`;
 };
 
@@ -4053,7 +4641,7 @@ SCREENS.ops = () => {
 SCREENS.op = key => {
   const op = OPS[key], p = S.ops[key], tab = UI.opTab;
   const st = p ? opStats(key, p).st : opStats(key, mkProg()).st;
-  const tabs = [["info", "Info"], ["skills", "Skills"], ["upgrade", "Upgrade"], ["runes", "Runes"]];
+  const tabs = [["info", "Status"], ["skills", "Skills"], ["upgrade", "Level Up"], ["runes", "Modules"]];
   let body = "";
   if (tab === "info" || !p) body = `<section class="panel"><h3 style="margin-bottom:8px">Stats${p ? "" : " (Lv 1)"}</h3><div class="statgrid">
       <div><span>HP</span><b>${fmtFull(st.hp)}</b></div><div><span>ATK</span><b>${fmtFull(st.atk)}</b></div>
@@ -4062,8 +4650,8 @@ SCREENS.op = key => {
       <div><span>Accuracy</span><b>${pct(st.acc)}</b></div><div><span>Resistance</span><b>${pct(st.res)}</b></div></div></section>
     <section class="panel stack" style="gap:8px">
       <div><b class="gold">Leader skill</b><p class="small dim">${op.leader ? leaderText(op.leader) : "None"}</p></div>
-      ${op.passives.length ? `<div><b class="gold">Passive</b><p class="small dim">${op.passives.map(x => esc(x.text)).join(" ")}</p></div>` : ""}
-      <div><b class="gold">Recommended runes</b><p class="small dim">${op.runes.map(r => `${r} (${RUNE_INFO[r]})`).join(" · ")}</p></div>
+      ${op.passives.length ? `<div><b class="gold">Talent</b><p class="small dim">${op.passives.map(x => esc(x.text)).join(" ")}</p></div>` : ""}
+      <div><b class="gold">Recommended modules</b><p class="small dim">${op.runes.map(r => `${r} (${RUNE_INFO[r]})`).join(" · ")}</p></div>
       ${p ? `<div><b class="gold">Potential ${p.pot}/6</b><p class="small dim">+2% to all stats per level. Raised by recruiting duplicates.</p></div>` : `<p class="small dim">Recruit this operator through Headhunting.</p>`}
     </section>`;
   else if (tab === "skills") body = `<section class="panel stack" style="gap:10px">${op.skills.map((sk, i) => {
@@ -4072,8 +4660,8 @@ SCREENS.op = key => {
         <div class="stack" style="gap:4px;min-width:0"><div class="spread"><b>S${sk.slot} ${esc(sk.name)}</b><span class="tag">${sk.cd ? "CD " + sk.cd : "Basic"}</span></div>
         <p class="small dim">${esc(sk.desc)}</p>
         <div class="spread"><div class="pips">${[1, 2, 3, 4, 5, 6, 7].map(k => `<i class="${k <= r ? "on" : ""} ${k >= 5 ? "om" : ""}"></i>`).join("")}</div>
-        ${r < 7 ? `<button class="btn sm ghost" data-act="skUp" data-k="${key}" data-i="${i}" ${!lock && S.inv.summ >= c.summ && S.lmd >= c.lmd ? "" : "disabled"}>${lock ? "Needs Elite 1" : `<span class="cost">${IC.summ}${c.summ}</span><span class="cost">${IC.lmd}${fmt(c.lmd)}</span>`}</button>` : '<span class="tiny gold">Rank 7</span>'}</div></div></div>`;
-    }).join('<div class="divider"></div>')}<p class="tiny dim">Each rank adds 6% damage and healing. Rank 7 reduces S2 and S3 cooldowns by one turn.</p></section>`;
+        ${r < 7 ? `<button class="btn sm ghost" data-act="skUp" data-k="${key}" data-i="${i}" ${!lock && S.inv.summ >= c.summ && S.lmd >= c.lmd ? "" : "disabled"}>${lock ? "Needs Elite 1" : `<span class="cost">${IC.summ}${c.summ}</span><span class="cost">${IC.lmd}${fmt(c.lmd)}</span>`}</button>` : '<span class="tiny gold">Skill Level 7</span>'}</div></div></div>`;
+    }).join('<div class="divider"></div>')}<p class="tiny dim">Each skill level adds 6% damage and healing. Skill Level 7 reduces S2 and S3 cooldowns by one turn. Levels 5 to 7 need Elite 1.</p></section>`;
   else if (tab === "upgrade") {
     const cap = LV_CAP[p.elite], need = xpNeed(p.lvl, p.elite), nextE = p.elite + 1, ec = nextE <= op.maxElite ? eliteCost(key, nextE) : null;
     body = `<section class="panel stack" style="gap:8px">
@@ -4092,11 +4680,11 @@ SCREENS.op = key => {
   } else if (tab === "runes") {
     const sets = [...new Set(p.runes.map(runeById).filter(Boolean).map(r => r.set))];
     const free = S.runes.filter(r => !r.eq || r.eq.k !== key).sort((a, b) => b.rar - a.rar || b.lvl - a.lvl);
-    body = `<section class="panel stack" style="gap:8px"><h3>Rune slots</h3>
+    body = `<section class="panel stack" style="gap:8px"><h3>Module slots</h3>
       <div class="runeslots">${[0, 1].map(s => { const r = runeById(p.runes[s]); return r ? `<button class="rslot full" data-act="runeSheet" data-id="${r.id}"><b style="color:${RUNE_RC[r.rar]}">${r.set} +${r.lvl}</b><span class="tiny">${runeMainText(r)}</span><span class="tiny dim">${RUNE_INFO[r.set]}</span></button>` : `<div class="rslot"><b>Slot ${s + 1}</b><span class="tiny">Empty</span></div>`; }).join("")}</div>
-      <p class="tiny dim">Active set effects: ${sets.length ? sets.map(s => `${s} (${RUNE_INFO[s]})`).join(" · ") : "none"}</p></section>
-      <section class="stack" style="gap:6px"><div class="spread"><h3>Your runes</h3><span class="tiny dim">${S.runes.length} owned</span></div>
-      ${free.length ? free.slice(0, 40).map(r => runeRow(r, `<span class="row"><button class="btn sm ghost" data-act="equip" data-k="${key}" data-s="0" data-id="${r.id}">Slot 1</button><button class="btn sm ghost" data-act="equip" data-k="${key}" data-s="1" data-id="${r.id}">Slot 2</button></span>`)).join("") : '<p class="small dim">No spare runes. Hunts drop them.</p>'}</section>`;
+      <p class="tiny dim">Active module sets: ${sets.length ? sets.map(s => `${s} (${RUNE_INFO[s]})`).join(" · ") : "none"}</p></section>
+      <section class="stack" style="gap:6px"><div class="spread"><h3>Your modules</h3><span class="tiny dim">${S.runes.length} owned</span></div>
+      ${free.length ? free.slice(0, 40).map(r => runeRow(r, `<span class="row"><button class="btn sm ghost" data-act="equip" data-k="${key}" data-s="0" data-id="${r.id}">Slot 1</button><button class="btn sm ghost" data-act="equip" data-k="${key}" data-s="1" data-id="${r.id}">Slot 2</button></span>`)).join("") : '<p class="small dim">No spare modules. Supplies operations in the Terminal drop them.</p>'}</section>`;
   }
   return `<div class="stack">
     <div class="spread">${back("go", "Operators", 'data-v="ops"')}${p ? `<button class="btn ghost sm" data-act="assistant" data-k="${key}" ${S.assistant === key ? "disabled" : ""}>${S.assistant === key ? "Assistant" : "Set assistant"}</button>` : ""}</div>
@@ -4113,16 +4701,16 @@ SCREENS.op = key => {
   </div>`;
 };
 function runeRow(r, right = "") {
-  return `<div class="rune ${r.eq ? "eq" : ""}" style="--rc:${RUNE_RC[r.rar]}"><button class="rg" data-act="runeSheet" data-id="${r.id}" aria-label="${r.set} rune">+${r.lvl}</button>
+  return `<div class="rune ${r.eq ? "eq" : ""}" style="--rc:${RUNE_RC[r.rar]}"><button class="rg" data-act="runeSheet" data-id="${r.id}" aria-label="${r.set} module">+${r.lvl}</button>
     <div style="min-width:0"><b>${r.set}</b> <span class="tiny" style="color:${RUNE_RC[r.rar]}">${RUNE_RAR[r.rar]}</span><div class="tiny dim">${runeMainText(r)}${r.eq ? ` · on ${esc(OPS[r.eq.k].n)}` : ""}</div></div>${right}</div>`;
 }
 function runeSheet(r) {
   const c = enhanceCost(r);
-  openModal(`<div class="stack"><div class="rune" style="--rc:${RUNE_RC[r.rar]}"><span class="rg">+${r.lvl}</span><div><b>${r.set} rune</b> <span class="tiny" style="color:${RUNE_RC[r.rar]}">${RUNE_RAR[r.rar]}</span><div class="tiny dim">${RUNE_INFO[r.set]}</div></div></div>
+  openModal(`<div class="stack"><div class="rune" style="--rc:${RUNE_RC[r.rar]}"><span class="rg">+${r.lvl}</span><div><b>${r.set} Module</b> <span class="tiny" style="color:${RUNE_RC[r.rar]}">${RUNE_RAR[r.rar]}</span><div class="tiny dim">${RUNE_INFO[r.set]}</div></div></div>
     <div class="statgrid"><div><span>Main stat</span><b>${runeMainText(r)}</b></div><div><span>Level</span><b>+${r.lvl} / 15</b></div></div>
-    <p class="small dim">${r.eq ? `Equipped on ${esc(OPS[r.eq.k].n)}.` : "Not equipped."} Enhancing always succeeds and raises the main stat.</p>
-    <div class="row wrap"><button class="btn" data-act="enhance" data-id="${r.id}" ${r.lvl < 15 && S.lmd >= c ? "" : "disabled"}>Enhance <span class="cost">${IC.lmd}${fmt(c)}</span></button>
-      <button class="btn ghost" data-act="enhanceMax" data-id="${r.id}" ${r.lvl < 15 && S.lmd >= c ? "" : "disabled"}>To +15</button>
+    <p class="small dim">${r.eq ? `Equipped on ${esc(OPS[r.eq.k].n)}.` : "Not equipped."} Upgrades always succeed and raise the main stat.</p>
+    <div class="row wrap"><button class="btn" data-act="enhance" data-id="${r.id}" ${r.lvl < 15 && S.lmd >= c ? "" : "disabled"}>Upgrade <span class="cost">${IC.lmd}${fmt(c)}</span></button>
+      <button class="btn ghost" data-act="enhanceMax" data-id="${r.id}" ${r.lvl < 15 && S.lmd >= c ? "" : "disabled"}>Max level</button>
       ${r.eq ? `<button class="btn ghost" data-act="unequip" data-id="${r.id}">Unequip</button>` : ""}
       <button class="btn red" data-act="sell" data-id="${r.id}">Sell <span class="cost">${IC.lmd}${fmt(sellValue(r))}</span></button></div>
     <button class="btn ghost wide" data-act="closeModal">Close</button></div>`);
@@ -4148,7 +4736,7 @@ SCREENS.hh = () => {
       <button class="btn" style="flex:1" data-act="pull" data-n="10" ${S.permit >= 10 || S.orundum >= 6000 ? "" : "disabled"}>Headhunt ×10<br><span class="cost">${S.permit >= 10 ? IC.permit + "10" : IC.orundum + "6,000"}</span></button>
     </div>
     <div class="mats"><span class="mat">${IC.permit}${S.permit}</span><span class="mat">${IC.orundum}${fmt(S.orundum)}</span><span class="mat">${IC.cert}${S.cert}</span></div>
-    <p class="tiny dim">Duplicates raise Potential (up to 6) and award Distinction Certificates for the Shop.</p>
+    <p class="tiny dim">Duplicates raise Potential (up to 6) and award Distinction Certificates for the Certificate Store.</p>
   </div>`;
 };
 function gachaReveal(results) {
@@ -4203,15 +4791,15 @@ function missionsModal() {
   openModal(`<div class="stack"><div class="eyebrow">Resets daily</div><h2>Missions</h2>${dl}
     <div class="sub spread"><span class="small">Complete all daily missions: <span class="cost">${IC.permit}1</span></span>
       <button class="btn sm" data-act="claimAllDaily" ${DAILIES.every(d => S.daily.claimed[d.id]) && !S.daily.claimed.all ? "" : "disabled"}>${S.daily.claimed.all ? "Claimed" : "Claim"}</button></div>
-    <h3 style="margin-top:6px">Achievements</h3>${ach}
+    <h3 style="margin-top:6px">Main Line</h3>${ach}
     <button class="btn ghost wide" data-act="closeModal">Close</button></div>`);
 }
 SCREENS.shop = () => {
-  const tab = UI.shopTab, cur = { orundum: ["orundum", IC.orundum], cert: ["cert", IC.cert], tokens: ["tokens", IC.tokens] }[tab];
+  const tab = SHOP[UI.shopTab] ? UI.shopTab : "credit", cur = { credit: ["credit", IC.credit], cert: ["cert", IC.cert], tokens: ["tokens", IC.tokens], prime: ["prime", IC.prime] }[tab];
   return `<div class="stack">
-    <div class="spread">${back("go", "Lobby", 'data-v="home"')}<span class="mat">${cur[1]}${fmt(S[cur[0]])}</span></div>
-    <h2>Shop</h2>
-    <div class="tabs2">${[["orundum", "Orundum"], ["cert", "Certificates"], ["tokens", "Arena Medals"]].map(([k, n]) => `<button class="${tab === k ? "on" : ""}" data-act="shopTab" data-t="${k}">${n}</button>`).join("")}</div>
+    <div class="spread">${back("go", "Home", 'data-v="home"')}<span class="mat">${cur[1]}${fmt(S[cur[0]])}</span></div>
+    <h2>Store</h2>
+    <div class="tabs2">${[["credit", "Credit"], ["cert", "Certificate"], ["tokens", "Contract"], ["prime", "Originite"]].map(([k, n]) => `<button class="${tab === k ? "on" : ""}" data-act="shopTab" data-t="${k}">${n}</button>`).join("")}</div>
     <div class="tiles">${SHOP[tab].map(it => `<button class="tile" data-act="buy" data-t="${tab}" data-id="${it.id}" ${S[cur[0]] >= it.cost ? "" : "disabled"} style="min-height:104px">
       <span class="ticon">${it.give.rune ? IC.rune : itemIcon(Object.keys(it.give)[0] === "sanityMax" ? "sanity" : Object.keys(it.give)[0])}</span>
       <h3 style="font-size:15px">${esc(it.n)}</h3>${it.d ? `<span class="tsub">${esc(it.d)}</span>` : ""}<span class="tsub cost">${cur[1]}${fmt(it.cost)}</span></button>`).join("")}</div>
@@ -4221,13 +4809,13 @@ SCREENS.depot = () => {
   const tab = UI.depotTab;
   const runes = S.runes.filter(r => UI.runeSet === "all" || r.set === UI.runeSet).sort((a, b) => b.rar - a.rar || b.lvl - a.lvl);
   return `<div class="stack">
-    <div class="spread">${back("go", "Lobby", 'data-v="home"')}<span class="eyebrow">Depot</span></div>
+    <div class="spread">${back("go", "Home", 'data-v="home"')}<span class="eyebrow">Depot</span></div>
     <h2>Depot</h2>
-    <div class="tabs2"><button class="${tab === "runes" ? "on" : ""}" data-act="depotTab" data-t="runes">Runes · ${S.runes.length}</button><button class="${tab === "mats" ? "on" : ""}" data-act="depotTab" data-t="mats">Materials</button></div>
+    <div class="tabs2"><button class="${tab === "runes" ? "on" : ""}" data-act="depotTab" data-t="runes">Modules · ${S.runes.length}</button><button class="${tab === "mats" ? "on" : ""}" data-act="depotTab" data-t="mats">Materials</button></div>
     ${tab === "runes" ? `<div class="filters">${["all", ...RUNE_SETS].map(s => `<button class="chip ${UI.runeSet === s ? "on" : ""}" data-act="runeSetF" data-s="${s}">${s === "all" ? "All sets" : s}</button>`).join("")}</div>
-      ${runes.length ? runes.map(r => runeRow(r, `<button class="btn sm ghost" data-act="runeSheet" data-id="${r.id}">Manage</button>`)).join("") : '<p class="small dim">No runes yet. Clear Hunts in the Battle tab to collect them.</p>'}
-      ${S.runes.some(r => !r.eq && r.rar <= 2) ? `<button class="btn ghost wide" data-act="sellJunk">Sell all unequipped Normal and Good runes</button>` : ""}`
-    : `<div class="rewards" style="justify-content:flex-start">${["rec1", "rec2", "rec3", "rec4", "chip", "summ", "permit", "cert", "tokens"].map(k => `<div class="rw"><div class="ri" style="width:54px;height:54px">${itemIcon(k)}</div><span class="num">×${fmt(have(k))}</span><span class="tiny dim">${ITEMS[k].n}</span></div>`).join("")}</div>`}
+      ${runes.length ? runes.map(r => runeRow(r, `<button class="btn sm ghost" data-act="runeSheet" data-id="${r.id}">Manage</button>`)).join("") : '<p class="small dim">No modules yet. Clear Supplies operations in the Terminal to collect them.</p>'}
+      ${S.runes.some(r => !r.eq && r.rar <= 2) ? `<button class="btn ghost wide" data-act="sellJunk">Sell all unequipped T1 and T2 modules</button>` : ""}`
+    : `<div class="rewards" style="justify-content:flex-start">${["rec1", "rec2", "rec3", "rec4", "chip", "summ", "permit", "cert", "tokens", "prime", "credit"].map(k => `<div class="rw"><div class="ri" style="width:54px;height:54px">${itemIcon(k)}</div><span class="num">×${fmt(have(k))}</span><span class="tiny dim">${ITEMS[k].n}</span></div>`).join("")}</div>`}
   </div>`;
 };
 function settingsModal(confirmReset) {
@@ -4237,16 +4825,16 @@ function settingsModal(confirmReset) {
     <div class="statgrid small"><div><span>Doctor level</span><b>${S.lvl}</b></div><div><span>Roster power</span><b>${fmtFull(rosterPower())}</b></div><div><span>Battles won</span><b>${S.stats.wins}</b></div><div><span>Headhunts</span><b>${S.gacha.total}</b></div></div>
     <button class="btn ghost wide" data-act="toggleSound">Sound: ${S.settings.sound ? "On" : "Off"}</button>
     <button class="btn ghost wide" data-act="cycleAi">Auto-battle AI: ${S.settings.ai}</button>
-    ${confirmReset ? `<div class="sub stack" style="gap:8px;border-color:var(--ds)"><b class="small">Erase all progress?</b><p class="tiny dim">Your operators, runes, story progress and currencies will be deleted from this browser.</p>
+    ${confirmReset ? `<div class="sub stack" style="gap:8px;border-color:var(--ds)"><b class="small">Erase all progress?</b><p class="tiny dim">Your operators, modules, story progress and currencies will be deleted from this browser.</p>
       <div class="row"><button class="btn red sm" data-act="doReset">Erase progress</button><button class="btn ghost sm" data-act="settings">Keep playing</button></div></div>`
       : `<button class="btn ghost wide" data-act="askReset">Reset progress</button>`}
     <p class="tiny dim">Progress saves in this browser. Arknights Tactics is an unofficial, non-commercial fan game. Arknights characters and art belong to Hypergryph and Yostar.</p>
     <button class="btn wide" data-act="saveName">Done</button></div>`);
 }
 function sanityModal() {
-  openModal(`<div class="stack"><h2>Sanity</h2><p class="small dim">Battles cost Sanity. You regain 1 every 30 seconds, and a Doctor level-up refills it.</p>
+  openModal(`<div class="stack"><h2>Sanity</h2><p class="small dim">Operations cost Sanity. You regain 1 every 30 seconds, a Doctor level-up refills it, and 1 Originite Prime restores it to max.</p>
     <div class="spread"><span class="cost">${IC.sanity}<b class="num">${S.sanity}/${maxSanity(S.lvl)}</b></span><span class="tiny dim">${S.sanity < maxSanity(S.lvl) ? "+1 in " + dur(SAN_MS - (Date.now() - S.sTime)) : "Full"}</span></div>
-    <button class="btn wide" data-act="buy" data-t="orundum" data-id="o_san" ${S.orundum >= 120 ? "" : "disabled"}>Refill <span class="cost">${IC.orundum}120</span></button>
+    <button class="btn wide" data-act="buy" data-t="prime" data-id="p_san" ${S.prime >= 1 ? "" : "disabled"}>Restore <span class="cost">${IC.prime}1</span> <span class="tiny">(you have ${S.prime})</span></button>
     <button class="btn ghost wide" data-act="closeModal">Close</button></div>`);
 }
 function rewardModal(title, list, sub = "") {
@@ -4291,10 +4879,10 @@ function chapterPayout(ch) {
 function chapterModal(ch, list) {
   const i = STORY[0].chapters.indexOf(ch), nx = STORY[0].chapters[i + 1];
   openModal(`<div class="stack" style="align-items:center;text-align:center">
-    <div class="eyebrow">Chapter ${i + 1} complete</div><h2>${esc(ch.title)}</h2>
+    <div class="eyebrow">Episode ${ch.no} cleared</div><h2>${esc(ch.title)}</h2>
     ${ch.reward.op ? `<img src="${spriteURL(OPS[ch.reward.op])}" alt="" style="height:200px;max-width:100%;object-fit:contain;filter:drop-shadow(0 10px 18px #000)"><p class="small"><b class="gold">${esc(OPS[ch.reward.op].n)}</b> has joined Rhodes Island.</p>` : ""}
     <div class="rewards">${rewardsHTML(list)}</div>
-    ${nx ? `<p class="small dim">Chapter ${i + 2}, ${esc(nx.title)}, is now open.</p><button class="btn wide" data-act="chapter" data-c="${nx.id}">Continue</button>` : `<p class="small dim">You have finished Episode 1.</p><button class="btn wide" data-act="closeModal">Close</button>`}
+    ${nx ? `<p class="small dim">Episode ${nx.no}, ${esc(nx.title)}, is now open.</p><button class="btn wide" data-act="chapter" data-c="${nx.id}">Continue</button>` : `<p class="small dim">You have cleared every Main Theme episode so far.</p><button class="btn wide" data-act="closeModal">Close</button>`}
   </div>`);
   sfx("win");
 }
@@ -4341,11 +4929,12 @@ async function launchNode(id) {
     title: nd.name, sub: `${nd.id} · ${nd.ch.title}`,
     onWin(res) {
       const goal = nodeTurnGoal(nd);
-      const missions = [{ n: "Win the battle", ok: true }, { n: "No operator falls", ok: !res.lost }, { n: `Win within ${goal} of your turns`, ok: res.turns <= goal }];
-      const stars = missions.filter(m => m.ok).length;
-      S.story[id] = Math.max(nodeStars(id), stars);
+      const missions = [{ n: "Complete the operation", ok: true }, { n: "No operator falls", ok: !res.lost }, { n: `Clear within ${goal} of your turns`, ok: res.turns <= goal }];
+      const stars = missions.filter(m => m.ok).length, prev = nodeStars(id);
+      S.story[id] = Math.max(prev, stars);
       S.stats.wins++; S.daily.clear++;
       const list = give(nodeDrops(nd, first));
+      if (stars === 3 && prev < 3) list.push(...give({ prime: 1 }));
       list.push(opsXp(ids, 50 + nd.lv * 18));
       chList = chapterPayout(nd.ch);
       return { rewards: list, missions };
@@ -4371,7 +4960,7 @@ function sweepNode(id, x) {
   list.push(opsXp(ids, (50 + nd.lv * 18) * x));
   S.daily.clear += x; S.stats.battles += x; S.stats.wins += x;
   closeModal(); rerender();
-  rewardModal(`Swept ${x}×`, list, `${nd.id} ${nd.name}`);
+  rewardModal(x > 1 ? `Auto Deploy ×${x}` : "Auto Deploy", list, `${nd.id} ${nd.name}`);
 }
 
 // ---------- hunts ----------
@@ -4387,7 +4976,7 @@ function launchHunt(id, l) {
   route("hunt", id);
   spendSanity(cost); S.stats.battles++; save();
   startBattle({
-    allies: allySpecs(ids), waves: huntWaves(h, l), env: h.env, title: h.n, sub: `Hunt · Level ${l}`,
+    allies: allySpecs(ids), waves: huntWaves(h, l), env: h.env, title: h.n, sub: `Supplies · ${h.code}-${l}`,
     onWin() {
       S.hunt[id] = Math.max(S.hunt[id] || 0, l); S.stats.wins++; S.daily.clear++;
       const list = huntDrops(h, l); list.push(opsXp(ids, 60 + HUNT_LV[l - 1] * 12));
@@ -4406,7 +4995,7 @@ function sweepHunt(id, l) {
   for (let k = 0; k < 3; k++) list = list.concat(huntDrops(h, l));
   list.push(opsXp(S.team.hunt.filter(owned), (60 + HUNT_LV[l - 1] * 12) * 3));
   S.daily.clear += 3; S.stats.battles += 3; S.stats.wins += 3;
-  rerender(); rewardModal("Swept 3×", list, `${h.n} · Level ${l}`);
+  rerender(); rewardModal("Auto Deploy ×3", list, `${h.code}-${l} ${h.n}`);
 }
 
 // ---------- tower ----------
@@ -4416,7 +5005,7 @@ function launchTower(f) {
   route("tower");
   S.stats.battles++;
   startBattle({
-    allies: allySpecs(ids), waves: T.waves.map(w => convWave(w, T.lv)), env: T.env, title: `Floor ${f}`, sub: "Tower of Trials",
+    allies: allySpecs(ids), waves: T.waves.map(w => convWave(w, T.lv)), env: T.env, title: `Floor ${f}`, sub: "Stationary Security Service",
     onWin() {
       S.tower = Math.max(S.tower, f); S.stats.wins++; S.daily.clear++;
       const list = give(T.reward); list.push(opsXp(ids, 50 + T.lv * 10));
@@ -4436,7 +5025,7 @@ function launchArena(k) {
   if (A.attempts >= 5) A.aTime = Date.now();
   A.attempts--; S.stats.battles++; save();
   startBattle({
-    allies: allySpecs(ids), waves: [o.team.map(u => ({ op: u.op, LV: u.LV }))], env: "arena", title: o.name, sub: `Arena · Rank #${o.rank}`,
+    allies: allySpecs(ids), waves: [o.team.map(u => ({ op: u.op, LV: u.LV }))], env: "arena", title: o.name, sub: `Contingency Contract · Rank #${o.rank}`,
     onWin() {
       const before = A.rank;
       A.rank = o.rank < A.rank ? o.rank : Math.max(1, A.rank - ri(1, 4));
@@ -4486,7 +5075,7 @@ const ACT = {
   chapter: d => { closeModal(); route("chapter", d.c); },
   openNode: d => {
     const nd = NODES[d.id];
-    if (!nodeOpen(nd)) { toast(nd.type === "side" ? "Clear the node before this side story first." : "Clear the previous node first."); return; }
+    if (!nodeOpen(nd)) { toast(nd.type === "side" ? "Clear the stage before this side story first." : "Clear the previous stage first."); return; }
     if (UI.view !== "chapter" || UI.arg !== nd.ch.id) route("chapter", nd.ch.id);
     nodeSheet(nd);
   },
@@ -4526,21 +5115,21 @@ const ACT = {
   huntLv: d => { UI.huntLv[d.h] = +d.l; rerender(); },
   huntGo: d => {
     const h = HUNTS.find(x => x.id === d.h), l = +d.l;
-    teamScreen("hunt", `${h.n} · Level ${l}`, HUNT_COST[l - 1], huntWaves(h, l).flat(), ["hunt", h.id], { kind: "hunt", id: h.id, l });
+    teamScreen("hunt", `${h.code}-${l} ${h.n}`, HUNT_COST[l - 1], huntWaves(h, l).flat(), ["hunt", h.id], { kind: "hunt", id: h.id, l });
   },
   huntSweep: d => sweepHunt(d.h, +d.l),
-  towerGo: d => { const T = towerFloor(+d.f); teamScreen("tower", `Tower · Floor ${T.f}`, 0, T.waves.map(w => convWave(w, T.lv)).flat(), ["tower", null], { kind: "tower", f: T.f }); },
+  towerGo: d => { const T = towerFloor(+d.f); teamScreen("tower", `SSS · Floor ${T.f}`, 0, T.waves.map(w => convWave(w, T.lv)).flat(), ["tower", null], { kind: "tower", f: T.f }); },
   arenaGo: d => {
     const o = S.arena.opps[+d.k];
     if (S.arena.attempts <= 0) { toast("No attempts left."); return; }
-    teamScreen("arena", `Arena · ${o.name}`, 0, o.team, ["arena", null], { kind: "arena", k: +d.k });
+    teamScreen("arena", `Contract · ${o.name}`, 0, o.team, ["arena", null], { kind: "arena", k: +d.k });
   },
   newOpps: () => { genOpps(); sfx("tap"); rerender(); },
   payout: () => {
     tickTimers();
     if (Date.now() - S.arena.payTime < PAYOUT_MS) return;
     const list = give(payout(S.arena.rank)); S.arena.payTime = Date.now();
-    rerender(); rewardModal("Arena payout", list, `Rank #${S.arena.rank}`);
+    rerender(); rewardModal("Contract Bounty", list, `Rank #${S.arena.rank}`);
   },
 
   // operators
@@ -4548,7 +5137,7 @@ const ACT = {
   clsf: d => { UI.cls = d.c; rerender(); },
   sortf: d => { UI.sort = d.s; rerender(); },
   opTab: d => { UI.opTab = d.t; rerender(); },
-  skUp: d => { if (skillUp(d.k, +d.i)) { sfx("heal"); toast(`Skill ${+d.i + 1} raised to rank ${S.ops[d.k].sk[+d.i]}.`); } rerender(); },
+  skUp: d => { if (skillUp(d.k, +d.i)) { sfx("heal"); toast(`Skill ${+d.i + 1} raised to Skill Level ${S.ops[d.k].sk[+d.i]}.`); } rerender(); },
   rec: d => { const lv = S.ops[d.k].lvl; if (useRecord(d.k, d.it)) { sfx("tap"); if (S.ops[d.k].lvl > lv) { S.daily.upgrade++; toast(`${OPS[d.k].n} reached level ${S.ops[d.k].lvl}.`); } } rerender(); },
   autoLv: d => { const lv = S.ops[d.k].lvl, n = autoLevel(d.k); if (n) { sfx("heal"); if (S.ops[d.k].lvl > lv) S.daily.upgrade++; toast(`Used ${n} records. Level ${lv} → ${S.ops[d.k].lvl}.`); } rerender(); },
   promote: d => { if (promote(d.k)) { sfx("win"); toast(`${OPS[d.k].n} promoted to Elite ${S.ops[d.k].elite}!`, "gold"); } rerender(); },
@@ -4558,10 +5147,10 @@ const ACT = {
   runeSheet: d => { const r = runeById(+d.id); if (r) runeSheet(r); },
   equip: d => { equipRune(d.k, +d.s, +d.id); sfx("tap"); rerender(); },
   enhance: d => { const r = runeById(+d.id); if (r && enhanceRune(r)) { sfx("zap"); rerender(); runeSheet(r); } },
-  enhanceMax: d => { const r = runeById(+d.id); let n = 0; while (r && enhanceRune(r)) n++; if (n) { sfx("special"); toast(`${r.set} rune enhanced to +${r.lvl}.`); } rerender(); runeSheet(r); },
+  enhanceMax: d => { const r = runeById(+d.id); let n = 0; while (r && enhanceRune(r)) n++; if (n) { sfx("special"); toast(`${r.set} Module upgraded to +${r.lvl}.`); } rerender(); runeSheet(r); },
   unequip: d => { const r = runeById(+d.id); if (r && r.eq) unequipRune(r.eq.k, r.eq.s); rerender(); runeSheet(r); },
   sell: d => { const r = runeById(+d.id); if (!r) return; const v = sellValue(r); sellRune(r); closeModal(); toast(`Sold for ${fmtFull(v)} LMD.`); rerender(); },
-  sellJunk: () => { const junk = S.runes.filter(r => !r.eq && r.rar <= 2); let v = 0; for (const r of junk) { v += sellValue(r); sellRune(r); } toast(`Sold ${junk.length} runes for ${fmtFull(v)} LMD.`); rerender(); },
+  sellJunk: () => { const junk = S.runes.filter(r => !r.eq && r.rar <= 2); let v = 0; for (const r of junk) { v += sellValue(r); sellRune(r); } toast(`Sold ${junk.length} modules for ${fmtFull(v)} LMD.`); rerender(); },
   runeSetF: d => { UI.runeSet = d.s; rerender(); },
   depotTab: d => { UI.depotTab = d.t; rerender(); },
 
@@ -4620,6 +5209,14 @@ document.addEventListener("click", e => {
 // =====================================================================
 function migrate(s) {
   s.hunt = s.hunt || {}; s.chRw = s.chRw || {};
+  if (s.prime == null) s.prime = 6;
+  if (s.credit == null) s.credit = 300;
+  if (!s.codes2) {
+    // stage codes moved to Arknights style (side stages S1-1…); carry stars across by position
+    const old = s.story || {}; s.story = {};
+    for (const id in NODES) { const nd = NODES[id]; if (old[nd.legacy]) s.story[id] = old[nd.legacy]; }
+    s.codes2 = 1;
+  }
   for (const k in s.team) s.team[k] = s.team[k].filter(x => OPS[x]);
   for (const k in s.ops) if (!OPS[k]) delete s.ops[k];
   if (!s.ops[s.assistant]) s.assistant = Object.keys(s.ops)[0] || "amiya";
