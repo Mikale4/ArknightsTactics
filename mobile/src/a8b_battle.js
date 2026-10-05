@@ -41,6 +41,8 @@ async function moveTo(vu, x, z, speedMul = 1) {
 async function engage(a, t) {
   const x = t.pos.x - a.dir * 70 * t.bs, z = t.pos.z + (a.pos.z > t.pos.z ? 6 : -6);
   if (Math.hypot(a.pos.x - x, a.pos.z - z) < 12) return;
+  // a skill's close-up hands over to a shot of the unit and its target, and follows the run
+  if (BT.act && BT.act.slot > 0) { camTo(impactShot(a, t), 3.4); camFollow([a, t]); }
   await moveTo(a, x, z, 1.15);
 }
 async function returnHome() {
@@ -246,7 +248,10 @@ async function doAttack(e) {
       break;
     }
     case "spin": {
-      if (first) { await moveTo(a, avg(ts.map(t => t.home.x)) - a.dir * 100, 0, 1.2); if (sp) camTo(aoeShot(ts, a), 4); }
+      if (first) {
+        if (BT.act && BT.act.slot > 0) { camTo(aoeShot(ts, a), 3.4); camFollow([a, ...ts]); }
+        await moveTo(a, avg(ts.map(t => t.home.x)) - a.dir * 100, 0, 1.2); if (sp) camTo(aoeShot(ts, a), 4);
+      }
       a.spin = BT.clock; setPose(a, "swing", 520); sfx(attackSfx(a.u));
       await bwait(260);
       for (const t of ts) { slashAt(t, col, true); sparks(t, col, 8); }

@@ -433,6 +433,7 @@ function frame(now) {
   // camera
   const c = BT.cam, t = BT.camT;
   if (BT.orbit) { t.yaw += dt * .00028; }
+  if (BT.camFollow && BT.camFollow.length) { const us = BT.camFollow.filter(v => !v.gone); if (us.length) { t.tx = us.reduce((a, v) => a + v.pos.x, 0) / us.length; t.tz = us.reduce((a, v) => a + v.pos.z, 0) / us.length; } }
   const kk = 1 - Math.exp(-dt / 1000 * BT.camK);
   for (const key of ["tx", "ty", "tz", "dist", "fov", "roll", "pitch", "yaw"]) c[key] += (t[key] - c[key]) * kk;
   BT.shake *= Math.exp(-dt / 1000 * 7); if (BT.shake < .3 || (S && S.settings.shake === false)) BT.shake = 0;
@@ -501,7 +502,9 @@ function weather(K) {
 const bwait = ms => new Promise(res => BT.waits.push({ until: BT.clock + ms, res }));
 const btween = (dur, fn, easeOn = true) => new Promise(res => BT.tweens.push({ t0: BT.clock, dur: Math.max(1, dur), fn, res, ease: easeOn }));
 function setPose(vu, name, dur = 0, back = true) { vu.pose = { name, t0: BT.clock, dur, back }; }
-function camTo(p, k = 3, cut = false) { Object.assign(BT.camT, p); BT.camK = k; if (cut) Object.assign(BT.cam, BT.camT); }
+function camTo(p, k = 3, cut = false) { BT.camFollow = null; Object.assign(BT.camT, p); BT.camK = k; if (cut) Object.assign(BT.cam, BT.camT); }
+// keep the camera centred on moving units (a skill user running to its target) until the next shot
+function camFollow(units) { BT.camFollow = units.filter(Boolean); }
 function camHome(k = 2.6) { BT.orbit = false; camTo({ ...BT.home }, k); }
 // home camera, Pokémon-style: behind and above your squad (back sprites, near the bottom), enemies facing you across the field.
 // zs/xs spread the formation across and along the field; top = unit height to keep in frame; *M = screen margins.
