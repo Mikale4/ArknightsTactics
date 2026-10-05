@@ -255,6 +255,7 @@ function drawUnit(K, vu) {
   const sd = vu.sd && vu.sd.f;
   if (vu.dead) { const k = clamp((BT.clock - vu.deathT) / (sd ? 1400 : 1000), 0, 1); rot = sd ? 0 : -ease(Math.min(1, k * 1.6)) * 1.35; alpha = sd ? 1 - clamp((k - .55) / .45, 0, 1) : 1 - k; if (k >= 1) vu.gone = true; }
   if (vu.stealth) alpha *= .45;
+  if (vu.occl) alpha *= .28;
   const pose = vu.pose;
   const pt = pose.dur ? clamp((BT.clock - pose.t0) / pose.dur, 0, 1) : (BT.clock - pose.t0) / 1000;
   if (pose.dur && pt >= 1 && pose.back) { vu.pose = { name: "idle", t0: BT.clock, dur: 0 }; }
@@ -464,6 +465,10 @@ function render(dt) {
   drawRings(K);
   // units, far to near
   const order = vus.map(vu => ({ vu, d: proj(K, vu.pos.x, 40, vu.pos.z) })).filter(o => o.d).sort((a, b) => b.d[3] - a.d[3]);
+  // during an action, bystanders much closer to the camera than the actor and target fade out of the way
+  const inv = BT.act ? [BT.active, BT.act.t != null ? BT.vus.get(BT.act.t) : null].filter(Boolean) : [];
+  const refS = inv.length ? Math.max(...inv.map(v => { const q = order.find(o => o.vu === v); return q ? q.d[2] : 0; })) : 0;
+  for (const o of order) o.vu.occl = refS > 0 && !inv.includes(o.vu) && o.d[2] > refS * 1.35;
   for (const o of order) drawUnit(K, o.vu);
   drawBolts(K);
   drawArcs(K);

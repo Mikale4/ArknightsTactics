@@ -774,4 +774,5 @@ const enemyArt = key => EART2[key] || (EART2[key] = (() => {
 })());
 // a story speaker's picture: operator art, their own portrait, or their enemy art
 const speakerArt = sp => sp.op ? spriteURL(OPS[sp.op]) : sp.art && ART_STORY.has(sp.art) ? storyArtURL(sp.art) : sp.en && ENEMY[sp.en] ? enemyArt(sp.en).full : null;
-const opArt = key => figArt("o:" + key, OPS[key].fig);
+// operators in battle UI (skill cut-ins, turn order, cards) use their real art
+const opArt = key => ({ full: spriteURL(OPS[key]), head: headURL(OPS[key]) });

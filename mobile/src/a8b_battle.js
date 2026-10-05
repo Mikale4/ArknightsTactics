@@ -10,14 +10,15 @@ BT.slashes = [];
 const aspect = () => Math.min(1.7, BT.W / BT.H);
 const fitDist = (extent, minD, fov = .62) => Math.max(minD, extent / (2 * Math.tan(fov / 2) * aspect()));
 function focusShot(vu) {
-  return { tx: vu.pos.x + vu.dir * 8, ty: 62 * vu.bs, tz: vu.pos.z, yaw: BT.home.yaw + vu.dir * .58, pitch: .06, dist: fitDist(100, 290 * vu.bs), fov: .62, roll: -vu.dir * .03 };
+  // skill close-up from in front of the unit, so you see their face (your squad is otherwise seen from behind)
+  return { tx: vu.pos.x + vu.dir * 8, ty: 62 * vu.bs, tz: vu.pos.z, yaw: vu.dir > 0 ? .75 : BT.home.yaw + .3, pitch: Math.max(.2, BT.home.pitch * .5), dist: fitDist(150, 340 * vu.bs), fov: .62, roll: -vu.dir * .03 };
 }
 function impactShot(a, t) {
   const d = Math.hypot(a.pos.x - t.pos.x, a.pos.z - t.pos.z);
-  return { tx: (a.pos.x + t.pos.x) / 2, ty: 58, tz: (a.pos.z + t.pos.z) / 2, yaw: BT.home.yaw - a.dir * .38, pitch: .12, dist: fitDist(d + 170, 320), fov: .62, roll: 0 };
+  return { tx: (a.pos.x + t.pos.x) / 2, ty: 58, tz: (a.pos.z + t.pos.z) / 2, yaw: BT.home.yaw - a.dir * .38, pitch: Math.max(.2, BT.home.pitch * .75), dist: fitDist(d + 170, 320), fov: .62, roll: 0 };
 }
 function aoeShot(ts, a) {
-  return { tx: avg(ts.map(t => t.pos.x)), ty: 52, tz: avg(ts.map(t => t.pos.z)), yaw: BT.home.yaw - a.dir * .28, pitch: .2, dist: fitDist(400, 480, .66), fov: .66, roll: 0 };
+  return { tx: avg(ts.map(t => t.pos.x)), ty: 52, tz: avg(ts.map(t => t.pos.z)), yaw: BT.home.yaw - a.dir * .28, pitch: Math.max(.24, BT.home.pitch * .85), dist: fitDist(400, 480, .66), fov: .66, roll: 0 };
 }
 function nudgeShot(px, pz, k, zoom) {
   const h = BT.home, land = BT.W / BT.H > 1.05;

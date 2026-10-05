@@ -68,6 +68,9 @@ function sdInst(L) {
   if (!L) return null;
   const R = L.E.R, stateData = new R.AnimationStateData(L.data); stateData.defaultMix = .12;
   const skel = new R.Skeleton(L.data), state = new R.AnimationState(stateData);
+  // some skeletons keep their parts in a named skin (the Reunion Caster's is "Wizard"), not the default one
+  const parts = sk => sk && sk.attachments ? sk.attachments.reduce((a, m) => a + (m ? Object.keys(m).length : 0), 0) : 0;
+  if (!parts(L.data.defaultSkin)) { const sk = L.data.skins.find(x => parts(x) > 0); if (sk) skel.setSkinByName(sk.name); }
   skel.setToSetupPose();
   const inst = { L, skel, state, cur: null, key: null, t: BT.clock };
   const idle = sdAnim(L.names, "idle"); if (idle) state.setAnimation(0, idle, true);
@@ -92,9 +95,10 @@ const sdPrepareAll = vus => Promise.all(vus.map(sdPrepare));
 // the Spine animation for a battle pose
 function sdAnim(names, kind, slot) {
   const has = n => names.includes(n), find = re => names.find(n => re.test(n));
-  if (kind === "idle") return has("Idle") ? "Idle" : find(/^Idle/) || find(/^Default/) || names[0];
-  if (kind === "move") return has("Move_Loop") ? "Move_Loop" : has("Move") ? "Move" : find(/^(Move|Run)/) || null;
-  if (kind === "die") return has("Die") ? "Die" : find(/^Die/) || null;
+  // names vary: Idle / Idle_1 / C1_Idle, Move_Loop / Move_1, Attack / Attack_1 / Combat …
+  if (kind === "idle") return has("Idle") ? "Idle" : find(/^Idle/) || find(/Idle(_1)?$/i) || find(/Idle/i) || find(/^Default/) || names[0];
+  if (kind === "move") return has("Move_Loop") ? "Move_Loop" : has("Move") ? "Move" : find(/^(Move|Run)/) || find(/Move(_1)?$|Move_?Loop/i) || null;
+  if (kind === "die") return has("Die") ? "Die" : find(/^Die/) || find(/Die/i) || null;
   if (kind === "start") return has("Start") ? "Start" : null;
   if (kind === "stun") return has("Stun") ? "Stun" : null;
   if (kind === "skill") {
@@ -102,7 +106,7 @@ function sdAnim(names, kind, slot) {
     return [`Skill_${n}`, `Skill${n}`, `Skill_${n}_Loop`, `Skill${n}_Loop`, `Skill_${n}_Begin`, `Skill${n}_Begin`].find(has)
       || (has("Skill") ? "Skill" : null) || find(/^Skill.*Loop$/) || find(/^Skill/) || sdAnim(names, "attack");
   }
-  return has("Attack") ? "Attack" : has("Attack_Loop") ? "Attack_Loop" : find(/^Attack/) || find(/^Combat/) || null;
+  return has("Attack") ? "Attack" : has("Attack_Loop") ? "Attack_Loop" : find(/^Attack/) || find(/^Combat/) || find(/Attack/i) || find(/Skill/i) || null;
 }
 // what the unit should be doing right now: [animation, loop, restart key, duration hint ms]
 function sdWant(vu, inst) {

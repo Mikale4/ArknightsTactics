@@ -3528,7 +3528,8 @@ const enemyArt = key => EART2[key] || (EART2[key] = (() => {
 })());
 // a story speaker's picture: operator art, their own portrait, or their enemy art
 const speakerArt = sp => sp.op ? spriteURL(OPS[sp.op]) : sp.art && ART_STORY.has(sp.art) ? storyArtURL(sp.art) : sp.en && ENEMY[sp.en] ? enemyArt(sp.en).full : null;
-const opArt = key => figArt("o:" + key, OPS[key].fig);
+// operators in battle UI (skill cut-ins, turn order, cards) use their real art
+const opArt = key => ({ full: spriteURL(OPS[key]), head: headURL(OPS[key]) });
 
 // =====================================================================
 //  OPERATOR FIGURES — each operator drawn as a jointed figure (like the
@@ -8505,6 +8506,7 @@ function drawUnit(K, vu) {
   const sd = vu.sd && vu.sd.f;
   if (vu.dead) { const k = clamp((BT.clock - vu.deathT) / (sd ? 1400 : 1000), 0, 1); rot = sd ? 0 : -ease(Math.min(1, k * 1.6)) * 1.35; alpha = sd ? 1 - clamp((k - .55) / .45, 0, 1) : 1 - k; if (k >= 1) vu.gone = true; }
   if (vu.stealth) alpha *= .45;
+  if (vu.occl) alpha *= .28;
   const pose = vu.pose;
   const pt = pose.dur ? clamp((BT.clock - pose.t0) / pose.dur, 0, 1) : (BT.clock - pose.t0) / 1000;
   if (pose.dur && pt >= 1 && pose.back) { vu.pose = { name: "idle", t0: BT.clock, dur: 0 }; }
@@ -8714,6 +8716,10 @@ function render(dt) {
   drawRings(K);
   // units, far to near
   const order = vus.map(vu => ({ vu, d: proj(K, vu.pos.x, 40, vu.pos.z) })).filter(o => o.d).sort((a, b) => b.d[3] - a.d[3]);
+  // during an action, bystanders much closer to the camera than the actor and target fade out of the way
+  const inv = BT.act ? [BT.active, BT.act.t != null ? BT.vus.get(BT.act.t) : null].filter(Boolean) : [];
+  const refS = inv.length ? Math.max(...inv.map(v => { const q = order.find(o => o.vu === v); return q ? q.d[2] : 0; })) : 0;
+  for (const o of order) o.vu.occl = refS > 0 && !inv.includes(o.vu) && o.d[2] > refS * 1.35;
   for (const o of order) drawUnit(K, o.vu);
   drawBolts(K);
   drawArcs(K);
@@ -8856,6 +8862,9 @@ function sdInst(L) {
   if (!L) return null;
   const R = L.E.R, stateData = new R.AnimationStateData(L.data); stateData.defaultMix = .12;
   const skel = new R.Skeleton(L.data), state = new R.AnimationState(stateData);
+  // some skeletons keep their parts in a named skin (the Reunion Caster's is "Wizard"), not the default one
+  const parts = sk => sk && sk.attachments ? sk.attachments.reduce((a, m) => a + (m ? Object.keys(m).length : 0), 0) : 0;
+  if (!parts(L.data.defaultSkin)) { const sk = L.data.skins.find(x => parts(x) > 0); if (sk) skel.setSkinByName(sk.name); }
   skel.setToSetupPose();
   const inst = { L, skel, state, cur: null, key: null, t: BT.clock };
   const idle = sdAnim(L.names, "idle"); if (idle) state.setAnimation(0, idle, true);
@@ -8880,9 +8889,10 @@ const sdPrepareAll = vus => Promise.all(vus.map(sdPrepare));
 // the Spine animation for a battle pose
 function sdAnim(names, kind, slot) {
   const has = n => names.includes(n), find = re => names.find(n => re.test(n));
-  if (kind === "idle") return has("Idle") ? "Idle" : find(/^Idle/) || find(/^Default/) || names[0];
-  if (kind === "move") return has("Move_Loop") ? "Move_Loop" : has("Move") ? "Move" : find(/^(Move|Run)/) || null;
-  if (kind === "die") return has("Die") ? "Die" : find(/^Die/) || null;
+  // names vary: Idle / Idle_1 / C1_Idle, Move_Loop / Move_1, Attack / Attack_1 / Combat …
+  if (kind === "idle") return has("Idle") ? "Idle" : find(/^Idle/) || find(/Idle(_1)?$/i) || find(/Idle/i) || find(/^Default/) || names[0];
+  if (kind === "move") return has("Move_Loop") ? "Move_Loop" : has("Move") ? "Move" : find(/^(Move|Run)/) || find(/Move(_1)?$|Move_?Loop/i) || null;
+  if (kind === "die") return has("Die") ? "Die" : find(/^Die/) || find(/Die/i) || null;
   if (kind === "start") return has("Start") ? "Start" : null;
   if (kind === "stun") return has("Stun") ? "Stun" : null;
   if (kind === "skill") {
@@ -8890,7 +8900,7 @@ function sdAnim(names, kind, slot) {
     return [`Skill_${n}`, `Skill${n}`, `Skill_${n}_Loop`, `Skill${n}_Loop`, `Skill_${n}_Begin`, `Skill${n}_Begin`].find(has)
       || (has("Skill") ? "Skill" : null) || find(/^Skill.*Loop$/) || find(/^Skill/) || sdAnim(names, "attack");
   }
-  return has("Attack") ? "Attack" : has("Attack_Loop") ? "Attack_Loop" : find(/^Attack/) || find(/^Combat/) || null;
+  return has("Attack") ? "Attack" : has("Attack_Loop") ? "Attack_Loop" : find(/^Attack/) || find(/^Combat/) || find(/Attack/i) || find(/Skill/i) || null;
 }
 // what the unit should be doing right now: [animation, loop, restart key, duration hint ms]
 function sdWant(vu, inst) {
@@ -9089,14 +9099,15 @@ BT.slashes = [];
 const aspect = () => Math.min(1.7, BT.W / BT.H);
 const fitDist = (extent, minD, fov = .62) => Math.max(minD, extent / (2 * Math.tan(fov / 2) * aspect()));
 function focusShot(vu) {
-  return { tx: vu.pos.x + vu.dir * 8, ty: 62 * vu.bs, tz: vu.pos.z, yaw: BT.home.yaw + vu.dir * .58, pitch: .06, dist: fitDist(100, 290 * vu.bs), fov: .62, roll: -vu.dir * .03 };
+  // skill close-up from in front of the unit, so you see their face (your squad is otherwise seen from behind)
+  return { tx: vu.pos.x + vu.dir * 8, ty: 62 * vu.bs, tz: vu.pos.z, yaw: vu.dir > 0 ? .75 : BT.home.yaw + .3, pitch: Math.max(.2, BT.home.pitch * .5), dist: fitDist(150, 340 * vu.bs), fov: .62, roll: -vu.dir * .03 };
 }
 function impactShot(a, t) {
   const d = Math.hypot(a.pos.x - t.pos.x, a.pos.z - t.pos.z);
-  return { tx: (a.pos.x + t.pos.x) / 2, ty: 58, tz: (a.pos.z + t.pos.z) / 2, yaw: BT.home.yaw - a.dir * .38, pitch: .12, dist: fitDist(d + 170, 320), fov: .62, roll: 0 };
+  return { tx: (a.pos.x + t.pos.x) / 2, ty: 58, tz: (a.pos.z + t.pos.z) / 2, yaw: BT.home.yaw - a.dir * .38, pitch: Math.max(.2, BT.home.pitch * .75), dist: fitDist(d + 170, 320), fov: .62, roll: 0 };
 }
 function aoeShot(ts, a) {
-  return { tx: avg(ts.map(t => t.pos.x)), ty: 52, tz: avg(ts.map(t => t.pos.z)), yaw: BT.home.yaw - a.dir * .28, pitch: .2, dist: fitDist(400, 480, .66), fov: .66, roll: 0 };
+  return { tx: avg(ts.map(t => t.pos.x)), ty: 52, tz: avg(ts.map(t => t.pos.z)), yaw: BT.home.yaw - a.dir * .28, pitch: Math.max(.24, BT.home.pitch * .85), dist: fitDist(400, 480, .66), fov: .66, roll: 0 };
 }
 function nudgeShot(px, pz, k, zoom) {
   const h = BT.home, land = BT.W / BT.H > 1.05;
