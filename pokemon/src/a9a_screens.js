@@ -5,8 +5,8 @@
 const UI = { view: "home", arg: null, el: "all", cls: "all", sort: "cp", all: false, opTab: "info", team: null, depotTab: "items", shopTab: "mart", hhStd: false, dexF: "all" };
 
 function toast(msg, cls = "") { const t = document.createElement("div"); t.className = "toast " + cls; t.textContent = msg; $("#toast").appendChild(t); setTimeout(() => t.remove(), 2600); }
-function openModal(html) { const m = $("#modal"); m.innerHTML = `<div class="mbox" role="dialog">${html}</div>`; m.hidden = false; m.onclick = e => { if (e.target === m) closeModal(); }; }
-function closeModal() { const m = $("#modal"); m.hidden = true; m.innerHTML = ""; }
+function openModal(html, cls) { const m = $("#modal"); m.className = cls || ""; m.innerHTML = `<div class="mbox" role="dialog">${html}</div>`; m.hidden = false; m.onclick = e => { if (e.target === m) closeModal(); }; }
+function closeModal() { const m = $("#modal"); m.hidden = true; m.innerHTML = ""; m.className = ""; }
 const starRow = (n, max = 5) => { let s = ""; for (let k = 1; k <= max; k++) s += k <= n ? IC.star : ""; return `<div class="rstars">${s}</div>`; };
 // a Pokémon portrait: sprite on a type-tinted disc, with level and IV badges
 function opHTML(key, o = {}) {
@@ -32,8 +32,11 @@ function rewardsHTML(list) {
     return `<div class="rw"><div class="ri" style="width:54px;height:54px">${r.k === "xp" ? IC.boost : r.k === "rank" ? IC.arena : itemIcon(r.k)}</div><span class="num">${r.k === "rank" ? "#" + r.n : "×" + fmt(r.n)}</span><span class="tiny dim">${esc(itemName(r.k))}</span></div>`;
   }).join("");
 }
-const back = (act, label, data = "") => `<button class="btn ghost sm" data-act="${act}" ${data}>${IC.back.replace("<svg", '<svg width="16" height="16"')}${label}</button>`;
-const avatar = () => S.avatar === "leaf" ? "leaf" : "red";
+const back = (act, label, data = "") => `<button class="btn ghost sm backbtn" data-act="${act}" ${data}>${IC.back.replace("<svg", '<svg width="16" height="16"')}${label}</button>`;
+// player looks: Showdown's trainer sprites for every main-series protagonist
+const AVATARS = [["red", "Red"], ["leaf", "Leaf"], ["ethan", "Ethan"], ["lyra", "Lyra"], ["kris", "Kris"], ["brendan", "Brendan"], ["may", "May"], ["lucas", "Lucas"], ["dawn", "Dawn"],
+  ["hilbert", "Hilbert"], ["hilda", "Hilda"], ["nate", "Nate"], ["rosa", "Rosa"], ["calem", "Calem"], ["serena", "Serena"], ["elio", "Elio"], ["selene", "Selene"], ["victor", "Victor"], ["gloria", "Gloria"]];
+const avatar = () => S.avatar && SPR_DATA.t[S.avatar] ? S.avatar : "red";
 
 // ---------- shell ----------
 function renderTop() {

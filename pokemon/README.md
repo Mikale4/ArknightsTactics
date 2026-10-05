@@ -4,6 +4,20 @@ A phone-first squad battler set in Kanto with the original 151 Pokémon. It is b
 
 Open `pokemon/index.html` directly or serve the repo (`npm run serve`, then `http://localhost:8000/pokemon/`). It's a single file: the sprites are embedded.
 
+## Game Boy shell
+
+The whole game runs on a Game Boy screen. Portrait is a DMG-style body; landscape is a wide Game Boy Advance-style one. The buttons work:
+
+| Button | Menus | Battle |
+|---|---|---|
+| D-pad | left/right switches tabs, up/down scrolls | left/right picks the target, up/down highlights a move |
+| A | presses the screen's main button, advances text | uses the highlighted move |
+| B | back / close | shows the target's info |
+| START | the START menu (Pokédex, Pokémon, Bag, Trainer Card, Mail, Save, Option) | pause |
+| SELECT | the Bag | Auto on/off |
+
+Keyboard: arrows, Z or Space (A), X or Esc (B), Enter (START), Shift (SELECT). The Trainer Card's options change the frame colour (Classic, Pikachu, Red, Blue, Atomic Purple) or turn it off. The shell lives in `a9d_gameboy.js` (logic) and at the end of `a1_head.html` (CSS); everything else is positioned inside `#screen`, a size container, so screen CSS uses `cqh`/`cqw` instead of `vh`/`vw`.
+
 ## What's in it
 
 - **151 Pokémon** with Red/Blue typings (Clefairy and Jigglypuff are Normal, Mr. Mime is pure Psychic, Magnemite pure Electric), real base stats, and three moves each from their Gen 1 learnsets:
@@ -30,6 +44,10 @@ Open `pokemon/index.html` directly or serve the repo (`npm run serve`, then `htt
   - Throw Safari Balls; catches show as a Poké Ball, Great Ball or Ultra Ball by rarity.
   - One featured area per day, plus pity.
   - Duplicates raise IVs; at perfect IVs they pay Game Corner Coins.
+- **Trainers:** all from Showdown's trainer sprites.
+  - The FireRed/LeafGreen set for Kanto's Gym Leaders, Elite Four, Blue, Oak, Team Rocket and trainer classes.
+  - Jessie & James, Nurse Joy and a shop clerk.
+  - 19 player looks, from Red and Leaf to Gloria. Your trainer appears in battle to send out your team.
 - **Other modes:**
   - Explore areas (Viridian Forest, Mt. Moon, Power Plant, Seafoam Islands, Pokémon Mansion, Victory Road) for stones, Exp. Candy, Seeds of Mastery and held items.
   - The Battle Tower and Link Battles.
@@ -88,6 +106,7 @@ The engine's internal names stayed; only the visible text changed.
 | `a8b_battle.js` | battle director, battle text and HUD |
 | `a9a`/`a9b_screens.js` | screens |
 | `a9c_meta.js` | Mail, Medals, Trainer Card and title screen |
+| `a9d_gameboy.js` | the Game Boy shell's buttons, keyboard and START menu |
 | `a10_boot.js` | launchers, actions, boot |
 
 Data and sprites are regenerated with two scripts:

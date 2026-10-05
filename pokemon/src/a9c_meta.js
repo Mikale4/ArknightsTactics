@@ -155,7 +155,9 @@ function metaTick() {
 }
 
 // ---------- screens: mail ----------
-const mailIcon = m => ({ welcome: IC.gift, gift: IC.gift, login: IC.pokeball, ach: IC.trophy.replace("<svg", '<svg style="color:var(--gold)"'), rank: IC.star }[m.tag] || IC.mail);
+const SENDER_SPR = { "Prof. Oak": "oak", Bill: "bill", Daisy: "daisy", "Nurse Joy": "nurse", "Pokémon Center": "nurse", "Mr. Fuji": "mrfuji", "Celadon Dept. Store": "clerk",
+  "Safari Zone Warden": "gentleman", "Fan Club Chairman": "gentleman", "Game Corner": "gamer" };
+const mailIcon = m => SENDER_SPR[m.from] ? `<img class="px" src="${trainerURL(SENDER_SPR[m.from])}" alt="">` : ({ welcome: IC.gift, gift: IC.gift, login: IC.pokeball, ach: IC.trophy.replace("<svg", '<svg style="color:var(--gold)"'), rank: IC.star }[m.tag] || IC.mail);
 const ago = t => { const d = Math.floor((Date.now() - t) / DAY_MS); return d < 1 ? "Today" : d === 1 ? "Yesterday" : d + " days ago"; };
 const rewardChips = r => Object.entries(r).map(([k, n]) => k === "op" ? `<span class="cost"><img class="px" src="${sprFront(n)}" alt="" style="width:18px;height:18px">${esc(OPS[n].n)}</span>` : k === "held" ? `<span class="cost">${heldIcon(n)}${esc(HELD[n].n)}</span>` : `<span class="cost">${itemIcon(k)}${fmt(n)}</span>`).join(" ");
 const mailRewardList = r => Object.entries(r).map(([k, n]) => k === "op" ? { k: "op:" + n, n: 1 } : k === "held" ? { k: "held:" + n, n: 1 } : { k, n });
@@ -229,7 +231,10 @@ SCREENS.settings = () => {
     <section class="panel stack" style="gap:10px"><h3>Profile</h3>
       <label class="small dim" for="pname">Name</label>
       <div class="row" style="gap:8px"><input id="pname" class="tinput" maxlength="12" value="${esc(S.name)}"><button class="btn sm" data-act="saveName">Save</button></div>
-      <span class="small dim">Look</span>${chipRow("setAvatar", avatar(), [["red", "Red"], ["leaf", "Leaf"]])}</section>
+      <span class="small dim">Look</span><div class="avgrid">${AVATARS.map(([k, n]) => `<button class="${avatar() === k ? "on" : ""}" data-act="setAvatar" data-v="${k}"><img class="px" src="${trainerURL(k)}" alt=""><span>${n}</span></button>`).join("")}</div></section>
+    <section class="panel stack" style="gap:10px"><h3>Game Boy</h3>
+      <span class="small dim">Frame colour (Off fills the screen)</span>${chipRow("setShell", S.settings.shell || "classic", SHELLS)}
+      <p class="tiny dim">The buttons work: D-pad to move, A to confirm, B to go back, START for the menu, SELECT for Auto in battle. On a keyboard: arrows, Z, X, Enter and Shift.</p></section>
     <section class="panel stack" style="gap:10px"><h3>Options</h3>
       <span class="small dim">Sound</span>${chipRow("setSound", st.sound ? 1 : 0, [[1, "On"], [0, "Off"]])}
       <span class="small dim">Battle speed</span>${chipRow("setSpeed", st.speed, [[1, "1×"], [2, "2×"], [3, "3×"]])}
@@ -254,7 +259,7 @@ function nameModal() {
     <div class="eyebrow">Prof. Oak</div><h2>First, what is your name?</h2>
     <div class="avpick">${["red", "leaf"].map(a => `<button class="${(S.avatar || "red") === a ? "on" : ""}" data-act="pickAvatar" data-v="${a}"><img class="px" src="${trainerURL(a)}" alt=""><span>${a === "red" ? "Red" : "Leaf"}</span></button>`).join("")}</div>
     <input id="nname" class="tinput" maxlength="12" placeholder="${S.avatar === "leaf" ? "Leaf" : "Red"}" style="text-align:center;width:100%">
-    <p class="tiny dim">You can change your name later on your Trainer Card.</p>
+    <p class="tiny dim">You can change your name, and pick from 19 looks, later on your Trainer Card.</p>
     <button class="btn wide" data-act="nameGo">That's me!</button></div>`);
   m0Click();
 }
@@ -266,11 +271,11 @@ const TITLE = { on: false, raf: 0, t0: 0, mons: [], clouds: [] };
 function showTitle() {
   closeModal();
   let el = $("#title");
-  if (!el) { el = document.createElement("div"); el.id = "title"; document.body.appendChild(el); }
+  if (!el) { el = document.createElement("div"); el.id = "title"; $("#screen").appendChild(el); }
   el.innerHTML = `<canvas id="tcv"></canvas>
     <div class="tlogo"><div class="tball">${IC.pokeball}</div><h1>Pokémon</h1><div class="tsub">Kanto Squad</div></div>
     <div class="tload" id="tload"><div class="tbar"><i id="tbarI"></i></div><span id="tloadT">Loading Pokémon… 0%</span></div>
-    <div class="ttap" id="ttap" hidden>Tap to Start</div>
+    <div class="ttap" id="ttap" hidden>PRESS START</div>
     <div class="tfoot"><button class="tbtn" data-act="titleSettings">${IC.gearIc}<span>Settings</span></button><button class="tbtn" data-act="titleCredits">${IC.book}<span>Credits</span></button></div>
     <div class="tver">Ver ${GAME_VER} · ${S.named ? "ID No. " + S.playerId : "New game"}<br>Unofficial fan game. Pokémon © Nintendo / Game Freak / Creatures Inc.</div>`;
   el.hidden = false; el.classList.remove("out");
@@ -359,7 +364,7 @@ const META_ACT = {
     if ((($("#rconf") || {}).value || "").trim().toUpperCase() !== "DELETE") { toast("Type DELETE to confirm."); return; }
     clearTimeout(saveTimer);
     try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* storage unavailable */ }
-    S = migrate(newSave()); save();
+    S = migrate(newSave()); save(); applyShell();
     UI.inGame = false; closeModal(); route("home"); showTitle();
   },
   toTitle: () => { save(); showTitle(); },

@@ -40,7 +40,8 @@ Wind, Ether, Imaginary Numbers), Fate class names, Charisma, Personal Skill, Asc
 
 `pokemon/src` parts: `a1_head` · `a2_core` (type chart, weather, items, statuses) · `a3a_dex.js` (**generated** by
 `python3 pokemon/tools/build_data.py`: species, Gen 1 learnsets, evolutions, Abilities, kits; edit `KITS`/`ABILITY_PICK` there, never the .js) ·
-`a3b_kits` (skills, move text, Abilities, held items, `OPS`) · `a4_story` · `a5_sprites` · `a6_state` · `a7_engine` · `a8a/a8c/a8b` · `a9a/a9b/a9c` · `a10_boot`.
+`a3b_kits` (skills, move text, Abilities, held items, `OPS`) · `a4_story` · `a5_sprites` · `a6_state` · `a7_engine` · `a8a/a8c/a8b` · `a9a/a9b/a9c` · `a9d_gameboy` (working Game Boy shell: D-pad/A/B/START/SELECT, keyboard, START menu) · `a10_boot`.
+The whole UI sits inside `#screen` (a CSS size container) in the Game Boy shell: overlays are `position:absolute`, sizes use `cqh`/`cqw`.
 Pokémon text must be Pokémon terminology (Safari Zone, PP, Gems, Poké Dollars, IVs, Mastery, held items, Mail, Medals, Gym Badges; glossary in
 `pokemon/README.md`). Kits must stay inside each Pokémon's Red/Blue/Yellow learnset (the generator checks). Sprites come from Pokémon Showdown
 (`sh pokemon/tools/fetch_sprites.sh`); trainers are the FireRed/LeafGreen set. Tests: `node pokemon/tests/{phone,figures,sim}.js`.

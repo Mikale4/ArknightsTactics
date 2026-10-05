@@ -333,7 +333,8 @@ function moveBtn(u, sk, tgt) {
     const e = B.effOn(u, tgt, sk);
     tag = e === 0 ? '<span class="eff no">No effect</span>' : e > 1 ? `<span class="eff se">Super effective</span>` : e < 1 ? `<span class="eff nve">Not very effective</span>` : "";
   }
-  return `<button class="mvbtn ${ok ? "" : "off"} ${sk.slot === 3 && ok ? "ready" : ""}" data-s="${sk.slot}" style="--tc:${tcol(sk.type)}" aria-label="${esc(sk.name)}">
+  const hl = BT.gbUsed && u.skills.indexOf(sk) === Math.min(GB.hl, u.skills.length - 1);
+  return `<button class="mvbtn ${ok ? "" : "off"} ${sk.slot === 3 && ok ? "ready" : ""} ${hl ? "hl" : ""}" data-s="${sk.slot}" style="--tc:${tcol(sk.type)}" aria-label="${esc(sk.name)}">
     <b>${esc(sk.name)}</b><span class="mvmeta"><span class="ty" style="--tc:${tcol(sk.type)}">${sk.type}</span>${tag}</span>
     ${!ok ? `<span class="cdv">${cd ? cd + " turn" + (cd > 1 ? "s" : "") : "Disabled"}</span>` : ""}</button>`;
 }
@@ -347,23 +348,27 @@ function showControls(u) {
     BT.target = best ? VU(best.uid) : null;
   }
   const c = $("#bCtl"); c.classList.add("on");
+  const choose = slot => {
+    const sk = u.skills.find(s => s.slot === slot), btn = $(`.mvbtn[data-s="${slot}"]`, c);
+    if (!sk) return;
+    if (!B.usable(u, slot)) { sfx("tap"); popup(skillPop(u, sk)); return; }
+    if (!BT.inputRes) return;
+    sfx("tap");
+    if (sk.target === "ally_single") {
+      BT.allyPick = slot; $$(".mvbtn", c).forEach(b => b.classList.toggle("picking", b === btn));
+      const h = $("#bHint"); if (h) h.textContent = "Tap one of your Pokémon to use " + sk.name;
+      return;
+    }
+    const r = BT.inputRes; BT.inputRes = null; hideControls();
+    r({ slot, t: sk.target === "enemy" && BT.target ? BT.target.u : null });
+  };
+  BT.chooseMove = choose;
   const draw = () => {
     c.innerHTML = `<div class="bwho"><img class="bpt px" src="${sprFront(u.spr || u.key)}" alt=""><div class="bwn"><b>What will ${esc(u.n)} do?</b><small id="bHint">Tap an opponent to aim${BT.target ? ` · aiming at ${esc(BT.target.u.n)}` : ""} · hold a move for details</small></div></div>
       <div class="mvgrid">${u.skills.map(sk => moveBtn(u, sk, BT.target && BT.target.u)).join("")}</div>`;
     for (const btn of $$(".mvbtn", c)) {
       const slot = +btn.dataset.s, sk = u.skills.find(s => s.slot === slot);
-      press(btn, () => {
-        if (!B.usable(u, slot)) { sfx("tap"); popup(skillPop(u, sk)); return; }
-        if (!BT.inputRes) return;
-        sfx("tap");
-        if (sk.target === "ally_single") {
-          BT.allyPick = slot; $$(".mvbtn", c).forEach(b => b.classList.toggle("picking", b === btn));
-          const h = $("#bHint"); if (h) h.textContent = "Tap one of your Pokémon to use " + sk.name;
-          return;
-        }
-        const r = BT.inputRes; BT.inputRes = null; hideControls();
-        r({ slot, t: sk.target === "enemy" && BT.target ? BT.target.u : null });
-      }, () => popup(skillPop(u, sk)));
+      press(btn, () => choose(slot), () => popup(skillPop(u, sk)));
     }
   };
   BT.redrawControls = draw;
@@ -464,6 +469,7 @@ function startBattle(cfg) {
     </div>
     <div class="turnstrip" id="bStrip"></div>
     ${cfg.trainerSpr ? `<div class="btrainer" id="bTrainer"><img class="px" src="${trainerURL(cfg.trainerSpr)}" alt=""><q hidden></q></div>` : ""}
+    <div class="bplayer" id="bPlayer"><img class="px" src="${trainerURL(avatar())}" alt=""></div>
     <div class="bmsg" id="bMsg"></div>
     <div class="bctl" id="bCtl"></div>
     <div class="bpop" id="bPop" hidden></div>
@@ -538,9 +544,13 @@ async function intro() {
     await bwait(1100);
   }
   camTo({ ...h, tx: -150, yaw: h.yaw + .35, pitch: .2, dist: h.dist * .72 }, 1.6);
+  const pl = $("#bPlayer"); if (pl) pl.classList.add("in");
+  await bwait(260);
   say(`Go! ${mine.map(v => v.u.n).join(", ")}!`, true);
+  if (pl) pl.classList.add("throw");
   mine.forEach((v, k) => bwait(k * 150).then(() => throwBall(v, "poke")));
   await bwait(700 + mine.length * 150);
+  if (pl) pl.classList.remove("in", "throw");
   BT.letterboxT = 0;
   camHome(1.8);
   updateStrip();
@@ -577,6 +587,7 @@ async function outro() {
   const mine = [...BT.vus.values()].filter(v => v.team === "A" && !v.dead);
   if (res.win) {
     for (const v of mine) setPose(v, "victory", 0, false);
+    const pl = $("#bPlayer"); if (pl) pl.classList.add("in", "win");
     camTo({ tx: avg(mine.map(v => v.pos.x)), ty: 50, tz: avg(mine.map(v => v.pos.z)), yaw: h.yaw + .5, pitch: .12, dist: fitDist(320, 360), fov: .62, roll: 0 }, 1.8);
     BT.orbit = true; sfx("win");
     if (B.trainer) { showTrainer(true, cfg.lose || ""); say(`You defeated ${B.trainer}!`, true); }

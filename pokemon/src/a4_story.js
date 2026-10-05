@@ -13,7 +13,7 @@ const SPK = {
   lorelei: { n: "Lorelei", t: "lorelei" }, bruno: { n: "Bruno", t: "bruno" }, agatha: { n: "Agatha", t: "agatha" }, lance: { n: "Lance", t: "lance" },
   grunt: { n: "Team Rocket Grunt", t: "teamrocketgruntm" }, gruntf: { n: "Team Rocket Grunt", t: "teamrocketgruntf" }, bill: { n: "Bill", t: "bill" },
   fuji: { n: "Mr. Fuji", t: "mrfuji" }, daisy: { n: "Daisy", t: "daisy" }, sci: { n: "Scientist", t: "scientist" }, bug: { n: "Bug Catcher", t: "bugcatcher" },
-  hiker: { n: "Hiker", t: "hiker" }, me: { n: "", t: "me" },
+  hiker: { n: "Hiker", t: "hiker" }, jj: { n: "Jessie & James", t: "jessiejames" }, nurse: { n: "Nurse Joy", t: "nurse" }, me: { n: "", t: "me" },
 };
 const L = (s, t) => ({ s, t });
 // "pidgey:4" → { op: "pidgey", LV: 4 }; "+" marks a Gym Leader's Pokémon, "!" the ace (a boss)
@@ -147,6 +147,12 @@ const STORY = [{
           waves: [W("raticate:22", "zubat:22"), W("koffing:23", "grimer:23")], pre: [
           L("grunt", "There's no hideout behind this poster. Definitely not. Now beat it!"),
         ] },
+        { id: "dj", type: "side", name: "Prepare for Trouble", lv: 25, env: "city", trainer: TR("Jessie & James", "jessiejames", "Prepare for trouble! And make it double!", "Looks like Team Rocket's blasting off again!"),
+          waves: [W("ekans:24", "koffing:24"), W("meowth:26!")], pre: [
+          L("jj", "Prepare for trouble! And make it double!"),
+          L("jj", "We're the Team Rocket duo who'll take every rare Pokémon in Celadon! And that Pikachu-looking thing too, while we're at it!"),
+          L("narr", "Meowth hops down from a balloon basket, claws out."),
+        ], post: [L("jj", "Looks like Team Rocket's blasting off again!"), L("narr", "A twinkle in the sky over Celadon City. They dropped a few things on the way up.")] },
         { id: "e", type: "boss", name: "Giovanni's Hideout", lv: 26, env: "plant", trainer: TR("Giovanni", "giovanni", "So! I must say, I am impressed you got here!", "WHAT! This can't be!"),
           waves: [W("onix:25+", "rhyhorn:24+", "kangaskhan:29!")], pre: [
           L("giovanni", "Team Rocket captures Pokémon from around the world. They're important tools for keeping our criminal enterprise going."),
@@ -368,7 +374,10 @@ const huntWavesSpec = (h, l) => {
 const TOWER_FLOORS = 30;
 const TOWER_BOSS = [["Brock", "brock", ["geodude", "onix", "graveler", "golem"]], ["Misty", "misty", ["staryu", "psyduck", "starmie", "golduck"]], ["Lt. Surge", "ltsurge", ["voltorb", "magneton", "electrode", "raichu"]],
   ["Erika", "erika", ["tangela", "weepinbell", "victreebel", "vileplume"]], ["Koga", "koga", ["koffing", "muk", "venomoth", "weezing"]], ["Sabrina", "sabrina", ["kadabra", "mrmime", "hypno", "alakazam"]]];
-const TOWER_CLS = [["Ace Trainer", "acetrainer"], ["Ace Trainer", "acetrainerf"], ["Psychic", "psychic"], ["Black Belt", "blackbelt"], ["Bird Keeper", "birdkeeper"], ["Beauty", "beauty"], ["Gentleman", "gentleman"], ["Hiker", "hiker"], ["Tamer", "tamer"], ["Rocker", "rocker"]];
+const TOWER_CLS = [["Ace Trainer", "acetrainer"], ["Ace Trainer", "acetrainerf"], ["Psychic", "psychic"], ["Psychic", "psychicf"], ["Black Belt", "blackbelt"], ["Battle Girl", "battlegirl"],
+  ["Bird Keeper", "birdkeeper"], ["Beauty", "beauty"], ["Gentleman", "gentleman"], ["Lady", "lady"], ["Hiker", "hiker"], ["Tamer", "tamer"], ["Rocker", "rocker"], ["Guitarist", "guitarist"],
+  ["Dragon Tamer", "dragontamer"], ["Expert", "expert"], ["Kindler", "kindler"], ["Ninja Boy", "ninjaboy"], ["Hex Maniac", "hexmaniac"], ["Ruin Maniac", "ruinmaniac"], ["Pokémon Ranger", "pokemonranger"],
+  ["Pokémon Breeder", "pokemonbreeder"], ["Collector", "collector"], ["Rich Boy", "richboy"], ["Parasol Lady", "parasollady"], ["Painter", "painter"], ["Aroma Lady", "aromalady"], ["Gamer", "gamer"]];
 function towerFloor(f) {
   const lv = 8 + f * 2, rng = seeded(hash("tower" + f));
   const pool = fieldable(lv, true);
@@ -389,7 +398,9 @@ function towerFloor(f) {
 
 // Link Battles: Trainers from around Kanto
 const ARENA_N1 = ["Ash", "Gary", "May", "Dawn", "Cilan", "Iris", "Serena", "Clemont", "Hau", "Lillie", "Hop", "Marnie", "Nemona", "Arven", "Penny", "Wally", "Barry", "Bianca", "Cheren", "Shauna", "Tierno", "Bede", "Kieran", "Carmine"];
-const ARENA_CLS = [["Ace Trainer", "acetrainer"], ["Ace Trainer", "acetrainerf"], ["Pokémon Breeder", "beauty"], ["Psychic", "psychic"], ["Black Belt", "blackbelt"], ["Bird Keeper", "birdkeeper"], ["Swimmer", "swimmerf"], ["Hiker", "hiker"], ["Juggler", "juggler"], ["Rocker", "rocker"]];
+const ARENA_CLS = [["Ace Trainer", "acetrainer"], ["Ace Trainer", "acetrainerf"], ["Pokémon Breeder", "pokemonbreeder"], ["Pokémon Ranger", "pokemonranger"], ["Psychic", "psychicf"], ["Black Belt", "blackbelt"],
+  ["Battle Girl", "battlegirl"], ["Bird Keeper", "birdkeeper"], ["Swimmer", "swimmerf"], ["Hiker", "hiker"], ["Juggler", "juggler"], ["Rocker", "rocker"], ["Pokéfan", "pokefan"], ["School Kid", "schoolkid"],
+  ["Twins", "twins"], ["Tuber", "tuber"], ["Dragon Tamer", "dragontamer"], ["Gamer", "gamer"], ["Hex Maniac", "hexmaniac"], ["Collector", "collector"]];
 const ARENA_MS = 10 * 60000, PAYOUT_MS = 6 * 3600000;
 
 // Daily Research (resets every day)

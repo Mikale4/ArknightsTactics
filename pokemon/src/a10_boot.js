@@ -254,6 +254,7 @@ function introModal() {
 }
 const ACT = {
   ...META_ACT,
+  ...GB_ACT,
   go: d => { if (d.v === "op" && d.a !== UI.arg) UI.opTab = "info"; closeModal(); route(d.v, d.a || null); },
   poke: () => quip(),
   missions: () => missionsModal(),
@@ -410,6 +411,7 @@ function start(data) {
   S = migrate((data && data.save) || load() || newSave());
   UI.huntLv = {};
   tickTimers();
+  gbInit(); applyShell();
   route("home");
   showTitle();
   preloadSprites().then(() => { if (UI.inGame && $("#modal").hidden && $("#gacha").hidden && $("#dlg").hidden && !BT.on) rerender(); });

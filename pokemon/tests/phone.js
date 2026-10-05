@@ -36,7 +36,9 @@ const PAGE = 'file://' + path.resolve(__dirname, '../index.html');
   await ev(() => { ACT.openNode({ id: '1-2' }); }); await ev(() => { ACT.startNode({ id: '1-2' }); }); await shot('04_team');
   await ev(() => { ACT.deploy(); }, null, 900); await skipDlg(); await page.waitForTimeout(500); await shot('05_intro_a');
   await page.waitForSelector('.mvbtn', { timeout: 60000 }); await page.waitForTimeout(400); await shot('06_input');
-  const b1 = await page.$('.mvbtn[data-s="1"]'); if (b1) await b1.click();
+  // pick the move with the D-pad and A
+  { const b = await page.$('[data-gb="down"]'); const r = await b.boundingBox(); await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2); await page.waitForTimeout(250); await shot('06b_dpad_hl');
+    const a = await page.$('[data-gb="a"]'); const ra = await a.boundingBox(); await page.mouse.click(ra.x + ra.width / 2, ra.y + ra.height / 2); }
   for (const n of ['07_atk_a', '08_atk_b', '08_atk_c']) { await page.waitForTimeout(500); await shot(n); }
   await page.click('#bAuto');
   const done1 = await waitResult('09_auto_');
@@ -61,6 +63,16 @@ const PAGE = 'file://' + path.resolve(__dirname, '../index.html');
     ['31_shop', v => { UI.shopTab = 'mart'; route(v); }, 'shop'], ['32_prize', v => { UI.shopTab = v; rerender(); }, 'prize'], ['33_bag', v => route(v), 'depot'],
     ['34_medals', v => route(v), 'ach'], ['35_card', v => route(v), 'settings']]) { await ev(fn, a); await shot(n); }
   await ev(() => dexModal('pikachu')); await shot('36_dexentry'); await ev(() => closeModal());
+  // Game Boy buttons: START menu, D-pad, A and B
+  const btn = async k => { const b = await page.$(`[data-gb="${k}"]`); const r = await b.boundingBox(); await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2); await page.waitForTimeout(300); };
+  await ev(() => route('home')); await btn('start'); await shot('36b_startmenu');
+  await btn('down'); await btn('down'); await btn('a'); await shot('36c_start_bag');
+  await btn('b'); await btn('right'); await shot('36d_dpad_tab');
+  await ev(() => { S.settings.shell = 'pikachu'; applyShell(); route('settings'); }); await shot('36e_pikachu');
+  await ev(() => { S.settings.shell = 'red'; applyShell(); route('home'); }); await shot('36f_red');
+  await ev(() => { S.settings.shell = 'off'; applyShell(); }); await shot('36g_off');
+  await ev(() => { S.settings.shell = 'classic'; applyShell(); });
+  console.log('start menu → bag:', await page.evaluate(() => UI.view));
   await ev(() => missionsModal()); await shot('37_research'); await ev(() => closeModal());
   // evolution: raise Squirtle and evolve it
   await page.evaluate(() => { S.badges = 2; S.ops.squirtle.lvl = 16; ACT.evolve({ k: 'squirtle', to: 'wartortle' }); }); await page.waitForTimeout(1600); await shot('38_evolving');

@@ -1,14 +1,28 @@
 
-<div id="app">
-  <header id="topbar"></header>
-  <main id="view"></main>
-  <nav id="tabs"></nav>
+<div id="gb" class="gb classic">
+  <div class="gb-bezel">
+    <div class="gb-label"><span class="gb-led"><b></b>BATTERY</span><i></i><span class="gb-dm">DOT MATRIX WITH STEREO SOUND</span><i></i></div>
+    <div id="screen">
+      <div id="app">
+        <header id="topbar"></header>
+        <main id="view"></main>
+        <nav id="tabs"></nav>
+      </div>
+      <div id="battle" hidden></div>
+      <div id="dlg" hidden></div>
+      <div id="gacha" hidden></div>
+      <div id="modal" hidden></div>
+      <div id="toast"></div>
+    </div>
+  </div>
+  <div class="gb-logo"><small>Pokémon</small><b>KANTO SQUAD</b></div>
+  <div class="gb-ctl">
+    <div class="gb-dpad" aria-label="D-pad"><button data-gb="up" aria-label="Up"></button><button data-gb="left" aria-label="Left"></button><i></i><button data-gb="right" aria-label="Right"></button><button data-gb="down" aria-label="Down"></button></div>
+    <div class="gb-ab"><span><button data-gb="b" aria-label="B button"></button><em>B</em></span><span><button data-gb="a" aria-label="A button"></button><em>A</em></span></div>
+    <div class="gb-ss"><span><button data-gb="select" aria-label="Select"></button><em>SELECT</em></span><span><button data-gb="start" aria-label="Start"></button><em>START</em></span></div>
+    <div class="gb-speaker"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  </div>
 </div>
-<div id="battle" hidden></div>
-<div id="dlg" hidden></div>
-<div id="gacha" hidden></div>
-<div id="modal" hidden></div>
-<div id="toast"></div>
 <script>
 "use strict";
 /* =====================================================================

@@ -38,7 +38,7 @@ function newSave() {
     arena: { rank: 1500, attempts: 5, aTime: Date.now(), payTime: Date.now(), opps: null },
     gacha: { pity: 0, firstTen: true, total: 0 },
     daily: { day: today(), clear: 0, sanity: 0, hh: 0, upgrade: 0, arena: 0, rune: 0, claimed: {} },
-    settings: { speed: 1, auto: false, sound: true, ai: "balanced", text: "normal" }, stats: newStats(),
+    settings: { speed: 1, auto: false, sound: true, ai: "balanced", text: "normal", shell: "classic" }, stats: newStats(),
   };
   welcomeMail(s);
   return s;

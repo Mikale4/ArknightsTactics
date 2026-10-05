@@ -323,7 +323,7 @@ SCREENS.shop = () => {
   const tab = SHOP[UI.shopTab] && !SHOP[UI.shopTab].hidden ? UI.shopTab : "mart", sh = SHOP[tab], cur = sh.cur;
   return `<div class="stack">
     <div class="spread">${back("go", "Home", 'data-v="home"')}<span class="mat">${itemIcon(cur)}${fmt(have(cur))} ${itemName(cur)}</span></div>
-    <h2>${sh.n}</h2><p class="small dim">${{ mart: "Celadon Dept. Store: everything a Trainer needs.", prize: "The Game Corner's prize counter. Trade Coins for rare Pokémon.", bp: "Spend Battle Points from Link Battles on powerful held items.", gems: "Trade Gems for Safari Balls and Max Elixirs." }[tab]}</p>
+    <div class="shophead"><img class="px" src="${trainerURL({ mart: "clerk", prize: "gamer", bp: "acetrainerf", gems: "lady" }[tab])}" alt=""><div><h2>${sh.n}</h2><p class="small dim">${{ mart: "Celadon Dept. Store: everything a Trainer needs.", prize: "The Game Corner's prize counter. Trade Coins for rare Pokémon.", bp: "Spend Battle Points from Link Battles on powerful held items.", gems: "Trade Gems for Safari Balls and Max Elixirs." }[tab]}</p></div></div>
     <div class="tabs2">${Object.entries(SHOP).filter(([, v]) => !v.hidden).map(([k, v]) => `<button class="${tab === k ? "on" : ""}" data-act="shopTab" data-t="${k}">${v.n}</button>`).join("")}</div>
     <div class="tiles">${sh.items.map(it => {
       const k = Object.keys(it.give)[0], v = it.give[k], ic = k === "op" ? `<img class="px" src="${sprFront(v)}" alt="" style="width:100%">` : k === "held" ? heldIcon(v) : itemIcon(k === "sanityMax" ? "sanity" : k);
@@ -347,7 +347,7 @@ SCREENS.depot = () => {
   </div>`;
 };
 function sanityModal() {
-  openModal(`<div class="stack"><h2>PP</h2><p class="small dim">Battles use PP. You regain 1 PP every 30 seconds, a Trainer Level up restores it, and a Max Elixir fills it to max.</p>
+  openModal(`<div class="stack"><div class="shophead"><img class="px" src="${trainerURL("nurse")}" alt=""><div><div class="eyebrow">Pokémon Center</div><h2>PP</h2></div></div><p class="small dim">Battles use PP. You regain 1 PP every 30 seconds, a Trainer Level up restores it, and a Max Elixir fills it to max.</p>
     <div class="spread"><span class="cost">${IC.sanity}<b class="num">${S.sanity}/${maxSanity(S.lvl)}</b></span><span class="tiny dim">${S.sanity < maxSanity(S.lvl) ? "+1 in " + dur(SAN_MS - (Date.now() - S.sTime)) : "Full"}</span></div>
     <button class="btn wide" data-act="buy" data-t="elixir" data-id="e_pp" ${S.prime >= 1 ? "" : "disabled"}>Use a Max Elixir <span class="tiny">(you have ${S.prime})</span></button>
     <button class="btn ghost wide" data-act="closeModal">Close</button></div>`);
