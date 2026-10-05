@@ -27,7 +27,8 @@ const { chromium } = require('playwright');
       ok(st.filter(v => v.want).every(v => v.sd), `${tag}: every unit with a sprite uses it (${st.map(v => v.k + (v.sd ? '' : '*')).join(' ')})`);
       ok(st.some(v => v.k === 'heidi' && v.sd) && st.some(v => v.k === 'ines' && v.sd), `${tag}: Spine 3.8 operators load (Aceship and PRTS)`);
       // every living unit's health bar is on screen at the home camera
-      const bars = await page.evaluate(() => { camHome(100); return new Promise(r => setTimeout(() => r([...BT.vus.values()].filter(v => !v.dead && v.scr && v.out).map(v => { const q = proj(BT.K, ...billboard(v, v.out.top)); return [v.u.key, q ? Math.round(q[1]) : null]; })), 600)); });
+      const bars = await page.evaluate(() => { BT.paused = true; camTo({ ...BT.home }, 100, true); return new Promise(r => setTimeout(() => r([...BT.vus.values()].filter(v => !v.dead && v.scr && v.out).map(v => { const q = proj(BT.K, ...billboard(v, v.out.top)); return [v.u.key, q ? Math.round(q[1]) : null]; })), 300)); });
+      await page.evaluate(() => { BT.paused = false; });
       ok(bars.every(([, y]) => y != null && y > 0 && y < H), `${tag}: health bars on screen ${JSON.stringify(bars)}`);
       await page.waitForSelector('#rDone', { timeout: 240000 }); await page.screenshot({ path: SH + `361_sd_result_${tag}.png` });
       ok(await page.evaluate(() => Object.keys(SD.fail).length === 0) , `${tag}: no sprite failures ${JSON.stringify(await page.evaluate(() => SD.fail))}`);
