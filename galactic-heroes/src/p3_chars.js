@@ -1,0 +1,343 @@
+
+// =====================================================================
+//  CHARACTERS
+//  ab[0] = basic, ab[1..] = specials. run(c, E) is synchronous game logic;
+//  the battle renderer animates the event list it produces.
+//  anim: melee | shoot | volley | spin | lightning | push | choke | grenade | flame | zap | buff | heal
+// =====================================================================
+const ROLE = {
+  Attacker: { hp: 900, prot: 600, off: 112, armor: 10, spd: 140, crit: .25, pot: .30, ten: .25 },
+  Tank:     { hp: 1350, prot: 1100, off: 76, armor: 26, spd: 126, crit: .12, pot: .22, ten: .45 },
+  Support:  { hp: 980, prot: 760, off: 92, armor: 15, spd: 148, crit: .18, pot: .45, ten: .35 },
+};
+const Rebel = "Rebel", Jedi = "Jedi", GR = "Galactic Republic", Scoundrel = "Scoundrel", Resistance = "Resistance",
+  Sith = "Sith", Empire = "Empire", Sep = "Separatist", Droid = "Droid", BH = "Bounty Hunter", FO = "First Order";
+const allyTag = (E, u, tag) => E.allies(u).filter(a => E.tag(a, tag));
+
+const CH = {
+  // ---------------------------- LIGHT SIDE ----------------------------
+  luke: {
+    n: "Luke Skywalker", side: "light", role: "Attacker", tags: [Jedi, Rebel], mod: { spd: 8 },
+    fig: { type: "human", skin: "#f0c8a0", hair: "#d8b468", hs: "short", col: "#e9e3d3", col2: "#d6cdb8", acc: "#6b5a3a", boot: "#4a3a28", w: "saber", sc: "#4aa3ff" },
+    ab: [
+      { n: "Saber Strike", tgt: "enemy", d: "Deal damage to target enemy. If the target was already debuffed, Luke gains 15% Turn Meter.",
+        run(c, E) { const deb = E.debuffs(c.t).length > 0; E.hit(c, 1.1); if (deb) E.tm(c.u, 15); } },
+      { n: "Trench Run Resolve", tgt: "enemy", cd: 3, anim: "melee", d: "Dispel all buffs on target enemy, then deal heavy damage. Luke gains Offense Up for 2 turns.",
+        run(c, E) { E.dispel(c.t); E.hit(c, 2.2); E.buff(c.u, "offUp", 2); } },
+    ],
+    uq: { n: "Hero of the Rebellion", d: "+10% Critical Chance. When another ally is defeated, Luke gains Advantage and 40% Turn Meter.",
+      stats: { crit: .1 }, on: { death(u, E, i) { if (i.unit.team === u.team && i.unit !== u && u.alive) { E.buff(u, "advantage", 3); E.tm(u, 40); } } } },
+    lead: { n: "Rebel Assault", tag: Rebel, d: "Rebel allies have +25% Offense and +10% Critical Chance.", stats: { offPct: .25, crit: .1 } },
+  },
+  obiwan: {
+    n: "Obi-Wan Kenobi", side: "light", role: "Tank", tags: [Jedi, GR],
+    fig: { type: "human", skin: "#efcfb0", hair: "#d9d2c4", hs: "beard", col: "#dccdaa", col2: "#c9b48c", acc: "#7a5f3c", boot: "#4a3624", cape: "#5c3f26", w: "saber", sc: "#4aa3ff" },
+    ab: [
+      { n: "Measured Strike", tgt: "enemy", d: "Deal damage to target enemy and recover Protection equal to 10% of Max Protection.",
+        run(c, E) { E.hit(c, 1.0); E.prot(c.u, .1); } },
+      { n: "Soresu Stance", tgt: "self", cd: 3, ai: "taunt", anim: "buff", d: "Obi-Wan gains Taunt, Defense Up and Foresight for 2 turns, then recovers 15% Health.",
+        run(c, E) { E.buff(c.u, "taunt", 2); E.buff(c.u, "defUp", 2); E.buff(c.u, "foresight", 2); E.heal(c.u, .15); } },
+    ],
+    uq: { n: "More Powerful Than You Can Imagine", d: "When Obi-Wan is defeated, all allies recover 30% Health and gain Offense Up and Speed Up for 2 turns.",
+      on: { death(u, E, i) { if (i.unit !== u) return; for (const a of E.allies(u)) { E.heal(a, .3); E.buff(a, "offUp", 2); E.buff(a, "spdUp", 2); } } } },
+    lead: { n: "Jedi Discipline", tag: Jedi, d: "Jedi allies have +30% Max Health and +20% Tenacity. Whenever a Jedi ally uses a special ability, they recover 5% Health.",
+      stats: { hpPct: .3, ten: .2 }, on: { used(L, E, i) { if (i.idx > 0 && i.unit.team === L.team && E.tag(i.unit, Jedi) && i.unit.alive) E.heal(i.unit, .05); } } },
+  },
+  leia: {
+    n: "Princess Leia", side: "light", role: "Attacker", tags: [Rebel], mod: { spd: 22, hpPct: -.08 },
+    fig: { type: "human", skin: "#f2cfae", hair: "#3b2414", hs: "buns", col: "#f4f4f4", col2: "#ececec", acc: "#c9c9c9", boot: "#d8d8d8", robe: 1, w: "pistol" },
+    ab: [
+      { n: "Blaster Volley", tgt: "enemy", d: "Attack target enemy 2 times. Each hit has a 35% chance to grant Leia 10% Turn Meter.",
+        run(c, E) { for (let k = 0; k < 2; k++) { const r = E.hit(c, .6); if (r.hit && E.r() < .35) E.tm(c.u, 10); } } },
+      { n: "Rally the Rebellion", tgt: "enemy", cd: 3, d: "Deal heavy damage to target enemy and inflict Expose for 2 turns. Rebel allies gain 15% Turn Meter.",
+        run(c, E) { const r = E.hit(c, 2.0); if (r.hit) E.debuff(c.u, c.t, "expose", 2, 1); for (const a of allyTag(E, c.u, Rebel)) if (a !== c.u) E.tm(a, 15); } },
+    ],
+    uq: { n: "Royal Resolve", d: "+15% Critical Chance. Whenever Leia scores a critical hit, all Rebel allies gain 5% Turn Meter.",
+      stats: { crit: .15 }, on: { hit(u, E, i) { if (i.src === u && i.crit) for (const a of allyTag(E, u, Rebel)) E.tm(a, 5); } } },
+    lead: { n: "Alderaan's Fire", tag: Rebel, d: "Rebel allies have +20 Speed and +20% Potency.", stats: { spd: 20, pot: .2 } },
+  },
+  han: {
+    n: "Han Solo", side: "light", role: "Attacker", tags: [Scoundrel, Rebel],
+    fig: { type: "human", skin: "#eec5a0", hair: "#5a3a1e", hs: "swoop", col: "#efebdf", vest: "#1d1d22", col2: "#2b3550", acc: "#b0302a", boot: "#2a1d14", w: "pistol" },
+    ab: [
+      { n: "Quick Draw", tgt: "enemy", d: "Deal damage to target enemy, with a 50% chance to fire again.",
+        run(c, E) { E.hit(c, 1.0); if (c.t.alive && E.r() < .5) E.hit(c, .7); } },
+      { n: "Deadeye", tgt: "enemy", cd: 3, d: "Deal massive damage to target enemy. This attack can't be evaded and has +25% Critical Chance.",
+        run(c, E) { E.hit(c, 2.4, { noEvade: 1, critBonus: .25 }); } },
+    ],
+    uq: { n: "Shoots First", d: "At the start of battle, Han gains 100% Turn Meter and Advantage.",
+      on: { start(u, E) { E.tm(u, 100); E.buff(u, "advantage", 3); } } },
+  },
+  chewie: {
+    n: "Chewbacca", side: "light", role: "Tank", tags: [Scoundrel, Rebel],
+    fig: { type: "wookiee", skin: "#7a5232", hair: "#5e3d24", acc: "#3a2a1a", h: 1.18, bulk: 1.3, w: "bowcaster" },
+    ab: [
+      { n: "Bowcaster", tgt: "enemy", d: "Deal damage to target enemy and recover 5% Health.",
+        run(c, E) { E.hit(c, 1.0); E.heal(c.u, .05); } },
+      { n: "Wookiee Rage", tgt: "self", cd: 3, ai: "taunt", anim: "buff", d: "Chewbacca gains Taunt and Defense Up for 2 turns and recovers 25% Protection.",
+        run(c, E) { E.buff(c.u, "taunt", 2); E.buff(c.u, "defUp", 2); E.prot(c.u, .25); } },
+    ],
+    uq: { n: "Loyal Friend", d: "+20% Max Health. Whenever Chewbacca is damaged, he has a 35% chance to gain Offense Up for 2 turns.",
+      stats: { hpPct: .2 }, on: { hit(u, E, i) { if (i.tgt === u && u.alive && E.r() < .35) E.buff(u, "offUp", 2); } } },
+  },
+  yoda: {
+    n: "Yoda", side: "light", role: "Support", tags: [Jedi, GR], mod: { spd: 12 },
+    fig: { type: "yoda", skin: "#8fb86a", col: "#cbb894", col2: "#a8946c", acc: "#6d5a3c", robe: 1, h: .56, hsz: 1.55, w: "saber", sc: "#5dfc6b" },
+    ab: [
+      { n: "Ataru", tgt: "enemy", d: "Deal damage to target enemy. On a critical hit, Yoda gains Foresight for 2 turns.",
+        run(c, E) { const r = E.hit(c, 1.0); if (r.crit) E.buff(c.u, "foresight", 2); } },
+      { n: "Battle Meditation", tgt: "allies", cd: 3, ai: "buff", anim: "buff", d: "All allies gain Offense Up and Tenacity Up for 2 turns. Jedi allies also gain 15% Turn Meter.",
+        run(c, E) { for (const a of E.allies(c.u)) { E.buff(a, "offUp", 2); E.buff(a, "tenUp", 2); if (E.tag(a, Jedi) && a !== c.u) E.tm(a, 15); } } },
+      { n: "Unstoppable Force", tgt: "enemies", cd: 4, anim: "push", d: "Dispel all buffs on all enemies, then deal damage to all enemies.",
+        run(c, E) { for (const e of E.enemies(c.u)) E.dispel(e); E.hit(c, 1.4, { aoe: 1 }); } },
+    ],
+    uq: { n: "Grand Master's Insight", d: "+30% Tenacity. At the start of Yoda's turn, each Jedi ally is cleansed of one random debuff.",
+      stats: { ten: .3 }, on: { turn(u, E, i) { if (i.unit === u) for (const a of allyTag(E, u, Jedi)) E.cleanse(a, 1); } } },
+    lead: { n: "Wisdom of the Ages", tag: Jedi, d: "Jedi allies have +15 Speed and +40% Tenacity. At the start of battle, Jedi allies gain Foresight for 2 turns.",
+      stats: { spd: 15, ten: .4 }, on: { start(L, E) { for (const a of allyTag(E, L, Jedi)) E.buff(a, "foresight", 2); } } },
+  },
+  mace: {
+    n: "Mace Windu", side: "light", role: "Tank", tags: [Jedi, GR], mod: { offPct: .15 },
+    fig: { type: "human", skin: "#6b4630", hair: "#2a1a10", hs: "bald", col: "#bfa47a", col2: "#a88e64", acc: "#5a4024", boot: "#3a2a1a", cape: "#6b4a2a", w: "saber", sc: "#b26bff" },
+    ab: [
+      { n: "Vaapad Strike", tgt: "enemy", d: "Deal damage to target enemy. If the target was already debuffed, inflict Defense Down for 2 turns.",
+        run(c, E) { const deb = E.debuffs(c.t).length > 0; const r = E.hit(c, 1.1); if (deb && r.hit) E.debuff(c.u, c.t, "defDown", 2, 1); } },
+      { n: "Shatterpoint", tgt: "enemy", cd: 3, anim: "melee", d: "Deal heavy damage to target enemy with a 60% chance to Stun them for 1 turn. If the target is defeated, Mace gains 50% Turn Meter.",
+        run(c, E) { const r = E.hit(c, 2.3); if (r.killed) E.tm(c.u, 50); else if (r.hit) E.debuff(c.u, c.t, "stun", 1, .6); } },
+    ],
+    uq: { n: "Master of Vaapad", d: "+10 Armor. Whenever Mace is damaged, he gains 10% Turn Meter.",
+      stats: { armor: 10 }, on: { hit(u, E, i) { if (i.tgt === u && u.alive) E.tm(u, 10); } } },
+  },
+  ahsoka: {
+    n: "Ahsoka Tano", side: "light", role: "Attacker", tags: [Jedi, GR],
+    fig: { type: "togruta", skin: "#e07a3a", col: "#6a4a3a", col2: "#4a3a3a", acc: "#d8c8a0", boot: "#3a2a24", w: "saber2", sc: "#5dfc6b" },
+    ab: [
+      { n: "Shien Flurry", tgt: "enemy", d: "Attack target enemy 2 times. Each hit has a 35% chance to inflict Speed Down for 1 turn.",
+        run(c, E) { for (let k = 0; k < 2; k++) { const r = E.hit(c, .6); if (r.hit) E.debuff(c.u, c.t, "spdDown", 1, .35); } } },
+      { n: "Snips' Gambit", tgt: "enemy", cd: 3, d: "Deal heavy damage to target enemy with a 70% chance to inflict Ability Block for 1 turn. Ahsoka gains Speed Up for 2 turns.",
+        run(c, E) { const r = E.hit(c, 2.0); if (r.hit) E.debuff(c.u, c.t, "abBlock", 1, .7); E.buff(c.u, "spdUp", 2); } },
+    ],
+    uq: { n: "Fulcrum", d: "+15 Speed. Whenever Ahsoka defeats an enemy, she gains 50% Turn Meter.",
+      stats: { spd: 15 }, on: { death(u, E, i) { if (i.killer === u && u.alive) E.tm(u, 50); } } },
+  },
+  rex: {
+    n: "Captain Rex", side: "light", role: "Attacker", tags: ["Clone Trooper", GR],
+    fig: { type: "trooper", col: "#eef1f5", col2: "#e3e7ee", acc: "#3f6fd8", boot: "#2a2f3a", w: "pistols" },
+    ab: [
+      { n: "Dual Blasters", tgt: "enemy", d: "Deal damage to target enemy, with a 50% chance to call a random Galactic Republic ally to assist.",
+        run(c, E) { E.hit(c, 1.0); if (!c.assist && !c.counter && E.r() < .5) E.assist(c, a => E.tag(a, GR)); } },
+      { n: "Aerial Advantage", tgt: "enemy", cd: 3, d: "Deal heavy damage to target enemy. All allies gain Critical Chance Up for 2 turns.",
+        run(c, E) { E.hit(c, 1.8); for (const a of E.allies(c.u)) E.buff(a, "critUp", 2); } },
+    ],
+    uq: { n: "Veteran of the 501st", d: "+10% Critical Chance. At the start of battle, all allies gain 15% Turn Meter.",
+      stats: { crit: .1 }, on: { start(u, E) { for (const a of E.allies(u)) E.tm(a, 15); } } },
+    lead: { n: "Squad Tactics", tag: GR, d: "Galactic Republic allies have +30% Offense and +20% Max Health.", stats: { offPct: .3, hpPct: .2 } },
+  },
+  r2: {
+    n: "R2-D2", side: "light", role: "Support", tags: [Droid, Rebel], mod: { spd: 10 },
+    fig: { type: "r2", col: "#e6ecf5", acc: "#2f6fe0", h: .62, w: "none" },
+    ab: [
+      { n: "Shock Prod", tgt: "enemy", anim: "zap", d: "Deal damage to target enemy with a 35% chance to Stun them for 1 turn.",
+        run(c, E) { const r = E.hit(c, .9); if (r.hit) E.debuff(c.u, c.t, "stun", 1, .35); } },
+      { n: "Smoke Screen", tgt: "allies", cd: 4, ai: "buff", anim: "buff", d: "All allies gain Foresight for 2 turns and 10% Turn Meter.",
+        run(c, E) { for (const a of E.allies(c.u)) { E.buff(a, "foresight", 2); E.tm(a, 10); } } },
+      { n: "Combat Repair", tgt: "allies", cd: 3, ai: "cleanse", anim: "heal", d: "Cleanse all debuffs from all allies. They recover 15% Health and gain Heal Over Time for 2 turns.",
+        run(c, E) { for (const a of E.allies(c.u)) { E.cleanse(a); E.heal(a, .15); E.buff(a, "hot", 2); } } },
+    ],
+    uq: { n: "Number Crunch", d: "+25% Potency. At the start of battle, all allies gain Speed Up for 2 turns.",
+      stats: { pot: .25 }, on: { start(u, E) { for (const a of E.allies(u)) E.buff(a, "spdUp", 2); } } },
+  },
+  rey: {
+    n: "Rey", side: "light", role: "Attacker", tags: [Resistance, Scoundrel], mod: { spd: 10 },
+    fig: { type: "human", skin: "#efcaa6", hair: "#5a3a22", hs: "bun", col: "#e8dcc0", col2: "#cdb98f", acc: "#8a7458", boot: "#5a4632", w: "staff" },
+    ab: [
+      { n: "Scavenger's Staff", tgt: "enemy", d: "Deal damage to target enemy. If Rey is above 50% Health, she strikes again.",
+        run(c, E) { E.hit(c, 1.0); if (c.u.hp > c.u.max.hp * .5 && c.t.alive) E.hit(c, .55); } },
+      { n: "Focused Strike", tgt: "enemy", cd: 3, d: "Deal heavy damage to target enemy and inflict Speed Down and Defense Down for 2 turns.",
+        run(c, E) { const r = E.hit(c, 2.2); if (r.hit) { E.debuff(c.u, c.t, "spdDown", 2, 1); E.debuff(c.u, c.t, "defDown", 2, 1); } } },
+    ],
+    uq: { n: "Survivor", d: "The first time Rey drops below 50% Health, she is cleansed, recovers 30% Health and gains Speed Up for 2 turns.",
+      on: { hit(u, E, i) { if (i.tgt === u && u.alive && u.hp < u.max.hp * .5 && E.once(u, "surv")) { E.cleanse(u); E.heal(u, .3); E.buff(u, "spdUp", 2); E.text(u, "SURVIVOR", "buff"); } } } },
+    lead: { n: "Inspirational Presence", tag: Resistance, d: "Resistance allies have +25% Offense and +15 Speed.", stats: { offPct: .25, spd: 15 } },
+  },
+  poe: {
+    n: "Poe Dameron", side: "light", role: "Tank", tags: [Resistance],
+    fig: { type: "human", skin: "#c48e64", hair: "#2a1a10", hs: "curly", col: "#d9772b", col2: "#cf6d22", acc: "#f2f2f2", boot: "#2a221c", w: "pistol" },
+    ab: [
+      { n: "Blaster Shot", tgt: "enemy", d: "Deal damage to target enemy with a 70% chance to remove 15% Turn Meter.",
+        run(c, E) { const r = E.hit(c, 1.0); if (r.hit) E.tmDown(c.u, c.t, 15, .7); } },
+      { n: "Ace Pilot's Bluster", tgt: "enemies", cd: 3, ai: "taunt", anim: "buff", d: "Poe gains Taunt for 2 turns and inflicts Expose on all enemies for 2 turns (55% chance each).",
+        run(c, E) { E.buff(c.u, "taunt", 2); for (const e of E.enemies(c.u)) E.debuff(c.u, e, "expose", 2, .55); } },
+    ],
+    uq: { n: "Best Pilot in the Galaxy", d: "+25% Max Protection. Whenever Poe resists a debuff, he gains 15% Turn Meter.",
+      stats: { protPct: .25 }, on: { resist(u, E, i) { if (i.tgt === u) E.tm(u, 15); } } },
+    lead: { n: "Rise Up", tag: Resistance, d: "Resistance allies have +30% Max Protection. At the start of battle they gain Tenacity Up for 2 turns.",
+      stats: { protPct: .3 }, on: { start(L, E) { for (const a of allyTag(E, L, Resistance)) E.buff(a, "tenUp", 2); } } },
+  },
+
+  // ---------------------------- DARK SIDE ----------------------------
+  vader: {
+    n: "Darth Vader", side: "dark", role: "Attacker", tags: [Sith, Empire], mod: { hpPct: .15 },
+    fig: { type: "vader", col: "#16171b", col2: "#121316", acc: "#9aa0aa", boot: "#0b0b0d", cape: "#09090b", h: 1.12, bulk: 1.15, w: "saber", sc: "#ff3b3b" },
+    ab: [
+      { n: "Saber Slash", tgt: "enemy", d: "Deal damage to target enemy with a 70% chance to inflict Damage Over Time for 2 turns.",
+        run(c, E) { const r = E.hit(c, 1.1); if (r.hit) E.debuff(c.u, c.t, "dot", 2, .7); } },
+      { n: "Force Choke", tgt: "enemy", cd: 3, anim: "choke", d: "Deal damage to target enemy, inflict Healing Immunity for 2 turns and remove 30% Turn Meter.",
+        run(c, E) { const r = E.hit(c, 1.5, { noEvade: 1 }); if (r.hit) { E.debuff(c.u, c.t, "healImm", 2, 1); E.tmDown(c.u, c.t, 30, 1); } } },
+      { n: "Inner Fury", tgt: "enemy", cd: 4, anim: "melee", d: "Deal heavy damage to target enemy, +20% damage for each debuff on them. If the target is defeated, Vader gains 100% Turn Meter.",
+        run(c, E) { const n = E.debuffs(c.t).length; const r = E.hit(c, 2.2, { bonus: .2 * n }); if (r.killed) E.tm(c.u, 100); } },
+    ],
+    uq: { n: "Dark Lord's Wrath", d: "+20% Potency. At the start of Vader's turn, each enemy has a 30% chance to suffer Damage Over Time for 2 turns.",
+      stats: { pot: .2 }, on: { turn(u, E, i) { if (i.unit === u) for (const e of E.enemies(u)) E.debuff(u, e, "dot", 2, .3); } } },
+    lead: { n: "Iron Grip", tag: Empire, d: "Empire allies have +25% Offense. Whenever an Empire ally inflicts a debuff, they gain 5% Turn Meter.",
+      stats: { offPct: .25 }, on: { debuffed(L, E, i) { if (i.src.team === L.team && i.src.alive && E.tag(i.src, Empire)) E.tm(i.src, 5); } } },
+  },
+  palpatine: {
+    n: "Emperor Palpatine", side: "dark", role: "Support", tags: [Sith, Empire],
+    fig: { type: "hood", skin: "#d9cbb8", col: "#16141a", col2: "#121016", cape: "#0e0d12", eyes: "#ffd34d", robe: 1, w: "none" },
+    ab: [
+      { n: "Dark Bolt", tgt: "enemy", anim: "lightning", d: "Deal damage to target enemy with a 70% chance to inflict Speed Down for 1 turn.",
+        run(c, E) { const r = E.hit(c, 1.0); if (r.hit) E.debuff(c.u, c.t, "spdDown", 1, .7); } },
+      { n: "Unlimited Power", tgt: "enemies", cd: 4, anim: "lightning", d: "Deal damage to all enemies, with a 50% chance to Stun each one for 1 turn.",
+        run(c, E) { for (const r of E.hit(c, 1.4, { aoe: 1 })) if (r.hit) E.debuff(c.u, r.tgt, "stun", 1, .5); } },
+      { n: "Corruption", tgt: "enemies", cd: 3, anim: "push", d: "Inflict Offense Down and Tenacity Down on all enemies for 2 turns (75% chance each).",
+        run(c, E) { for (const e of E.enemies(c.u)) { E.debuff(c.u, e, "offDown", 2, .75); E.debuff(c.u, e, "tenDown", 2, .75); } } },
+    ],
+    uq: { n: "Galactic Emperor", d: "+30% Potency. Whenever an ally Stuns an enemy, Palpatine recovers 10% Health and gains 10% Turn Meter.",
+      stats: { pot: .3 }, on: { debuffed(u, E, i) { if (i.id === "stun" && i.src.team === u.team && u.alive) { E.heal(u, .1); E.tm(u, 10); } } } },
+    lead: { n: "Emperor's Trap", tag: [Sith, Empire], d: "Sith and Empire allies have +25% Potency and +15% Max Health. At the start of battle, enemies have a 60% chance to suffer Speed Down for 2 turns.",
+      stats: { pot: .25, hpPct: .15 }, on: { start(L, E) { for (const e of E.enemies(L)) E.debuff(L, e, "spdDown", 2, .6); } } },
+  },
+  maul: {
+    n: "Darth Maul", side: "dark", role: "Attacker", tags: [Sith], mod: { spd: 14 },
+    fig: { type: "zabrak", skin: "#c8262c", col: "#16141a", col2: "#121016", acc: "#2a2228", boot: "#0b0b0d", robe: 1, w: "staffsaber", sc: "#ff3b3b" },
+    ab: [
+      { n: "Whirling Blades", tgt: "enemy", d: "Deal damage to target enemy. While Maul has Stealth, this attack deals 50% more damage and always crits.",
+        run(c, E) { const s = E.has(c.u, "stealth"); E.hit(c, 1.0, { bonus: s ? .5 : 0, critBonus: s ? 1 : 0 }); } },
+      { n: "Spinning Saberstaff", tgt: "enemies", cd: 3, anim: "spin", d: "Deal damage to all enemies with a 55% chance to inflict Defense Down for 2 turns.",
+        run(c, E) { for (const r of E.hit(c, 1.1, { aoe: 1 })) if (r.hit) E.debuff(c.u, r.tgt, "defDown", 2, .55); } },
+    ],
+    uq: { n: "Shadow Hunter", d: "+15% Critical Chance. Maul starts battle with Stealth for 2 turns. Whenever he defeats an enemy, he gains Stealth for 1 turn and 25% Turn Meter.",
+      stats: { crit: .15 }, on: { start(u, E) { E.buff(u, "stealth", 2); }, death(u, E, i) { if (i.killer === u && u.alive) { E.buff(u, "stealth", 1); E.tm(u, 25); } } } },
+  },
+  dooku: {
+    n: "Count Dooku", side: "dark", role: "Tank", tags: [Sith, Sep],
+    fig: { type: "human", skin: "#ecd2b8", hair: "#e2e2e2", hs: "old", col: "#2a2420", col2: "#221d1a", acc: "#8a7a5a", boot: "#16120f", cape: "#3a2418", w: "saber", sc: "#ff3b3b" },
+    ab: [
+      { n: "Makashi Strike", tgt: "enemy", d: "Deal damage to target enemy with a 60% chance to inflict Speed Down for 1 turn.",
+        run(c, E) { const r = E.hit(c, 1.0); if (r.hit) E.debuff(c.u, c.t, "spdDown", 1, .6); } },
+      { n: "Force Lightning", tgt: "enemy", cd: 3, anim: "lightning", d: "Deal heavy damage to target enemy with a 75% chance to Stun them for 1 turn.",
+        run(c, E) { const r = E.hit(c, 1.5); if (r.hit) E.debuff(c.u, c.t, "stun", 1, .75); } },
+    ],
+    uq: { n: "Flawless Riposte", d: "+40% Tenacity. Dooku has a 50% chance to counterattack whenever an enemy damages him.",
+      stats: { ten: .4 }, on: { hit(u, E, i) { if (i.tgt === u && u.alive && i.src.alive && i.src.team !== u.team && !i.o.counter && E.r() < .5) E.counter(u, i.src); } } },
+    lead: { n: "Separatist Command", tag: Sep, d: "Separatist allies have +30% Max Health and +25% Offense. Whenever a Separatist ally is defeated, the others gain 10% Turn Meter.",
+      stats: { hpPct: .3, offPct: .25 }, on: { death(L, E, i) { if (i.unit.team === L.team && E.tag(i.unit, Sep)) for (const a of allyTag(E, L, Sep)) E.tm(a, 10); } } },
+  },
+  trooper: {
+    n: "Stormtrooper", side: "dark", role: "Tank", tags: [Empire, "Imperial Trooper"],
+    fig: { type: "trooper", col: "#f1f3f6", col2: "#e6e9ee", acc: "#1b1d22", boot: "#e9ecf1", w: "rifle" },
+    ab: [
+      { n: "Suppressive Fire", tgt: "enemy", d: "Deal damage to target enemy with a 40% chance to inflict Offense Down for 2 turns.",
+        run(c, E) { const r = E.hit(c, 1.0); if (r.hit) E.debuff(c.u, c.t, "offDown", 2, .4); } },
+      { n: "Formation Shield", tgt: "self", cd: 3, ai: "taunt", anim: "buff", d: "Gain Taunt and Defense Up for 2 turns.",
+        run(c, E) { E.buff(c.u, "taunt", 2); E.buff(c.u, "defUp", 2); } },
+    ],
+    uq: { n: "Wall of Armor", d: "+20% Max Protection. When damaged by a critical hit, gain Defense Up for 2 turns and 10% Turn Meter.",
+      stats: { protPct: .2 }, on: { hit(u, E, i) { if (i.tgt === u && i.crit && u.alive) { E.buff(u, "defUp", 2); E.tm(u, 10); } } } },
+  },
+  tarkin: {
+    n: "Grand Moff Tarkin", side: "dark", role: "Support", tags: [Empire],
+    fig: { type: "human", skin: "#ecd2b8", hair: "#a9a59c", hs: "short", col: "#5b6148", col2: "#545a42", acc: "#2a2a2a", boot: "#141414", w: "pistol" },
+    ab: [
+      { n: "Officer's Pistol", tgt: "enemy", d: "Deal damage to target enemy with a 50% chance to inflict Defense Down for 2 turns.",
+        run(c, E) { const r = E.hit(c, 1.0); if (r.hit) E.debuff(c.u, c.t, "defDown", 2, .5); } },
+      { n: "Strategic Command", tgt: "enemy", cd: 3, anim: "buff", d: "Inflict Expose on target enemy for 2 turns (can't be resisted) and call up to 2 Empire allies to assist.",
+        run(c, E) { E.debuff(c.u, c.t, "expose", 2, 1, { sure: 1 }); E.assist(c, a => E.tag(a, Empire), 2); } },
+    ],
+    uq: { n: "Rule Through Fear", d: "+25% Potency. Whenever an enemy is defeated, all Empire allies gain 10% Turn Meter.",
+      stats: { pot: .25 }, on: { death(u, E, i) { if (i.unit.team !== u.team && u.alive) for (const a of allyTag(E, u, Empire)) E.tm(a, 10); } } },
+    lead: { n: "Imperial Doctrine", tag: Empire, d: "Empire allies have +30% Offense, +10% Critical Chance and +10 Speed.", stats: { offPct: .3, crit: .1, spd: 10 } },
+  },
+  boba: {
+    n: "Boba Fett", side: "dark", role: "Attacker", tags: [BH, Scoundrel],
+    fig: { type: "mando", col: "#5b6a3a", col2: "#7a6a52", acc: "#8c1e1e", helm: "#55703f", boot: "#3a2e22", cape: "#6b4e2e", w: "rifle" },
+    ab: [
+      { n: "EE-3 Carbine", tgt: "enemy", d: "Deal damage to target enemy. Deals 30% more damage to targets below 50% Health.",
+        run(c, E) { E.hit(c, 1.05, { bonus: c.t.hp < c.t.max.hp * .5 ? .3 : 0 }); } },
+      { n: "Thermal Detonator", tgt: "enemies", cd: 4, anim: "grenade", d: "Deal damage to all enemies with a 60% chance to inflict Damage Over Time for 2 turns.",
+        run(c, E) { for (const r of E.hit(c, 1.2, { aoe: 1 })) if (r.hit) E.debuff(c.u, r.tgt, "dot", 2, .6); } },
+    ],
+    uq: { n: "Bounty Collector", d: "+20% Critical Chance. Whenever Boba defeats an enemy, he gains Advantage and 30% Turn Meter.",
+      stats: { crit: .2 }, on: { death(u, E, i) { if (i.killer === u && u.alive) { E.buff(u, "advantage", 2); E.tm(u, 30); } } } },
+    lead: { n: "Bounty Hunter Contract", tag: BH, d: "Bounty Hunter allies have +30% Critical Chance and +25% Offense.", stats: { crit: .3, offPct: .25 } },
+  },
+  jango: {
+    n: "Jango Fett", side: "dark", role: "Attacker", tags: [BH, Scoundrel],
+    fig: { type: "mando", col: "#3a4a6a", col2: "#2a3550", acc: "#1a1a22", helm: "#a9b6c4", boot: "#2a2a30", w: "pistols" },
+    ab: [
+      { n: "Twin Westars", tgt: "enemy", d: "Attack target enemy 2 times. Each hit has a 40% chance to inflict Damage Over Time for 2 turns.",
+        run(c, E) { for (let k = 0; k < 2; k++) { const r = E.hit(c, .58); if (r.hit) E.debuff(c.u, c.t, "dot", 2, .4); } } },
+      { n: "Flamethrower", tgt: "enemies", cd: 3, anim: "flame", d: "Deal damage to all enemies. Enemies suffering Damage Over Time take 30% more damage.",
+        run(c, E) { E.hit(c, 1.3, { aoe: 1, bonusFn: t => E.has(t, "dot") ? .3 : 0 }); } },
+    ],
+    uq: { n: "Prime Template", d: "+20% Potency. Jango deals 25% more damage to enemies suffering Damage Over Time.",
+      stats: { pot: .2 }, dmgMod: (u, t, E) => E.has(t, "dot") ? 1.25 : 1 },
+  },
+  b1: {
+    n: "B1 Battle Droid", side: "dark", role: "Attacker", tags: [Droid, Sep], mod: { hpPct: -.1 },
+    fig: { type: "b1", col: "#d2b98a", col2: "#c4ab7c", acc: "#8a7450", w: "rifle" },
+    ab: [
+      { n: "Roger Roger", tgt: "enemy", d: "Deal damage to target enemy with a 35% chance to call another Droid ally to assist.",
+        run(c, E) { E.hit(c, 1.0); if (!c.assist && !c.counter && E.r() < .35) E.assist(c, a => E.tag(a, Droid)); } },
+      { n: "Swarm Protocol", tgt: "enemy", cd: 3, anim: "volley", d: "Deal heavy damage to target enemy, +15% damage for each other living Droid ally.",
+        run(c, E) { const n = allyTag(E, c.u, Droid).length - 1; E.hit(c, 1.5, { bonus: .15 * n }); } },
+    ],
+    uq: { n: "Mass Produced", d: "+10 Speed. When a B1 Battle Droid is defeated, all Droid allies gain 15% Turn Meter.",
+      stats: { spd: 10 }, on: { death(u, E, i) { if (i.unit === u) for (const a of allyTag(E, u, Droid)) E.tm(a, 15); } } },
+  },
+  grievous: {
+    n: "General Grievous", side: "dark", role: "Attacker", tags: [Droid, Sep], mod: { hpPct: .15 },
+    fig: { type: "grievous", col: "#e3dcc8", col2: "#5f5e5a", acc: "#2a2a28", boot: "#4a4a46", cape: "#3a2f3a", h: 1.2, w: "saber4", sc: "#4aa3ff" },
+    ab: [
+      { n: "Saber Whirl", tgt: "enemy", d: "Deal damage to target enemy with a 50% chance to inflict Defense Down for 2 turns.",
+        run(c, E) { const r = E.hit(c, 1.05); if (r.hit) E.debuff(c.u, c.t, "defDown", 2, .5); } },
+      { n: "Four-Armed Fury", tgt: "enemy", cd: 3, anim: "melee", d: "Attack target enemy 4 times.",
+        run(c, E) { for (let k = 0; k < 4 && c.t.alive; k++) E.hit(c, .58); } },
+    ],
+    uq: { n: "Cybernetic Frame", d: "+30% Max Health. At the start of his turn, if below 50% Health, Grievous recovers 10% Health.",
+      stats: { hpPct: .3 }, on: { turn(u, E, i) { if (i.unit === u && u.hp < u.max.hp * .5) E.heal(u, .1); } } },
+    lead: { n: "Droid Army Commander", tag: Droid, d: "Droid allies have +30% Max Health and +20% Offense. When a Droid ally is defeated, the others gain 20% Turn Meter.",
+      stats: { hpPct: .3, offPct: .2 }, on: { death(L, E, i) { if (i.unit.team === L.team && E.tag(i.unit, Droid)) for (const a of allyTag(E, L, Droid)) E.tm(a, 20); } } },
+  },
+  kylo: {
+    n: "Kylo Ren", side: "dark", role: "Attacker", tags: [FO],
+    fig: { type: "kylo", col: "#18181b", col2: "#141416", acc: "#2a2a2e", boot: "#0b0b0d", cape: "#0e0e10", robe: 1, h: 1.08, w: "saber", sc: "#ff2b2b" },
+    ab: [
+      { n: "Unstable Saber", tgt: "enemy", d: "Deal damage to target enemy with a 55% chance to inflict Damage Over Time for 2 turns.",
+        run(c, E) { const r = E.hit(c, 1.1); if (r.hit) E.debuff(c.u, c.t, "dot", 2, .55); } },
+      { n: "Force Freeze", tgt: "enemy", cd: 3, anim: "choke", d: "Deal heavy damage to target enemy with a 70% chance to Stun them for 1 turn.",
+        run(c, E) { const r = E.hit(c, 1.6); if (r.hit) E.debuff(c.u, c.t, "stun", 1, .7); } },
+    ],
+    uq: { n: "Rage of Ren", d: "Whenever Kylo is damaged, he gains 5% damage (stacks up to 10 times).",
+      on: { hit(u, E, i) { if (i.tgt === u && u.alive) u.vars.rage = Math.min(10, (u.vars.rage || 0) + 1); } },
+      dmgMod: u => 1 + .05 * (u.vars.rage || 0) },
+    lead: { n: "Will of the First Order", tag: FO, d: "First Order allies have +25% Offense and +15 Speed.", stats: { offPct: .25, spd: 15 } },
+  },
+  phasma: {
+    n: "Captain Phasma", side: "dark", role: "Support", tags: [FO],
+    fig: { type: "trooper", col: "#c9ced6", col2: "#b8bec8", acc: "#1b1d22", boot: "#aab0ba", cape: "#1a1a1e", chrome: 1, h: 1.12, w: "rifle" },
+    ab: [
+      { n: "Chrome Blaster", tgt: "enemy", d: "Deal damage to target enemy with a 50% chance to inflict Speed Down for 1 turn.",
+        run(c, E) { const r = E.hit(c, 1.0); if (r.hit) E.debuff(c.u, c.t, "spdDown", 1, .5); } },
+      { n: "Fire at Will", tgt: "enemies", cd: 3, anim: "volley", d: "Deal damage to all enemies. First Order allies gain 15% Turn Meter.",
+        run(c, E) { E.hit(c, 1.0, { aoe: 1 }); for (const a of allyTag(E, c.u, FO)) if (a !== c.u) E.tm(a, 15); } },
+    ],
+    uq: { n: "Iron Commander", d: "+30% Tenacity. At the start of battle, First Order allies gain +10 Speed.",
+      stats: { ten: .3 }, on: { start(u, E) { for (const a of allyTag(E, u, FO)) E.mod(a, "spd", 10); } } },
+    lead: { n: "Inspiring Through Fear", tag: FO, d: "First Order allies have +30% Max Protection and +20% Offense. At the start of battle they gain Advantage.",
+      stats: { protPct: .3, offPct: .2 }, on: { start(L, E) { for (const a of allyTag(E, L, FO)) E.buff(a, "advantage", 2); } } },
+  },
+};
+const CH_IDS = Object.keys(CH);
+for (const id of CH_IDS) { CH[id].id = id; }

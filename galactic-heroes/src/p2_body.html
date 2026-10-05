@@ -1,0 +1,101 @@
+
+<div id="app">
+  <header id="topbar"></header>
+  <main id="view"></main>
+  <nav id="tabs"></nav>
+</div>
+<div id="battle" hidden></div>
+<div id="modal" hidden></div>
+<div id="toast"></div>
+<script>
+"use strict";
+/* =====================================================================
+   GALACTIC HEROES — an unofficial Star Wars fan game.
+   Not affiliated with Lucasfilm, Disney, EA or Capital Games.
+   ===================================================================== */
+
+// ---------- utils ----------
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const R = Math.random;
+const ri = (a, b) => a + Math.floor(R() * (b - a + 1));
+const pick = a => a[Math.floor(R() * a.length)];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmt = n => n >= 1e6 ? (n / 1e6).toFixed(n >= 1e7 ? 0 : 1) + "M" : n >= 1e4 ? (n / 1e3).toFixed(n >= 1e5 ? 0 : 1) + "K" : Math.round(n).toLocaleString("en-US");
+const fmtFull = n => Math.round(n).toLocaleString("en-US");
+const roman = n => ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"][n] || n;
+const pct = v => Math.round(v * 100) + "%";
+function seeded(seed) { let s = seed >>> 0 || 1; return () => { s ^= s << 13; s >>>= 0; s ^= s >> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; }; }
+function hash(str) { let h = 2166136261; for (const c of str) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+const dur = ms => { const m = Math.floor(ms / 60000), s = Math.floor(ms % 60000 / 1000); if (m >= 60) return Math.floor(m / 60) + "h " + (m % 60) + "m"; return m + ":" + String(s).padStart(2, "0"); };
+
+// ---------- icons ----------
+const IC = {
+  energy: '<svg viewBox="0 0 24 24"><path fill="#5fd4ff" d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg>',
+  credits: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#c9a24a"/><circle cx="12" cy="12" r="6" fill="none" stroke="#7a5b17" stroke-width="2"/><path d="M12 7v10M9 9.5h4.5a1.75 1.75 0 0 1 0 3.5h-3a1.75 1.75 0 0 0 0 3.5H15" stroke="#3d2c06" stroke-width="1.6" fill="none"/></svg>',
+  crystals: '<svg viewBox="0 0 24 24"><path fill="#ff5fa2" d="M12 2 20 9l-8 13L4 9z"/><path fill="#ffb3d3" d="M12 2 8 9h8z"/><path fill="#c22e6e" d="M12 22 16 9h4z"/></svg>',
+  tokens: '<svg viewBox="0 0 24 24"><path fill="#e0a43a" d="M12 2 21 7v10l-9 5-9-5V7z"/><path fill="#4a2d05" d="M8 9h8v2h-3v6h-2v-6H8z"/></svg>',
+  sal1: '<svg viewBox="0 0 24 24"><path fill="#9aa4b8" d="M10 2h4l1 3 3 1 2-2 3 3-2 2 1 3 3 1v4l-3 1-1 3 2 2-3 3-2-2-3 1-1 3h-4l-1-3-3-1-2 2-3-3 2-2-1-3-3-1v-4l3-1 1-3-2-2 3-3 2 2 3-1z" transform="scale(.8) translate(3 3)"/><circle cx="12" cy="12" r="3.5" fill="#1a2234"/></svg>',
+  sal2: '<svg viewBox="0 0 24 24"><path fill="#4fd17f" d="M10 2h4l1 3 3 1 2-2 3 3-2 2 1 3 3 1v4l-3 1-1 3 2 2-3 3-2-2-3 1-1 3h-4l-1-3-3-1-2 2-3-3 2-2-1-3-3-1v-4l3-1 1-3-2-2 3-3 2 2 3-1z" transform="scale(.8) translate(3 3)"/><circle cx="12" cy="12" r="3.5" fill="#0e2a1a"/></svg>',
+  sal3: '<svg viewBox="0 0 24 24"><path fill="#b26bff" d="M10 2h4l1 3 3 1 2-2 3 3-2 2 1 3 3 1v4l-3 1-1 3 2 2-3 3-2-2-3 1-1 3h-4l-1-3-3-1-2 2-3-3 2-2-1-3-3-1v-4l3-1 1-3-2-2 3-3 2 2 3-1z" transform="scale(.8) translate(3 3)"/><circle cx="12" cy="12" r="3.5" fill="#24103f"/></svg>',
+  mats: '<svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2" fill="#2a3f6b"/><path d="M8 7h8M8 11h8M8 15h5" stroke="#5fd4ff" stroke-width="2"/><circle cx="17" cy="17" r="4" fill="#f2c14e"/></svg>',
+  droid1: '<svg viewBox="0 0 24 24"><rect x="6" y="5" width="12" height="15" rx="3" fill="#7b8599"/><circle cx="12" cy="10" r="3" fill="#5fd4ff"/><rect x="8" y="15" width="8" height="2" fill="#333c50"/></svg>',
+  droid2: '<svg viewBox="0 0 24 24"><rect x="6" y="5" width="12" height="15" rx="3" fill="#3f9e66"/><circle cx="12" cy="10" r="3" fill="#ffd34d"/><rect x="8" y="15" width="8" height="2" fill="#173a26"/></svg>',
+  droid3: '<svg viewBox="0 0 24 24"><rect x="6" y="5" width="12" height="15" rx="3" fill="#8a4fd1"/><circle cx="12" cy="10" r="3" fill="#ff5fa2"/><rect x="8" y="15" width="8" height="2" fill="#2c1247"/></svg>',
+  star: '<svg viewBox="0 0 24 24"><path fill="#f2c14e" stroke="#7a5310" stroke-width="1" d="m12 2 3 7 7 .6-5.4 4.6 1.7 7.3L12 17.6l-6.3 3.9 1.7-7.3L2 9.6 9 9z"/></svg>',
+  starOff: '<svg viewBox="0 0 24 24"><path fill="#1a2238" stroke="#3a4766" stroke-width="1" d="m12 2 3 7 7 .6-5.4 4.6 1.7 7.3L12 17.6l-6.3 3.9 1.7-7.3L2 9.6 9 9z"/></svg>',
+  crown: '<svg viewBox="0 0 20 14"><path fill="#f2c14e" stroke="#5b3e08" d="M1 13 2 3l5 5 3-7 3 7 5-5 1 10z"/></svg>',
+  saber: c => `<svg viewBox="0 0 24 24"><path d="M4 20 18 6" stroke="${c}" stroke-width="3.5" stroke-linecap="round" opacity=".5"/><path d="M4 20 18 6" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><path d="M3 21l3-3" stroke="#aab" stroke-width="3" stroke-linecap="round"/></svg>`,
+  blaster: '<svg viewBox="0 0 24 24"><path fill="#c9d3e6" d="M3 9h14l2-2h2v4h-3v2H9l-1 5H5l1-5H3z"/><path d="M19 9h3" stroke="#ff6b6b" stroke-width="2"/></svg>',
+  force: '<svg viewBox="0 0 24 24"><path d="M3 12c4-6 8 6 12 0s4-4 6-2" stroke="#9fe0ff" stroke-width="2" fill="none"/><path d="M3 17c4-6 8 6 12 0" stroke="#5fd4ff" stroke-width="2" fill="none" opacity=".6"/><circle cx="12" cy="6" r="2" fill="#fff"/></svg>',
+  shield: '<svg viewBox="0 0 24 24"><path fill="#5fd4ff" d="M12 2 20 5v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z" opacity=".85"/><path fill="#04121f" d="M12 6 16 8v3c0 3-1.8 5.5-4 6.6z"/></svg>',
+  heal: '<svg viewBox="0 0 24 24"><path fill="#43d67e" d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/></svg>',
+  boost: '<svg viewBox="0 0 24 24"><path fill="#f2c14e" d="M12 2 19 10h-4v5H9v-5H5zM6 17h12v2H6zm0 3h12v2H6z"/></svg>',
+  lightning: '<svg viewBox="0 0 24 24"><path fill="#b9a6ff" d="M14 2 5 13h5l-2 9 10-13h-6z"/><path d="M14 2 5 13h5l-2 9" stroke="#fff" stroke-width=".8" fill="none"/></svg>',
+  skull: '<svg viewBox="0 0 24 24"><path fill="#e8edf7" d="M12 2c5 0 8 3.5 8 8 0 3-1.5 4.5-3 5.5V19h-3v-2h-1v2h-2v-2h-1v2H7v-3.5C5.5 14.5 4 13 4 10c0-4.5 3-8 8-8z"/><circle cx="9" cy="10" r="2" fill="#05080f"/><circle cx="15" cy="10" r="2" fill="#05080f"/></svg>',
+  home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11 12 3l9 8v10h-6v-6H9v6H3z"/></svg>',
+  battles: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20 15 9M15 9l2-5 3 3-5 2M20 20 9 9M9 9 7 4 4 7l5 2"/></svg>',
+  chars: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2 20c1-4 4-6 7-6s6 2 7 6"/><circle cx="17" cy="7" r="2.5"/><path d="M17 12c2.5 0 4.5 2 5 5"/></svg>',
+  arena: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 4h10v4a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 13v4M8 21h8M9 17h6"/></svg>',
+  store: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h16l-1 12H5z"/><path d="M8 8a4 4 0 0 1 8 0"/></svg>',
+  gearIc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>',
+  back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 4 7 12l8 8"/></svg>',
+};
+const ITEMS = {
+  credits: { n: "Credits", ic: IC.credits },
+  crystals: { n: "Crystals", ic: IC.crystals },
+  tokens: { n: "Arena Tokens", ic: IC.tokens },
+  sal1: { n: "Gear Salvage", ic: IC.sal1, d: "Upgrades gear tiers I–IV." },
+  sal2: { n: "Advanced Salvage", ic: IC.sal2, d: "Upgrades gear tiers V–VIII." },
+  sal3: { n: "Elite Salvage", ic: IC.sal3, d: "Upgrades gear tiers IX–XII." },
+  mats: { n: "Ability Materials", ic: IC.mats, d: "Upgrades basic and special abilities." },
+  droid1: { n: "Training Droid", ic: IC.droid1, xp: 300 },
+  droid2: { n: "Adv. Training Droid", ic: IC.droid2, xp: 1500 },
+  droid3: { n: "Elite Training Droid", ic: IC.droid3, xp: 6000 },
+};
+
+// ---------- status effects ----------
+const FX = {
+  offUp:     { n: "Offense Up", b: 1, s: "OF", d: "+50% Offense" },
+  defUp:     { n: "Defense Up", b: 1, s: "DF", d: "+20 Armor" },
+  spdUp:     { n: "Speed Up", b: 1, s: "SP", d: "+30% Speed" },
+  critUp:    { n: "Crit Chance Up", b: 1, s: "CR", d: "+30% Critical Chance" },
+  tenUp:     { n: "Tenacity Up", b: 1, s: "TN", d: "+50% Tenacity" },
+  foresight: { n: "Foresight", b: 1, s: "FS", d: "Evades the next attack" },
+  hot:       { n: "Heal Over Time", b: 1, s: "HT", d: "Recovers 8% Max Health at the start of each turn" },
+  stealth:   { n: "Stealth", b: 1, s: "SL", d: "Can't be targeted while a non-Stealthed ally can" },
+  taunt:     { n: "Taunt", b: 1, s: "TA", d: "Enemies must target this unit" },
+  advantage: { n: "Advantage", b: 1, s: "AV", d: "Next attack is a guaranteed critical hit" },
+  immunity:  { n: "Debuff Immunity", b: 1, s: "IM", d: "Can't be debuffed" },
+  offDown:   { n: "Offense Down", b: 0, s: "OF", d: "-50% Offense" },
+  defDown:   { n: "Defense Down", b: 0, s: "DF", d: "-20 Armor" },
+  spdDown:   { n: "Speed Down", b: 0, s: "SP", d: "-30% Speed" },
+  tenDown:   { n: "Tenacity Down", b: 0, s: "TN", d: "-50% Tenacity" },
+  stun:      { n: "Stun", b: 0, s: "ST", d: "Misses the next turn and can't evade" },
+  abBlock:   { n: "Ability Block", b: 0, s: "AB", d: "Can only use the basic ability" },
+  dot:       { n: "Damage Over Time", b: 0, s: "DT", d: "Loses 6% Max Health per stack at the start of each turn (ignores Protection)" },
+  healImm:   { n: "Healing Immunity", b: 0, s: "HI", d: "Can't recover Health" },
+  buffImm:   { n: "Buff Immunity", b: 0, s: "BI", d: "Can't gain buffs" },
+  expose:    { n: "Expose", b: 0, s: "EX", d: "The next hit deals bonus damage equal to 15% of Max Health" },
+};

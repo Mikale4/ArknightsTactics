@@ -7,3 +7,7 @@ node_modules/
 # Builds
 dist/
 build/
+
+# Test screenshots and lockfiles from local tooling
+**/tests/shots/
+package-lock.json
