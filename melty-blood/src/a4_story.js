@@ -231,22 +231,7 @@ const DAILIES = [
   { id: "rune", n: "Upgrade a Mystic Code", goal: 1, reward: { lmd: 3000, credit: 40 } },
 ];
 const DAILY_ALL = { permit: 1 };
-const ACHIEVEMENTS = [
-  ...STORY[0].chapters.map((c, i) => ({ id: "ch" + (i + 1), n: `Clear Night ${c.no}: ${c.title}`, test: () => chapterCleared(c), reward: i === 4 ? { orundum: 600, permit: 3 } : { orundum: 300 } })),
-  { id: "ops10", n: "Gather 10 characters", test: () => Object.keys(S.ops).length >= 10, reward: { orundum: 200 } },
-  { id: "ops20", n: "Gather 20 characters", test: () => Object.keys(S.ops).length >= 20, reward: { orundum: 400, permit: 1 } },
-  { id: "moons", n: "Collect all three Moon styles of one character", test: () => CHARS.some(c => variantsOf(c.k).length === 3 && variantsOf(c.k).every(f => elementsOf(f).some(owned))), reward: { orundum: 500, permit: 1 } },
-  { id: "elems", n: "Collect one Moon style in all five Elements", test: () => FAMS.some(f => elementsOf(f).every(owned)), reward: { orundum: 800, permit: 2 } },
-  { id: "ops40", n: "Gather 40 characters", test: () => Object.keys(S.ops).length >= 40, reward: { orundum: 600, permit: 2 } },
-  { id: "ops100", n: "Gather 100 characters", test: () => Object.keys(S.ops).length >= 100, reward: { orundum: 1000, permit: 3 } },
-  { id: "opsAll", n: "Gather every character in every Moon style and Element", test: () => Object.keys(S.ops).length >= OP_KEYS.length, reward: { orundum: 3000, permit: 10 } },
-  { id: "e1", n: "Ascend a character once", test: () => Object.values(S.ops).some(p => p.elite >= 1), reward: { orundum: 150 } },
-  { id: "e2", n: "Fully Ascend a character", test: () => Object.values(S.ops).some(p => p.elite >= 2), reward: { orundum: 400, permit: 1 } },
-  { id: "six", n: "Manifest a 5★ character", test: () => Object.keys(S.ops).some(k => OPS[k].rar === 5), reward: { orundum: 300 } },
-  { id: "tw10", n: "Clear Arcade stage 10", test: () => S.tower >= 10, reward: { orundum: 300, permit: 1 } },
-  { id: "tw20", n: "Clear Arcade stage 20", test: () => S.tower >= 20, reward: { orundum: 500, permit: 2 } },
-  { id: "tw30", n: "Clear all 30 Arcade stages", test: () => S.tower >= 30, reward: { orundum: 1000, permit: 3 } },
-];
+// Achievements live in a9c_meta.js (ACH): tiered, with rewards sent to the Inbox.
 const SHOP = {
   credit: [
     { id: "r_lmd", n: "Yen ×12,000", cost: 200, give: { lmd: 12000 } },

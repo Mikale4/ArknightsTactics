@@ -45,7 +45,7 @@ function renderTop() {
   tickTimers();
   const mx = maxSanity(S.lvl);
   $("#topbar").innerHTML = `
-    <button class="me" data-act="settings" aria-label="Profile and settings">
+    <button class="me" data-act="settings" aria-label="Settings">
       <div class="me-badge num">${S.lvl}</div>
       <div style="min-width:0;text-align:left"><div class="me-name">${esc(S.name)}</div><div class="me-xp"><i style="width:${S.xp / pxpNeed(S.lvl) * 100}%"></i></div></div>
     </button>
@@ -55,18 +55,20 @@ function renderTop() {
       <div class="pill">${IC.orundum}<span>${fmt(S.orundum)}</span></div>
     </div>`;
   const tabs = [["home", "Home", IC.home], ["story", "Story", IC.story], ["battle", "Battle", IC.battles], ["ops", "Characters", IC.ops], ["hh", "Tatari", IC.permit.replace('viewBox', 'fill="currentColor" viewBox')]];
-  const on = { op: "ops", team: UI.arg && UI.arg.from || "story", hunt: "battle", tower: "battle", arena: "battle", chapter: "story", missions: "home", shop: "home", depot: "home" }[UI.view] || UI.view;
+  const on = { op: "ops", team: UI.arg && UI.arg.from || "story", hunt: "battle", tower: "battle", arena: "battle", chapter: "story", missions: "home", shop: "home", depot: "home", inbox: "home", ach: "home", settings: "home" }[UI.view] || UI.view;
   $("#tabs").innerHTML = tabs.map(([v, n, ic]) => `<button class="${on === v ? "on" : ""}" data-act="go" data-v="${v}">${ic}<span>${n}</span>${badge(v) ? '<i class="dot"></i>' : ""}</button>`).join("");
 }
 function badge(v) {
-  if (v === "home") return DAILIES.some(d => !S.daily.claimed[d.id] && S.daily[d.id] >= d.goal) || ACHIEVEMENTS.some(a => !S.ach[a.id] && a.test());
+  if (v === "home") return dailyReady() || unclaimedMail().length > 0;
   if (v === "story") return !!nextNode();
   if (v === "battle") return Date.now() - S.arena.payTime >= PAYOUT_MS;
-  if (v === "hh") return S.permit > 0 || S.orundum >= 600;
+  if (v === "hh") return S.permit > 0 || S.orundum >= 600 || S.inv.free10 > 0 || S.inv.gold5 > 0;
   return false;
 }
+const dailyReady = () => DAILIES.some(d => !S.daily.claimed[d.id] && S.daily[d.id] >= d.goal);
 function route(view, arg, keep) {
   UI.view = view; UI.arg = arg;
+  if (UI.inGame) metaTick();
   const el = $("#view"), st = el.scrollTop;
   el.innerHTML = (SCREENS[view] || SCREENS.home)(arg);
   el.scrollTop = keep ? st : 0;
@@ -91,7 +93,11 @@ const QUIPS = {
 };
 function nextHint() {
   const nd = nextNode();
-  if (DAILIES.some(d => !S.daily.claimed[d.id] && S.daily[d.id] >= d.goal) || ACHIEVEMENTS.some(a => !S.ach[a.id] && a.test())) return { act: "missions", text: "Mission rewards are ready to claim." };
+  if (S.inbox.some(m => m.tag === "welcome" && !m.claimed)) return { act: "inbox", text: "Your welcome gifts are waiting in the <b>Inbox</b>: a free ×10 Manifest and a guaranteed 5★." };
+  if (S.inv.free10 > 0 || S.inv.gold5 > 0) return { act: "go", data: 'data-v="hh"', text: "Use your <b>free Manifests</b> at the Tatari." };
+  if (dailyReady()) return { act: "missions", text: "Mission rewards are ready to claim." };
+  const um = unclaimedMail().length;
+  if (um) return { act: "inbox", text: `You have <b>${um}</b> unclaimed gift${um > 1 ? "s" : ""} in your Inbox.` };
   if (S.gacha.total === 0) return { act: "go", data: 'data-v="hh"', text: "Try your first <b>Manifest</b> at the Tatari. Your first ten guarantee a 4★ or better." };
   if (nd) return { act: "openNode", data: `data-id="${nd.id}"`, text: `Continue the story: <b>${nd.id} ${esc(nd.name)}</b>.` };
   return { act: "go", data: 'data-v="battle"', text: "Farm Mystic Codes on <b>Night Patrol</b> or climb <b>Arcade Mode</b>." };
@@ -100,12 +106,16 @@ const SCREENS = {};
 SCREENS.home = () => {
   const ak = S.ops[S.assistant] ? S.assistant : Object.keys(S.ops)[0], op = OPS[ak];
   const hint = nextHint(), nd = nextNode();
-  const missionsReady = badge("home");
+  const missionsReady = dailyReady(), mails = unclaimedMail().length, newAch = achDone() > (S.achSeen || 0);
   return `<div class="lobby">
     <section class="stage">
       <div class="floor"></div><div class="ring3d"></div>
       <img class="assist" src="${spriteURL(op)}" alt="${esc(op.n)}" data-act="poke" draggable="false">
       <div class="nameplate"><span class="eyebrow">Partner</span><b>${esc(op.n)}</b><div class="row" style="gap:4px">${elChip(op.el)}${styleChip(op.style)}<span class="cls">${clsName(op.cls)}</span></div></div>
+      <div class="sidebtns left">
+        <button class="sidebtn" data-act="inbox" aria-label="Inbox">${IC.mail}<small>Inbox</small>${mails ? `<i class="cnt num">${mails}</i>` : ""}</button>
+        <button class="sidebtn" data-act="go" data-v="ach" aria-label="Achievements">${IC.trophy}<small>Records</small>${newAch ? '<i class="dot"></i>' : ""}</button>
+      </div>
       <div class="sidebtns">
         <button class="sidebtn" data-act="missions" aria-label="Missions">${IC.missions}<small>Missions</small>${missionsReady ? '<i class="dot"></i>' : ""}</button>
         <button class="sidebtn" data-act="go" data-v="shop" aria-label="Ahnenerbe café">${IC.shop}<small>Ahnenerbe</small></button>

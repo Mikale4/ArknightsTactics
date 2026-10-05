@@ -538,6 +538,7 @@ async function outro() {
   BT.letterboxT = 1;
   await bwait(1600);
   hideBanner();
+  recordBattle(res, B);
   const out = res.win ? BT.cfg.onWin(res, B) : (BT.cfg.onLose ? BT.cfg.onLose(res, B) : { rewards: [] });
   save();
   const el = document.createElement("div");

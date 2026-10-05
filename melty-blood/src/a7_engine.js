@@ -16,7 +16,7 @@ function animFor(u, sk) {
 
 function makeBattle(cfg) {
   const B = { units: [], ev: [], wave: 0, waves: cfg.waves, over: false, result: null, turn: 0, allyTurns: 0, actor: null, waiting: null,
-    leaders: { A: null, E: null }, mc: { A: 0, E: 0 }, auto: !!cfg.auto, aiStyle: cfg.aiStyle || "balanced", depth: 0, pendingWave: false, allyCount: cfg.allies.length, dmgDone: {} };
+    leaders: { A: null, E: null }, mc: { A: 0, E: 0 }, tally: { arcs: 0, kills: 0 }, auto: !!cfg.auto, aiStyle: cfg.aiStyle || "balanced", depth: 0, pendingWave: false, allyCount: cfg.allies.length, dmgDone: {} };
   const ev = e => B.ev.push(e);
   const has = (u, id) => u.eff.some(e => e.id === id);
   const fxEv = u => {
@@ -156,6 +156,7 @@ function makeBattle(cfg) {
       return;
     }
     u.alive = false; u.hp = 0; u.eff = []; u.shield = 0; u.atb = 0;
+    if (u.team === "E") B.tally.kills++;
     ev({ k: "death", u: u.uid });
     if (killer && killer.alive) for (const p of killer.passives) {
       if (p.id === "TEAM_ATB_ON_KILL") for (const a of allies(killer)) addATB(a, p.amount);
@@ -381,7 +382,7 @@ function makeBattle(cfg) {
   function act(u, slot, t) {
     const sk = u.skills.find(s => s.slot === slot) || u.skills[0];
     if (sk.arc && B.mc[u.team] < sk.arc) return act(u, 1, t);
-    if (sk.arc) gainMC(u.team, -sk.arc);
+    if (sk.arc) { gainMC(u.team, -sk.arc); if (u.team === "A") B.tally.arcs++; }
     const anim = animFor(u, sk);
     let targets;
     if (sk.target === "enemy") { if (!t || !t.alive || t.team === u.team || !targetable(u).includes(t)) t = defaultTarget(u, sk); targets = t ? [t] : []; }

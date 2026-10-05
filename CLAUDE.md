@@ -27,7 +27,8 @@ sh melty-blood/src/build.sh
 `a6_state.js` save, progression, headhunting · `a7_engine.js` battle rules (event-driven) · `a8a_render.js` 3D camera and drawing ·
 `a8c_sfx.js` WebAudio sounds · `a8b_battle.js` battle director and HUD · `a9a/a9b_screens.js` screens · `a10_boot.js` launchers, actions, boot.
 
-`melty-blood/src` uses the same part order (minus `a5b_opfig.js`): characters, kits and figures live in `a3a_roster.js`;
+`melty-blood/src` uses the same part order (minus `a5b_opfig.js`, plus `a9c_meta.js` before `a10_boot.js`: Inbox, achievements,
+Settings and the title screen). Characters, kits and figures live in `a3a_roster.js`;
 each `CHARS` entry has `Crescent`/`Half`/`Full` styles (own class, skills, Personal Skill), and each style comes in all five Elements
 (`ELEMENT_KIT` in `a3b_kits.js` tweaks stats, S1 and the Arc Drive), giving 435 units keyed `<char>-<c|h|f>-<element>`. Fields: `style` = Moon
 style, `el` = Element (matchups). `HOME_EL` picks each style's home Element; `homeKey("shiki-c")` gives that unit.

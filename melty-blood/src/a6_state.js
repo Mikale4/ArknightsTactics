@@ -12,9 +12,13 @@ const xpNeed = (l, e) => Math.round((60 + l * 22) * (1 + e * .9));
 const effLV = p => p.lvl + LV_OFF[p.elite];
 const mkProg = () => ({ lvl: 1, xp: 0, elite: 0, pot: 1, sk: [1, 1, 1], runes: [null, null] });
 
+// play statistics behind the achievements
+const newStats = () => ({ battles: 0, wins: 0, arcs: 0, kills: 0, flawless: 0, versus: 0, patrols: 0, fives: 0, codeUps: 0, loginDays: 0 });
 function newSave() {
   const s = {
-    v: 1, codes2: 1, name: "Night Walker", lvl: 1, xp: 0, seenIntro: false,
+    v: 1, codes2: 1, name: "Night Walker", named: false, lvl: 1, xp: 0, seenIntro: false,
+    playerId: String(100000000 + Math.floor(R() * 899999999)), created: Date.now(),
+    inbox: [], mailSeq: 0, achv: {}, lastLogin: "", lastGift: Date.now(), lvlGift: 1,
     sanity: maxSanity(1), sTime: Date.now(),
     lmd: 20000, orundum: 6000, permit: 10, cert: 0, tokens: 0, prime: 6, credit: 300,
     inv: { rec1: 20, rec2: 6, rec3: 0, rec4: 0, chip: 4, summ: 6 },
@@ -24,9 +28,10 @@ function newSave() {
     arena: { rank: 1500, attempts: 5, aTime: Date.now(), payTime: Date.now(), opps: null },
     gacha: { pity: 0, firstTen: true, total: 0 },
     daily: { day: today(), clear: 0, sanity: 0, hh: 0, upgrade: 0, arena: 0, rune: 0, claimed: {} },
-    ach: {}, settings: { speed: 1, auto: false, sound: true, ai: "balanced" }, stats: { battles: 0, wins: 0 },
+    settings: { speed: 1, auto: false, sound: true, ai: "balanced" }, stats: newStats(),
   };
   for (const k of STARTERS) s.ops[k] = mkProg();
+  welcomeMail(s);
   return s;
 }
 function load() {
@@ -183,7 +188,7 @@ function equipRune(key, slot, rid) {
 function unequipRune(key, slot) { const p = S.ops[key], r = runeById(p.runes[slot]); if (r) r.eq = null; p.runes[slot] = null; }
 function enhanceRune(r) {
   if (r.lvl >= 15) return false; const c = enhanceCost(r); if (S.lmd < c) return false;
-  S.lmd -= c; r.lvl++; S.daily.rune++; return true;
+  S.lmd -= c; r.lvl++; S.daily.rune++; S.stats.codeUps++; return true;
 }
 function sellRune(r) { if (r.eq) unequipRune(r.eq.k, r.eq.s); S.lmd += sellValue(r); S.runes = S.runes.filter(x => x !== r); }
 
@@ -212,7 +217,7 @@ function rollRarity() {
 }
 function pullOne(featured, forceMin) {
   let rar = rollRarity(); if (forceMin && rar < forceMin) rar = forceMin;
-  if (rar === 5) S.gacha.pity = 0; else S.gacha.pity++;
+  if (rar === 5) { S.gacha.pity = 0; S.stats.fives++; } else S.gacha.pity++;
   S.gacha.total++;
   const B = featured ? bannerToday() : null;
   let key;

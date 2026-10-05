@@ -198,6 +198,8 @@ SCREENS.hh = () => {
       <p class="small" style="max-width:26ch">Half of all 5★ results are ${esc(opLabel(f6))}. Featured 4★: ${B.feat5.map(k => esc(opLabel(OPS[k]))).join(", ")}.</p>`}
     </section>
     <div class="row wrap small dim"><span>5★ 3% · 4★ 18% · 3★ 79% · Ether and Imaginary Numbers versions 5% each</span>${pity ? `<span class="gold">· 5★ rate now ${3 + pity * 3}%</span>` : `<span>· ${Math.max(0, 50 - S.gacha.pity)} Manifests until the 5★ rate starts rising</span>`}</div>
+    ${S.inv.free10 > 0 ? `<button class="btn wide freepull" data-act="pullFree10">${IC.free10.replace("<svg", '<svg width="26" height="26"')}<span>Free Manifest ×10 on this banner<br><small>Night of Rumors ×${S.inv.free10}</small></span></button>` : ""}
+    ${S.inv.gold5 > 0 ? `<button class="btn wide freepull crimson" data-act="pullGold5">${IC.gold5.replace("<svg", '<svg width="26" height="26"')}<span>Crimson Moon Rumor: Manifest a random 5★<br><small>×${S.inv.gold5}</small></span></button>` : ""}
     ${S.gacha.firstTen ? `<div class="hint">${IC.star.replace("<svg", '<svg width="20" height="20"')}<span class="small">Your first ten Manifests guarantee at least one 4★ character.</span></div>` : ""}
     <div class="row" style="gap:10px">
       <button class="btn ghost" style="flex:1" data-act="pull" data-n="1" ${S.permit >= 1 || S.orundum >= 600 ? "" : "disabled"}>Manifest ×1<br><span class="cost">${S.permit >= 1 ? IC.permit + "1" : IC.orundum + "600"}</span></button>
@@ -251,15 +253,10 @@ function missionsModal() {
       <div class="spread"><span class="row tiny">${Object.entries(d.reward).map(([k, n]) => `<span class="cost">${itemIcon(k)}${fmt(n)}</span>`).join(" ")}</span>
       <button class="btn sm" data-act="claimDaily" data-id="${d.id}" ${v >= d.goal && !cl ? "" : "disabled"}>${cl ? "Claimed" : "Claim"}</button></div></div>`;
   }).join("");
-  const ach = ACHIEVEMENTS.map(a => {
-    const ok = a.test(), cl = S.ach[a.id];
-    return `<div class="sub spread"><div><b class="small">${esc(a.n)}</b><div class="row tiny">${Object.entries(a.reward).map(([k, n]) => `<span class="cost">${itemIcon(k)}${fmt(n)}</span>`).join(" ")}</div></div>
-      <button class="btn sm" data-act="claimAch" data-id="${a.id}" ${ok && !cl ? "" : "disabled"}>${cl ? "Done" : ok ? "Claim" : "Locked"}</button></div>`;
-  }).join("");
-  openModal(`<div class="stack"><div class="eyebrow">Resets daily</div><h2>Missions</h2>${dl}
+  openModal(`<div class="stack"><div class="eyebrow">Resets daily</div><h2>Daily Missions</h2>${dl}
     <div class="sub spread"><span class="small">Complete all daily missions: <span class="cost">${IC.permit}1</span></span>
       <button class="btn sm" data-act="claimAllDaily" ${DAILIES.every(d => S.daily.claimed[d.id]) && !S.daily.claimed.all ? "" : "disabled"}>${S.daily.claimed.all ? "Claimed" : "Claim"}</button></div>
-    <h3 style="margin-top:6px">Milestones</h3>${ach}
+    <button class="btn ghost wide" data-act="go" data-v="ach">${IC.trophy.replace("<svg", '<svg width="18" height="18"')} Achievements · ${achDone()}/${achTotal}</button>
     <button class="btn ghost wide" data-act="closeModal">Close</button></div>`);
 }
 SCREENS.shop = () => {
@@ -283,22 +280,9 @@ SCREENS.depot = () => {
     ${tab === "runes" ? `<div class="filters">${["all", ...RUNE_SETS].map(s => `<button class="chip ${UI.runeSet === s ? "on" : ""}" data-act="runeSetF" data-s="${s}">${s === "all" ? "All sets" : setName(s)}</button>`).join("")}</div>
       ${runes.length ? runes.map(r => runeRow(r, `<button class="btn sm ghost" data-act="runeSheet" data-id="${r.id}">Manage</button>`)).join("") : '<p class="small dim">No Mystic Codes yet. Go on Night Patrol from the Battle tab to find them.</p>'}
       ${S.runes.some(r => !r.eq && r.rar <= 2) ? `<button class="btn ghost wide" data-act="sellJunk">Sell all unequipped Grade I and II Mystic Codes</button>` : ""}`
-    : `<div class="rewards" style="justify-content:flex-start">${["rec1", "rec2", "rec3", "rec4", "chip", "summ", "permit", "cert", "tokens", "prime", "credit"].map(k => `<div class="rw"><div class="ri" style="width:54px;height:54px">${itemIcon(k)}</div><span class="num">×${fmt(have(k))}</span><span class="tiny dim">${ITEMS[k].n}</span></div>`).join("")}</div>`}
+    : `<div class="rewards" style="justify-content:flex-start">${["rec1", "rec2", "rec3", "rec4", "chip", "summ", "permit", "cert", "tokens", "prime", "credit", "free10", "gold5"].filter(k => k !== "free10" && k !== "gold5" || have(k) > 0).map(k => `<div class="rw"><div class="ri" style="width:54px;height:54px">${itemIcon(k)}</div><span class="num">×${fmt(have(k))}</span><span class="tiny dim">${ITEMS[k].n}</span></div>`).join("")}</div>`}
   </div>`;
 };
-function settingsModal(confirmReset) {
-  openModal(`<div class="stack"><h2>Profile</h2>
-    <label class="small dim" for="pname">Your name</label>
-    <input id="pname" maxlength="16" value="${esc(S.name)}" style="font:600 16px var(--f-body);padding:10px 12px;background:var(--hull2);color:var(--text);border:1px solid var(--line2);border-radius:6px">
-    <div class="statgrid small"><div><span>Level</span><b>${S.lvl}</b></div><div><span>Roster power</span><b>${fmtFull(rosterPower())}</b></div><div><span>Battles won</span><b>${S.stats.wins}</b></div><div><span>Manifests</span><b>${S.gacha.total}</b></div></div>
-    <button class="btn ghost wide" data-act="toggleSound">Sound: ${S.settings.sound ? "On" : "Off"}</button>
-    <button class="btn ghost wide" data-act="cycleAi">Auto-battle AI: ${S.settings.ai}</button>
-    ${confirmReset ? `<div class="sub stack" style="gap:8px;border-color:var(--ds)"><b class="small">Erase all progress?</b><p class="tiny dim">Your characters, Mystic Codes, story progress and currencies will be deleted from this browser.</p>
-      <div class="row"><button class="btn red sm" data-act="doReset">Erase progress</button><button class="btn ghost sm" data-act="settings">Keep playing</button></div></div>`
-      : `<button class="btn ghost wide" data-act="askReset">Reset progress</button>`}
-    <p class="tiny dim">Progress saves in this browser. Melty Blood RPG is an unofficial, non-commercial fan game. Melty Blood and Tsukihime belong to TYPE-MOON and French-Bread; all art here is drawn by the game itself.</p>
-    <button class="btn wide" data-act="saveName">Done</button></div>`);
-}
 function sanityModal() {
   openModal(`<div class="stack"><h2>Prana</h2><p class="small dim">Battles cost Prana. You regain 1 every 30 seconds, a level-up refills it, and 1 Holy Relic restores it to max.</p>
     <div class="spread"><span class="cost">${IC.sanity}<b class="num">${S.sanity}/${maxSanity(S.lvl)}</b></span><span class="tiny dim">${S.sanity < maxSanity(S.lvl) ? "+1 in " + dur(SAN_MS - (Date.now() - S.sTime)) : "Full"}</span></div>

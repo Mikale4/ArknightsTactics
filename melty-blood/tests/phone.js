@@ -1,5 +1,6 @@
-// Phone-size playthrough of Melty Blood RPG: intro, story, a manual and an auto battle, every hub screen,
-// the Tatari, a boss with Arc Drives, and a landscape battle. Screenshots go to tests/shots/.
+// Phone-size playthrough of Melty Blood RPG: title screen, new account, intro, story, a manual and an auto battle,
+// every hub screen, the Inbox and its free Manifests, achievements, settings, a boss with Arc Drives, a landscape
+// battle, and finally an account reset back to the title. Screenshots go to tests/shots/.
 // Run from the repo root after `npm install` and `npx playwright install chromium`.
 const path = require('path'), fs = require('fs');
 const { chromium } = require('playwright');
@@ -22,6 +23,9 @@ const PAGE = 'file://' + path.resolve(__dirname, '../index.html');
     for (let k = 0; k < max; k++) { await page.waitForTimeout(700); if (await page.$('#rDone')) return true; if (tag && [4, 8, 12].includes(k)) await shot(tag + k); }
     return false;
   };
+  await page.waitForTimeout(1200); await shot('00_title');
+  await page.mouse.click(195, 500); await page.waitForTimeout(700); await shot('00b_name');
+  await page.fill('#nname', 'Shiki Fan'); await ev(() => { ACT.nameGo(); });
   await shot('01_intro');
   await ev(() => { ACT.introGo(); }); await shot('02_sheet');
   await ev(() => { ACT.startNode({ id: '1-1' }); }, null, 900); await shot('03_dialogue'); await skipDlg(); await page.waitForTimeout(400);
@@ -39,10 +43,22 @@ const PAGE = 'file://' + path.resolve(__dirname, '../index.html');
     ['15_patrol', v => route('hunt', v), 'alley'], ['16_arcade', v => route(v), 'tower'], ['17_versus', v => route(v), 'arena'], ['18_chars', v => route(v), 'ops'],
     ['19_char', v => { UI.opTab = 'info'; route('op', homeKey(v)); }, 'shiki-c'], ['20_skills', v => { UI.opTab = v; rerender(); }, 'skills'], ['20b_variant', v => { UI.opTab = 'info'; route('op', v); }, 'arcueid-h-ether'], ['21_tatari', v => route(v), 'hh'],
     ['22_shop', v => { UI.shopTab = 'credit'; route(v); }, 'shop'], ['23_items', v => { give({ rune: 4 }); give({ rune: 2 }); route(v); }, 'depot']]) { await ev(fn, a); await shot(n); }
-  await page.evaluate(() => { ACT.pull({ n: '10' }); }); await page.waitForTimeout(700); await shot('24_manifest');
+  // inbox: the welcome mail holds a free ×10 and a guaranteed 5★
+  await ev(() => route('inbox')); await shot('23b_inbox');
+  await ev(() => { ACT.openMail({ id: String(S.inbox.find(m => m.tag === 'welcome').id) }); }); await shot('23c_mail');
+  await ev(() => { ACT.claimAllMail(); }); await shot('23d_claimed'); await ev(() => closeModal());
+  await ev(() => route('hh')); await shot('23e_freepulls');
+  await page.evaluate(() => { ACT.pullGold5(); }); await page.waitForTimeout(700);
+  await page.mouse.click(195, 420); await page.waitForTimeout(1200); await shot('23f_gold5');
+  console.log('5★ from Crimson Moon Rumor:', await page.evaluate(() => S.stats.fives >= 1));
+  await page.evaluate(() => { const d = document.getElementById('gDone'); if (d) d.click(); }); await page.waitForTimeout(300);
+  await page.evaluate(() => { ACT.pullFree10(); }); await page.waitForTimeout(700); await shot('24_manifest');
   await page.mouse.click(195, 420); await page.waitForTimeout(2300); await shot('25_cards');
   await page.evaluate(() => { const d = document.getElementById('gDone'); if (d) d.click(); }); await page.waitForTimeout(300);
   await ev(() => missionsModal()); await shot('26_missions'); await ev(() => closeModal());
+  await ev(() => route('ach')); await shot('26b_achievements');
+  await ev(() => route('inbox')); await shot('26c_inbox_after');
+  await ev(() => route('settings')); await shot('26d_settings');
   // boss with a strong squad: Arc Drives, cut-ins and the Magic Circuit meter
   await ev(() => {
     for (const k of ['arcueid-f', 'ciel-c', 'akiha-f', 'hisui-c', 'arcueid-h'].map(homeKey)) S.ops[k] = progForLV(k, 30);
@@ -59,6 +75,11 @@ const PAGE = 'file://' + path.resolve(__dirname, '../index.html');
   await page.setViewportSize({ width: 844, height: 390 }); await page.waitForTimeout(300);
   await ev(() => { S.team.tower = ['arcueid-f', 'arcueid-h', 'akiha-f', 'hisui-c'].map(homeKey); launchTower(S.tower + 1); }, null, 6500);
   await shot('30_landscape');
+  // reset the account from Settings: back to a brand-new title screen with fresh welcome mail
+  await page.setViewportSize({ width: 390, height: 844 });
+  await ev(() => { closeBattle && BT.on && closeBattle(); route('settings'); ACT.askReset(); }); await page.fill('#rconf', 'reset'); await shot('31_reset');
+  await ev(() => { ACT.doReset(); }, null, 1500); await shot('32_after_reset');
+  console.log('after reset:', await page.evaluate(() => JSON.stringify({ named: S.named, mail: S.inbox.length, ops: Object.keys(S.ops).length, title: !document.getElementById('title').hidden })));
   console.log('ERRORS', JSON.stringify(errs, null, 1));
   await browser.close();
 })();

@@ -135,7 +135,7 @@ function launchHunt(id, l) {
   startBattle({
     allies: allySpecs(ids), waves: huntWaves(h, l), env: h.env, title: h.n, sub: `Night Patrol · ${h.code}-${l}`,
     onWin() {
-      S.hunt[id] = Math.max(S.hunt[id] || 0, l); S.stats.wins++; S.daily.clear++;
+      S.hunt[id] = Math.max(S.hunt[id] || 0, l); S.stats.wins++; S.stats.patrols++; S.daily.clear++;
       const list = huntDrops(h, l); list.push(opsXp(ids, 60 + HUNT_LV[l - 1] * 12));
       return { rewards: list };
     },
@@ -151,7 +151,7 @@ function sweepHunt(id, l) {
   let list = [];
   for (let k = 0; k < 3; k++) list = list.concat(huntDrops(h, l));
   list.push(opsXp(S.team.hunt.filter(owned), (60 + HUNT_LV[l - 1] * 12) * 3));
-  S.daily.clear += 3; S.stats.battles += 3; S.stats.wins += 3;
+  S.daily.clear += 3; S.stats.battles += 3; S.stats.wins += 3; S.stats.patrols += 3;
   rerender(); rewardModal("Auto Deploy ×3", list, `${h.code}-${l} ${h.n}`);
 }
 
@@ -186,7 +186,7 @@ function launchArena(k) {
     onWin() {
       const before = A.rank;
       A.rank = o.rank < A.rank ? o.rank : Math.max(1, A.rank - ri(1, 4));
-      S.stats.wins++; S.daily.arena++;
+      S.stats.wins++; S.stats.versus++; S.daily.arena++;
       const list = give({ tokens: 25 }); if (A.rank < before) list.unshift({ k: "rank", n: A.rank });
       genOpps();
       return { rewards: list };
@@ -214,16 +214,17 @@ function introModal() {
     <img src="${spriteURL(OPS[STARTERS[0]])}" alt="Shiki Tohno" style="height:230px;max-width:100%;object-fit:contain;filter:drop-shadow(0 12px 20px #000)">
     <div class="eyebrow">Misaki Town · After midnight</div>
     <h1>Melty Blood<span style="display:block;color:var(--moon);font-size:18px;letter-spacing:.24em;margin-top:4px">Night of Rumors</span></h1>
-    <p class="small dim" style="max-width:36ch">Lead a squad of four through the Tatari incident. Every action charges your Magic Circuit; at 100%, unleash an Arc Drive. Each character comes in Crescent, Half and Full Moon styles with their own skills and Talent, and every style in five Elements. Elements follow magecraft: Water beats Fire, Fire beats Wind, Wind beats Water, and the rare Ether and Imaginary Numbers beat each other.</p>
+    <p class="small dim" style="max-width:36ch">Lead a squad of four through the Tatari incident. Every action charges your Magic Circuit; at 100%, unleash an Arc Drive. Each character comes in Crescent, Half and Full Moon styles with their own skills and Personal Skill, and every style in five Elements. Elements follow magecraft: Water beats Fire, Fire beats Wind, Wind beats Water, and the rare Ether and Imaginary Numbers beat each other.</p>
     <button class="btn wide" data-act="introGo">Begin the night</button>
     <p class="tiny dim">Unofficial, non-commercial fan game. Melty Blood and Tsukihime belong to TYPE-MOON and French-Bread. All art here is drawn by the game.</p>
   </div>`);
 }
 const ACT = {
+  ...META_ACT,
   go: d => { if (d.v === "op" && d.a !== UI.arg) UI.opTab = "info"; closeModal(); route(d.v, d.a || null); },
   poke: () => quip(),
   missions: () => missionsModal(),
-  settings: () => settingsModal(false),
+  settings: () => { closeModal(); route("settings"); },
   sanity: () => sanityModal(),
   closeModal: () => closeModal(),
   introGo: () => { S.seenIntro = true; closeModal(); route("chapter", "c1"); nodeSheet(NODES["1-1"]); },
@@ -331,11 +332,6 @@ const ACT = {
     S.daily.claimed[m.id] = 1; give(m.reward); sfx("heal"); renderTop(); missionsModal();
   },
   claimAllDaily: () => { if (S.daily.claimed.all) return; S.daily.claimed.all = 1; give(DAILY_ALL); sfx("win"); renderTop(); missionsModal(); },
-  claimAch: d => {
-    const a = ACHIEVEMENTS.find(x => x.id === d.id);
-    if (!a || S.ach[a.id] || !a.test()) return;
-    S.ach[a.id] = 1; give(a.reward); sfx("heal"); renderTop(); missionsModal();
-  },
 
   // shop
   shopTab: d => { UI.shopTab = d.t; rerender(); },
@@ -348,12 +344,6 @@ const ACT = {
     rewardModal("Purchased", list, it.n);
   },
 
-  // settings
-  toggleSound: () => { S.settings.sound = !S.settings.sound; save(); settingsModal(false); },
-  cycleAi: () => { const o = ["balanced", "aggressive", "safe"]; S.settings.ai = o[(o.indexOf(S.settings.ai) + 1) % 3]; save(); settingsModal(false); },
-  askReset: () => settingsModal(true),
-  doReset: () => { try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* storage unavailable */ } S = migrate(newSave()); closeModal(); route("home"); introModal(); },
-  saveName: () => { const v = ($("#pname") || {}).value; S.name = (v || "").trim().slice(0, 16) || "Night Walker"; closeModal(); rerender(); },
 };
 document.addEventListener("click", e => {
   const el = e.target.closest("[data-act]");
@@ -383,16 +373,32 @@ function migrate(s) {
   s.assistant = nk(s.assistant);
   for (const k in s.ops) if (!OPS[k]) delete s.ops[k];
   if (!s.ops[s.assistant]) s.assistant = Object.keys(s.ops)[0] || STARTERS[0];
+  // inbox, achievements, title screen (older saves are treated as named accounts and get the welcome gifts once)
+  s.inbox = s.inbox || []; s.mailSeq = s.mailSeq || 0; s.inv = s.inv || {};
+  s.stats = { ...newStats(), ...(s.stats || {}) };
+  if (!s.playerId) s.playerId = String(100000000 + Math.floor(R() * 899999999));
+  if (!s.created) s.created = Date.now();
+  if (s.named == null) s.named = !!s.seenIntro;
+  if (s.lastLogin == null) s.lastLogin = "";
+  if (s.lastGift == null) s.lastGift = Date.now();
+  if (s.lvlGift == null) s.lvlGift = Math.max(1, Math.floor(s.lvl / 5) * 5);
+  if (!s.achv) { s.achv = {}; s.achBase = 1; }
+  delete s.ach;
+  if (!s.welcome) welcomeMail(s);
   return s;
 }
 function start(data) {
   S = migrate((data && data.save) || load() || newSave());
   UI.huntLv = {};
   tickTimers();
+  // saves from before achievements count what was already done, then get one gift instead of a flood of mail
+  if (S.achBase) { checkAchievements(true); delete S.achBase; mailTo(S, { from: "Tatari Records", tag: "gift", title: "Achievements have arrived", body: "The Tatari Records now keep track of your feats. Everything you had already done is counted; here is a gift for it.", rewards: { orundum: 300, permit: 2 } }); }
   route("home");
-  if (!S.seenIntro) introModal();
+  showTitle();
+  let tick = 0;
   setInterval(() => {
     if (BT.on) { tickTimers(); return; }
+    if (++tick % 30 === 0 && UI.inGame && $("#modal").hidden && $("#gacha").hidden && $("#dlg").hidden) { metaTick(); renderTop(); }
     const sig = () => [S.sanity, S.arena.attempts, Date.now() - S.arena.payTime >= PAYOUT_MS].join("|");
     const before = sig();
     tickTimers();

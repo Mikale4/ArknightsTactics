@@ -42,7 +42,18 @@ Play: open `melty-blood/index.html` (on GitHub Pages: `/ArknightsTactics/melty-b
   Key, Heat, Gamaliel).
 - **Battle modes**: Night Patrol (Mystic Code farming, three areas × six levels), Arcade Mode
   (a 30-stage ladder with bosses and mirror matches) and Versus (ranked squad battles).
-- **Home**: an assistant character (tap them), missions, the Ahnenerbe café shop and items.
+- **Home**: a partner character (tap them), daily missions, the Ahnenerbe café shop and items.
+- **Title screen**: a gacha-style login screen with live key art (Shiki and Arcueid under the crimson moon),
+  a load bar, *Tap to Start*, version and player ID. New accounts pick a name, then see the intro.
+- **Inbox**: mail with attachments to claim (one by one or *Claim all*), expiring after 30 days. New accounts
+  find a welcome mail from Sion with a free ×10 Manifest and a Crimson Moon Rumor (a random 5★). The game also
+  sends a daily login gift (7-day cycle), letters with small gifts from the cast every few hours, and a gift
+  every five player levels.
+- **Achievements** (Tatari Records): 90 tiers across Story, Collection, Growth, Battle, Tatari and Login,
+  tracked from play statistics (wins, Arc Drives, defeats, flawless wins, Manifests, 5★ pulls, logins and more).
+  Each finished tier mails its reward to the Inbox.
+- **Settings**: name, player ID and stats, sound, battle speed, auto-battle and tactics, return to title, and
+  *Reset account* (type RESET to confirm).
 
 ## Terminology
 

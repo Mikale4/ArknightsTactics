@@ -109,6 +109,11 @@ const IC = {
   prime: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="#e8eef8"/><circle cx="9" cy="9" r="2" fill="#c9d1de"/><circle cx="14.5" cy="14" r="2.6" fill="#c9d1de"/><circle cx="15" cy="8" r="1.2" fill="#c9d1de"/><circle cx="12" cy="12" r="8" fill="none" stroke="#a9c8ff" stroke-width="1"/></svg>',
   credit: '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2" fill="#8a5a3a"/><path d="M7 9h6v4a3 3 0 0 1-6 0zM13 10h1.2a1.4 1.4 0 0 1 0 2.8H13" stroke="#f3e2c8" stroke-width="1.3" fill="none"/></svg>',
   lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+  mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>',
+  trophy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 14v4M8 21h8M9 18h6"/></svg>',
+  gift: '<svg viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="12" rx="1.5" fill="#c8203a"/><rect x="2" y="7" width="20" height="4" rx="1" fill="#ff4d6d"/><path d="M12 7v14" stroke="#f1dca2" stroke-width="2.4"/><path d="M12 7c-2-4-6-4-6-1.5S10 7 12 7c2 0 6-.5 6-1.5S14 3 12 7z" fill="none" stroke="#f1dca2" stroke-width="1.6"/></svg>',
+  free10: '<svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2" fill="#f1d07a"/><path d="M7 5v14" stroke="#7a5310" stroke-dasharray="2 2"/><text x="14.5" y="15.5" text-anchor="middle" font-size="8" font-weight="900" fill="#4a1020" font-family="Arial">×10</text></svg>',
+  gold5: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#3a0a16"/><circle cx="12" cy="12" r="7.5" fill="#e0244a"/><circle cx="15" cy="10" r="6.5" fill="#3a0a16"/><path fill="#f2c14e" d="m8.5 13 1 2.2 2.3.2-1.7 1.5.5 2.3-2.1-1.2-2.1 1.2.5-2.3-1.7-1.5 2.3-.2z"/></svg>',
   check: '<svg viewBox="0 0 24 24" fill="none" stroke="#43d67e" stroke-width="3"><path d="m5 12 5 5 9-10"/></svg>',
   cross: '<svg viewBox="0 0 24 24" fill="none" stroke="#5b6886" stroke-width="3"><path d="M6 6l12 12M18 6 6 18"/></svg>',
 };
@@ -127,6 +132,8 @@ const ITEMS = {
   rec4: { n: "True Ancestor's Blood", ic: IC.rec4, xp: 2000 },
   chip: { n: "Crimson Moon Shard", ic: IC.chip, d: "A sliver of the Crimson Moon. Used for Ascension." },
   summ: { n: "Magic Crest Fragment", ic: IC.summ, d: "A piece of a family Magic Crest. Used to raise Skill Ranks." },
+  free10: { n: "Night of Rumors ×10", ic: IC.free10, d: "One free ×10 Manifest. Use it at the Tatari." },
+  gold5: { n: "Crimson Moon Rumor", ic: IC.gold5, d: "A rumor too strong to fail: Manifests one random 5★ character. Use it at the Tatari." },
 };
 
 // ---------- status effects (TYPE-MOON / Fate names where one exists) ----------
