@@ -93,7 +93,9 @@ function makeBattle(cfg) {
     return v;
   }
   // turn-meter tempo: Speed relative to the battle's average level, so it matters at Lv 5 as much as at Lv 70
-  const effSpd = u => 70 + .45 * statOf(u, "spe") * 50 / Math.max(5, B.avgL);
+  // Arena Trap holds grounded Pokémon (not Flying-type, no Levitate) while its user is in battle: their turn meter fills 10% slower
+  const trapped = u => { const lev = pv(u, "IMMUNE_TYPE"); return !u.types.includes("Flying") && !(lev && lev.type === "Ground") && enemies(u).some(f => pv(f, "ARENA_TRAP")); };
+  const effSpd = u => (70 + .45 * statOf(u, "spe") * 50 / Math.max(5, B.avgL)) * (trapped(u) ? .9 : 1);
   const critStage = (u, sk) => (has(u, "FOCUS") ? 2 : 0) + (sk && sk.M.cr ? 1 : 0) + (item(u, "scopelens") ? 1 : 0) + ((item(u, "luckypunch") && u.key === "chansey") || (item(u, "leek") && u.key === "farfetchd") ? 2 : 0);
   const critChance = n => [1 / 24, 1 / 8, 1 / 2, 1][clamp(n, 0, 3)];
   const mastery = (u, sk) => 1 + .06 * ((u.sk[sk.slot - 1] || 1) - 1);

@@ -171,7 +171,7 @@ const ABILITY = {
   "cursed-body": ["Cursed Body", "When hit by a move, 30% chance to Disable the attacker.", { id: "CURSED" }],
   "friend-guard": ["Friend Guard", "While it is standing, its allies take 25% less damage.", { id: "FRIEND_GUARD" }],
   imposter: ["Imposter", "Transforms into an opposing Pokémon as soon as the battle starts.", { id: "IMPOSTER" }],
-  "arena-trap": ["Arena Trap", "Traps the opposing team: every opposing Pokémon starts the battle with no turn meter.", { id: "ARENA_TRAP" }],
+  "arena-trap": ["Arena Trap", "When it enters battle, every opposing Pokémon's turn meter drops to 0. While it's in battle, grounded opposing Pokémon fill their turn meter 10% slower (Flying types and Levitate escape).", { id: "ARENA_TRAP" }],
   rattled: ["Rattled", "Its Speed rises by 1 when a Bug- or Ghost-type move hits it.", { id: "RATTLED" }],
   unnerve: ["Unnerve", "Opposing Pokémon are too nervous to eat Berries.", { id: "UNNERVE" }],
   "run-away": ["Run Away", "Always ready to bolt: starts every battle with 25% turn meter.", { id: "RUN_AWAY" }],
