@@ -1,6 +1,6 @@
 
 // =====================================================================
-//  BATTLE ENGINE — turn gauges, Moon-style affinity and traits, Holy/Blood, Mystic Codes,
+//  BATTLE ENGINE — turn gauges, Element affinity, Moon-style traits, Mystic Codes,
 //  statuses, Talents (passives), AI styles and the Magic Circuit, emitting events for the renderer.
 // =====================================================================
 let UID = 0;
@@ -41,7 +41,7 @@ function makeBattle(cfg) {
       ({ st, sets } = enemyStats(spec.en, spec.LV));
       const r = Math.min(7, 1 + Math.floor(spec.LV / 18)); sk = [r, r, r];
     }
-    return { uid: ++UID, key: spec.op || spec.en, def, isOp: !!spec.op, team, slot, n: def.n, el: def.el, kin: def.kin || null, cls: def.cls, boss: !!(def.boss || spec.boss),
+    return { uid: ++UID, key: spec.op || spec.en, def, isOp: !!spec.op, team, slot, n: def.n, el: def.el, style: def.style, cls: def.cls, boss: !!(def.boss || spec.boss),
       max: { ...st }, hp: st.hp, shield: 0, atb: 0, eff: [], cool: { 1: 0, 2: 0, 3: 0 }, skills: def.skills, sk, passives: def.passives || [],
       sets: new Set(sets), leader: def.leader || null, flags: {}, alive: true, provokedBy: null };
   }
@@ -174,18 +174,17 @@ function makeBattle(cfg) {
     if (tar.hp <= 0) kill(tar, att);
     return dealt;
   }
-  // Style traits, Holy/Blood and damage Talents: an additive damage bonus and a multiplier on damage taken
+  // Moon-style traits and damage Talents: an additive damage bonus and a multiplier on damage taken
   function dmgMods(att, tar, sk) {
     let bonus = 0, taken = 1;
-    if (kinRel(att.kin, tar.kin)) bonus += KIN_BONUS;
-    if (sk.arc && att.el === "Full") bonus += FULL_ARC;
-    if (att.el === "Crescent" && B.mc[att.team] >= CRES_HEAT_AT) bonus += CRES_HEAT;
+    if (sk.arc && att.style === "Full") bonus += FULL_ARC;
+    if (att.style === "Crescent" && B.mc[att.team] >= CRES_HEAT_AT) bonus += CRES_HEAT;
     for (const p of att.passives) {
       if (p.id === "BLOOD_HEAT" && att.hp < att.max.hp * p.below) bonus += p.amount;
       else if (p.id === "EXECUTE" && tar.hp < tar.max.hp * p.below) bonus += p.amount;
       else if (p.id === "BONUS_VS_DEBUFFED" && tar.eff.some(x => !FX[x.id].b)) bonus += p.amount;
     }
-    if (tar.el === "Half") taken *= 1 - HALF_GUARD;
+    if (tar.style === "Half") taken *= 1 - HALF_GUARD;
     const dr = pv(tar, "DMG_REDUCE"); if (dr) taken *= 1 - dr.amount;
     let td = 0; for (const a of allies(tar)) { const p = pv(a, "TEAM_DMG_REDUCE"); if (p) td = Math.max(td, p.amount); }
     return { bonus, taken: taken * (1 - td) };
@@ -209,7 +208,7 @@ function makeBattle(cfg) {
     dmg = Math.max(1, Math.round(dmg));
     const dealt = applyDamage(att, tar, dmg, { crit, glance, adv: rel === "adv" });
     if (dealt > 0) gainMC(tar.team, 3);
-    if (tar.alive && tar.el === "Half" && !tar.flags.spark && tar.hp < tar.max.hp / 2) {
+    if (tar.alive && tar.style === "Half" && !tar.flags.spark && tar.hp < tar.max.hp / 2) {
       tar.flags.spark = true; ev({ k: "txt", u: tar.uid, s: "CIRCUIT SPARK", c: "buff" }); cleanse(tar, 9);
     }
     if (crit) B.ctxCrits++;
@@ -440,7 +439,7 @@ function makeBattle(cfg) {
     const hots = u.eff.filter(e => e.id === "HOT").length;
     if (u.alive && hots) heal(u, u.max.hp * .05 * hots);
     const rg = pv(u, "REGEN"); if (u.alive && rg) heal(u, u.max.hp * rg.amount);
-    if (u.alive && u.el === "Full") gainMC(u.team, FULL_CHARGE);
+    if (u.alive && u.style === "Full") gainMC(u.team, FULL_CHARGE);
     if (!u.alive) { ev({ k: "end", u: u.uid }); endTurn(u); return "acted"; }
     if (has(u, "STUN")) { removeEff(u, "STUN"); ev({ k: "txt", u: u.uid, s: "STUNNED", c: "debuff" }); ev({ k: "end", u: u.uid }); endTurn(u); return "acted"; }
     if (has(u, "PROVOKE") && u.provokedBy && u.provokedBy.alive) { act(u, 1, u.provokedBy); return "acted"; }

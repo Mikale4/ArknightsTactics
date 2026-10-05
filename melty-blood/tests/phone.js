@@ -37,7 +37,7 @@ const PAGE = 'file://' + path.resolve(__dirname, '../index.html');
   if (done1) { await page.click('#rDone'); await page.waitForTimeout(900); await skipDlg(); await page.waitForTimeout(400); }
   for (const [n, fn, a] of [['11_home', v => route(v), 'home'], ['12_story', v => route(v), 'story'], ['13_map', v => route('chapter', v), 'c1'], ['14_battlehub', v => route(v), 'battle'],
     ['15_patrol', v => route('hunt', v), 'alley'], ['16_arcade', v => route(v), 'tower'], ['17_versus', v => route(v), 'arena'], ['18_chars', v => route(v), 'ops'],
-    ['19_char', v => { UI.opTab = 'info'; route('op', v); }, 'shiki-c'], ['20_skills', v => { UI.opTab = v; rerender(); }, 'skills'], ['20b_variant', v => { UI.opTab = 'info'; route('op', v); }, 'arcueid-h'], ['21_tatari', v => route(v), 'hh'],
+    ['19_char', v => { UI.opTab = 'info'; route('op', homeKey(v)); }, 'shiki-c'], ['20_skills', v => { UI.opTab = v; rerender(); }, 'skills'], ['20b_variant', v => { UI.opTab = 'info'; route('op', v); }, 'arcueid-h-holy'], ['21_tatari', v => route(v), 'hh'],
     ['22_shop', v => { UI.shopTab = 'credit'; route(v); }, 'shop'], ['23_items', v => { give({ rune: 4 }); give({ rune: 2 }); route(v); }, 'depot']]) { await ev(fn, a); await shot(n); }
   await page.evaluate(() => { ACT.pull({ n: '10' }); }); await page.waitForTimeout(700); await shot('24_manifest');
   await page.mouse.click(195, 420); await page.waitForTimeout(2300); await shot('25_cards');
@@ -45,9 +45,9 @@ const PAGE = 'file://' + path.resolve(__dirname, '../index.html');
   await ev(() => missionsModal()); await shot('26_missions'); await ev(() => closeModal());
   // boss with a strong squad: Arc Drives, cut-ins and the Magic Circuit meter
   await ev(() => {
-    for (const k of ['arcueid-f', 'ciel-c', 'akiha-f', 'hisui-c', 'arcueid-h']) S.ops[k] = progForLV(k, 30);
+    for (const k of ['arcueid-f', 'ciel-c', 'akiha-f', 'hisui-c', 'arcueid-h'].map(homeKey)) S.ops[k] = progForLV(k, 30);
     for (const id of ['1-1', '1-2', '1-3', '1-4', 'S1-1', '1-5']) S.story[id] = 3;
-    S.team.story = ['arcueid-f', 'ciel-c', 'akiha-f', 'hisui-c']; S.settings.auto = true; S.settings.speed = 2;
+    S.team.story = ['arcueid-f', 'ciel-c', 'akiha-f', 'hisui-c'].map(homeKey); S.settings.auto = true; S.settings.speed = 2;
     ACT.openNode({ id: '1-6' }); ACT.startNode({ id: '1-6' }); ACT.deploy();
   }, null, 900);
   await skipDlg();
@@ -57,7 +57,7 @@ const PAGE = 'file://' + path.resolve(__dirname, '../index.html');
   if (done2) { await page.click('#rDone'); await page.waitForTimeout(900); await skipDlg(); await page.waitForTimeout(600); await shot('29_night_cleared'); }
   await ev(() => closeModal());
   await page.setViewportSize({ width: 844, height: 390 }); await page.waitForTimeout(300);
-  await ev(() => { S.team.tower = ['arcueid-f', 'arcueid-h', 'akiha-f', 'hisui-c']; launchTower(S.tower + 1); }, null, 6500);
+  await ev(() => { S.team.tower = ['arcueid-f', 'arcueid-h', 'akiha-f', 'hisui-c'].map(homeKey); launchTower(S.tower + 1); }, null, 6500);
   await shot('30_landscape');
   console.log('ERRORS', JSON.stringify(errs, null, 1));
   await browser.close();

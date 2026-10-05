@@ -129,7 +129,7 @@ const CHARS = [
         atk(2, "Flash Sheath: Seven Nights", "enemy", 1, 2.8, [strip(1), dbf("DEF_BREAK", .5)]),
         atk(3, "Extreme Death: Seven Nights", "enemy", 1, 6.0, [bonusVs("BRAND", .4, .3)], { ignoreDef: .5 })] }
   },
-  { n: "Arcueid Brunestud", short: "Arcueid", k: "arcueid", rar: 5, kin: "Blood",
+  { n: "Arcueid Brunestud", short: "Arcueid", k: "arcueid", rar: 5,
     fig: { type: "human", skin: "#f6e6da", hair: "#f2d27a", hs: "bob", col: "#f2efe9", col2: "#5a4a7c", boot: "#2a2236", acc: "#d8d0e0", eyec: "#e0244a", robe: "robe", slim: 1, w: "claws", sc: "#ff4d6d" },
     Crescent: { cls: "Specialist", stats: { atk: 840 }, leader: { stat: "ATK", amount: .25, scope: "All" }, talent: T("Whim of the Princess", "EXTRA_TURN", { chance: .2 }),
       skills: [atk(1, "You're in the Way!", "enemy", 3, 1.05, [dbf("DEF_BREAK", .2)]),
@@ -144,7 +144,7 @@ const CHARS = [
         atk(2, "Burst!", "aoe_enemies", 1, 2.4, [tmDown(.15)]),
         atk(3, "Shall We Play Around a Bit?", "enemy", 1, 5.2, [strip(2)], { ignoreDef: .3 })] }
   },
-  { n: "Red Arcueid", short: "Red Arcueid", k: "red-arcueid", rar: 5, kin: "Blood",
+  { n: "Red Arcueid", short: "Red Arcueid", k: "red-arcueid", rar: 5,
     fig: { type: "human", skin: "#f6e6da", hair: "#f2d27a", hs: "long", hlen: 40, col: "#f4f0ee", col2: "#e8e2e8", boot: "#d8d0d8", acc: "#c8203a", trim: "#e0244a", eyec: "#e0244a", robe: "robe", slim: 1, w: "arts", sc: "#ff2a4a" },
     Crescent: { cls: "Caster", stats: { atk: 880 }, leader: { stat: "ATK", amount: .33, scope: "Element" }, talent: T("Crimson Moon", "LIFESTEAL", { amount: .2 }),
       skills: [atk(1, "Alte Schule", "enemy", 2, 1.6, [dbf("DOT", .35)]),
@@ -159,7 +159,7 @@ const CHARS = [
         atk(2, "Rage Moerder", "enemy", 1, 2.8, [strip(1)]),
         atk(3, "Pluto die Schwester (Blood Heat)", "aoe_enemies", 1, 4.6, [], { ignoreDef: .35 })] }
   },
-  { n: "Ciel", short: "Ciel", k: "ciel", rar: 4, kin: "Holy",
+  { n: "Ciel", short: "Ciel", k: "ciel", rar: 4,
     fig: { type: "human", skin: "#f3decd", hair: "#26355f", hs: "bob", col: "#1a1a26", col2: "#16161f", boot: "#101016", acc: "#c8b06a", trim: "#e8e2d0", robe: "robe", slim: 1, w: "blackkeys", sc: "#f4efe2" },
     Crescent: { cls: "Sniper", leader: { stat: "ACC", amount: .4, scope: "All" }, talent: T("Burial Rite", "CRIT_DEBUFF", { what: "HEAL_BLOCK", chance: .5 }),
       skills: [atk(1, "Black Key Throw", "enemy", 3, 1.1, [dbf("STUN", .12, 1)]),
@@ -174,7 +174,7 @@ const CHARS = [
         atk(2, "Cavalry Toss", "enemy", 1, 2.8, [strip(1), dbf("STUN", .3, 1)]),
         atk(3, "Cremation Rite", "enemy", 1, 5.8, [strip(1)], { ignoreDef: .5 })] }
   },
-  { n: "Powered Ciel", short: "Powered Ciel", k: "powered-ciel", rar: 5, kin: "Holy",
+  { n: "Powered Ciel", short: "Powered Ciel", k: "powered-ciel", rar: 5,
     fig: { type: "human", skin: "#f3decd", hair: "#26355f", hs: "bob", col: "#3a3f52", col2: "#1a1a26", boot: "#2a2e3a", acc: "#c8b06a", trim: "#f4efe2", bulk: 1.12, w: "pilebunker", sc: "#f4efe2" },
     Crescent: { cls: "Guard", stats: { hp: 10200, def: 560 }, leader: { stat: "DEF", amount: .3, scope: "All" }, talent: T("Executor's Armour", "IMMUNE_LIST", { list: ["STUN", "SILENCE"] }),
       skills: [atk(1, "Rapid Stake", "enemy", 1, 3.4, [dbf("DEF_BREAK", .5)]),
@@ -189,7 +189,7 @@ const CHARS = [
         atk(2, "Virgin Pain", "aoe_enemies", 2, 1.4, [dbf("DEF_BREAK", .3)]),
         atk(3, "Numeral Secret Crest: Heavenly Nest", "aoe_enemies", 3, 1.6, [], { ignoreDef: .3 })] }
   },
-  { n: "Akiha Tohno", short: "Akiha", k: "akiha", rar: 4, kin: "Blood",
+  { n: "Akiha Tohno", short: "Akiha", k: "akiha", rar: 4,
     fig: { type: "human", skin: "#f6e3d6", hair: "#141016", hs: "long", hlen: 42, col: "#7a2632", col2: "#3a1a22", boot: "#1a1012", acc: "#e8d8b0", trim: "#e8d8b0", robe: "skirt", slim: 1, w: "arts", sc: "#ff3b5c" },
     Crescent: { cls: "Caster", leader: { stat: "ATK", amount: .24, scope: "Element" }, talent: T("Brilliant Impetus: Deep Red", "LIFESTEAL", { amount: .15 }),
       skills: [atk(1, "Felling Birds", "enemy", 1, 3.2, [dbf("DOT", .4)]),
@@ -204,7 +204,7 @@ const CHARS = [
         atk(2, "Smoking Out Birds", "aoe_enemies", 2, 1.3, [dbf("DOT", .4)]),
         atk(3, "Red Mistress: Locks of Hair (Blood Heat)", "aoe_enemies", 1, 4.2, [perDebuff(.08, .4)], { ignoreDef: .3 })] }
   },
-  { n: "Akiha Vermillion", short: "Akiha Vermillion", k: "red-akiha", rar: 5, kin: "Blood",
+  { n: "Akiha Vermillion", short: "Akiha Vermillion", k: "red-akiha", rar: 5,
     fig: { type: "human", skin: "#f6e3d6", hair: "#e01f3c", hs: "long", hlen: 48, col: "#7a2632", col2: "#3a1a22", boot: "#1a1012", acc: "#ff6a7a", trim: "#ffb3c0", eyec: "#ff3b5c", robe: "skirt", slim: 1, w: "arts", sc: "#ff2a4a" },
     Crescent: { cls: "Caster", stats: { atk: 890, spd: 110 }, leader: { stat: "ATK", amount: .33, scope: "Element" }, talent: T("Ever-Burning Plunder", "LIFESTEAL", { amount: .2 }),
       skills: [atk(1, "Felling Emptily Fluttering Birds", "enemy", 1, 3.6, [dbf("DOT", .6)]),
@@ -264,7 +264,7 @@ const CHARS = [
         atk(2, "Rumbling Bomb", "aoe_enemies", 1, 2.2, [dbf("DOT", .5), dbf("DEF_BREAK", .3)]),
         atk(3, "Saturday Night Forever", "enemy", 1, 5.8, [], { ignoreDef: .4 })] }
   },
-  { n: "Satsuki Yumizuka", short: "Satsuki", k: "satsuki", rar: 3, kin: "Blood",
+  { n: "Satsuki Yumizuka", short: "Satsuki", k: "satsuki", rar: 3,
     fig: { type: "human", skin: "#f6e3d6", hair: "#c8763a", hs: "twin", hlen: 24, col: "#eef0f6", col2: "#22305a", boot: "#1a1a22", acc: "#c8203a", trim: "#22305a", ribbon: "#c8203a", robe: "skirt", slim: 1, eyec: "#e0244a", w: "claws", sc: "#ff4d6d" },
     Crescent: { cls: "Guard", leader: { stat: "ATK", amount: .2, scope: "Element" }, talent: T("Sorry, Just One Bite!", "LIFESTEAL", { amount: .12 }),
       skills: [atk(1, "Sacchin Arm: Reaching for the Impossible Dream", "enemy", 2, 1.6, [selfHeal(.1, .3)]),
@@ -294,7 +294,7 @@ const CHARS = [
         atk(2, "Transfer Ride", "enemy", 1, 2.8, [strip(1), tmDown(.2)]),
         atk(3, "Black Barrel Replica", "enemy", 1, 6.0, [strip(1)], { ignoreDef: .45 })] }
   },
-  { n: "Sion TATARI", short: "Sion TATARI", k: "sion-tatari", rar: 5, kin: "Blood",
+  { n: "Sion TATARI", short: "Sion TATARI", k: "sion-tatari", rar: 5,
     fig: { type: "human", skin: "#ece4ea", hair: "#5a3a7a", hs: "braid", hlen: 46, col: "#1a1420", col2: "#14101a", boot: "#0e0a12", acc: "#c8203a", trim: "#e0244a", eyec: "#ff2a4a", cape: "#2a1020", coat: 1, slim: 1, w: "pistol", sc: "#ff2a4a" },
     Crescent: { cls: "Caster", leader: { stat: "CD", amount: .33, scope: "Element" }, talent: T("Vampiric Alchemy", "LIFESTEAL", { amount: .2 }),
       skills: [atk(1, "Terror News (Lie)", "enemy", 2, 1.6, [dbf("DOT", .3)]),
@@ -309,7 +309,7 @@ const CHARS = [
         atk(2, "Chain Letter", "aoe_enemies", 1, 2.2, [dbf("SLOW", .4)]),
         atk(3, "No Ark", "enemy", 1, 5.6, [strip(2), onKillGain(.3)], { ignoreDef: .5 })] }
   },
-  { n: "Riesbyfe Stridberg", short: "Riesbyfe", k: "riesbyfe", rar: 4, kin: "Holy",
+  { n: "Riesbyfe Stridberg", short: "Riesbyfe", k: "riesbyfe", rar: 4,
     fig: { type: "human", skin: "#f3decd", hair: "#d8b878", hs: "bob", col: "#24242e", col2: "#1c1c26", boot: "#141418", acc: "#e8d8a8", trim: "#f4efe2", robe: "robe", w: "shield", sc: "#f4efe2", shc: "#c8c2b0" },
     Crescent: { cls: "Defender", leader: { stat: "HP", amount: .25, scope: "All" }, talent: T("Gamaliel's Shelter", "TEAM_DMG_REDUCE", { amount: .08 }),
       skills: [atk(1, "Wrist Pizzicato", "enemy", 1, 2.6, [dbf("PROVOKE", .5, 1)]),
@@ -339,7 +339,7 @@ const CHARS = [
         atk(2, "Blowdust Starmine: Blue Fire", "aoe_enemies", 2, 1.5, [dbf("DOT", .4)]),
         atk(3, "Severe Break Slider", "aoe_enemies", 1, 4.8, [], { ignoreDef: .3 })] }
   },
-  { n: "Nrvnqsr Chaos", short: "Nero Chaos", k: "chaos", rar: 5, kin: "Blood",
+  { n: "Nrvnqsr Chaos", short: "Nero Chaos", k: "chaos", rar: 5,
     fig: { type: "human", skin: "#e8dcd2", hair: "#1e1a1c", hs: "short", col: "#1c1a20", col2: "#151318", boot: "#0e0c10", acc: "#4a3a2a", cape: "#18161c", coat: 1, h: 1.12, w: "arts", sc: "#9a7aff" },
     Crescent: { cls: "Caster", stats: { hp: 9800 }, leader: { stat: "HP", amount: .3, scope: "All" }, talent: T("Six Hundred Sixty-Six Lives", "REVIVE_ONCE", { amount: .3, buff: "INVINCIBLE", turns: 1 }),
       skills: [atk(1, "Chaos Release: Black Wings", "enemy", 2, 1.6, [dbf("DOT", .3)]),
@@ -354,7 +354,7 @@ const CHARS = [
         atk(2, "Premature Egg", "aoe_enemies", 1, 1.8, [dbf("ATK_DOWN", .5), selfShield(.1)]),
         atk(3, "Chaos Exposure: Reptile Form", "aoe_enemies", 1, 3.0, [selfHeal(.2), taunt(2)])] }
   },
-  { n: "Michael Roa Valdamjong", short: "Roa", k: "roa", rar: 5, kin: "Blood",
+  { n: "Michael Roa Valdamjong", short: "Roa", k: "roa", rar: 5,
     fig: { type: "human", skin: "#f0e4dc", hair: "#e8e6ec", hs: "long", hlen: 30, col: "#ece8ee", col2: "#2a2a34", boot: "#1a1a22", acc: "#5a4a8a", cape: "#e2dee6", coat: 1, h: 1.05, w: "arts", sc: "#8fd8ff" },
     Crescent: { cls: "Caster", leader: { stat: "CD", amount: .3, scope: "Element" }, talent: T("Reincarnation", "REVIVE_ONCE", { amount: .3, buff: "INVINCIBLE", turns: 1 }),
       skills: [atk(1, "Thunder Needle", "enemy", 2, 1.7, [dbf("SILENCE", .25, 1)]),
@@ -369,7 +369,7 @@ const CHARS = [
         atk(2, "Crushing Rising Thunder", "enemy", 1, 2.6, [dbf("STUN", .35, 1)]),
         atk(3, "Thunder Snake Ghostly Festival", "aoe_enemies", 1, 4.6, [], { ignoreDef: .3 })] }
   },
-  { n: "Night of Wallachia", short: "Wallachia", k: "wallachia", rar: 5, kin: "Blood",
+  { n: "Night of Wallachia", short: "Wallachia", k: "wallachia", rar: 5,
     fig: { type: "hood", skin: "#d8d0d8", col: "#120c14", col2: "#0c080e", cape: "#1a0a14", eyes: "#ff2a4a", robe: 1, h: 1.14, w: "arts", sc: "#ff2a4a" },
     Crescent: { cls: "Caster", stats: { hp: 9600, atk: 860 }, leader: { stat: "CD", amount: .3, scope: "Element" }, talent: T("Tatari", "LIFESTEAL", { amount: .15 }),
       skills: [atk(1, "Bad News (Lie)", "enemy", 1, 3.0, [dbf("BRAND", .5)]),
@@ -429,7 +429,7 @@ const CHARS = [
         atk(2, "Thousand Year Smash", "enemy", 1, 3.0, [dbf("DEF_BREAK", .5), selfGain(.15)]),
         atk(3, "Amazing Ultimate Final Technique", "enemy", 1, 5.2, [], { ignoreDef: .5 })] }
   },
-  { n: "Kouma Kishima", short: "Kouma", k: "kouma", rar: 4, kin: "Blood",
+  { n: "Kouma Kishima", short: "Kouma", k: "kouma", rar: 4,
     fig: { type: "human", skin: "#e8cdb8", hair: "#5a1e1a", hs: "long", hlen: 26, col: "#2a2226", col2: "#1e1a1c", boot: "#141012", acc: "#8a2a2a", cape: "#3a2a2a", coat: 1, bulk: 1.28, h: 1.1, w: "none", sc: "#ff6a3d" },
     Crescent: { cls: "Guard", stats: { hp: 10200 }, leader: { stat: "HP", amount: .25, scope: "All" }, talent: T("Oni Blood", "IMMUNE_LIST", { list: ["STUN", "SLOW"] }),
       skills: [atk(1, "Buza Palm", "enemy", 1, 3.0, [dbf("DEF_BREAK", .3)]),
@@ -459,7 +459,7 @@ const CHARS = [
         atk(2, "I Want to Go to Crocodile Country", "enemy", 1, 2.6, [dbf("STUN", .25, 1), selfGain(.15)]),
         atk(3, "Delinquent Cat Gang Leader's Mansion", "enemy", 1, 5.0, [], { ignoreDef: .3 })] }
   },
-  { n: "Neco-Arc Chaos", short: "Neco Chaos", k: "neco-chaos", rar: 3, kin: "Blood",
+  { n: "Neco-Arc Chaos", short: "Neco Chaos", k: "neco-chaos", rar: 3,
     fig: { type: "human", skin: "#e8dcd2", hair: "#1e1a1c", hs: "short", col: "#1c1a20", col2: "#151318", boot: "#0e0c10", acc: "#4a3a2a", cape: "#18161c", coat: 1, hsz: 1.65, h: .7, ears: "cat", tail: "cat", w: "arts", sc: "#9a7aff" },
     Crescent: { cls: "Caster", leader: { stat: "ATK", amount: .15, scope: "Element" }, talent: T("Neco Devour", "LIFESTEAL", { amount: .15 }),
       skills: [atk(1, "Chaos Beam", "enemy", 1, 3.0, [dbf("ATK_DOWN", .3)]),
@@ -489,7 +489,7 @@ const CHARS = [
         atk(2, "Yin Yang Spiral", "enemy", 1, 2.8, [strip(2), dbf("SILENCE", .4, 1), tmDown(.2)]),
         atk(3, "Mystic Eyes of Death Perception: Seven Scenic Demise", "enemy", 1, 5.8, [], { ignoreDef: 1 })] }
   },
-  { n: "Saber", short: "Saber", k: "saber", rar: 5, kin: "Holy",
+  { n: "Saber", short: "Saber", k: "saber", rar: 5,
     fig: { type: "human", skin: "#f6e6da", hair: "#f0d070", hs: "bun", col: "#c9d2e2", col2: "#2a4a9a", boot: "#8a94a8", acc: "#f1d07a", trim: "#f1d07a", robe: "robe", slim: 1, w: "greatsword", sc: "#ffd76b" },
     Crescent: { cls: "Guard", stats: { hp: 9800, atk: 840, def: 560 }, leader: { stat: "ATK", amount: .24, scope: "All" }, talent: T("Magic Resistance", "IMMUNE_LIST", { list: ["STUN", "SILENCE"] }),
       skills: [atk(1, "First Air", "enemy", 2, 1.7, [dbf("DEF_BREAK", .3)]),
@@ -504,7 +504,7 @@ const CHARS = [
         atk(2, "Elfin Dance", "enemy", 1, 2.9, [strip(1), selfGain(.2)]),
         atk(3, "The Sword of Promised Victory: Sword Dance", "aoe_enemies", 1, 4.8, [], { ignoreDef: .3 })] }
   },
-  { n: "Noel", short: "Noel", k: "noel", rar: 4, kin: "Holy",
+  { n: "Noel", short: "Noel", k: "noel", rar: 4,
     fig: { type: "human", skin: "#f4e0d4", hair: "#e6a7b8", hs: "bob", col: "#9a2e44", col2: "#2a1a24", boot: "#1a1218", acc: "#f1d07a", trim: "#f4efe2", robe: "skirt", slim: 1, w: "spear", sc: "#f4efe2" },
     Crescent: { cls: "Vanguard", leader: { stat: "SPD", amount: .18, scope: "All" }, talent: T("Eager Executor", "SELF_ATB_START", { amount: .2 }),
       skills: [atk(1, "Heavy Thrust", "enemy", 1, 2.9, [tmDown(.1, .4)]),
@@ -519,7 +519,7 @@ const CHARS = [
         atk(2, "Heavy Punishment (Overhead)", "enemy", 1, 2.8, [dbf("STUN", .3, 1)]),
         atk(3, "Exploding Black Keys", "aoe_enemies", 1, 4.2, [dbf("DEF_BREAK", .5)], { ignoreDef: .2 })] }
   },
-  { n: "Vlov Arkhangel", short: "Vlov", k: "vlov", rar: 5, kin: "Blood",
+  { n: "Vlov Arkhangel", short: "Vlov", k: "vlov", rar: 5,
     fig: { type: "human", skin: "#ece2e0", hair: "#e6e4ea", hs: "long", hlen: 34, col: "#1e1a24", col2: "#16121a", boot: "#0e0c10", acc: "#c8203a", cape: "#2a1a2a", coat: 1, h: 1.06, eyec: "#ff2a4a", w: "saber", sc: "#ff3b5c" },
     Crescent: { cls: "Guard", stats: { atk: 860 }, leader: { stat: "ATK", amount: .3, scope: "Element" }, talent: T("Dead Apostle's Pride", "LIFESTEAL", { amount: .2 }),
       skills: [atk(1, "Burya Tigr", "enemy", 2, 1.7, [dbf("DOT", .35)]),

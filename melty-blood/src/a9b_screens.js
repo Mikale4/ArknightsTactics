@@ -84,12 +84,13 @@ SCREENS.arena = () => {
 // ---------- characters ----------
 SCREENS.ops = () => {
   let list = UI.all ? OP_KEYS.slice() : Object.keys(S.ops);
-  list = list.filter(k => (UI.el === "all" || OPS[k].el === UI.el) && (UI.cls === "all" || OPS[k].cls === UI.cls));
-  const sorters = { power: (a, b) => (S.ops[b] ? power(b, S.ops[b]) : -1) - (S.ops[a] ? power(a, S.ops[a]) : -1), rarity: (a, b) => OPS[b].rar - OPS[a].rar || OPS[a].n.localeCompare(OPS[b].n), level: (a, b) => (S.ops[b] ? effLV(S.ops[b]) : -1) - (S.ops[a] ? effLV(S.ops[a]) : -1), name: (a, b) => OPS[a].n.localeCompare(OPS[b].n) || ELS.indexOf(OPS[a].el) - ELS.indexOf(OPS[b].el) };
+  list = list.filter(k => (UI.el === "all" || OPS[k].el === UI.el) && (UI.sty === "all" || OPS[k].style === UI.sty) && (UI.cls === "all" || OPS[k].cls === UI.cls));
+  const sorters = { power: (a, b) => (S.ops[b] ? power(b, S.ops[b]) : -1) - (S.ops[a] ? power(a, S.ops[a]) : -1), rarity: (a, b) => OPS[b].rar - OPS[a].rar || OPS[a].n.localeCompare(OPS[b].n), level: (a, b) => (S.ops[b] ? effLV(S.ops[b]) : -1) - (S.ops[a] ? effLV(S.ops[a]) : -1), name: (a, b) => OPS[a].n.localeCompare(OPS[b].n) || STYLES.indexOf(OPS[a].style) - STYLES.indexOf(OPS[b].style) || ELS.indexOf(OPS[a].el) - ELS.indexOf(OPS[b].el) };
   list.sort(sorters[UI.sort]);
   return `<div class="stack">
     <div class="spread"><h2>Characters</h2><button class="chip ${UI.all ? "on" : ""}" data-act="toggleAll">${UI.all ? "Collection" : "Owned"} · ${Object.keys(S.ops).length}/${OP_KEYS.length}</button></div>
-    <div class="filters">${["all", ...ELS].map(e => `<button class="chip ${UI.el === e ? "on" : ""}" data-act="elf" data-e="${e}">${e === "all" ? "All Moon styles" : styleName(e)}</button>`).join("")}</div>
+    <div class="filters">${["all", ...ELS].map(e => `<button class="chip ${UI.el === e ? "on" : ""}" data-act="elf" data-e="${e}">${e === "all" ? "All Elements" : e}</button>`).join("")}</div>
+    <div class="filters">${["all", ...STYLES].map(e => `<button class="chip ${UI.sty === e ? "on" : ""}" data-act="styf" data-e="${e}">${e === "all" ? "All Moon styles" : styleName(e)}</button>`).join("")}</div>
     <div class="filters">${["all", ...CLASSES].map(c => `<button class="chip ${UI.cls === c ? "on" : ""}" data-act="clsf" data-c="${c}">${c === "all" ? "All roles" : clsName(c)}</button>`).join("")}</div>
     <div class="filters">${["power", "rarity", "level", "name"].map(s => `<button class="chip ${UI.sort === s ? "on" : ""}" data-act="sortf" data-s="${s}">Sort: ${s}</button>`).join("")}</div>
     <div class="roster">${list.map(k => `<button class="rcell ${S.ops[k] && canPromote(k) ? "ready" : ""}" data-act="go" data-v="op" data-a="${k}">${opHTML(k)}${pnameHTML(k)}<div class="pw">${S.ops[k] ? fmt(power(k, S.ops[k])) : clsName(OPS[k].cls)}</div></button>`).join("") || '<p class="small dim">No operators match these filters.</p>'}</div>
@@ -108,8 +109,8 @@ SCREENS.op = key => {
     <section class="panel stack" style="gap:8px">
       <div><b class="gold">Leader skill</b><p class="small dim">${op.leader ? leaderText(op.leader) : "None"}</p></div>
       ${op.passives.length ? `<div><b class="gold">Talent</b><p class="small dim">${op.passives.map(x => esc(x.text)).join(" ")}</p></div>` : ""}
-      <div><b class="gold">${styleName(op.el)}</b><p class="small dim">${STYLE[op.el].d} Strong against ${styleName(BEATS[op.el])}, weak to ${styleName(Object.keys(BEATS).find(k => BEATS[k] === op.el))}.</p></div>
-      ${op.kin ? `<div><b class="gold">${op.kin}</b><p class="small dim">Holy and Blood characters deal ${pct(KIN_BONUS)} more damage to each other.</p></div>` : ""}
+      <div><b class="gold">${styleName(op.style)}</b><p class="small dim">${STYLE[op.style].d}</p></div>
+      <div><b class="gold">${op.el} Element</b><p class="small dim">${op.el === "Holy" || op.el === "Blood" ? `Holy and Blood each deal bonus damage to the other.` : `Strong against ${BEATS[op.el]}, weak to ${weakTo(op.el)}.`} ${ELEMENT_KIT[op.el].d}</p></div>
       <div><b class="gold">Recommended Mystic Codes</b><p class="small dim">${op.runes.map(r => `${setName(r)} (${RUNE_INFO[r]})`).join(" · ")}</p></div>
       ${p ? `<div><b class="gold">Resonance ${p.pot}/6</b><p class="small dim">+2% to all stats per level. Raised by Manifesting duplicates.</p></div>` : `<p class="small dim">Manifest this character at the Tatari.</p>`}
     </section>`;
@@ -151,15 +152,22 @@ SCREENS.op = key => {
       <div class="opart" style="--ecs:${ELC[op.el]}55"><img src="${spriteURL(op)}" alt="${esc(op.n)}">
         <div class="meta">${starRow(op.rar).replace('class="rstars"', 'class="rstars" style="justify-content:flex-start;height:14px"')}
           <h2 style="font-size:26px;text-shadow:0 2px 6px #000">${esc(op.n)}</h2>
-          <div class="row" style="gap:4px">${elChip(op.el)}${kinChip(op.kin)}<span class="cls">${clsName(op.cls)}</span></div>
+          <div class="row" style="gap:4px">${elChip(op.el)}${styleChip(op.style)}<span class="cls">${clsName(op.cls)}</span></div>
           ${p ? `<div class="small" style="text-shadow:0 1px 3px #000">Awaken ${p.elite} · Lv ${p.lvl} · Power <b class="num" style="color:var(--holo)">${fmtFull(power(key, p))}</b></div>` : `<div class="small dim">Not recruited</div>`}
         </div></div>
     </section>
-    ${variantsOf(op.base).length > 1 ? `<section class="panel" style="padding:10px 12px"><div class="eyebrow" style="margin-bottom:6px">Moon styles · each one is a separate character</div><div class="variants">${variantsOf(op.base).map(k => `<button class="${k === key ? "cur" : ""} ${S.ops[k] ? "" : "unowned"}" data-act="go" data-v="op" data-a="${k}" ${k === key ? "disabled" : ""}>${opHTML(k, { s: 52, nostars: 1, show: 1 })}<span class="tiny" style="color:${ELC[OPS[k].el]}">${styleName(OPS[k].el)}</span></button>`).join("")}</div></section>` : ""}
+    <section class="panel stack" style="padding:10px 12px;gap:10px">
+      ${verRow("Moon styles · different skills and Talent", variantsOf(op.base).map(f => f + "-" + elKey(op.el)), key, k => styleName(OPS[k].style), () => "var(--moon)")}
+      ${verRow("Elements · same style, slightly different skills", elementsOf(op.fam), key, k => OPS[k].el, k => ELC[OPS[k].el])}
+      <p class="tiny dim">Every version is a separate character you Manifest and raise on its own.</p></section>
     ${p ? `<div class="tabs2">${tabs.map(([k, n]) => `<button class="${tab === k ? "on" : ""}" data-act="opTab" data-t="${k}">${n}</button>`).join("")}</div>` : ""}
     ${body}
   </div>`;
 };
+// a row of sibling versions (other Moon styles or other Elements), owned ones in colour
+function verRow(title, keys, cur, label, col) {
+  return `<div><div class="eyebrow" style="margin-bottom:6px">${title}</div><div class="variants">${keys.map(k => `<button class="${k === cur ? "cur" : ""} ${S.ops[k] ? "" : "unowned"}" data-act="go" data-v="op" data-a="${k}" ${k === cur ? "disabled" : ""}>${opHTML(k, { s: 46, nostars: 1, show: 1 })}<span class="tiny" style="color:${col(k)}">${label(k)}</span></button>`).join("")}</div></div>`;
+}
 function runeRow(r, right = "") {
   return `<div class="rune ${r.eq ? "eq" : ""}" style="--rc:${RUNE_RC[r.rar]}"><button class="rg" data-act="runeSheet" data-id="${r.id}" aria-label="${setName(r.set)}">+${r.lvl}</button>
     <div style="min-width:0"><b>${setName(r.set)}</b> <span class="tiny" style="color:${RUNE_RC[r.rar]}">${RUNE_RAR[r.rar]}</span><div class="tiny dim">${runeMainText(r)}${r.eq ? ` · on ${esc(opLabel(OPS[r.eq.k]))}` : ""}</div></div>${right}</div>`;
@@ -183,13 +191,13 @@ SCREENS.hh = () => {
   return `<div class="stack">
     <div class="tabs2"><button class="${std ? "" : "on"}" data-act="hhTab" data-std="0">Rumor of the Day</button><button class="${std ? "on" : ""}" data-act="hhTab" data-std="1">Standard</button></div>
     <section class="panel banner-card" style="${std ? "background:radial-gradient(90% 90% at 80% 30%,#2a1a5a,transparent 70%),linear-gradient(160deg,#1a1430,#0a0814)" : "background:radial-gradient(90% 90% at 80% 30%,#6a0a22,transparent 70%),linear-gradient(160deg,#2a0a16,#0a0408)"}">
-      ${std ? `<img src="${spriteURL(OPS["shiki-c"])}" alt="">` : `<img src="${spriteURL(f6)}" alt="${esc(f6.n)}">`}
+      ${std ? `<img src="${spriteURL(OPS[homeKey("shiki-c")])}" alt="">` : `<img src="${spriteURL(f6)}" alt="${esc(f6.n)}">`}
       <div class="eyebrow">${std ? "Standard Tatari" : "Featured · changes daily"}</div>
-      <h2>${std ? "Whispers of Misaki" : esc(f6.n)}</h2>
-      ${std ? `<p class="small" style="max-width:24ch">Any character in the cast can take shape.</p>` : `<div class="row" style="gap:4px">${starRow(5).replace('class="rstars"', 'class="rstars" style="justify-content:flex-start"')}${elChip(f6.el)}<span class="cls">${clsName(f6.cls)}</span></div>
+      <h2>${std ? "Whispers of Misaki" : esc(opLabel(f6))}</h2>
+      ${std ? `<p class="small" style="max-width:24ch">Any character in the cast can take shape.</p>` : `<div class="row" style="gap:4px">${starRow(5).replace('class="rstars"', 'class="rstars" style="justify-content:flex-start"')}${elChip(f6.el)}${styleChip(f6.style)}<span class="cls">${clsName(f6.cls)}</span></div>
       <p class="small" style="max-width:26ch">Half of all 5★ results are ${esc(opLabel(f6))}. Featured 4★: ${B.feat5.map(k => esc(opLabel(OPS[k]))).join(", ")}.</p>`}
     </section>
-    <div class="row wrap small dim"><span>5★ 3% · 4★ 18% · 3★ 79%</span>${pity ? `<span class="gold">· 5★ rate now ${3 + pity * 3}%</span>` : `<span>· ${Math.max(0, 50 - S.gacha.pity)} Manifests until the 5★ rate starts rising</span>`}</div>
+    <div class="row wrap small dim"><span>5★ 3% · 4★ 18% · 3★ 79% · Holy and Blood versions 5% each</span>${pity ? `<span class="gold">· 5★ rate now ${3 + pity * 3}%</span>` : `<span>· ${Math.max(0, 50 - S.gacha.pity)} Manifests until the 5★ rate starts rising</span>`}</div>
     ${S.gacha.firstTen ? `<div class="hint">${IC.star.replace("<svg", '<svg width="20" height="20"')}<span class="small">Your first ten Manifests guarantee at least one 4★ character.</span></div>` : ""}
     <div class="row" style="gap:10px">
       <button class="btn ghost" style="flex:1" data-act="pull" data-n="1" ${S.permit >= 1 || S.orundum >= 600 ? "" : "disabled"}>Manifest ×1<br><span class="cost">${S.permit >= 1 ? IC.permit + "1" : IC.orundum + "600"}</span></button>
@@ -222,7 +230,7 @@ function gachaReveal(results) {
     const show = () => {
       stage = 1; $("#gT").hidden = true; const G = $("#gG"); G.hidden = false;
       if (results.length === 1) { G.style.gridTemplateColumns = "1fr"; G.style.maxWidth = "260px"; }
-      G.innerHTML = results.map((r, i) => { const op = OPS[r.key]; return `<div class="gcard" style="--rc:${RC[op.rar]};animation-delay:${i * .12}s">${r.isNew ? '<span class="gnew">NEW</span>' : ""}<img src="${spriteURL(op)}" alt="${esc(op.n)}"><span class="gst">${"★".repeat(op.rar)}<br>${esc(op.short)}<br><span style="color:${ELC[op.el]};font-size:.85em">${op.el}</span></span></div>`; }).join("");
+      G.innerHTML = results.map((r, i) => { const op = OPS[r.key]; return `<div class="gcard" style="--rc:${RC[op.rar]};animation-delay:${i * .12}s">${r.isNew ? '<span class="gnew">NEW</span>' : ""}<img src="${spriteURL(op)}" alt="${esc(op.n)}"><span class="gst">${"★".repeat(op.rar)}<br>${esc(op.short)}<br><span style="font-size:.85em"><b style="color:${ELC[op.el]}">${op.el}</b> ${op.style}</span></span></div>`; }).join("");
       if (top >= 5) sfx("win"); else sfx("heal");
       setTimeout(() => { $("#gDone").hidden = false; stage = 2; }, results.length * 120 + 500);
     };

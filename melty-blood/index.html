@@ -291,13 +291,14 @@ p{margin:0}
 .rstars svg{width:11px;height:11px}
 .pt .eldot{position:absolute;right:-1px;top:13px;width:16px;height:16px;border-radius:50%;border:2px solid #0a0f1c;z-index:2}
 .eldot.Crescent{background:var(--crescent)} .eldot.Half{background:var(--half)} .eldot.Full{background:var(--full)} .eldot.Holy{background:var(--holy)} .eldot.Blood{background:var(--blood)}
-/* Moon-style badges drawn as moon phases */
-.eldot.Crescent{background:radial-gradient(circle at 70% 36%,#0a0f1c 0 47%,transparent 50%),var(--crescent)}
-.eldot.Half{background:linear-gradient(90deg,var(--half) 50%,#0a0f1c 50%);box-shadow:inset 0 0 0 1.5px var(--half)}
-.eldot.Full{background:radial-gradient(circle at 38% 34%,#fff6d6,var(--full) 60%);box-shadow:0 0 6px #f1d07a88}
-.el.kin{font-size:9.5px;opacity:.9;border-style:dashed}
-.pname .sty{display:block;font:700 9px var(--f-display);letter-spacing:.06em;text-transform:uppercase;line-height:1.1}
-.pname .sty.Crescent{color:var(--crescent)} .pname .sty.Half{color:var(--half)} .pname .sty.Full{color:var(--full)}
+/* unit badges: the moon phase is the Moon style, the colour is the Element */
+.eldot{--ec:#fff}
+.pt .eldot.Crescent{background:radial-gradient(circle at 70% 36%,#0a0f1c 0 47%,transparent 50%),var(--ec)}
+.pt .eldot.Half{background:linear-gradient(90deg,var(--ec) 50%,#0a0f1c 50%);box-shadow:inset 0 0 0 1.5px var(--ec)}
+.pt .eldot.Full{background:var(--ec);box-shadow:0 0 6px var(--ec)}
+.el.Fire{color:#ff7a3c} .el.Water{color:#4aa8ff} .el.Wind{color:#5fdc8c} .el.Holy{color:#ffe6a0} .el.Blood{color:#ff3b5c}
+.el.sty{color:var(--moon);border-style:dashed}
+.pname .sty{display:block;font:700 9px var(--f-display);letter-spacing:.05em;text-transform:uppercase;line-height:1.15;color:var(--moon)}
 .variants{display:flex;gap:10px;align-items:flex-start}
 .variants button{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:0;color:inherit;padding:0;font:inherit}
 .variants button.cur .pt{outline:2px solid var(--gold);outline-offset:2px;border-radius:50%}
@@ -503,26 +504,27 @@ function hash(str) { let h = 2166136261; for (const c of str) { h ^= c.charCodeA
 const dur = ms => { const m = Math.floor(ms / 60000), s = Math.floor(ms % 60000 / 1000); if (m >= 60) return Math.floor(m / 60) + "h " + (m % 60) + "m"; return m + ":" + String(s).padStart(2, "0"); };
 const today = () => new Date().toISOString().slice(0, 10);
 
-// ---------- Moon styles + rarity ----------
-// Every character comes in up to three Moon styles, each a separate unit with its own kit (internal field: el).
-// Crescent beats Full, Full beats Half, Half beats Crescent. Each style also has a built-in trait (STYLE[x].d).
-const ELS = ["Crescent", "Half", "Full"];
-const ELC = { Crescent: "#8fd8ff", Half: "#c39bff", Full: "#f1d07a", Holy: "#f4efe2", Blood: "#ff3b5c" };
-const BEATS = { Crescent: "Full", Full: "Half", Half: "Crescent" };
-function elementRel(a, t) { if (BEATS[a] === t) return "adv"; if (BEATS[t] === a) return "dis"; return "neu"; }
+// ---------- Elements, Moon styles + rarity ----------
+// Every character comes in three Moon styles, and every Moon style in all five Elements (Summoners War style).
+//  · Moon style (internal field: style): the kit, role, Talent and a style trait.
+//  · Element (internal field: el): matchups, colour, a small stat lean and kit tweaks (ELEMENT_KIT in a3b_kits.js).
+// Water beats Fire, Fire beats Wind, Wind beats Water; Holy and Blood each beat the other.
+const ELS = ["Fire", "Water", "Wind", "Holy", "Blood"];
+const ELC = { Fire: "#ff7a3c", Water: "#4aa8ff", Wind: "#5fdc8c", Holy: "#ffe6a0", Blood: "#e0244a" };
+const BEATS = { Water: "Fire", Fire: "Wind", Wind: "Water", Holy: "Blood", Blood: "Holy" };
+function elementRel(a, t) { if (BEATS[a] === t) return "adv"; if (BEATS[t] === a && !(a === "Holy" || a === "Blood")) return "dis"; return "neu"; }
+const elKey = el => el.toLowerCase();
+const weakTo = el => Object.keys(BEATS).find(k => BEATS[k] === el);
 // Traits follow the fighting game: Crescent fires up Blood Heat at high meter, Half has the toughest guard and an
 // automatic Circuit Spark, Full charges its own meter.
+const STYLES = ["Crescent", "Half", "Full"];
 const STYLE = {
   Crescent: { n: "Crescent Moon", sfx: "c", d: "Blood Heat: deals 15% more damage while your Magic Circuit is at 200% or more." },
   Half: { n: "Half Moon", sfx: "h", d: "Toughest guard: takes 6% less damage. Circuit Spark: the first time it drops below half HP, cleanses all its debuffs." },
   Full: { n: "Full Moon", sfx: "f", d: "Charge: builds 8% Magic Circuit at the start of each of its turns. Its Arc Drives deal 25% more damage." },
 };
-const styleName = el => (STYLE[el] || { n: el }).n;
+const styleName = st => (STYLE[st] || { n: st }).n;
 const CRES_HEAT = .15, CRES_HEAT_AT = 200, HALF_GUARD = .06, FULL_CHARGE = 8, FULL_ARC = .25;
-// Bloodline: the Church (Holy) and vampires (Blood) deal extra damage to each other.
-const KIN = { Holy: "Holy", Blood: "Blood" };
-const KIN_BONUS = .2;
-const kinRel = (a, t) => a && t && a !== t && KIN[a] && KIN[t];
 const RC = { 1: "#c9d1de", 2: "#7fdc8a", 3: "#8fd8ff", 4: "#c39bff", 5: "#f1d07a", 6: "#ff9a3c" };
 // Engine class keys stay internal; players see the names on the right.
 const CLASSES = ["Vanguard", "Guard", "Defender", "Sniper", "Caster", "Medic", "Supporter", "Specialist"];
@@ -757,7 +759,7 @@ const CHARS = [
         atk(2, "Flash Sheath: Seven Nights", "enemy", 1, 2.8, [strip(1), dbf("DEF_BREAK", .5)]),
         atk(3, "Extreme Death: Seven Nights", "enemy", 1, 6.0, [bonusVs("BRAND", .4, .3)], { ignoreDef: .5 })] }
   },
-  { n: "Arcueid Brunestud", short: "Arcueid", k: "arcueid", rar: 5, kin: "Blood",
+  { n: "Arcueid Brunestud", short: "Arcueid", k: "arcueid", rar: 5,
     fig: { type: "human", skin: "#f6e6da", hair: "#f2d27a", hs: "bob", col: "#f2efe9", col2: "#5a4a7c", boot: "#2a2236", acc: "#d8d0e0", eyec: "#e0244a", robe: "robe", slim: 1, w: "claws", sc: "#ff4d6d" },
     Crescent: { cls: "Specialist", stats: { atk: 840 }, leader: { stat: "ATK", amount: .25, scope: "All" }, talent: T("Whim of the Princess", "EXTRA_TURN", { chance: .2 }),
       skills: [atk(1, "You're in the Way!", "enemy", 3, 1.05, [dbf("DEF_BREAK", .2)]),
@@ -772,7 +774,7 @@ const CHARS = [
         atk(2, "Burst!", "aoe_enemies", 1, 2.4, [tmDown(.15)]),
         atk(3, "Shall We Play Around a Bit?", "enemy", 1, 5.2, [strip(2)], { ignoreDef: .3 })] }
   },
-  { n: "Red Arcueid", short: "Red Arcueid", k: "red-arcueid", rar: 5, kin: "Blood",
+  { n: "Red Arcueid", short: "Red Arcueid", k: "red-arcueid", rar: 5,
     fig: { type: "human", skin: "#f6e6da", hair: "#f2d27a", hs: "long", hlen: 40, col: "#f4f0ee", col2: "#e8e2e8", boot: "#d8d0d8", acc: "#c8203a", trim: "#e0244a", eyec: "#e0244a", robe: "robe", slim: 1, w: "arts", sc: "#ff2a4a" },
     Crescent: { cls: "Caster", stats: { atk: 880 }, leader: { stat: "ATK", amount: .33, scope: "Element" }, talent: T("Crimson Moon", "LIFESTEAL", { amount: .2 }),
       skills: [atk(1, "Alte Schule", "enemy", 2, 1.6, [dbf("DOT", .35)]),
@@ -787,7 +789,7 @@ const CHARS = [
         atk(2, "Rage Moerder", "enemy", 1, 2.8, [strip(1)]),
         atk(3, "Pluto die Schwester (Blood Heat)", "aoe_enemies", 1, 4.6, [], { ignoreDef: .35 })] }
   },
-  { n: "Ciel", short: "Ciel", k: "ciel", rar: 4, kin: "Holy",
+  { n: "Ciel", short: "Ciel", k: "ciel", rar: 4,
     fig: { type: "human", skin: "#f3decd", hair: "#26355f", hs: "bob", col: "#1a1a26", col2: "#16161f", boot: "#101016", acc: "#c8b06a", trim: "#e8e2d0", robe: "robe", slim: 1, w: "blackkeys", sc: "#f4efe2" },
     Crescent: { cls: "Sniper", leader: { stat: "ACC", amount: .4, scope: "All" }, talent: T("Burial Rite", "CRIT_DEBUFF", { what: "HEAL_BLOCK", chance: .5 }),
       skills: [atk(1, "Black Key Throw", "enemy", 3, 1.1, [dbf("STUN", .12, 1)]),
@@ -802,7 +804,7 @@ const CHARS = [
         atk(2, "Cavalry Toss", "enemy", 1, 2.8, [strip(1), dbf("STUN", .3, 1)]),
         atk(3, "Cremation Rite", "enemy", 1, 5.8, [strip(1)], { ignoreDef: .5 })] }
   },
-  { n: "Powered Ciel", short: "Powered Ciel", k: "powered-ciel", rar: 5, kin: "Holy",
+  { n: "Powered Ciel", short: "Powered Ciel", k: "powered-ciel", rar: 5,
     fig: { type: "human", skin: "#f3decd", hair: "#26355f", hs: "bob", col: "#3a3f52", col2: "#1a1a26", boot: "#2a2e3a", acc: "#c8b06a", trim: "#f4efe2", bulk: 1.12, w: "pilebunker", sc: "#f4efe2" },
     Crescent: { cls: "Guard", stats: { hp: 10200, def: 560 }, leader: { stat: "DEF", amount: .3, scope: "All" }, talent: T("Executor's Armour", "IMMUNE_LIST", { list: ["STUN", "SILENCE"] }),
       skills: [atk(1, "Rapid Stake", "enemy", 1, 3.4, [dbf("DEF_BREAK", .5)]),
@@ -817,7 +819,7 @@ const CHARS = [
         atk(2, "Virgin Pain", "aoe_enemies", 2, 1.4, [dbf("DEF_BREAK", .3)]),
         atk(3, "Numeral Secret Crest: Heavenly Nest", "aoe_enemies", 3, 1.6, [], { ignoreDef: .3 })] }
   },
-  { n: "Akiha Tohno", short: "Akiha", k: "akiha", rar: 4, kin: "Blood",
+  { n: "Akiha Tohno", short: "Akiha", k: "akiha", rar: 4,
     fig: { type: "human", skin: "#f6e3d6", hair: "#141016", hs: "long", hlen: 42, col: "#7a2632", col2: "#3a1a22", boot: "#1a1012", acc: "#e8d8b0", trim: "#e8d8b0", robe: "skirt", slim: 1, w: "arts", sc: "#ff3b5c" },
     Crescent: { cls: "Caster", leader: { stat: "ATK", amount: .24, scope: "Element" }, talent: T("Brilliant Impetus: Deep Red", "LIFESTEAL", { amount: .15 }),
       skills: [atk(1, "Felling Birds", "enemy", 1, 3.2, [dbf("DOT", .4)]),
@@ -832,7 +834,7 @@ const CHARS = [
         atk(2, "Smoking Out Birds", "aoe_enemies", 2, 1.3, [dbf("DOT", .4)]),
         atk(3, "Red Mistress: Locks of Hair (Blood Heat)", "aoe_enemies", 1, 4.2, [perDebuff(.08, .4)], { ignoreDef: .3 })] }
   },
-  { n: "Akiha Vermillion", short: "Akiha Vermillion", k: "red-akiha", rar: 5, kin: "Blood",
+  { n: "Akiha Vermillion", short: "Akiha Vermillion", k: "red-akiha", rar: 5,
     fig: { type: "human", skin: "#f6e3d6", hair: "#e01f3c", hs: "long", hlen: 48, col: "#7a2632", col2: "#3a1a22", boot: "#1a1012", acc: "#ff6a7a", trim: "#ffb3c0", eyec: "#ff3b5c", robe: "skirt", slim: 1, w: "arts", sc: "#ff2a4a" },
     Crescent: { cls: "Caster", stats: { atk: 890, spd: 110 }, leader: { stat: "ATK", amount: .33, scope: "Element" }, talent: T("Ever-Burning Plunder", "LIFESTEAL", { amount: .2 }),
       skills: [atk(1, "Felling Emptily Fluttering Birds", "enemy", 1, 3.6, [dbf("DOT", .6)]),
@@ -892,7 +894,7 @@ const CHARS = [
         atk(2, "Rumbling Bomb", "aoe_enemies", 1, 2.2, [dbf("DOT", .5), dbf("DEF_BREAK", .3)]),
         atk(3, "Saturday Night Forever", "enemy", 1, 5.8, [], { ignoreDef: .4 })] }
   },
-  { n: "Satsuki Yumizuka", short: "Satsuki", k: "satsuki", rar: 3, kin: "Blood",
+  { n: "Satsuki Yumizuka", short: "Satsuki", k: "satsuki", rar: 3,
     fig: { type: "human", skin: "#f6e3d6", hair: "#c8763a", hs: "twin", hlen: 24, col: "#eef0f6", col2: "#22305a", boot: "#1a1a22", acc: "#c8203a", trim: "#22305a", ribbon: "#c8203a", robe: "skirt", slim: 1, eyec: "#e0244a", w: "claws", sc: "#ff4d6d" },
     Crescent: { cls: "Guard", leader: { stat: "ATK", amount: .2, scope: "Element" }, talent: T("Sorry, Just One Bite!", "LIFESTEAL", { amount: .12 }),
       skills: [atk(1, "Sacchin Arm: Reaching for the Impossible Dream", "enemy", 2, 1.6, [selfHeal(.1, .3)]),
@@ -922,7 +924,7 @@ const CHARS = [
         atk(2, "Transfer Ride", "enemy", 1, 2.8, [strip(1), tmDown(.2)]),
         atk(3, "Black Barrel Replica", "enemy", 1, 6.0, [strip(1)], { ignoreDef: .45 })] }
   },
-  { n: "Sion TATARI", short: "Sion TATARI", k: "sion-tatari", rar: 5, kin: "Blood",
+  { n: "Sion TATARI", short: "Sion TATARI", k: "sion-tatari", rar: 5,
     fig: { type: "human", skin: "#ece4ea", hair: "#5a3a7a", hs: "braid", hlen: 46, col: "#1a1420", col2: "#14101a", boot: "#0e0a12", acc: "#c8203a", trim: "#e0244a", eyec: "#ff2a4a", cape: "#2a1020", coat: 1, slim: 1, w: "pistol", sc: "#ff2a4a" },
     Crescent: { cls: "Caster", leader: { stat: "CD", amount: .33, scope: "Element" }, talent: T("Vampiric Alchemy", "LIFESTEAL", { amount: .2 }),
       skills: [atk(1, "Terror News (Lie)", "enemy", 2, 1.6, [dbf("DOT", .3)]),
@@ -937,7 +939,7 @@ const CHARS = [
         atk(2, "Chain Letter", "aoe_enemies", 1, 2.2, [dbf("SLOW", .4)]),
         atk(3, "No Ark", "enemy", 1, 5.6, [strip(2), onKillGain(.3)], { ignoreDef: .5 })] }
   },
-  { n: "Riesbyfe Stridberg", short: "Riesbyfe", k: "riesbyfe", rar: 4, kin: "Holy",
+  { n: "Riesbyfe Stridberg", short: "Riesbyfe", k: "riesbyfe", rar: 4,
     fig: { type: "human", skin: "#f3decd", hair: "#d8b878", hs: "bob", col: "#24242e", col2: "#1c1c26", boot: "#141418", acc: "#e8d8a8", trim: "#f4efe2", robe: "robe", w: "shield", sc: "#f4efe2", shc: "#c8c2b0" },
     Crescent: { cls: "Defender", leader: { stat: "HP", amount: .25, scope: "All" }, talent: T("Gamaliel's Shelter", "TEAM_DMG_REDUCE", { amount: .08 }),
       skills: [atk(1, "Wrist Pizzicato", "enemy", 1, 2.6, [dbf("PROVOKE", .5, 1)]),
@@ -967,7 +969,7 @@ const CHARS = [
         atk(2, "Blowdust Starmine: Blue Fire", "aoe_enemies", 2, 1.5, [dbf("DOT", .4)]),
         atk(3, "Severe Break Slider", "aoe_enemies", 1, 4.8, [], { ignoreDef: .3 })] }
   },
-  { n: "Nrvnqsr Chaos", short: "Nero Chaos", k: "chaos", rar: 5, kin: "Blood",
+  { n: "Nrvnqsr Chaos", short: "Nero Chaos", k: "chaos", rar: 5,
     fig: { type: "human", skin: "#e8dcd2", hair: "#1e1a1c", hs: "short", col: "#1c1a20", col2: "#151318", boot: "#0e0c10", acc: "#4a3a2a", cape: "#18161c", coat: 1, h: 1.12, w: "arts", sc: "#9a7aff" },
     Crescent: { cls: "Caster", stats: { hp: 9800 }, leader: { stat: "HP", amount: .3, scope: "All" }, talent: T("Six Hundred Sixty-Six Lives", "REVIVE_ONCE", { amount: .3, buff: "INVINCIBLE", turns: 1 }),
       skills: [atk(1, "Chaos Release: Black Wings", "enemy", 2, 1.6, [dbf("DOT", .3)]),
@@ -982,7 +984,7 @@ const CHARS = [
         atk(2, "Premature Egg", "aoe_enemies", 1, 1.8, [dbf("ATK_DOWN", .5), selfShield(.1)]),
         atk(3, "Chaos Exposure: Reptile Form", "aoe_enemies", 1, 3.0, [selfHeal(.2), taunt(2)])] }
   },
-  { n: "Michael Roa Valdamjong", short: "Roa", k: "roa", rar: 5, kin: "Blood",
+  { n: "Michael Roa Valdamjong", short: "Roa", k: "roa", rar: 5,
     fig: { type: "human", skin: "#f0e4dc", hair: "#e8e6ec", hs: "long", hlen: 30, col: "#ece8ee", col2: "#2a2a34", boot: "#1a1a22", acc: "#5a4a8a", cape: "#e2dee6", coat: 1, h: 1.05, w: "arts", sc: "#8fd8ff" },
     Crescent: { cls: "Caster", leader: { stat: "CD", amount: .3, scope: "Element" }, talent: T("Reincarnation", "REVIVE_ONCE", { amount: .3, buff: "INVINCIBLE", turns: 1 }),
       skills: [atk(1, "Thunder Needle", "enemy", 2, 1.7, [dbf("SILENCE", .25, 1)]),
@@ -997,7 +999,7 @@ const CHARS = [
         atk(2, "Crushing Rising Thunder", "enemy", 1, 2.6, [dbf("STUN", .35, 1)]),
         atk(3, "Thunder Snake Ghostly Festival", "aoe_enemies", 1, 4.6, [], { ignoreDef: .3 })] }
   },
-  { n: "Night of Wallachia", short: "Wallachia", k: "wallachia", rar: 5, kin: "Blood",
+  { n: "Night of Wallachia", short: "Wallachia", k: "wallachia", rar: 5,
     fig: { type: "hood", skin: "#d8d0d8", col: "#120c14", col2: "#0c080e", cape: "#1a0a14", eyes: "#ff2a4a", robe: 1, h: 1.14, w: "arts", sc: "#ff2a4a" },
     Crescent: { cls: "Caster", stats: { hp: 9600, atk: 860 }, leader: { stat: "CD", amount: .3, scope: "Element" }, talent: T("Tatari", "LIFESTEAL", { amount: .15 }),
       skills: [atk(1, "Bad News (Lie)", "enemy", 1, 3.0, [dbf("BRAND", .5)]),
@@ -1057,7 +1059,7 @@ const CHARS = [
         atk(2, "Thousand Year Smash", "enemy", 1, 3.0, [dbf("DEF_BREAK", .5), selfGain(.15)]),
         atk(3, "Amazing Ultimate Final Technique", "enemy", 1, 5.2, [], { ignoreDef: .5 })] }
   },
-  { n: "Kouma Kishima", short: "Kouma", k: "kouma", rar: 4, kin: "Blood",
+  { n: "Kouma Kishima", short: "Kouma", k: "kouma", rar: 4,
     fig: { type: "human", skin: "#e8cdb8", hair: "#5a1e1a", hs: "long", hlen: 26, col: "#2a2226", col2: "#1e1a1c", boot: "#141012", acc: "#8a2a2a", cape: "#3a2a2a", coat: 1, bulk: 1.28, h: 1.1, w: "none", sc: "#ff6a3d" },
     Crescent: { cls: "Guard", stats: { hp: 10200 }, leader: { stat: "HP", amount: .25, scope: "All" }, talent: T("Oni Blood", "IMMUNE_LIST", { list: ["STUN", "SLOW"] }),
       skills: [atk(1, "Buza Palm", "enemy", 1, 3.0, [dbf("DEF_BREAK", .3)]),
@@ -1087,7 +1089,7 @@ const CHARS = [
         atk(2, "I Want to Go to Crocodile Country", "enemy", 1, 2.6, [dbf("STUN", .25, 1), selfGain(.15)]),
         atk(3, "Delinquent Cat Gang Leader's Mansion", "enemy", 1, 5.0, [], { ignoreDef: .3 })] }
   },
-  { n: "Neco-Arc Chaos", short: "Neco Chaos", k: "neco-chaos", rar: 3, kin: "Blood",
+  { n: "Neco-Arc Chaos", short: "Neco Chaos", k: "neco-chaos", rar: 3,
     fig: { type: "human", skin: "#e8dcd2", hair: "#1e1a1c", hs: "short", col: "#1c1a20", col2: "#151318", boot: "#0e0c10", acc: "#4a3a2a", cape: "#18161c", coat: 1, hsz: 1.65, h: .7, ears: "cat", tail: "cat", w: "arts", sc: "#9a7aff" },
     Crescent: { cls: "Caster", leader: { stat: "ATK", amount: .15, scope: "Element" }, talent: T("Neco Devour", "LIFESTEAL", { amount: .15 }),
       skills: [atk(1, "Chaos Beam", "enemy", 1, 3.0, [dbf("ATK_DOWN", .3)]),
@@ -1117,7 +1119,7 @@ const CHARS = [
         atk(2, "Yin Yang Spiral", "enemy", 1, 2.8, [strip(2), dbf("SILENCE", .4, 1), tmDown(.2)]),
         atk(3, "Mystic Eyes of Death Perception: Seven Scenic Demise", "enemy", 1, 5.8, [], { ignoreDef: 1 })] }
   },
-  { n: "Saber", short: "Saber", k: "saber", rar: 5, kin: "Holy",
+  { n: "Saber", short: "Saber", k: "saber", rar: 5,
     fig: { type: "human", skin: "#f6e6da", hair: "#f0d070", hs: "bun", col: "#c9d2e2", col2: "#2a4a9a", boot: "#8a94a8", acc: "#f1d07a", trim: "#f1d07a", robe: "robe", slim: 1, w: "greatsword", sc: "#ffd76b" },
     Crescent: { cls: "Guard", stats: { hp: 9800, atk: 840, def: 560 }, leader: { stat: "ATK", amount: .24, scope: "All" }, talent: T("Magic Resistance", "IMMUNE_LIST", { list: ["STUN", "SILENCE"] }),
       skills: [atk(1, "First Air", "enemy", 2, 1.7, [dbf("DEF_BREAK", .3)]),
@@ -1132,7 +1134,7 @@ const CHARS = [
         atk(2, "Elfin Dance", "enemy", 1, 2.9, [strip(1), selfGain(.2)]),
         atk(3, "The Sword of Promised Victory: Sword Dance", "aoe_enemies", 1, 4.8, [], { ignoreDef: .3 })] }
   },
-  { n: "Noel", short: "Noel", k: "noel", rar: 4, kin: "Holy",
+  { n: "Noel", short: "Noel", k: "noel", rar: 4,
     fig: { type: "human", skin: "#f4e0d4", hair: "#e6a7b8", hs: "bob", col: "#9a2e44", col2: "#2a1a24", boot: "#1a1218", acc: "#f1d07a", trim: "#f4efe2", robe: "skirt", slim: 1, w: "spear", sc: "#f4efe2" },
     Crescent: { cls: "Vanguard", leader: { stat: "SPD", amount: .18, scope: "All" }, talent: T("Eager Executor", "SELF_ATB_START", { amount: .2 }),
       skills: [atk(1, "Heavy Thrust", "enemy", 1, 2.9, [tmDown(.1, .4)]),
@@ -1147,7 +1149,7 @@ const CHARS = [
         atk(2, "Heavy Punishment (Overhead)", "enemy", 1, 2.8, [dbf("STUN", .3, 1)]),
         atk(3, "Exploding Black Keys", "aoe_enemies", 1, 4.2, [dbf("DEF_BREAK", .5)], { ignoreDef: .2 })] }
   },
-  { n: "Vlov Arkhangel", short: "Vlov", k: "vlov", rar: 5, kin: "Blood",
+  { n: "Vlov Arkhangel", short: "Vlov", k: "vlov", rar: 5,
     fig: { type: "human", skin: "#ece2e0", hair: "#e6e4ea", hs: "long", hlen: 34, col: "#1e1a24", col2: "#16121a", boot: "#0e0c10", acc: "#c8203a", cape: "#2a1a2a", coat: 1, h: 1.06, eyec: "#ff2a4a", w: "saber", sc: "#ff3b5c" },
     Crescent: { cls: "Guard", stats: { atk: 860 }, leader: { stat: "ATK", amount: .3, scope: "Element" }, talent: T("Dead Apostle's Pride", "LIFESTEAL", { amount: .2 }),
       skills: [atk(1, "Burya Tigr", "enemy", 2, 1.7, [dbf("DOT", .35)]),
@@ -1165,7 +1167,7 @@ const CHARS = [
 ];
 
 // =====================================================================
-//  CLASS TABLES, CHARACTER TABLE AND ENEMIES
+//  CLASS TABLES, UNIT TABLE (Moon styles × Elements) AND ENEMIES
 //  target: enemy | aoe_enemies | ally_single | self | team | aoe_allies
 // =====================================================================
 const CLASS_BASE = {
@@ -1189,28 +1191,83 @@ const CLASS_LEADER = {
 const RAR_MULT = { 1: .7, 2: .76, 3: .84, 4: .92, 5: 1, 6: 1.06 };
 const ARC_COST = 100;
 
-// ---------- build the character table ----------
-// Each character's Moon styles become separate units keyed "<char>-c", "<char>-h" and "<char>-f".
+// ---------- build the unit table ----------
+// Each character's Moon styles are "families" ("<char>-c/-h/-f"); each family comes in all five Elements, and every
+// unit ("<char>-<style>-<element>", e.g. "shiki-h-fire") is collected and raised on its own.
+// Home Element per Moon style (Crescent Half Full): the one that fits the kit. Starters, story rewards, bosses
+// and pre-Element saves use it.
+const HOME_EL = {
+  shiki: "Wind Water Fire", nanaya: "Wind Water Blood", arcueid: "Fire Water Blood", "red-arcueid": "Blood Water Fire",
+  ciel: "Holy Water Fire", "powered-ciel": "Holy Water Wind", akiha: "Fire Water Blood", "red-akiha": "Fire Wind Blood",
+  hisui: "Water Holy Fire", kohaku: "Water Fire Wind", "mech-hisui": "Wind Water Fire", satsuki: "Blood Fire Wind",
+  sion: "Wind Water Fire", "sion-tatari": "Blood Water Wind", riesbyfe: "Holy Water Fire", aoko: "Wind Water Fire",
+  chaos: "Blood Wind Water", roa: "Blood Wind Fire", wallachia: "Blood Water Fire", len: "Water Wind Fire",
+  "white-len": "Water Wind Holy", miyako: "Fire Water Wind", kouma: "Fire Water Blood", "neco-arc": "Wind Water Fire",
+  "neco-chaos": "Blood Water Wind", ryougi: "Wind Water Fire", saber: "Holy Water Wind", noel: "Holy Water Fire", vlov: "Fire Water Blood",
+};
+// Element versions differ slightly, like Summoners War: a stat lean, an extra effect on S1, and an Arc Drive tweak.
+const ELEMENT_KIT = {
+  Fire: { d: "+5% ATK. S1 can inflict Bleed. Damaging Arc Drives hit 8% harder (support ones grant ATK Up).",
+    stat: { atk: 1.05 }, s1: dbf("DOT", .25), arc: sk => sk.mult > 0 ? { mult: 1.08 } : { add: teamBuff("ATK_UP") } },
+  Water: { d: "+6% HP. S1 can inflict Slow. Arc Drives also heal all allies.",
+    stat: { hp: 1.06 }, s1: dbf("SLOW", .25), arc: () => ({ add: teamHeal(.08) }) },
+  Wind: { d: "+4 SPD. S1 reduces turn meter. Arc Drives also give all allies turn meter.",
+    stat: { spd: 4 }, s1: tmDown(.1), arc: () => ({ add: teamGain(.1) }) },
+  Holy: { d: "+8% DEF. S1 can inflict Silence. Arc Drives also remove a buff (support ones cleanse).",
+    stat: { def: 1.08 }, s1: dbf("SILENCE", .2, 1), arc: sk => ({ add: sk.mult > 0 ? strip(1) : cleanse(1) }) },
+  Blood: { d: "+3% HP and ATK. S1 can inflict Heal Block. Arc Drives also heal this character.",
+    stat: { atk: 1.03, hp: 1.03 }, s1: dbf("HEAL_BLOCK", .25), arc: () => ({ add: selfHeal(.15) }) },
+};
+// Manifest odds by Element: Holy and Blood versions are rare, like Light and Dark in Summoners War
+const EL_WEIGHT = { Fire: .3, Water: .3, Wind: .3, Holy: .05, Blood: .05 };
+// add an effect to a skill, or strengthen the same effect if the skill already has it
+function withEffect(sk, e) {
+  const ex = sk.effects.find(x => x.type === e.type && x.on === e.on && x.what === e.what && !x.onKill && !x.perCrit);
+  if (!ex) { sk.effects.push({ ...e }); return; }
+  const i = sk.effects.indexOf(ex), up = { ...ex };
+  if (e.type === "debuff") up.chance = Math.min(1, (ex.chance ?? 1) + .15);
+  else if (e.type === "strip" || e.type === "cleanse") up.amount = (ex.amount || 1) + 1;
+  else if (e.type !== "buff") up.amount = +((ex.amount || 0) + .05).toFixed(2);
+  sk.effects[i] = up;
+}
+// per-hit effects are scaled down on multi-hit skills so a 7-hit S1 doesn't apply them seven times over
+const perHit = (e, hits) => { const f = Math.min(1, 2 / (hits || 1)); return e.type === "debuff" ? { ...e, chance: +(e.chance * f).toFixed(3) } : { ...e, amount: +(e.amount * f).toFixed(3) }; };
 const OPS = {};
 const OP_KEYS = [];
-for (const c of CHARS) for (const el of ELS) {
-  const v = c[el]; if (!v) continue;
-  const key = c.k + "-" + STYLE[el].sfx, cls = v.cls;
-  const skills = v.skills.map(sk => {
-    const o = { ...sk };
-    if (o.slot === 3) { o.arc = ARC_COST; o.cd = 0; }
-    o.desc = skillDesc(o);
-    return o;
-  });
+const FAMS = [];
+for (const c of CHARS) STYLES.forEach((style, si) => {
+  const v = c[style]; if (!v) return;
+  const fam = c.k + "-" + STYLE[style].sfx, home = HOME_EL[c.k].split(" ")[si], cls = v.cls;
   const passives = (v.talents || [v.talent]).filter(Boolean).map(t => ({ ...t, text: `${t.name}: ${passiveDesc(t)}.` }));
-  const op = { key, base: c.k, n: c.n, short: c.short || c.n, slug: c.k, rar: v.rar || c.rar, cls, el, kin: c.kin || null, asp: 1, featured: true, fig: c.fig,
-    stats: { ...CLASS_BASE[cls], ...(v.stats || {}) }, skills, leader: { ...(v.leader || CLASS_LEADER[cls]) },
-    passives, runes: CLASS_RUNES[cls], maxElite: 2 };
-  if (op.leader.scope === "Element") op.leader.element = el;
-  OPS[key] = op; OP_KEYS.push(key);
-}
-const variantsOf = base => ELS.map(el => base + "-" + STYLE[el].sfx).filter(k => OPS[k]);
-const opLabel = op => `${op.n} (${styleName(op.el)})`;
+  FAMS.push(fam);
+  for (const el of ELS) {
+    const X = ELEMENT_KIT[el];
+    const skills = v.skills.map(sk0 => {
+      const sk = { ...sk0, effects: [...(sk0.effects || [])] };
+      if (sk.slot === 1) withEffect(sk, perHit(X.s1, sk.hits));
+      if (sk.slot === 3) { const t = X.arc(sk); if (t.mult) sk.mult = +(sk.mult * t.mult).toFixed(2); if (t.add) withEffect(sk, t.add); sk.arc = ARC_COST; sk.cd = 0; }
+      sk.desc = skillDesc(sk);
+      return sk;
+    });
+    const stats = { ...CLASS_BASE[cls], ...(v.stats || {}) };
+    for (const k in X.stat) stats[k] = k === "spd" ? stats[k] + X.stat[k] : Math.round(stats[k] * X.stat[k]);
+    const key = fam + "-" + elKey(el), isHome = el === home;
+    // the home Element keeps the character's signature effect colour; the others glow in their Element's colour
+    const op = { key, base: c.k, fam, n: c.n, short: c.short || c.n, slug: c.k, rar: v.rar || c.rar, cls, style, el, home: isHome, asp: 1, featured: true,
+      fig: isHome ? c.fig : { ...c.fig, sc: ELC[el] }, stats, skills, leader: { ...(v.leader || CLASS_LEADER[cls]) },
+      passives, runes: CLASS_RUNES[cls], maxElite: 2 };
+    if (op.leader.scope === "Element") op.leader.element = el;
+    OPS[key] = op; OP_KEYS.push(key);
+  }
+});
+const homeKey = fam => fam + "-" + elKey(HOME_EL[fam.slice(0, fam.lastIndexOf("-"))].split(" ")[STYLES.findIndex(s => fam.endsWith("-" + STYLE[s].sfx))]);
+const variantsOf = base => STYLES.map(s => base + "-" + STYLE[s].sfx).filter(f => FAMS.includes(f));
+const elementsOf = fam => ELS.map(el => fam + "-" + elKey(el)).filter(k => OPS[k]);
+const opLabel = op => `${op.el} ${styleName(op.style)} ${op.short}`;
+// saves from before Moon styles ("shiki") and before Elements ("shiki-c") move to the home unit
+const LEGACY = {};
+for (const f of FAMS) LEGACY[f] = homeKey(f);
+for (const c of CHARS) LEGACY[c.k] = homeKey(c.k + "-c");
 // menus show the same drawn figures as battles (rendered once, then cached)
 const spriteURL = op => opArt(op.key).full;
 const headURL = op => opArt(op.key).head;
@@ -1219,43 +1276,43 @@ const headURL = op => opArt(op.key).head;
 const S1 = (name, mult, effects = [], hits = 1) => { const s = { slot: 1, name, cd: 0, target: "enemy", hits, mult, effects }; s.desc = skillDesc(s); return s; };
 const S2 = (name, target, mult, effects = [], hits = 1) => { const s = { slot: 2, name, cd: 3, target, hits, mult, effects }; s.desc = skillDesc(s); return s; };
 const ENEMY = {
-  ghoul: { n: "Ghoul", cls: "Guard", el: "Full", kin: "Blood", m: { hp: .7, atk: .75, def: .7, spd: 100 },
+  ghoul: { n: "Ghoul", cls: "Guard", style: "Full", el: "Fire", m: { hp: .7, atk: .75, def: .7, spd: 100 },
     fig: { type: "human", skin: "#b9c0b2", hair: "#34322e", hs: "short", col: "#45454e", col2: "#2c2c34", boot: "#1c1c20", acc: "#5a2a2a", eyec: "#ff3b5c", w: "claws", sc: "#ff3b5c" },
     skills: [S1("Rend", 2.6, [dbf("DOT", .2)])] },
-  dead: { n: "The Dead", cls: "Vanguard", el: "Half", kin: "Blood", m: { hp: .62, atk: .7, def: .6, spd: 98 },
+  dead: { n: "The Dead", cls: "Vanguard", style: "Half", el: "Water", m: { hp: .62, atk: .7, def: .6, spd: 98 },
     fig: { type: "human", skin: "#a9b8a2", hair: "#2a2a26", hs: "bald", col: "#3a4038", col2: "#2a2e28", boot: "#1a1c18", acc: "#4a4a3a", eyec: "#c39bff", w: "none", sc: "#c39bff" },
     skills: [S1("Grasp", 2.4, [dbf("SLOW", .3)])] },
-  hound: { n: "Shadow Hound", cls: "Specialist", el: "Crescent", kin: "Blood", m: { hp: .55, atk: .8, def: .45, spd: 122 },
+  hound: { n: "Shadow Hound", cls: "Specialist", style: "Crescent", el: "Wind", m: { hp: .55, atk: .8, def: .45, spd: 122 },
     fig: { type: "hound", col: "#221c26", acc: "#ff3b5c" },
     skills: [S1("Bite", 2.6, [dbf("DOT", .3)])] },
-  panther: { n: "Chaos Panther", cls: "Guard", el: "Half", kin: "Blood", m: { hp: .82, atk: .9, def: .6, spd: 116 },
+  panther: { n: "Chaos Panther", cls: "Guard", style: "Half", el: "Wind", m: { hp: .82, atk: .9, def: .6, spd: 116 },
     fig: { type: "hound", col: "#2a2836", acc: "#9a7aff", h: 1.15 },
     skills: [S1("Pounce", 1.4, [], 2), S2("Pack Hunt", "aoe_enemies", 1.6, [tmDown(.1)])] },
-  phantom: { n: "Rumor Phantom", cls: "Caster", el: "Crescent", m: { hp: .6, atk: .9, def: .55, spd: 104 },
+  phantom: { n: "Rumor Phantom", cls: "Caster", style: "Crescent", el: "Water", m: { hp: .6, atk: .9, def: .55, spd: 104 },
     fig: { type: "hood", skin: "#d8dce8", col: "#2a2a3e", col2: "#1e1e2e", cape: "#3a3a56", eyes: "#8fd8ff", robe: 1, w: "arts", sc: "#8fd8ff" },
     skills: [S1("Whisper", 2.6, [dbf("SILENCE", .2, 1)]), S2("Spread the Rumor", "aoe_enemies", 1.6, [dbf("ATK_DOWN", .3)])] },
-  wraith: { n: "Tatari Wraith", cls: "Caster", el: "Full", kin: "Blood", m: { hp: .7, atk: .95, def: .6, spd: 106 },
+  wraith: { n: "Tatari Wraith", cls: "Caster", style: "Full", el: "Blood", m: { hp: .7, atk: .95, def: .6, spd: 106 },
     fig: { type: "hood", skin: "#e0d0d4", col: "#2a0e18", col2: "#1e0a12", cape: "#3a1020", eyes: "#ff3b5c", robe: 1, w: "arts", sc: "#ff3b5c" },
     skills: [S1("Curse", 2.8, [dbf("BRAND", .3)]), S2("Night Terror", "aoe_enemies", 1.8, [dbf("STUN", .2, 1)])] },
-  executor: { n: "Rogue Executor", cls: "Sniper", el: "Crescent", kin: "Holy", m: { hp: .6, atk: .9, def: .55, spd: 108 },
+  executor: { n: "Rogue Executor", cls: "Sniper", style: "Crescent", el: "Holy", m: { hp: .6, atk: .9, def: .55, spd: 108 },
     fig: { type: "human", skin: "#efdccc", hair: "#3a3a40", hs: "short", col: "#1a1a24", col2: "#16161f", boot: "#101016", acc: "#c8b06a", trim: "#e8e2d0", robe: "robe", w: "blackkeys", sc: "#f4efe2" },
     skills: [S1("Black Keys", 1.4, [dbf("STUN", .1, 1)], 2)] },
-  knight: { n: "Ghoul Knight", cls: "Defender", el: "Half", kin: "Blood", m: { hp: 1.05, atk: .62, def: 1.1, spd: 96 },
+  knight: { n: "Ghoul Knight", cls: "Defender", style: "Half", el: "Fire", m: { hp: 1.05, atk: .62, def: 1.1, spd: 96 },
     fig: { type: "human", skin: "#b9c0b2", hair: "#34322e", hs: "short", col: "#3a3a46", col2: "#2a2a34", boot: "#1c1c22", acc: "#5a2a2a", eyec: "#ff3b5c", bulk: 1.18, w: "shield", sc: "#ff3b5c", shc: "#4a4a56" },
     skills: [S1("Rusted Blade", 2.6, [dbf("PROVOKE", .3, 1)]), { slot: 2, name: "Bulwark", cd: 3, target: "self", effects: [selfBuff("DEF_UP"), { on: "self", type: "taunt", turns: 2 }], desc: "Gains DEF Up (2T). Gains Taunt (2T)." }] },
-  homunculus: { n: "Atlas Homunculus", cls: "Guard", el: "Full", m: { hp: .8, atk: .85, def: .8, spd: 104 },
+  homunculus: { n: "Atlas Homunculus", cls: "Guard", style: "Full", el: "Water", m: { hp: .8, atk: .85, def: .8, spd: 104 },
     fig: { type: "robot", col: "#6a6a7a", col2: "#4a4a58", boot: "#2a2a34", acc: "#f1d07a", w: "saber", sc: "#f1d07a" },
     skills: [S1("Calculated Strike", 2.8, [dbf("DEF_BREAK", .3)])] },
 };
 // Bosses are tougher versions of playable characters (same figure and kit, Arc Drive included).
 // [character variant, HP multiplier, ATK multiplier]; bosses that revive or heal get less HP so the fight stays fair.
 // Each boss fights in one Moon style, so the right counter-pick matters.
-const BOSS = { b_sion: ["sion-c", 3.0, 1.12], b_ciel: ["ciel-c", 2.8, 1.06], b_redakiha: ["red-akiha-c", 1.9, .88], b_chaos: ["chaos-c", 1.45, .8], b_wallachia: ["wallachia-c", 2.5, .92],
-  b_nanaya: ["nanaya-c", 2.8, 1.1], b_riesbyfe: ["riesbyfe-c", 2.5, 1.0], b_roa: ["roa-c", 2.2, 1.0], b_redarc: ["red-arcueid-c", 2.6, 1.02], b_vlov: ["vlov-c", 3.0, 1.1],
-  b_siontatari: ["sion-tatari-c", 2.8, 1.05], b_mech: ["mech-hisui-c", 2.8, 1.1], b_satsuki: ["satsuki-c", 2.6, 1.1], b_whitelen: ["white-len-c", 2.4, 1.0] };
+const BOSS = { b_sion: [homeKey("sion-c"), 3.0, 1.12], b_ciel: [homeKey("ciel-c"), 2.8, 1.06], b_redakiha: [homeKey("red-akiha-c"), 2.1, .94], b_chaos: [homeKey("chaos-c"), 1.75, .9], b_wallachia: [homeKey("wallachia-c"), 2.5, .92],
+  b_nanaya: [homeKey("nanaya-c"), 2.8, 1.1], b_riesbyfe: [homeKey("riesbyfe-c"), 2.5, 1.0], b_roa: [homeKey("roa-c"), 2.2, 1.0], b_redarc: [homeKey("red-arcueid-c"), 2.6, 1.02], b_vlov: [homeKey("vlov-c"), 3.0, 1.1],
+  b_siontatari: [homeKey("sion-tatari-c"), 2.8, 1.05], b_mech: [homeKey("mech-hisui-c"), 2.8, 1.1], b_satsuki: [homeKey("satsuki-c"), 2.6, 1.1], b_whitelen: [homeKey("white-len-c"), 2.4, 1.0] };
 for (const id in BOSS) {
   const [k, hp, atk] = BOSS[id], op = OPS[k];
-  ENEMY[id] = { n: op.n, boss: 1, op: k, cls: op.cls, el: op.el, kin: op.kin, fig: op.fig, skills: op.skills, passives: op.passives,
+  ENEMY[id] = { n: op.n, boss: 1, op: k, cls: op.cls, style: op.style, el: op.el, fig: op.fig, skills: op.skills, passives: op.passives,
     m: { hp, atk, def: 1.0, spd: op.stats.spd - 4 } };
 }
 for (const k in ENEMY) { ENEMY[k].key = k; ENEMY[k].enemy = true; ENEMY[k].passives = ENEMY[k].passives || []; ENEMY[k].runes = []; }
@@ -1266,9 +1323,9 @@ for (const k in ENEMY) { ENEMY[k].key = k; ENEMY[k].enemy = true; ENEMY[k].passi
 // =====================================================================
 const SPK = {
   narr: { n: "" },
-  shiki: { n: "Shiki", op: "shiki-c" }, satsuki: { n: "Satsuki", op: "satsuki-c" }, hisui: { n: "Hisui", op: "hisui-c" }, kohaku: { n: "Kohaku", op: "kohaku-c" },
-  akiha: { n: "Akiha", op: "akiha-c" }, sion: { n: "Sion", op: "sion-c" }, ciel: { n: "Ciel", op: "ciel-c" }, arcueid: { n: "Arcueid", op: "arcueid-c" },
-  len: { n: "Len", op: "len-c" },
+  shiki: { n: "Shiki", op: homeKey("shiki-c") }, satsuki: { n: "Satsuki", op: homeKey("satsuki-c") }, hisui: { n: "Hisui", op: homeKey("hisui-c") }, kohaku: { n: "Kohaku", op: homeKey("kohaku-c") },
+  akiha: { n: "Akiha", op: homeKey("akiha-c") }, sion: { n: "Sion", op: homeKey("sion-c") }, ciel: { n: "Ciel", op: homeKey("ciel-c") }, arcueid: { n: "Arcueid", op: homeKey("arcueid-c") },
+  len: { n: "Len", op: homeKey("len-c") },
   sion_e: { n: "Sion", en: "b_sion" }, ciel_e: { n: "Ciel", en: "b_ciel" }, redakiha: { n: "Akiha?", en: "b_redakiha" }, chaos: { n: "Nrvnqsr Chaos", en: "b_chaos" },
   wallachia: { n: "Night of Wallachia", en: "b_wallachia" }, nanaya: { n: "Shiki Nanaya", en: "b_nanaya" }, riesbyfe: { n: "Riesbyfe", en: "b_riesbyfe" },
   mech: { n: "Mech-Hisui", en: "b_mech" }, vlov: { n: "Vlov", en: "b_vlov" }, whitelen: { n: "White Len", en: "b_whitelen" }, ghoul: { n: "Ghoul", en: "ghoul" },
@@ -1280,7 +1337,7 @@ const STORY = [{
   id: "ep1", title: "Night of Rumors", sub: "Main Story",
   blurb: "One summer night every year, Misaki Town's rumors come true. This year someone is spreading the worst ones on purpose.",
   chapters: [
-    { id: "c1", title: "The Rumor", env: "misaki", map: "misaki", reward: { op: "sion-h", orundum: 300 },
+    { id: "c1", title: "The Rumor", env: "misaki", map: "misaki", reward: { op: homeKey("sion-h"), orundum: 300 },
       nodes: [
         { id: "1-1", type: "story", name: "A Town of Whispers", pre: [
           L("narr", "Misaki Town, late summer. A rumor walks the streets after midnight: the vampire killer is back, and this time it never sleeps."),
@@ -1307,8 +1364,8 @@ const STORY = [{
         { id: "1-6", type: "battle", name: "Plaza of Rumors", lv: 4, waves: [W("ghoul", "phantom", "ghoul"), W("dead", "phantom", "dead")], pre: [
           L("satsuki", "Those ghosts are whispering... they're repeating things people say about this town."),
           L("shiki", "Then let's give them something new to talk about."),
-          L("satsuki", "Oh, and watch the moon on everyone's badge. Crescent beats Full, Full beats Half, Half beats Crescent."),
-          L("satsuki", "Same person, different Moon style, totally different moves. I fight Half Moon. Your Crescent Moon style is all about building Magic Circuit fast!") ] },
+          L("satsuki", "Oh, and look at everyone's badge. The colour is their Element: Water beats Fire, Fire beats Wind, Wind beats Water, and Holy and Blood beat each other."),
+          L("satsuki", "The moon shape is their Moon style. Same person, different style, totally different moves. I'm a Fire Half Moon, you're a Wind Crescent Moon!") ] },
         { id: "1-7", type: "boss", name: "The Alchemist", lv: 7, waves: [W("phantom", "ghoul"), W("b_sion", "ghoul", "phantom")], pre: [
           L("sion_e", "Shiki Tohno. Holder of the Mystic Eyes of Death Perception. I require your cooperation."),
           L("shiki", "You have a strange way of asking."),
@@ -1317,7 +1374,7 @@ const STORY = [{
           L("sion", "I am Sion Eltnam Atlasia, of the Atlas Institute. I am hunting the thing that makes rumors real. The Tatari."),
           L("shiki", "Then I guess we're hunting it together.") ] },
       ] },
-    { id: "c2", title: "The Executor", env: "school", map: "school", reward: { op: "ciel-c", orundum: 300 },
+    { id: "c2", title: "The Executor", env: "school", map: "school", reward: { op: homeKey("ciel-c"), orundum: 300 },
       nodes: [
         { id: "2-1", type: "story", name: "Divided Thought", pre: [
           L("sion", "The Tatari is not a person. It is a phenomenon called the Night of Wallachia. Once a year, it takes the shape of whatever a town fears most."),
@@ -1346,7 +1403,7 @@ const STORY = [{
           L("sion", "Acceptable."),
           L("ciel", "And Tohno-kun? We are going to talk about your curfew later.") ] },
       ] },
-    { id: "c3", title: "Tohno Mansion", env: "mansion", map: "mansion", reward: { op: "akiha-f", orundum: 300 },
+    { id: "c3", title: "Tohno Mansion", env: "mansion", map: "mansion", reward: { op: homeKey("akiha-f"), orundum: 300 },
       nodes: [
         { id: "3-1", type: "story", name: "Curfew", pre: [
           L("akiha", "Nii-san. It is three in the morning."),
@@ -1379,7 +1436,7 @@ const STORY = [{
           L("shiki", "It was wrong about you, Akiha."),
           L("akiha", "Of course it was. I'm coming with you tonight. Don't argue.") ] },
       ] },
-    { id: "c4", title: "Chaos in the Park", env: "park", map: "park", reward: { op: "arcueid-f", orundum: 400 },
+    { id: "c4", title: "Chaos in the Park", env: "park", map: "park", reward: { op: homeKey("arcueid-f"), orundum: 400 },
       nodes: [
         { id: "4-1", type: "story", name: "The Princess", pre: [
           L("arcueid", "Shiki! You've been having fun without me."),
@@ -1496,9 +1553,11 @@ const ACHIEVEMENTS = [
   ...STORY[0].chapters.map((c, i) => ({ id: "ch" + (i + 1), n: `Clear Night ${c.no}: ${c.title}`, test: () => chapterCleared(c), reward: i === 4 ? { orundum: 600, permit: 3 } : { orundum: 300 } })),
   { id: "ops10", n: "Gather 10 characters", test: () => Object.keys(S.ops).length >= 10, reward: { orundum: 200 } },
   { id: "ops20", n: "Gather 20 characters", test: () => Object.keys(S.ops).length >= 20, reward: { orundum: 400, permit: 1 } },
-  { id: "moons", n: "Collect all three Moon styles of one character", test: () => CHARS.some(c => variantsOf(c.k).length === 3 && variantsOf(c.k).every(owned)), reward: { orundum: 500, permit: 1 } },
+  { id: "moons", n: "Collect all three Moon styles of one character", test: () => CHARS.some(c => variantsOf(c.k).length === 3 && variantsOf(c.k).every(f => elementsOf(f).some(owned))), reward: { orundum: 500, permit: 1 } },
+  { id: "elems", n: "Collect one Moon style in all five Elements", test: () => FAMS.some(f => elementsOf(f).every(owned)), reward: { orundum: 800, permit: 2 } },
   { id: "ops40", n: "Gather 40 characters", test: () => Object.keys(S.ops).length >= 40, reward: { orundum: 600, permit: 2 } },
-  { id: "opsAll", n: "Gather every character in every Moon style", test: () => Object.keys(S.ops).length >= OP_KEYS.length, reward: { orundum: 1500, permit: 5 } },
+  { id: "ops100", n: "Gather 100 characters", test: () => Object.keys(S.ops).length >= 100, reward: { orundum: 1000, permit: 3 } },
+  { id: "opsAll", n: "Gather every character in every Moon style and Element", test: () => Object.keys(S.ops).length >= OP_KEYS.length, reward: { orundum: 3000, permit: 10 } },
   { id: "e1", n: "Awaken a character once", test: () => Object.values(S.ops).some(p => p.elite >= 1), reward: { orundum: 150 } },
   { id: "e2", n: "Fully Awaken a character", test: () => Object.values(S.ops).some(p => p.elite >= 2), reward: { orundum: 400, permit: 1 } },
   { id: "six", n: "Manifest a 5★ character", test: () => Object.keys(S.ops).some(k => OPS[k].rar === 5), reward: { orundum: 300 } },
@@ -1530,9 +1589,9 @@ const SHOP = {
     { id: "p_oru", n: "Exchange for Moon Crystals", d: "1 Moonstone → 180 Moon Crystals", cost: 1, give: { orundum: 180 } },
   ],
 };
-// starters show off all three Moon styles; every 5★ variant can headline the daily banner
-const STARTERS = ["shiki-c", "satsuki-h", "hisui-c", "kohaku-c", "miyako-f"];
-const BANNER_TOP = OP_KEYS.filter(k => OPS[k].rar === 5);
+// starters cover all three Moon styles and the Fire/Water/Wind triangle; any Fire, Water or Wind 5★ can headline the banner
+const STARTERS = ["shiki-c-wind", "satsuki-h-fire", "hisui-c-water", "kohaku-c-wind", "miyako-f-fire"];
+const BANNER_TOP = OP_KEYS.filter(k => OPS[k].rar === 5 && EL_WEIGHT[OPS[k].el] > .1);
 
 // =====================================================================
 //  FIGURE RENDERER — procedural full-body characters on canvas.
@@ -2368,7 +2427,7 @@ function drawHound(g, f, pose, out) {
 }
 
 // ---------- figure portraits (battle cut-ins, enemy icons) ----------
-// Full-body art is rendered once per figure; head icons once per figure and backdrop (Moon-style variants share a body).
+// Full-body art is rendered once per figure; head icons once per figure and backdrop.
 const EART = {}, EHEAD = {};
 function figCanvas(f, W, H, sc, fx, fy, bg) {
   const cv = document.createElement("canvas"); cv.width = W; cv.height = H; const g = cv.getContext("2d");
@@ -2389,9 +2448,12 @@ function figHead(id, f, bg) {
   }
   return EHEAD[hk];
 }
-const HEAD_BG = { enemy: ["#7a2a3a", "#3a1220", "#14060a"], Crescent: ["#2a5a8a", "#122a44", "#060c16"], Half: ["#4a2a7a", "#1e1238", "#0a0614"], Full: ["#7a5a1e", "#3a2a0e", "#140e04"] };
+// head icons sit on their Element's colour
+const HEAD_BG = { enemy: ["#7a2a3a", "#3a1220", "#14060a"], Fire: ["#8a3a1a", "#3a1608", "#140604"], Water: ["#1e4a8a", "#0e2244", "#040a16"],
+  Wind: ["#1e6a44", "#0c2e1e", "#04120a"], Holy: ["#7a6a3a", "#3a321a", "#14100a"], Blood: ["#7a1430", "#360a16", "#120408"] };
 const enemyArt = key => ({ get full() { return figFull("e:" + key, ENEMY[key].fig).url; }, get head() { return figHead("e:" + key, ENEMY[key].fig, HEAD_BG.enemy); } });
-const opArt = key => { const op = OPS[key]; return { get full() { return figFull("o:" + op.base, op.fig).url; }, get head() { return figHead("o:" + op.base, op.fig, HEAD_BG[op.el] || HEAD_BG.Crescent); } }; };
+// a character's Moon styles share a body; non-home Elements glow in their own colour, so art is cached per body + glow
+const opArt = key => { const op = OPS[key], id = "o:" + op.base + "|" + op.fig.sc; return { get full() { return figFull(id, op.fig).url; }, get head() { return figHead(id, op.fig, HEAD_BG[op.el] || HEAD_BG.Fire); } }; };
 
 // =====================================================================
 //  SAVE STATE + PROGRESSION
@@ -2414,7 +2476,7 @@ function newSave() {
     inv: { rec1: 20, rec2: 6, rec3: 0, rec4: 0, chip: 4, summ: 6 },
     ops: {}, runes: [], runeSeq: 1,
     story: {}, team: { story: STARTERS.slice(0, 4), hunt: STARTERS.slice(0, 4), tower: STARTERS.slice(0, 4), arena: STARTERS.slice(0, 4) },
-    assistant: "shiki-c", tower: 0,
+    assistant: STARTERS[0], tower: 0,
     arena: { rank: 1500, attempts: 5, aTime: Date.now(), payTime: Date.now(), opps: null },
     gacha: { pity: 0, firstTen: true, total: 0 },
     daily: { day: today(), clear: 0, sanity: 0, hh: 0, upgrade: 0, arena: 0, rune: 0, claimed: {} },
@@ -2582,11 +2644,11 @@ function enhanceRune(r) {
 function sellRune(r) { if (r.eq) unequipRune(r.eq.k, r.eq.s); S.lmd += sellValue(r); S.runes = S.runes.filter(x => x !== r); }
 
 // ---------- headhunting ----------
-// Tatari banner: one featured 5★ and two featured 4★ per day
+// Tatari banner: one featured 5★ and two featured 4★ per day (Fire, Water or Wind versions)
 function bannerToday() {
   const rng = seeded(hash(today() + "banner"));
   const f6 = BANNER_TOP[Math.floor(rng() * BANNER_TOP.length)];
-  const four = OP_KEYS.filter(k => OPS[k].rar === 4);
+  const four = OP_KEYS.filter(k => OPS[k].rar === 4 && EL_WEIGHT[OPS[k].el] > .1);
   const f5 = [four[Math.floor(rng() * four.length)], four[Math.floor(rng() * four.length)]];
   return { feat6: f6, feat5: [...new Set(f5)] };
 }
@@ -2597,7 +2659,8 @@ function grantOp(key) {
   S.cert += certFor(OPS[key].rar);
   return { key, isNew: false };
 }
-// 5★ 3% (+3% per Manifest after 50 without one), 4★ 18%, 3★ 79%
+// 5★ 3% (+3% per Manifest after 50 without one), 4★ 18%, 3★ 79%; then a Moon style of that rarity, then an Element
+function rollElement() { let r = R(); for (const el of ELS) { r -= EL_WEIGHT[el]; if (r < 0) return el; } return ELS[0]; }
 const TOP_RATE = .03, MID_RATE = .18;
 function rollRarity() {
   const top = TOP_RATE + Math.max(0, S.gacha.pity - 49) * .03, r = R();
@@ -2611,7 +2674,7 @@ function pullOne(featured, forceMin) {
   let key;
   if (B && rar === 5 && R() < .5) key = B.feat6;
   else if (B && rar === 4 && R() < .5) key = pick(B.feat5);
-  else key = pick(OP_KEYS.filter(k => OPS[k].rar === rar));
+  else key = pick(FAMS.filter(f => OPS[homeKey(f)].rar === rar)) + "-" + elKey(rollElement());
   return grantOp(key);
 }
 function headhunt(n, featured) {
@@ -2660,7 +2723,7 @@ function nextNode() {
 }
 
 // =====================================================================
-//  BATTLE ENGINE — turn gauges, Moon-style affinity and traits, Holy/Blood, Mystic Codes,
+//  BATTLE ENGINE — turn gauges, Element affinity, Moon-style traits, Mystic Codes,
 //  statuses, Talents (passives), AI styles and the Magic Circuit, emitting events for the renderer.
 // =====================================================================
 let UID = 0;
@@ -2701,7 +2764,7 @@ function makeBattle(cfg) {
       ({ st, sets } = enemyStats(spec.en, spec.LV));
       const r = Math.min(7, 1 + Math.floor(spec.LV / 18)); sk = [r, r, r];
     }
-    return { uid: ++UID, key: spec.op || spec.en, def, isOp: !!spec.op, team, slot, n: def.n, el: def.el, kin: def.kin || null, cls: def.cls, boss: !!(def.boss || spec.boss),
+    return { uid: ++UID, key: spec.op || spec.en, def, isOp: !!spec.op, team, slot, n: def.n, el: def.el, style: def.style, cls: def.cls, boss: !!(def.boss || spec.boss),
       max: { ...st }, hp: st.hp, shield: 0, atb: 0, eff: [], cool: { 1: 0, 2: 0, 3: 0 }, skills: def.skills, sk, passives: def.passives || [],
       sets: new Set(sets), leader: def.leader || null, flags: {}, alive: true, provokedBy: null };
   }
@@ -2834,18 +2897,17 @@ function makeBattle(cfg) {
     if (tar.hp <= 0) kill(tar, att);
     return dealt;
   }
-  // Style traits, Holy/Blood and damage Talents: an additive damage bonus and a multiplier on damage taken
+  // Moon-style traits and damage Talents: an additive damage bonus and a multiplier on damage taken
   function dmgMods(att, tar, sk) {
     let bonus = 0, taken = 1;
-    if (kinRel(att.kin, tar.kin)) bonus += KIN_BONUS;
-    if (sk.arc && att.el === "Full") bonus += FULL_ARC;
-    if (att.el === "Crescent" && B.mc[att.team] >= CRES_HEAT_AT) bonus += CRES_HEAT;
+    if (sk.arc && att.style === "Full") bonus += FULL_ARC;
+    if (att.style === "Crescent" && B.mc[att.team] >= CRES_HEAT_AT) bonus += CRES_HEAT;
     for (const p of att.passives) {
       if (p.id === "BLOOD_HEAT" && att.hp < att.max.hp * p.below) bonus += p.amount;
       else if (p.id === "EXECUTE" && tar.hp < tar.max.hp * p.below) bonus += p.amount;
       else if (p.id === "BONUS_VS_DEBUFFED" && tar.eff.some(x => !FX[x.id].b)) bonus += p.amount;
     }
-    if (tar.el === "Half") taken *= 1 - HALF_GUARD;
+    if (tar.style === "Half") taken *= 1 - HALF_GUARD;
     const dr = pv(tar, "DMG_REDUCE"); if (dr) taken *= 1 - dr.amount;
     let td = 0; for (const a of allies(tar)) { const p = pv(a, "TEAM_DMG_REDUCE"); if (p) td = Math.max(td, p.amount); }
     return { bonus, taken: taken * (1 - td) };
@@ -2869,7 +2931,7 @@ function makeBattle(cfg) {
     dmg = Math.max(1, Math.round(dmg));
     const dealt = applyDamage(att, tar, dmg, { crit, glance, adv: rel === "adv" });
     if (dealt > 0) gainMC(tar.team, 3);
-    if (tar.alive && tar.el === "Half" && !tar.flags.spark && tar.hp < tar.max.hp / 2) {
+    if (tar.alive && tar.style === "Half" && !tar.flags.spark && tar.hp < tar.max.hp / 2) {
       tar.flags.spark = true; ev({ k: "txt", u: tar.uid, s: "CIRCUIT SPARK", c: "buff" }); cleanse(tar, 9);
     }
     if (crit) B.ctxCrits++;
@@ -3100,7 +3162,7 @@ function makeBattle(cfg) {
     const hots = u.eff.filter(e => e.id === "HOT").length;
     if (u.alive && hots) heal(u, u.max.hp * .05 * hots);
     const rg = pv(u, "REGEN"); if (u.alive && rg) heal(u, u.max.hp * rg.amount);
-    if (u.alive && u.el === "Full") gainMC(u.team, FULL_CHARGE);
+    if (u.alive && u.style === "Full") gainMC(u.team, FULL_CHARGE);
     if (!u.alive) { ev({ k: "end", u: u.uid }); endTurn(u); return "acted"; }
     if (has(u, "STUN")) { removeEff(u, "STUN"); ev({ k: "txt", u: u.uid, s: "STUNNED", c: "debuff" }); ev({ k: "end", u: u.uid }); endTurn(u); return "acted"; }
     if (has(u, "PROVOKE") && u.provokedBy && u.provokedBy.alive) { act(u, 1, u.provokedBy); return "acted"; }
@@ -4034,7 +4096,7 @@ function skillPop(u, sk) {
 function unitPop(u) {
   const B = BT.B, e = B.effStat;
   return `<div class="row"><img class="bpt" src="${u.isOp ? opArt(u.key).head : enemyArt(u.key).head}" alt=""><div><div class="eyebrow">${u.team === "A" ? "Your squad" : "Enemy"}${u.boss ? " · Boss" : ""}</div><h3>${esc(u.n)}</h3>
-    <div class="row" style="gap:4px;margin-top:3px"><span class="el ${u.el}">${styleName(u.el)}</span>${u.kin ? `<span class="el kin ${u.kin}">${u.kin}</span>` : ""}<span class="cls">${clsName(u.cls)}</span></div></div></div>
+    <div class="row" style="gap:4px;margin-top:3px"><span class="el ${u.el}">${u.el}</span>${u.style ? `<span class="el sty">${styleName(u.style)}</span>` : ""}<span class="cls">${clsName(u.cls)}</span></div></div></div>
     <div class="statgrid" style="margin-top:10px">
       <div><span>HP</span><b>${fmtFull(u.hp)} / ${fmtFull(u.max.hp)}</b></div><div><span>Shield</span><b>${fmtFull(u.shield)}</b></div>
       <div><span>ATK</span><b>${fmtFull(e.atk(u))}</b></div><div><span>DEF</span><b>${fmtFull(e.def(u))}</b></div>
@@ -4247,7 +4309,7 @@ async function outro() {
 // =====================================================================
 //  SCREENS (1/2): shell, lobby, story map, node sheet, team, dialogue
 // =====================================================================
-const UI = { view: "home", arg: null, el: "all", cls: "all", sort: "power", all: false, opTab: "info", team: null, depotTab: "runes", shopTab: "credit", runeSet: "all", hhStd: false };
+const UI = { view: "home", arg: null, el: "all", sty: "all", cls: "all", sort: "power", all: false, opTab: "info", team: null, depotTab: "runes", shopTab: "credit", runeSet: "all", hhStd: false };
 
 function toast(msg, cls = "") { const t = document.createElement("div"); t.className = "toast " + cls; t.textContent = msg; $("#toast").appendChild(t); setTimeout(() => t.remove(), 2600); }
 function openModal(html) { const m = $("#modal"); m.innerHTML = `<div class="mbox" role="dialog">${html}</div>`; m.hidden = false; m.onclick = e => { if (e.target === m) closeModal(); }; }
@@ -4259,25 +4321,25 @@ function opHTML(key, o = {}) {
   return `<div class="pt ${own || o.show ? "" : "locked"}" style="--s:${o.s || 72}px;--gc:${RC[op.rar]}">
     ${o.nostars ? "" : starRow(op.rar)}
     <div class="ring"><img src="${headURL(op)}" alt="${esc(op.n)}" loading="lazy" draggable="false"></div>
-    ${o.noel ? "" : `<span class="eldot ${op.el}"></span>`}
+    ${o.noel ? "" : `<span class="eldot ${op.style}" style="--ec:${ELC[op.el]}"></span>`}
     ${p && !o.nolv ? `<div class="lv num">${p.lvl}</div>${p.elite ? `<span class="elite">E${p.elite}</span>` : ""}${p.pot > 1 ? `<span class="potb">P${p.pot}</span>` : ""}` : ""}
   </div>`;
 }
-// roster label: short name plus the Moon style in its colour
-const pnameHTML = k => `<div class="pname">${esc(OPS[k].short)}<span class="sty ${OPS[k].el}">${styleName(OPS[k].el)}</span></div>`;
-const elChip = el => `<span class="el ${el}">${styleName(el)}</span>`;
-const kinChip = kin => kin ? `<span class="el kin ${kin}">${kin}</span>` : "";
+// roster label: short name, then Element (in its colour) and Moon style. Badges: moon phase = style, colour = Element.
+const pnameHTML = k => `<div class="pname">${esc(OPS[k].short)}<span class="sty"><b style="color:${ELC[OPS[k].el]}">${OPS[k].el}</b> ${OPS[k].style}</span></div>`;
+const elChip = el => `<span class="el ${el}">${el}</span>`;
+const styleChip = st => `<span class="el sty">${styleName(st)}</span>`;
 function enHTML(spec, s = 46) {
   if (spec.op) return opHTML(spec.op, { s, prog: progForLV(spec.op, spec.LV || 1), nostars: 1 });
   const d = ENEMY[spec.en];
-  return `<div class="pt" style="--s:${s}px;--gc:${d.boss ? "var(--ds)" : "#6b7a99"}"><div class="ring"><img src="${enemyArt(spec.en).head}" alt="${esc(d.n)}"></div><span class="eldot ${d.el}"></span>${spec.LV ? `<div class="lv num">${spec.LV}</div>` : ""}</div>`;
+  return `<div class="pt" style="--s:${s}px;--gc:${d.boss ? "var(--ds)" : "#6b7a99"}"><div class="ring"><img src="${enemyArt(spec.en).head}" alt="${esc(d.n)}"></div><span class="eldot ${d.style || "Full"}" style="--ec:${ELC[d.el]}"></span>${spec.LV ? `<div class="lv num">${spec.LV}</div>` : ""}</div>`;
 }
 function itemIcon(k) { return k === "sanity" ? IC.sanity : (ITEMS[k] && ITEMS[k].ic) || IC.boost; }
 function rewardsHTML(list) {
   const merged = [];
   for (const r of list) { const m = merged.find(x => x.k === r.k && !r.rune && !x.rune && !r.k.startsWith("op:")); if (m) m.n += r.n; else merged.push({ ...r }); }
   return merged.map(r => {
-    if (r.k.startsWith("op:")) { const k = r.k.slice(3); return `<div class="rw">${opHTML(k, { s: 54, nostars: 1, nolv: 1, show: 1 })}<span>${r.isNew === false ? "Resonance +1" : "New character"}</span><span class="tiny dim">${esc(OPS[k].short)} · ${styleName(OPS[k].el)}</span></div>`; }
+    if (r.k.startsWith("op:")) { const k = r.k.slice(3); return `<div class="rw">${opHTML(k, { s: 54, nostars: 1, nolv: 1, show: 1 })}<span>${r.isNew === false ? "Resonance +1" : "New character"}</span><span class="tiny dim">${esc(opLabel(OPS[k]))}</span></div>`; }
     if (r.k === "rune") return `<div class="rw"><div class="ri" style="width:54px;height:54px;color:${RUNE_RC[r.rune.rar]}">${IC.rune}</div><span>${setName(r.rune.set)}</span><span class="tiny dim">${RUNE_RAR[r.rune.rar]}</span></div>`;
     const name = r.k === "xp" ? "Character EXP" : r.k === "rank" ? "Rank" : (ITEMS[r.k] && ITEMS[r.k].n) || r.k;
     return `<div class="rw"><div class="ri" style="width:54px;height:54px">${r.k === "xp" ? IC.boost : r.k === "rank" ? IC.arena : itemIcon(r.k)}</div><span class="num">${r.k === "rank" ? "#" + r.n : "×" + fmt(r.n)}</span><span class="tiny dim">${esc(name)}</span></div>`;
@@ -4350,7 +4412,7 @@ SCREENS.home = () => {
     <section class="stage">
       <div class="floor"></div><div class="ring3d"></div>
       <img class="assist" src="${spriteURL(op)}" alt="${esc(op.n)}" data-act="poke" draggable="false">
-      <div class="nameplate"><span class="eyebrow">Assistant</span><b>${esc(op.n)}</b><div class="row" style="gap:4px">${elChip(op.el)}<span class="cls">${clsName(op.cls)}</span></div></div>
+      <div class="nameplate"><span class="eyebrow">Assistant</span><b>${esc(op.n)}</b><div class="row" style="gap:4px">${elChip(op.el)}${styleChip(op.style)}<span class="cls">${clsName(op.cls)}</span></div></div>
       <div class="sidebtns">
         <button class="sidebtn" data-act="missions" aria-label="Missions">${IC.missions}<small>Missions</small>${missionsReady ? '<i class="dot"></i>' : ""}</button>
         <button class="sidebtn" data-act="go" data-v="shop" aria-label="Ahnenerbe shop">${IC.shop}<small>Shop</small></button>
@@ -4464,7 +4526,7 @@ SCREENS.team = arg => {
   return `<div class="stack">
     <div class="spread">${back("teamBack", "Back")}<div class="eyebrow">${esc(arg.title || "")}</div></div>
     <h2>Squad</h2>
-    ${foeEls.length ? `<div class="small">Enemy Moon styles: ${foeEls.map(elChip).join(" ")} ${counter.length ? `<span class="dim">· Strong picks:</span> ${[...new Set(counter)].map(elChip).join(" ")}` : ""}</div>` : ""}
+    ${foeEls.length ? `<div class="small">Enemy Elements: ${foeEls.map(elChip).join(" ")} ${counter.length ? `<span class="dim">· Strong picks:</span> ${[...new Set(counter)].map(elChip).join(" ")}` : ""}</div>` : ""}
     <div class="squad">${[0, 1, 2, 3].map(k => {
       const id = ids[k];
       return `<div class="slot">${k === 0 ? `<span class="crown">${IC.crown}</span>` : ""}${id ? `<button data-act="slot" data-k="${k}" aria-label="${esc(OPS[id].n)}">${opHTML(id, { s: 66 })}</button>` : '<div class="empty"></div>'}</div>`;
@@ -4472,14 +4534,14 @@ SCREENS.team = arg => {
     <div class="leadtxt small">${lead ? `<b class="gold">Leader: ${esc(opLabel(OPS[ids[0]]))}</b> <span class="dim">${leaderText(lead)}</span>` : ids[0] ? `<span class="dim">${esc(OPS[ids[0]].n)} has no leader skill. Tap a squad member to make them leader.</span>` : `<span class="dim">Pick up to four characters. The first slot leads.</span>`}</div>
     <div class="spread small"><span>Squad power <b class="num">${fmtFull(myPw)}</b></span>${arg.cost ? `<span class="cost">${IC.sanity}${arg.cost}</span>` : ""}</div>
     <button class="btn wide" data-act="deploy" ${ids.length ? "" : "disabled"}>Fight!</button>
-    <div class="filters">${["all", ...ELS].map(e => `<button class="chip ${UI.el === e ? "on" : ""}" data-act="elf" data-e="${e}">${e === "all" ? "All" : styleName(e)}</button>`).join("")}</div>
+    <div class="filters">${["all", ...ELS].map(e => `<button class="chip ${UI.el === e ? "on" : ""}" data-act="elf" data-e="${e}">${e === "all" ? "All Elements" : e}</button>`).join("")}</div>
     <div class="roster">${pool.map(k => `<button class="rcell ${ids.includes(k) ? "sel" : ""}" data-act="pickTeam" data-k="${k}">${opHTML(k)}${pnameHTML(k)}<div class="pw">${fmt(power(k, S.ops[k]))}</div></button>`).join("")}</div>
   </div>`;
 };
 function leaderText(l) {
   if (!l) return "—";
   const sym = { ATK: "ATK", HP: "HP", DEF: "DEF", SPD: "SPD", CR: "Crit Rate", CD: "Crit Damage", ACC: "Accuracy", RES: "Resistance" }[l.stat] || l.stat;
-  return `${sym} +${Math.round(l.amount * 100)}% for ${l.scope === "All" ? "all allies" : styleName(l.element) + " allies"}`;
+  return `${sym} +${Math.round(l.amount * 100)}% for ${l.scope === "All" ? "all allies" : l.element + " allies"}`;
 }
 
 // ---------- dialogue ----------
@@ -4649,12 +4711,13 @@ SCREENS.arena = () => {
 // ---------- characters ----------
 SCREENS.ops = () => {
   let list = UI.all ? OP_KEYS.slice() : Object.keys(S.ops);
-  list = list.filter(k => (UI.el === "all" || OPS[k].el === UI.el) && (UI.cls === "all" || OPS[k].cls === UI.cls));
-  const sorters = { power: (a, b) => (S.ops[b] ? power(b, S.ops[b]) : -1) - (S.ops[a] ? power(a, S.ops[a]) : -1), rarity: (a, b) => OPS[b].rar - OPS[a].rar || OPS[a].n.localeCompare(OPS[b].n), level: (a, b) => (S.ops[b] ? effLV(S.ops[b]) : -1) - (S.ops[a] ? effLV(S.ops[a]) : -1), name: (a, b) => OPS[a].n.localeCompare(OPS[b].n) || ELS.indexOf(OPS[a].el) - ELS.indexOf(OPS[b].el) };
+  list = list.filter(k => (UI.el === "all" || OPS[k].el === UI.el) && (UI.sty === "all" || OPS[k].style === UI.sty) && (UI.cls === "all" || OPS[k].cls === UI.cls));
+  const sorters = { power: (a, b) => (S.ops[b] ? power(b, S.ops[b]) : -1) - (S.ops[a] ? power(a, S.ops[a]) : -1), rarity: (a, b) => OPS[b].rar - OPS[a].rar || OPS[a].n.localeCompare(OPS[b].n), level: (a, b) => (S.ops[b] ? effLV(S.ops[b]) : -1) - (S.ops[a] ? effLV(S.ops[a]) : -1), name: (a, b) => OPS[a].n.localeCompare(OPS[b].n) || STYLES.indexOf(OPS[a].style) - STYLES.indexOf(OPS[b].style) || ELS.indexOf(OPS[a].el) - ELS.indexOf(OPS[b].el) };
   list.sort(sorters[UI.sort]);
   return `<div class="stack">
     <div class="spread"><h2>Characters</h2><button class="chip ${UI.all ? "on" : ""}" data-act="toggleAll">${UI.all ? "Collection" : "Owned"} · ${Object.keys(S.ops).length}/${OP_KEYS.length}</button></div>
-    <div class="filters">${["all", ...ELS].map(e => `<button class="chip ${UI.el === e ? "on" : ""}" data-act="elf" data-e="${e}">${e === "all" ? "All Moon styles" : styleName(e)}</button>`).join("")}</div>
+    <div class="filters">${["all", ...ELS].map(e => `<button class="chip ${UI.el === e ? "on" : ""}" data-act="elf" data-e="${e}">${e === "all" ? "All Elements" : e}</button>`).join("")}</div>
+    <div class="filters">${["all", ...STYLES].map(e => `<button class="chip ${UI.sty === e ? "on" : ""}" data-act="styf" data-e="${e}">${e === "all" ? "All Moon styles" : styleName(e)}</button>`).join("")}</div>
     <div class="filters">${["all", ...CLASSES].map(c => `<button class="chip ${UI.cls === c ? "on" : ""}" data-act="clsf" data-c="${c}">${c === "all" ? "All roles" : clsName(c)}</button>`).join("")}</div>
     <div class="filters">${["power", "rarity", "level", "name"].map(s => `<button class="chip ${UI.sort === s ? "on" : ""}" data-act="sortf" data-s="${s}">Sort: ${s}</button>`).join("")}</div>
     <div class="roster">${list.map(k => `<button class="rcell ${S.ops[k] && canPromote(k) ? "ready" : ""}" data-act="go" data-v="op" data-a="${k}">${opHTML(k)}${pnameHTML(k)}<div class="pw">${S.ops[k] ? fmt(power(k, S.ops[k])) : clsName(OPS[k].cls)}</div></button>`).join("") || '<p class="small dim">No operators match these filters.</p>'}</div>
@@ -4673,8 +4736,8 @@ SCREENS.op = key => {
     <section class="panel stack" style="gap:8px">
       <div><b class="gold">Leader skill</b><p class="small dim">${op.leader ? leaderText(op.leader) : "None"}</p></div>
       ${op.passives.length ? `<div><b class="gold">Talent</b><p class="small dim">${op.passives.map(x => esc(x.text)).join(" ")}</p></div>` : ""}
-      <div><b class="gold">${styleName(op.el)}</b><p class="small dim">${STYLE[op.el].d} Strong against ${styleName(BEATS[op.el])}, weak to ${styleName(Object.keys(BEATS).find(k => BEATS[k] === op.el))}.</p></div>
-      ${op.kin ? `<div><b class="gold">${op.kin}</b><p class="small dim">Holy and Blood characters deal ${pct(KIN_BONUS)} more damage to each other.</p></div>` : ""}
+      <div><b class="gold">${styleName(op.style)}</b><p class="small dim">${STYLE[op.style].d}</p></div>
+      <div><b class="gold">${op.el} Element</b><p class="small dim">${op.el === "Holy" || op.el === "Blood" ? `Holy and Blood each deal bonus damage to the other.` : `Strong against ${BEATS[op.el]}, weak to ${weakTo(op.el)}.`} ${ELEMENT_KIT[op.el].d}</p></div>
       <div><b class="gold">Recommended Mystic Codes</b><p class="small dim">${op.runes.map(r => `${setName(r)} (${RUNE_INFO[r]})`).join(" · ")}</p></div>
       ${p ? `<div><b class="gold">Resonance ${p.pot}/6</b><p class="small dim">+2% to all stats per level. Raised by Manifesting duplicates.</p></div>` : `<p class="small dim">Manifest this character at the Tatari.</p>`}
     </section>`;
@@ -4716,15 +4779,22 @@ SCREENS.op = key => {
       <div class="opart" style="--ecs:${ELC[op.el]}55"><img src="${spriteURL(op)}" alt="${esc(op.n)}">
         <div class="meta">${starRow(op.rar).replace('class="rstars"', 'class="rstars" style="justify-content:flex-start;height:14px"')}
           <h2 style="font-size:26px;text-shadow:0 2px 6px #000">${esc(op.n)}</h2>
-          <div class="row" style="gap:4px">${elChip(op.el)}${kinChip(op.kin)}<span class="cls">${clsName(op.cls)}</span></div>
+          <div class="row" style="gap:4px">${elChip(op.el)}${styleChip(op.style)}<span class="cls">${clsName(op.cls)}</span></div>
           ${p ? `<div class="small" style="text-shadow:0 1px 3px #000">Awaken ${p.elite} · Lv ${p.lvl} · Power <b class="num" style="color:var(--holo)">${fmtFull(power(key, p))}</b></div>` : `<div class="small dim">Not recruited</div>`}
         </div></div>
     </section>
-    ${variantsOf(op.base).length > 1 ? `<section class="panel" style="padding:10px 12px"><div class="eyebrow" style="margin-bottom:6px">Moon styles · each one is a separate character</div><div class="variants">${variantsOf(op.base).map(k => `<button class="${k === key ? "cur" : ""} ${S.ops[k] ? "" : "unowned"}" data-act="go" data-v="op" data-a="${k}" ${k === key ? "disabled" : ""}>${opHTML(k, { s: 52, nostars: 1, show: 1 })}<span class="tiny" style="color:${ELC[OPS[k].el]}">${styleName(OPS[k].el)}</span></button>`).join("")}</div></section>` : ""}
+    <section class="panel stack" style="padding:10px 12px;gap:10px">
+      ${verRow("Moon styles · different skills and Talent", variantsOf(op.base).map(f => f + "-" + elKey(op.el)), key, k => styleName(OPS[k].style), () => "var(--moon)")}
+      ${verRow("Elements · same style, slightly different skills", elementsOf(op.fam), key, k => OPS[k].el, k => ELC[OPS[k].el])}
+      <p class="tiny dim">Every version is a separate character you Manifest and raise on its own.</p></section>
     ${p ? `<div class="tabs2">${tabs.map(([k, n]) => `<button class="${tab === k ? "on" : ""}" data-act="opTab" data-t="${k}">${n}</button>`).join("")}</div>` : ""}
     ${body}
   </div>`;
 };
+// a row of sibling versions (other Moon styles or other Elements), owned ones in colour
+function verRow(title, keys, cur, label, col) {
+  return `<div><div class="eyebrow" style="margin-bottom:6px">${title}</div><div class="variants">${keys.map(k => `<button class="${k === cur ? "cur" : ""} ${S.ops[k] ? "" : "unowned"}" data-act="go" data-v="op" data-a="${k}" ${k === cur ? "disabled" : ""}>${opHTML(k, { s: 46, nostars: 1, show: 1 })}<span class="tiny" style="color:${col(k)}">${label(k)}</span></button>`).join("")}</div></div>`;
+}
 function runeRow(r, right = "") {
   return `<div class="rune ${r.eq ? "eq" : ""}" style="--rc:${RUNE_RC[r.rar]}"><button class="rg" data-act="runeSheet" data-id="${r.id}" aria-label="${setName(r.set)}">+${r.lvl}</button>
     <div style="min-width:0"><b>${setName(r.set)}</b> <span class="tiny" style="color:${RUNE_RC[r.rar]}">${RUNE_RAR[r.rar]}</span><div class="tiny dim">${runeMainText(r)}${r.eq ? ` · on ${esc(opLabel(OPS[r.eq.k]))}` : ""}</div></div>${right}</div>`;
@@ -4748,13 +4818,13 @@ SCREENS.hh = () => {
   return `<div class="stack">
     <div class="tabs2"><button class="${std ? "" : "on"}" data-act="hhTab" data-std="0">Rumor of the Day</button><button class="${std ? "on" : ""}" data-act="hhTab" data-std="1">Standard</button></div>
     <section class="panel banner-card" style="${std ? "background:radial-gradient(90% 90% at 80% 30%,#2a1a5a,transparent 70%),linear-gradient(160deg,#1a1430,#0a0814)" : "background:radial-gradient(90% 90% at 80% 30%,#6a0a22,transparent 70%),linear-gradient(160deg,#2a0a16,#0a0408)"}">
-      ${std ? `<img src="${spriteURL(OPS["shiki-c"])}" alt="">` : `<img src="${spriteURL(f6)}" alt="${esc(f6.n)}">`}
+      ${std ? `<img src="${spriteURL(OPS[homeKey("shiki-c")])}" alt="">` : `<img src="${spriteURL(f6)}" alt="${esc(f6.n)}">`}
       <div class="eyebrow">${std ? "Standard Tatari" : "Featured · changes daily"}</div>
-      <h2>${std ? "Whispers of Misaki" : esc(f6.n)}</h2>
-      ${std ? `<p class="small" style="max-width:24ch">Any character in the cast can take shape.</p>` : `<div class="row" style="gap:4px">${starRow(5).replace('class="rstars"', 'class="rstars" style="justify-content:flex-start"')}${elChip(f6.el)}<span class="cls">${clsName(f6.cls)}</span></div>
+      <h2>${std ? "Whispers of Misaki" : esc(opLabel(f6))}</h2>
+      ${std ? `<p class="small" style="max-width:24ch">Any character in the cast can take shape.</p>` : `<div class="row" style="gap:4px">${starRow(5).replace('class="rstars"', 'class="rstars" style="justify-content:flex-start"')}${elChip(f6.el)}${styleChip(f6.style)}<span class="cls">${clsName(f6.cls)}</span></div>
       <p class="small" style="max-width:26ch">Half of all 5★ results are ${esc(opLabel(f6))}. Featured 4★: ${B.feat5.map(k => esc(opLabel(OPS[k]))).join(", ")}.</p>`}
     </section>
-    <div class="row wrap small dim"><span>5★ 3% · 4★ 18% · 3★ 79%</span>${pity ? `<span class="gold">· 5★ rate now ${3 + pity * 3}%</span>` : `<span>· ${Math.max(0, 50 - S.gacha.pity)} Manifests until the 5★ rate starts rising</span>`}</div>
+    <div class="row wrap small dim"><span>5★ 3% · 4★ 18% · 3★ 79% · Holy and Blood versions 5% each</span>${pity ? `<span class="gold">· 5★ rate now ${3 + pity * 3}%</span>` : `<span>· ${Math.max(0, 50 - S.gacha.pity)} Manifests until the 5★ rate starts rising</span>`}</div>
     ${S.gacha.firstTen ? `<div class="hint">${IC.star.replace("<svg", '<svg width="20" height="20"')}<span class="small">Your first ten Manifests guarantee at least one 4★ character.</span></div>` : ""}
     <div class="row" style="gap:10px">
       <button class="btn ghost" style="flex:1" data-act="pull" data-n="1" ${S.permit >= 1 || S.orundum >= 600 ? "" : "disabled"}>Manifest ×1<br><span class="cost">${S.permit >= 1 ? IC.permit + "1" : IC.orundum + "600"}</span></button>
@@ -4787,7 +4857,7 @@ function gachaReveal(results) {
     const show = () => {
       stage = 1; $("#gT").hidden = true; const G = $("#gG"); G.hidden = false;
       if (results.length === 1) { G.style.gridTemplateColumns = "1fr"; G.style.maxWidth = "260px"; }
-      G.innerHTML = results.map((r, i) => { const op = OPS[r.key]; return `<div class="gcard" style="--rc:${RC[op.rar]};animation-delay:${i * .12}s">${r.isNew ? '<span class="gnew">NEW</span>' : ""}<img src="${spriteURL(op)}" alt="${esc(op.n)}"><span class="gst">${"★".repeat(op.rar)}<br>${esc(op.short)}<br><span style="color:${ELC[op.el]};font-size:.85em">${op.el}</span></span></div>`; }).join("");
+      G.innerHTML = results.map((r, i) => { const op = OPS[r.key]; return `<div class="gcard" style="--rc:${RC[op.rar]};animation-delay:${i * .12}s">${r.isNew ? '<span class="gnew">NEW</span>' : ""}<img src="${spriteURL(op)}" alt="${esc(op.n)}"><span class="gst">${"★".repeat(op.rar)}<br>${esc(op.short)}<br><span style="font-size:.85em"><b style="color:${ELC[op.el]}">${op.el}</b> ${op.style}</span></span></div>`; }).join("");
       if (top >= 5) sfx("win"); else sfx("heal");
       setTimeout(() => { $("#gDone").hidden = false; stage = 2; }, results.length * 120 + 500);
     };
@@ -5079,10 +5149,10 @@ function quip() {
 }
 function introModal() {
   openModal(`<div class="stack" style="align-items:center;text-align:center">
-    <img src="${spriteURL(OPS["shiki-c"])}" alt="Shiki Tohno" style="height:230px;max-width:100%;object-fit:contain;filter:drop-shadow(0 12px 20px #000)">
+    <img src="${spriteURL(OPS[STARTERS[0]])}" alt="Shiki Tohno" style="height:230px;max-width:100%;object-fit:contain;filter:drop-shadow(0 12px 20px #000)">
     <div class="eyebrow">Misaki Town · After midnight</div>
     <h1>Melty Blood<span style="display:block;color:var(--moon);font-size:18px;letter-spacing:.24em;margin-top:4px">Night of Rumors</span></h1>
-    <p class="small dim" style="max-width:36ch">Lead a squad of four through the Tatari incident. Every action charges your Magic Circuit; at 100%, unleash an Arc Drive. Each character comes in Crescent, Half and Full Moon styles, and every style is its own unit with its own skills and Talent. Crescent beats Full, Full beats Half, Half beats Crescent.</p>
+    <p class="small dim" style="max-width:36ch">Lead a squad of four through the Tatari incident. Every action charges your Magic Circuit; at 100%, unleash an Arc Drive. Each character comes in Crescent, Half and Full Moon styles with their own skills and Talent, and every style in five Elements. Water beats Fire, Fire beats Wind, Wind beats Water; Holy and Blood beat each other.</p>
     <button class="btn wide" data-act="introGo">Begin the night</button>
     <p class="tiny dim">Unofficial, non-commercial fan game. Melty Blood and Tsukihime belong to TYPE-MOON and French-Bread. All art here is drawn by the game.</p>
   </div>`);
@@ -5135,6 +5205,7 @@ const ACT = {
     else if (L2.kind === "arena") launchArena(L2.k);
   },
   elf: d => { UI.el = d.e; rerender(); },
+  styf: d => { UI.sty = d.e; rerender(); },
 
   // battle hub
   huntLv: d => { UI.huntLv[d.h] = +d.l; rerender(); },
@@ -5242,14 +5313,14 @@ function migrate(s) {
     for (const id in NODES) { const nd = NODES[id]; if (old[nd.legacy]) s.story[id] = old[nd.legacy]; }
     s.codes2 = 1;
   }
-  // characters split into Moon-style variants: an old "arcueid" becomes "arcueid-c" (the kit it had)
-  const nk = k => OPS[k] ? k : OPS[k + "-c"] ? k + "-c" : k;
+  // characters split into Moon styles and Elements: "arcueid" and "arcueid-c" become the home Crescent unit (the kit they had)
+  const nk = k => OPS[k] ? k : LEGACY[k] || k;
   for (const k of Object.keys(s.ops)) if (!OPS[k] && OPS[nk(k)]) { if (!s.ops[nk(k)]) s.ops[nk(k)] = s.ops[k]; delete s.ops[k]; }
   for (const r of s.runes || []) if (r.eq) { r.eq.k = nk(r.eq.k); if (!s.ops[r.eq.k]) r.eq = null; }
   for (const k in s.team) s.team[k] = [...new Set(s.team[k].map(nk))].filter(x => OPS[x]);
   s.assistant = nk(s.assistant);
   for (const k in s.ops) if (!OPS[k]) delete s.ops[k];
-  if (!s.ops[s.assistant]) s.assistant = Object.keys(s.ops)[0] || "shiki-c";
+  if (!s.ops[s.assistant]) s.assistant = Object.keys(s.ops)[0] || STARTERS[0];
   return s;
 }
 function start(data) {

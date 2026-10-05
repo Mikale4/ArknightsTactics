@@ -24,7 +24,7 @@ const PAGE = 'file://' + path.resolve(__dirname, '../index.html');
   await page.evaluate(() => {
     const cv = document.querySelector('canvas'), g = cv.getContext('2d'); g.fillStyle = '#241a2c'; g.fillRect(0, 0, 1400, 1060);
     const ks = ['shiki-c', 'ciel-c', 'hisui-c', 'powered-ciel-c', 'arcueid-c', 'sion-c', 'riesbyfe-c'], poses = [['idle', 0], ['swing', .3], ['swing', .5], ['shoot', .15], ['cast', .6], ['buff', .6], ['hit', .1], ['victory', 0]];
-    ks.forEach((k, r) => poses.forEach(([p, t], c) => { g.save(); g.translate(80 + c * 165, 140 + r * 140); g.scale(1.1, 1.1); drawFigure(g, OPS[k].fig, { name: p, t, time: 1 }); g.restore(); }));
+    ks.forEach((k, r) => poses.forEach(([p, t], c) => { g.save(); g.translate(80 + c * 165, 140 + r * 140); g.scale(1.1, 1.1); drawFigure(g, OPS[homeKey(k)].fig, { name: p, t, time: 1 }); g.restore(); }));
   });
   await page.screenshot({ path: SH + 'poses.png' });
   console.log('errs', errs);

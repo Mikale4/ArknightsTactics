@@ -20,7 +20,7 @@ function newSave() {
     inv: { rec1: 20, rec2: 6, rec3: 0, rec4: 0, chip: 4, summ: 6 },
     ops: {}, runes: [], runeSeq: 1,
     story: {}, team: { story: STARTERS.slice(0, 4), hunt: STARTERS.slice(0, 4), tower: STARTERS.slice(0, 4), arena: STARTERS.slice(0, 4) },
-    assistant: "shiki-c", tower: 0,
+    assistant: STARTERS[0], tower: 0,
     arena: { rank: 1500, attempts: 5, aTime: Date.now(), payTime: Date.now(), opps: null },
     gacha: { pity: 0, firstTen: true, total: 0 },
     daily: { day: today(), clear: 0, sanity: 0, hh: 0, upgrade: 0, arena: 0, rune: 0, claimed: {} },
@@ -188,11 +188,11 @@ function enhanceRune(r) {
 function sellRune(r) { if (r.eq) unequipRune(r.eq.k, r.eq.s); S.lmd += sellValue(r); S.runes = S.runes.filter(x => x !== r); }
 
 // ---------- headhunting ----------
-// Tatari banner: one featured 5★ and two featured 4★ per day
+// Tatari banner: one featured 5★ and two featured 4★ per day (Fire, Water or Wind versions)
 function bannerToday() {
   const rng = seeded(hash(today() + "banner"));
   const f6 = BANNER_TOP[Math.floor(rng() * BANNER_TOP.length)];
-  const four = OP_KEYS.filter(k => OPS[k].rar === 4);
+  const four = OP_KEYS.filter(k => OPS[k].rar === 4 && EL_WEIGHT[OPS[k].el] > .1);
   const f5 = [four[Math.floor(rng() * four.length)], four[Math.floor(rng() * four.length)]];
   return { feat6: f6, feat5: [...new Set(f5)] };
 }
@@ -203,7 +203,8 @@ function grantOp(key) {
   S.cert += certFor(OPS[key].rar);
   return { key, isNew: false };
 }
-// 5★ 3% (+3% per Manifest after 50 without one), 4★ 18%, 3★ 79%
+// 5★ 3% (+3% per Manifest after 50 without one), 4★ 18%, 3★ 79%; then a Moon style of that rarity, then an Element
+function rollElement() { let r = R(); for (const el of ELS) { r -= EL_WEIGHT[el]; if (r < 0) return el; } return ELS[0]; }
 const TOP_RATE = .03, MID_RATE = .18;
 function rollRarity() {
   const top = TOP_RATE + Math.max(0, S.gacha.pity - 49) * .03, r = R();
@@ -217,7 +218,7 @@ function pullOne(featured, forceMin) {
   let key;
   if (B && rar === 5 && R() < .5) key = B.feat6;
   else if (B && rar === 4 && R() < .5) key = pick(B.feat5);
-  else key = pick(OP_KEYS.filter(k => OPS[k].rar === rar));
+  else key = pick(FAMS.filter(f => OPS[homeKey(f)].rar === rar)) + "-" + elKey(rollElement());
   return grantOp(key);
 }
 function headhunt(n, featured) {

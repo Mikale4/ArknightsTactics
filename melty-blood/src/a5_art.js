@@ -833,7 +833,7 @@ function drawHound(g, f, pose, out) {
 }
 
 // ---------- figure portraits (battle cut-ins, enemy icons) ----------
-// Full-body art is rendered once per figure; head icons once per figure and backdrop (Moon-style variants share a body).
+// Full-body art is rendered once per figure; head icons once per figure and backdrop.
 const EART = {}, EHEAD = {};
 function figCanvas(f, W, H, sc, fx, fy, bg) {
   const cv = document.createElement("canvas"); cv.width = W; cv.height = H; const g = cv.getContext("2d");
@@ -854,6 +854,9 @@ function figHead(id, f, bg) {
   }
   return EHEAD[hk];
 }
-const HEAD_BG = { enemy: ["#7a2a3a", "#3a1220", "#14060a"], Crescent: ["#2a5a8a", "#122a44", "#060c16"], Half: ["#4a2a7a", "#1e1238", "#0a0614"], Full: ["#7a5a1e", "#3a2a0e", "#140e04"] };
+// head icons sit on their Element's colour
+const HEAD_BG = { enemy: ["#7a2a3a", "#3a1220", "#14060a"], Fire: ["#8a3a1a", "#3a1608", "#140604"], Water: ["#1e4a8a", "#0e2244", "#040a16"],
+  Wind: ["#1e6a44", "#0c2e1e", "#04120a"], Holy: ["#7a6a3a", "#3a321a", "#14100a"], Blood: ["#7a1430", "#360a16", "#120408"] };
 const enemyArt = key => ({ get full() { return figFull("e:" + key, ENEMY[key].fig).url; }, get head() { return figHead("e:" + key, ENEMY[key].fig, HEAD_BG.enemy); } });
-const opArt = key => { const op = OPS[key]; return { get full() { return figFull("o:" + op.base, op.fig).url; }, get head() { return figHead("o:" + op.base, op.fig, HEAD_BG[op.el] || HEAD_BG.Crescent); } }; };
+// a character's Moon styles share a body; non-home Elements glow in their own colour, so art is cached per body + glow
+const opArt = key => { const op = OPS[key], id = "o:" + op.base + "|" + op.fig.sc; return { get full() { return figFull(id, op.fig).url; }, get head() { return figHead(id, op.fig, HEAD_BG[op.el] || HEAD_BG.Fire); } }; };

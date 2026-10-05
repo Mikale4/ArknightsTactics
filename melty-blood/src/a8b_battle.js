@@ -348,7 +348,7 @@ function skillPop(u, sk) {
 function unitPop(u) {
   const B = BT.B, e = B.effStat;
   return `<div class="row"><img class="bpt" src="${u.isOp ? opArt(u.key).head : enemyArt(u.key).head}" alt=""><div><div class="eyebrow">${u.team === "A" ? "Your squad" : "Enemy"}${u.boss ? " · Boss" : ""}</div><h3>${esc(u.n)}</h3>
-    <div class="row" style="gap:4px;margin-top:3px"><span class="el ${u.el}">${styleName(u.el)}</span>${u.kin ? `<span class="el kin ${u.kin}">${u.kin}</span>` : ""}<span class="cls">${clsName(u.cls)}</span></div></div></div>
+    <div class="row" style="gap:4px;margin-top:3px"><span class="el ${u.el}">${u.el}</span>${u.style ? `<span class="el sty">${styleName(u.style)}</span>` : ""}<span class="cls">${clsName(u.cls)}</span></div></div></div>
     <div class="statgrid" style="margin-top:10px">
       <div><span>HP</span><b>${fmtFull(u.hp)} / ${fmtFull(u.max.hp)}</b></div><div><span>Shield</span><b>${fmtFull(u.shield)}</b></div>
       <div><span>ATK</span><b>${fmtFull(e.atk(u))}</b></div><div><span>DEF</span><b>${fmtFull(e.def(u))}</b></div>

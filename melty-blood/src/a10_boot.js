@@ -211,10 +211,10 @@ function quip() {
 }
 function introModal() {
   openModal(`<div class="stack" style="align-items:center;text-align:center">
-    <img src="${spriteURL(OPS["shiki-c"])}" alt="Shiki Tohno" style="height:230px;max-width:100%;object-fit:contain;filter:drop-shadow(0 12px 20px #000)">
+    <img src="${spriteURL(OPS[STARTERS[0]])}" alt="Shiki Tohno" style="height:230px;max-width:100%;object-fit:contain;filter:drop-shadow(0 12px 20px #000)">
     <div class="eyebrow">Misaki Town · After midnight</div>
     <h1>Melty Blood<span style="display:block;color:var(--moon);font-size:18px;letter-spacing:.24em;margin-top:4px">Night of Rumors</span></h1>
-    <p class="small dim" style="max-width:36ch">Lead a squad of four through the Tatari incident. Every action charges your Magic Circuit; at 100%, unleash an Arc Drive. Each character comes in Crescent, Half and Full Moon styles, and every style is its own unit with its own skills and Talent. Crescent beats Full, Full beats Half, Half beats Crescent.</p>
+    <p class="small dim" style="max-width:36ch">Lead a squad of four through the Tatari incident. Every action charges your Magic Circuit; at 100%, unleash an Arc Drive. Each character comes in Crescent, Half and Full Moon styles with their own skills and Talent, and every style in five Elements. Water beats Fire, Fire beats Wind, Wind beats Water; Holy and Blood beat each other.</p>
     <button class="btn wide" data-act="introGo">Begin the night</button>
     <p class="tiny dim">Unofficial, non-commercial fan game. Melty Blood and Tsukihime belong to TYPE-MOON and French-Bread. All art here is drawn by the game.</p>
   </div>`);
@@ -267,6 +267,7 @@ const ACT = {
     else if (L2.kind === "arena") launchArena(L2.k);
   },
   elf: d => { UI.el = d.e; rerender(); },
+  styf: d => { UI.sty = d.e; rerender(); },
 
   // battle hub
   huntLv: d => { UI.huntLv[d.h] = +d.l; rerender(); },
@@ -374,14 +375,14 @@ function migrate(s) {
     for (const id in NODES) { const nd = NODES[id]; if (old[nd.legacy]) s.story[id] = old[nd.legacy]; }
     s.codes2 = 1;
   }
-  // characters split into Moon-style variants: an old "arcueid" becomes "arcueid-c" (the kit it had)
-  const nk = k => OPS[k] ? k : OPS[k + "-c"] ? k + "-c" : k;
+  // characters split into Moon styles and Elements: "arcueid" and "arcueid-c" become the home Crescent unit (the kit they had)
+  const nk = k => OPS[k] ? k : LEGACY[k] || k;
   for (const k of Object.keys(s.ops)) if (!OPS[k] && OPS[nk(k)]) { if (!s.ops[nk(k)]) s.ops[nk(k)] = s.ops[k]; delete s.ops[k]; }
   for (const r of s.runes || []) if (r.eq) { r.eq.k = nk(r.eq.k); if (!s.ops[r.eq.k]) r.eq = null; }
   for (const k in s.team) s.team[k] = [...new Set(s.team[k].map(nk))].filter(x => OPS[x]);
   s.assistant = nk(s.assistant);
   for (const k in s.ops) if (!OPS[k]) delete s.ops[k];
-  if (!s.ops[s.assistant]) s.assistant = Object.keys(s.ops)[0] || "shiki-c";
+  if (!s.ops[s.assistant]) s.assistant = Object.keys(s.ops)[0] || STARTERS[0];
   return s;
 }
 function start(data) {
