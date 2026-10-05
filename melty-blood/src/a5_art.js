@@ -833,23 +833,27 @@ function drawHound(g, f, pose, out) {
 }
 
 // ---------- figure portraits (battle cut-ins, enemy icons) ----------
-const EART = {};
-function figArt(id, f) {
-  if (EART[id]) return EART[id];
-  const mk = (W, H, sc, fx, fy, bg) => {
-    const cv = document.createElement("canvas"); cv.width = W; cv.height = H; const g = cv.getContext("2d");
-    if (bg) { const gr = g.createRadialGradient(W * .55, H * .35, 4, W / 2, H / 2, W * .8); gr.addColorStop(0, bg[0]); gr.addColorStop(.6, bg[1]); gr.addColorStop(1, bg[2]); g.fillStyle = gr; g.fillRect(0, 0, W, H); }
-    g.save(); g.translate(fx, fy); g.scale(sc, sc); const out = drawFigure(g, f, { name: "idle", time: .6 }); g.restore();
-    return { cv, out };
-  };
-  const full = mk(360, 540, 3.9, 180, 526);
-  const probe = full.out.head;
-  const hr = (f.type === "slug" ? 14 : f.type === "hound" ? 12 : 10) * (f.h || 1);
-  const sc = 128 * .2 / hr;
-  const head = mk(128, 128, sc, 64 - probe[0] * sc, 60 - probe[1] * sc, id[0] === "e" ? ["#7a2a3a", "#3a1220", "#14060a"] : ["#2a4a7a", "#122038", "#060a14"]);
-  let fullURL = "", headURL = "";
-  try { fullURL = full.cv.toDataURL("image/png"); headURL = head.cv.toDataURL("image/png"); } catch (e) { /* canvas export blocked */ }
-  return (EART[id] = { full: fullURL, head: headURL });
+// Full-body art is rendered once per figure; head icons once per figure and backdrop (Moon-style variants share a body).
+const EART = {}, EHEAD = {};
+function figCanvas(f, W, H, sc, fx, fy, bg) {
+  const cv = document.createElement("canvas"); cv.width = W; cv.height = H; const g = cv.getContext("2d");
+  if (bg) { const gr = g.createRadialGradient(W * .55, H * .35, 4, W / 2, H / 2, W * .8); gr.addColorStop(0, bg[0]); gr.addColorStop(.6, bg[1]); gr.addColorStop(1, bg[2]); g.fillStyle = gr; g.fillRect(0, 0, W, H); }
+  g.save(); g.translate(fx, fy); g.scale(sc, sc); const out = drawFigure(g, f, { name: "idle", time: .6 }); g.restore();
+  return { cv, out };
 }
-const enemyArt = key => figArt("e:" + key, ENEMY[key].fig);
-const opArt = key => figArt("o:" + key, OPS[key].fig);
+const toURL = cv => { try { return cv.toDataURL("image/png"); } catch (e) { return ""; } };
+function figFull(id, f) {
+  if (!EART[id]) { const r = figCanvas(f, 360, 540, 3.9, 180, 526); EART[id] = { url: toURL(r.cv), head: r.out.head }; }
+  return EART[id];
+}
+function figHead(id, f, bg) {
+  const hk = id + "|" + bg[0];
+  if (!EHEAD[hk]) {
+    const probe = figFull(id, f).head, hr = (f.type === "slug" ? 14 : f.type === "hound" ? 12 : 10) * (f.h || 1), sc = 128 * .2 / hr;
+    EHEAD[hk] = toURL(figCanvas(f, 128, 128, sc, 64 - probe[0] * sc, 60 - probe[1] * sc, bg).cv);
+  }
+  return EHEAD[hk];
+}
+const HEAD_BG = { enemy: ["#7a2a3a", "#3a1220", "#14060a"], Crescent: ["#2a5a8a", "#122a44", "#060c16"], Half: ["#4a2a7a", "#1e1238", "#0a0614"], Full: ["#7a5a1e", "#3a2a0e", "#140e04"] };
+const enemyArt = key => ({ get full() { return figFull("e:" + key, ENEMY[key].fig).url; }, get head() { return figHead("e:" + key, ENEMY[key].fig, HEAD_BG.enemy); } });
+const opArt = key => { const op = OPS[key]; return { get full() { return figFull("o:" + op.base, op.fig).url; }, get head() { return figHead("o:" + op.base, op.fig, HEAD_BG[op.el] || HEAD_BG.Crescent); } }; };

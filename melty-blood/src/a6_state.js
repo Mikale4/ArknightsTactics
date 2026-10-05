@@ -20,7 +20,7 @@ function newSave() {
     inv: { rec1: 20, rec2: 6, rec3: 0, rec4: 0, chip: 4, summ: 6 },
     ops: {}, runes: [], runeSeq: 1,
     story: {}, team: { story: STARTERS.slice(0, 4), hunt: STARTERS.slice(0, 4), tower: STARTERS.slice(0, 4), arena: STARTERS.slice(0, 4) },
-    assistant: "shiki", tower: 0,
+    assistant: "shiki-c", tower: 0,
     arena: { rank: 1500, attempts: 5, aTime: Date.now(), payTime: Date.now(), opps: null },
     gacha: { pity: 0, firstTen: true, total: 0 },
     daily: { day: today(), clear: 0, sanity: 0, hh: 0, upgrade: 0, arena: 0, rune: 0, claimed: {} },
@@ -96,6 +96,12 @@ function applySetStats(st, sets) {
   if (sets.has("Rage")) st.cd += .4;
   if (sets.has("Endure")) st.res += .2;
 }
+// STAT Talents: percentage boosts to HP/ATK/DEF/SPD, flat boosts to the rate stats
+function applyStatTalents(st, passives) {
+  for (const t of passives || []) if (t.id === "STAT") for (const k in t.stats) {
+    if (k === "hp" || k === "atk" || k === "def" || k === "spd") st[k] *= 1 + t.stats[k]; else st[k] += t.stats[k];
+  }
+}
 function opStats(key, p, virtualSets) {
   const op = OPS[key], LV = effLV(p);
   const f = (.32 + .68 * LV / 120) * RAR_MULT[op.rar] * (1 + .02 * (p.pot - 1));
@@ -108,13 +114,16 @@ function opStats(key, p, virtualSets) {
     if (r.main === "atk" || r.main === "hp" || r.main === "def") st[r.main] *= 1 + v; else st[r.main] += v;
   }
   applySetStats(st, sets);
+  applyStatTalents(st, op.passives);
   st.hp = Math.round(st.hp); st.atk = Math.round(st.atk); st.def = Math.round(st.def); st.spd = Math.round(st.spd);
   return { st, sets: [...sets] };
 }
 function enemyStats(key, LV) {
   const d = ENEMY[key], b = CLASS_BASE[d.cls], f = .32 + .68 * LV / 120;
-  return { st: { hp: Math.round(b.hp * d.m.hp * f), atk: Math.round(b.atk * d.m.atk * f), def: Math.round(b.def * d.m.def * f), spd: d.m.spd + Math.floor(LV / 12),
-    cr: .15, cd: .5, acc: .2 + LV / 400, res: .1 + LV / 500 }, sets: [] };
+  const st = { hp: b.hp * d.m.hp * f, atk: b.atk * d.m.atk * f, def: b.def * d.m.def * f, spd: d.m.spd + Math.floor(LV / 12), cr: .15, cd: .5, acc: .2 + LV / 400, res: .1 + LV / 500 };
+  applyStatTalents(st, d.passives);
+  st.hp = Math.round(st.hp); st.atk = Math.round(st.atk); st.def = Math.round(st.def); st.spd = Math.round(st.spd);
+  return { st, sets: [] };
 }
 function progForLV(key, LV) {
   const op = OPS[key];

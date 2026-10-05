@@ -10,14 +10,21 @@ Play: open `melty-blood/index.html` (on GitHub Pages: `/ArknightsTactics/melty-b
 
 - **Story — Night of Rumors**: five Nights in Misaki Town (The Rumor, The Executor, Tohno Mansion,
   Chaos in the Park, Night of Wallachia). Each Night is a stage map with story scenes, battles, side
-  stories, caches and a boss, with dialogue before and after fights. Clearing a Night recruits Sion,
-  Ciel, Akiha or Arcueid. All dialogue is an original fan retelling.
-- **Battles**: squads of four, turn gauges, Moon styles (Crescent beats Full, Full beats Half, Half
-  beats Crescent; Holy and Blood each beat the other), status effects and a squad leader.
+  stories, caches and a boss, with dialogue before and after fights. Clearing a Night recruits Half Moon
+  Sion, Crescent Moon Ciel, Full Moon Akiha or Full Moon Arcueid. All dialogue is an original fan retelling.
+- **Moon styles as variants**: every character comes in Crescent, Half and Full Moon, and each style
+  is a separate unit with its own role, three skills (named after that style's moves in the fighting
+  game) and Talent. You can Manifest Full Moon Arcueid and Half Moon Arcueid and field them together.
+  Styles also set affinity (Crescent beats Full, Full beats Half, Half beats Crescent) and a trait
+  modelled on the fighting game's systems: Crescent enters Blood Heat (more damage at 200%+ Magic
+  Circuit), Half has the toughest guard and an automatic Circuit Spark, Full charges its own meter and
+  hits harder with Arc Drives. Half Moon Arc Drives use the basic Arc Drive, as Half has no Last Arc.
+  Church (Holy) and vampire (Blood) characters deal extra damage to each other.
+- **Battles**: squads of four, turn gauges, Moon-style affinity, status effects and a squad leader.
   Every action fills your **Magic Circuit** (up to 300%); each character's third skill is an
   **Arc Drive** that spends 100% of it. Enemy bosses have their own circuit and Arc Drives.
   Battles open with *Ready… Fight!*, run in rounds, and end on *K.O.*
-- **29 characters**, each drawn as an animated figure with a signature look and kit: Shiki Tohno,
+- **29 characters × 3 Moon styles = 87 units**, each character drawn as an animated figure: Shiki Tohno,
   Shiki Nanaya, Arcueid, Red Arcueid, Ciel, Powered Ciel, Akiha, Akiha Vermillion, Hisui, Kohaku,
   Mech-Hisui, Satsuki, Sion, Sion TATARI, Riesbyfe, Aoko, Nrvnqsr Chaos, Michael Roa Valdamjong,
   Night of Wallachia, Len, White Len, Miyako, Kouma, Neco-Arc, Neco-Arc Chaos, Ryougi Shiki, Saber,
@@ -42,6 +49,7 @@ sh melty-blood/src/build.sh       # writes index.html (and dist/index.html for a
 node melty-blood/tests/phone.js   # phone playthrough, screenshots in tests/shots/
 node melty-blood/tests/figures.js # every figure and a pose sheet
 node melty-blood/tests/sim.js     # auto-vs-auto win rates per stage
+VARIANTS=1 node melty-blood/tests/sim.js  # win rate of every Moon-style variant in the same squad
 ```
 
 Unofficial, non-commercial fan game. Melty Blood and Tsukihime belong to TYPE-MOON and French-Bread.

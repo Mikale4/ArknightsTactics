@@ -18,6 +18,10 @@ function opHTML(key, o = {}) {
     ${p && !o.nolv ? `<div class="lv num">${p.lvl}</div>${p.elite ? `<span class="elite">E${p.elite}</span>` : ""}${p.pot > 1 ? `<span class="potb">P${p.pot}</span>` : ""}` : ""}
   </div>`;
 }
+// roster label: short name plus the Moon style in its colour
+const pnameHTML = k => `<div class="pname">${esc(OPS[k].short)}<span class="sty ${OPS[k].el}">${styleName(OPS[k].el)}</span></div>`;
+const elChip = el => `<span class="el ${el}">${styleName(el)}</span>`;
+const kinChip = kin => kin ? `<span class="el kin ${kin}">${kin}</span>` : "";
 function enHTML(spec, s = 46) {
   if (spec.op) return opHTML(spec.op, { s, prog: progForLV(spec.op, spec.LV || 1), nostars: 1 });
   const d = ENEMY[spec.en];
@@ -28,7 +32,7 @@ function rewardsHTML(list) {
   const merged = [];
   for (const r of list) { const m = merged.find(x => x.k === r.k && !r.rune && !x.rune && !r.k.startsWith("op:")); if (m) m.n += r.n; else merged.push({ ...r }); }
   return merged.map(r => {
-    if (r.k.startsWith("op:")) { const k = r.k.slice(3); return `<div class="rw">${opHTML(k, { s: 54, nostars: 1, nolv: 1, show: 1 })}<span>${r.isNew === false ? "Resonance +1" : "New character"}</span></div>`; }
+    if (r.k.startsWith("op:")) { const k = r.k.slice(3); return `<div class="rw">${opHTML(k, { s: 54, nostars: 1, nolv: 1, show: 1 })}<span>${r.isNew === false ? "Resonance +1" : "New character"}</span><span class="tiny dim">${esc(OPS[k].short)} · ${styleName(OPS[k].el)}</span></div>`; }
     if (r.k === "rune") return `<div class="rw"><div class="ri" style="width:54px;height:54px;color:${RUNE_RC[r.rune.rar]}">${IC.rune}</div><span>${setName(r.rune.set)}</span><span class="tiny dim">${RUNE_RAR[r.rune.rar]}</span></div>`;
     const name = r.k === "xp" ? "Character EXP" : r.k === "rank" ? "Rank" : (ITEMS[r.k] && ITEMS[r.k].n) || r.k;
     return `<div class="rw"><div class="ri" style="width:54px;height:54px">${r.k === "xp" ? IC.boost : r.k === "rank" ? IC.arena : itemIcon(r.k)}</div><span class="num">${r.k === "rank" ? "#" + r.n : "×" + fmt(r.n)}</span><span class="tiny dim">${esc(name)}</span></div>`;
@@ -101,7 +105,7 @@ SCREENS.home = () => {
     <section class="stage">
       <div class="floor"></div><div class="ring3d"></div>
       <img class="assist" src="${spriteURL(op)}" alt="${esc(op.n)}" data-act="poke" draggable="false">
-      <div class="nameplate"><span class="eyebrow">Assistant</span><b>${esc(op.n)}</b><div class="row" style="gap:4px"><span class="el ${op.el}">${op.el}</span><span class="cls">${clsName(op.cls)}</span></div></div>
+      <div class="nameplate"><span class="eyebrow">Assistant</span><b>${esc(op.n)}</b><div class="row" style="gap:4px">${elChip(op.el)}<span class="cls">${clsName(op.cls)}</span></div></div>
       <div class="sidebtns">
         <button class="sidebtn" data-act="missions" aria-label="Missions">${IC.missions}<small>Missions</small>${missionsReady ? '<i class="dot"></i>' : ""}</button>
         <button class="sidebtn" data-act="go" data-v="shop" aria-label="Ahnenerbe shop">${IC.shop}<small>Shop</small></button>
@@ -179,7 +183,7 @@ SCREENS.chapter = cid => {
           ${nd.waves ? `<span class="nst">${[1, 2, 3].map(k => k <= st ? IC.star : IC.starOff).join("")}</span>` : ""}</button>`;
       }).join("")}
     </div>
-    <p class="tiny dim">Night reward: ${ch.reward.op ? esc(OPS[ch.reward.op].n) + " joins your party, plus " : ""}${ch.reward.orundum} Moon Crystals${ch.reward.permit ? ` and ${ch.reward.permit} Rumor Tickets` : ""}.</p>
+    <p class="tiny dim">Night reward: ${ch.reward.op ? esc(opLabel(OPS[ch.reward.op])) + " joins your party, plus " : ""}${ch.reward.orundum} Moon Crystals${ch.reward.permit ? ` and ${ch.reward.permit} Rumor Tickets` : ""}.</p>
   </div>`;
 };
 function nodeSheet(nd) {
@@ -211,26 +215,26 @@ SCREENS.team = arg => {
   const lead = ids[0] && OPS[ids[0]].leader;
   const myPw = ids.reduce((a, k) => a + power(k, S.ops[k]), 0);
   const foeEls = [...new Set((arg.foes || []).map(s => s.op ? OPS[s.op].el : ENEMY[s.en].el))];
-  const counter = foeEls.map(e => Object.keys(BEATS).find(k => BEATS[k] === e && !(k === "Light" || k === "Dark")) || (e === "Light" ? "Dark" : e === "Dark" ? "Light" : null)).filter(Boolean);
+  const counter = foeEls.map(e => Object.keys(BEATS).find(k => BEATS[k] === e)).filter(Boolean);
   return `<div class="stack">
     <div class="spread">${back("teamBack", "Back")}<div class="eyebrow">${esc(arg.title || "")}</div></div>
     <h2>Squad</h2>
-    ${foeEls.length ? `<div class="small">Enemy elements: ${foeEls.map(e => `<span class="el ${e}">${e}</span>`).join(" ")} ${counter.length ? `<span class="dim">· Strong picks:</span> ${[...new Set(counter)].map(e => `<span class="el ${e}">${e}</span>`).join(" ")}` : ""}</div>` : ""}
+    ${foeEls.length ? `<div class="small">Enemy Moon styles: ${foeEls.map(elChip).join(" ")} ${counter.length ? `<span class="dim">· Strong picks:</span> ${[...new Set(counter)].map(elChip).join(" ")}` : ""}</div>` : ""}
     <div class="squad">${[0, 1, 2, 3].map(k => {
       const id = ids[k];
       return `<div class="slot">${k === 0 ? `<span class="crown">${IC.crown}</span>` : ""}${id ? `<button data-act="slot" data-k="${k}" aria-label="${esc(OPS[id].n)}">${opHTML(id, { s: 66 })}</button>` : '<div class="empty"></div>'}</div>`;
     }).join("")}</div>
-    <div class="leadtxt small">${lead ? `<b class="gold">Leader: ${esc(OPS[ids[0]].n)}</b> <span class="dim">${leaderText(lead)}</span>` : ids[0] ? `<span class="dim">${esc(OPS[ids[0]].n)} has no leader skill. Tap a squad member to make them leader.</span>` : `<span class="dim">Pick up to four characters. The first slot leads.</span>`}</div>
+    <div class="leadtxt small">${lead ? `<b class="gold">Leader: ${esc(opLabel(OPS[ids[0]]))}</b> <span class="dim">${leaderText(lead)}</span>` : ids[0] ? `<span class="dim">${esc(OPS[ids[0]].n)} has no leader skill. Tap a squad member to make them leader.</span>` : `<span class="dim">Pick up to four characters. The first slot leads.</span>`}</div>
     <div class="spread small"><span>Squad power <b class="num">${fmtFull(myPw)}</b></span>${arg.cost ? `<span class="cost">${IC.sanity}${arg.cost}</span>` : ""}</div>
     <button class="btn wide" data-act="deploy" ${ids.length ? "" : "disabled"}>Fight!</button>
-    <div class="filters">${["all", ...ELS].map(e => `<button class="chip ${UI.el === e ? "on" : ""}" data-act="elf" data-e="${e}">${e === "all" ? "All" : e}</button>`).join("")}</div>
-    <div class="roster">${pool.map(k => `<button class="rcell ${ids.includes(k) ? "sel" : ""}" data-act="pickTeam" data-k="${k}">${opHTML(k)}<div class="pname">${esc(OPS[k].n)}</div><div class="pw">${fmt(power(k, S.ops[k]))}</div></button>`).join("")}</div>
+    <div class="filters">${["all", ...ELS].map(e => `<button class="chip ${UI.el === e ? "on" : ""}" data-act="elf" data-e="${e}">${e === "all" ? "All" : styleName(e)}</button>`).join("")}</div>
+    <div class="roster">${pool.map(k => `<button class="rcell ${ids.includes(k) ? "sel" : ""}" data-act="pickTeam" data-k="${k}">${opHTML(k)}${pnameHTML(k)}<div class="pw">${fmt(power(k, S.ops[k]))}</div></button>`).join("")}</div>
   </div>`;
 };
 function leaderText(l) {
   if (!l) return "—";
   const sym = { ATK: "ATK", HP: "HP", DEF: "DEF", SPD: "SPD", CR: "Crit Rate", CD: "Crit Damage", ACC: "Accuracy", RES: "Resistance" }[l.stat] || l.stat;
-  return `${sym} +${Math.round(l.amount * 100)}% for ${l.scope === "All" ? "all allies" : l.element + " allies"}`;
+  return `${sym} +${Math.round(l.amount * 100)}% for ${l.scope === "All" ? "all allies" : styleName(l.element) + " allies"}`;
 }
 
 // ---------- dialogue ----------

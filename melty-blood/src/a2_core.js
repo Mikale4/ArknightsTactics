@@ -33,12 +33,26 @@ function hash(str) { let h = 2166136261; for (const c of str) { h ^= c.charCodeA
 const dur = ms => { const m = Math.floor(ms / 60000), s = Math.floor(ms % 60000 / 1000); if (m >= 60) return Math.floor(m / 60) + "h " + (m % 60) + "m"; return m + ":" + String(s).padStart(2, "0"); };
 const today = () => new Date().toISOString().slice(0, 10);
 
-// ---------- elements + rarity ----------
-// Moon styles: Crescent beats Full, Full beats Half, Half beats Crescent; Holy and Blood each beat the other.
-const ELS = ["Crescent", "Half", "Full", "Holy", "Blood"];
+// ---------- Moon styles + rarity ----------
+// Every character comes in up to three Moon styles, each a separate unit with its own kit (internal field: el).
+// Crescent beats Full, Full beats Half, Half beats Crescent. Each style also has a built-in trait (STYLE[x].d).
+const ELS = ["Crescent", "Half", "Full"];
 const ELC = { Crescent: "#8fd8ff", Half: "#c39bff", Full: "#f1d07a", Holy: "#f4efe2", Blood: "#ff3b5c" };
-const BEATS = { Crescent: "Full", Full: "Half", Half: "Crescent", Holy: "Blood", Blood: "Holy" };
-function elementRel(a, t) { if (BEATS[a] === t) return "adv"; if (BEATS[t] === a && !(a === "Holy" || a === "Blood")) return "dis"; return "neu"; }
+const BEATS = { Crescent: "Full", Full: "Half", Half: "Crescent" };
+function elementRel(a, t) { if (BEATS[a] === t) return "adv"; if (BEATS[t] === a) return "dis"; return "neu"; }
+// Traits follow the fighting game: Crescent fires up Blood Heat at high meter, Half has the toughest guard and an
+// automatic Circuit Spark, Full charges its own meter.
+const STYLE = {
+  Crescent: { n: "Crescent Moon", sfx: "c", d: "Blood Heat: deals 15% more damage while your Magic Circuit is at 200% or more." },
+  Half: { n: "Half Moon", sfx: "h", d: "Toughest guard: takes 6% less damage. Circuit Spark: the first time it drops below half HP, cleanses all its debuffs." },
+  Full: { n: "Full Moon", sfx: "f", d: "Charge: builds 8% Magic Circuit at the start of each of its turns. Its Arc Drives deal 25% more damage." },
+};
+const styleName = el => (STYLE[el] || { n: el }).n;
+const CRES_HEAT = .15, CRES_HEAT_AT = 200, HALF_GUARD = .06, FULL_CHARGE = 8, FULL_ARC = .25;
+// Bloodline: the Church (Holy) and vampires (Blood) deal extra damage to each other.
+const KIN = { Holy: "Holy", Blood: "Blood" };
+const KIN_BONUS = .2;
+const kinRel = (a, t) => a && t && a !== t && KIN[a] && KIN[t];
 const RC = { 1: "#c9d1de", 2: "#7fdc8a", 3: "#8fd8ff", 4: "#c39bff", 5: "#f1d07a", 6: "#ff9a3c" };
 // Engine class keys stay internal; players see the names on the right.
 const CLASSES = ["Vanguard", "Guard", "Defender", "Sniper", "Caster", "Medic", "Supporter", "Specialist"];

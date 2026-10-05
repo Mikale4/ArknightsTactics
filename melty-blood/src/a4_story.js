@@ -5,9 +5,9 @@
 // =====================================================================
 const SPK = {
   narr: { n: "" },
-  shiki: { n: "Shiki", op: "shiki" }, satsuki: { n: "Satsuki", op: "satsuki" }, hisui: { n: "Hisui", op: "hisui" }, kohaku: { n: "Kohaku", op: "kohaku" },
-  akiha: { n: "Akiha", op: "akiha" }, sion: { n: "Sion", op: "sion" }, ciel: { n: "Ciel", op: "ciel" }, arcueid: { n: "Arcueid", op: "arcueid" },
-  len: { n: "Len", op: "len" },
+  shiki: { n: "Shiki", op: "shiki-c" }, satsuki: { n: "Satsuki", op: "satsuki-c" }, hisui: { n: "Hisui", op: "hisui-c" }, kohaku: { n: "Kohaku", op: "kohaku-c" },
+  akiha: { n: "Akiha", op: "akiha-c" }, sion: { n: "Sion", op: "sion-c" }, ciel: { n: "Ciel", op: "ciel-c" }, arcueid: { n: "Arcueid", op: "arcueid-c" },
+  len: { n: "Len", op: "len-c" },
   sion_e: { n: "Sion", en: "b_sion" }, ciel_e: { n: "Ciel", en: "b_ciel" }, redakiha: { n: "Akiha?", en: "b_redakiha" }, chaos: { n: "Nrvnqsr Chaos", en: "b_chaos" },
   wallachia: { n: "Night of Wallachia", en: "b_wallachia" }, nanaya: { n: "Shiki Nanaya", en: "b_nanaya" }, riesbyfe: { n: "Riesbyfe", en: "b_riesbyfe" },
   mech: { n: "Mech-Hisui", en: "b_mech" }, vlov: { n: "Vlov", en: "b_vlov" }, whitelen: { n: "White Len", en: "b_whitelen" }, ghoul: { n: "Ghoul", en: "ghoul" },
@@ -19,7 +19,7 @@ const STORY = [{
   id: "ep1", title: "Night of Rumors", sub: "Main Story",
   blurb: "One summer night every year, Misaki Town's rumors come true. This year someone is spreading the worst ones on purpose.",
   chapters: [
-    { id: "c1", title: "The Rumor", env: "misaki", map: "misaki", reward: { op: "sion", orundum: 300 },
+    { id: "c1", title: "The Rumor", env: "misaki", map: "misaki", reward: { op: "sion-h", orundum: 300 },
       nodes: [
         { id: "1-1", type: "story", name: "A Town of Whispers", pre: [
           L("narr", "Misaki Town, late summer. A rumor walks the streets after midnight: the vampire killer is back, and this time it never sleeps."),
@@ -45,7 +45,9 @@ const STORY = [{
           L("whitelen", "Hmph. You are no fun at all. I'll find a better play.") ] },
         { id: "1-6", type: "battle", name: "Plaza of Rumors", lv: 4, waves: [W("ghoul", "phantom", "ghoul"), W("dead", "phantom", "dead")], pre: [
           L("satsuki", "Those ghosts are whispering... they're repeating things people say about this town."),
-          L("shiki", "Then let's give them something new to talk about.") ] },
+          L("shiki", "Then let's give them something new to talk about."),
+          L("satsuki", "Oh, and watch the moon on everyone's badge. Crescent beats Full, Full beats Half, Half beats Crescent."),
+          L("satsuki", "Same person, different Moon style, totally different moves. I fight Half Moon. Your Crescent Moon style is all about building Magic Circuit fast!") ] },
         { id: "1-7", type: "boss", name: "The Alchemist", lv: 7, waves: [W("phantom", "ghoul"), W("b_sion", "ghoul", "phantom")], pre: [
           L("sion_e", "Shiki Tohno. Holder of the Mystic Eyes of Death Perception. I require your cooperation."),
           L("shiki", "You have a strange way of asking."),
@@ -54,7 +56,7 @@ const STORY = [{
           L("sion", "I am Sion Eltnam Atlasia, of the Atlas Institute. I am hunting the thing that makes rumors real. The Tatari."),
           L("shiki", "Then I guess we're hunting it together.") ] },
       ] },
-    { id: "c2", title: "The Executor", env: "school", map: "school", reward: { op: "ciel", orundum: 300 },
+    { id: "c2", title: "The Executor", env: "school", map: "school", reward: { op: "ciel-c", orundum: 300 },
       nodes: [
         { id: "2-1", type: "story", name: "Divided Thought", pre: [
           L("sion", "The Tatari is not a person. It is a phenomenon called the Night of Wallachia. Once a year, it takes the shape of whatever a town fears most."),
@@ -83,7 +85,7 @@ const STORY = [{
           L("sion", "Acceptable."),
           L("ciel", "And Tohno-kun? We are going to talk about your curfew later.") ] },
       ] },
-    { id: "c3", title: "Tohno Mansion", env: "mansion", map: "mansion", reward: { op: "akiha", orundum: 300 },
+    { id: "c3", title: "Tohno Mansion", env: "mansion", map: "mansion", reward: { op: "akiha-f", orundum: 300 },
       nodes: [
         { id: "3-1", type: "story", name: "Curfew", pre: [
           L("akiha", "Nii-san. It is three in the morning."),
@@ -116,7 +118,7 @@ const STORY = [{
           L("shiki", "It was wrong about you, Akiha."),
           L("akiha", "Of course it was. I'm coming with you tonight. Don't argue.") ] },
       ] },
-    { id: "c4", title: "Chaos in the Park", env: "park", map: "park", reward: { op: "arcueid", orundum: 400 },
+    { id: "c4", title: "Chaos in the Park", env: "park", map: "park", reward: { op: "arcueid-f", orundum: 400 },
       nodes: [
         { id: "4-1", type: "story", name: "The Princess", pre: [
           L("arcueid", "Shiki! You've been having fun without me."),
@@ -233,7 +235,9 @@ const ACHIEVEMENTS = [
   ...STORY[0].chapters.map((c, i) => ({ id: "ch" + (i + 1), n: `Clear Night ${c.no}: ${c.title}`, test: () => chapterCleared(c), reward: i === 4 ? { orundum: 600, permit: 3 } : { orundum: 300 } })),
   { id: "ops10", n: "Gather 10 characters", test: () => Object.keys(S.ops).length >= 10, reward: { orundum: 200 } },
   { id: "ops20", n: "Gather 20 characters", test: () => Object.keys(S.ops).length >= 20, reward: { orundum: 400, permit: 1 } },
-  { id: "opsAll", n: "Gather the whole cast", test: () => Object.keys(S.ops).length >= OP_KEYS.length, reward: { orundum: 800, permit: 2 } },
+  { id: "moons", n: "Collect all three Moon styles of one character", test: () => CHARS.some(c => variantsOf(c.k).length === 3 && variantsOf(c.k).every(owned)), reward: { orundum: 500, permit: 1 } },
+  { id: "ops40", n: "Gather 40 characters", test: () => Object.keys(S.ops).length >= 40, reward: { orundum: 600, permit: 2 } },
+  { id: "opsAll", n: "Gather every character in every Moon style", test: () => Object.keys(S.ops).length >= OP_KEYS.length, reward: { orundum: 1500, permit: 5 } },
   { id: "e1", n: "Awaken a character once", test: () => Object.values(S.ops).some(p => p.elite >= 1), reward: { orundum: 150 } },
   { id: "e2", n: "Fully Awaken a character", test: () => Object.values(S.ops).some(p => p.elite >= 2), reward: { orundum: 400, permit: 1 } },
   { id: "six", n: "Manifest a 5★ character", test: () => Object.keys(S.ops).some(k => OPS[k].rar === 5), reward: { orundum: 300 } },
@@ -265,5 +269,6 @@ const SHOP = {
     { id: "p_oru", n: "Exchange for Moon Crystals", d: "1 Moonstone → 180 Moon Crystals", cost: 1, give: { orundum: 180 } },
   ],
 };
-const STARTERS = ["shiki", "satsuki", "hisui", "kohaku", "miyako"];
-const BANNER_TOP = ["nanaya", "red-arcueid", "powered-ciel", "red-akiha", "sion-tatari", "aoko", "chaos", "roa", "wallachia", "ryougi", "saber", "vlov"];
+// starters show off all three Moon styles; every 5★ variant can headline the daily banner
+const STARTERS = ["shiki-c", "satsuki-h", "hisui-c", "kohaku-c", "miyako-f"];
+const BANNER_TOP = OP_KEYS.filter(k => OPS[k].rar === 5);

@@ -283,6 +283,17 @@ p{margin:0}
 .rstars svg{width:11px;height:11px}
 .pt .eldot{position:absolute;right:-1px;top:13px;width:16px;height:16px;border-radius:50%;border:2px solid #0a0f1c;z-index:2}
 .eldot.Crescent{background:var(--crescent)} .eldot.Half{background:var(--half)} .eldot.Full{background:var(--full)} .eldot.Holy{background:var(--holy)} .eldot.Blood{background:var(--blood)}
+/* Moon-style badges drawn as moon phases */
+.eldot.Crescent{background:radial-gradient(circle at 70% 36%,#0a0f1c 0 47%,transparent 50%),var(--crescent)}
+.eldot.Half{background:linear-gradient(90deg,var(--half) 50%,#0a0f1c 50%);box-shadow:inset 0 0 0 1.5px var(--half)}
+.eldot.Full{background:radial-gradient(circle at 38% 34%,#fff6d6,var(--full) 60%);box-shadow:0 0 6px #f1d07a88}
+.el.kin{font-size:9.5px;opacity:.9;border-style:dashed}
+.pname .sty{display:block;font:700 9px var(--f-display);letter-spacing:.06em;text-transform:uppercase;line-height:1.1}
+.pname .sty.Crescent{color:var(--crescent)} .pname .sty.Half{color:var(--half)} .pname .sty.Full{color:var(--full)}
+.variants{display:flex;gap:10px;align-items:flex-start}
+.variants button{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:0;color:inherit;padding:0;font:inherit}
+.variants button.cur .pt{outline:2px solid var(--gold);outline-offset:2px;border-radius:50%}
+.variants button.unowned .pt{filter:grayscale(.85) brightness(.7)}
 .pt .elite{position:absolute;left:-2px;top:13px;min-width:18px;height:16px;padding:0 3px;border-radius:3px;background:#0a0f1c;border:1px solid var(--gold);font:800 9.5px/14px var(--f-display);color:var(--gold);z-index:2}
 .pt .potb{position:absolute;right:-3px;bottom:12px;font:800 10px var(--f-display);color:#fff;background:#3a2a6a;border-radius:3px;padding:0 3px;z-index:2}
 .filters{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}

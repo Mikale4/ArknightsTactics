@@ -348,7 +348,7 @@ function skillPop(u, sk) {
 function unitPop(u) {
   const B = BT.B, e = B.effStat;
   return `<div class="row"><img class="bpt" src="${u.isOp ? opArt(u.key).head : enemyArt(u.key).head}" alt=""><div><div class="eyebrow">${u.team === "A" ? "Your squad" : "Enemy"}${u.boss ? " · Boss" : ""}</div><h3>${esc(u.n)}</h3>
-    <div class="row" style="gap:4px;margin-top:3px"><span class="el ${u.el}">${u.el}</span><span class="cls">${clsName(u.cls)}</span></div></div></div>
+    <div class="row" style="gap:4px;margin-top:3px"><span class="el ${u.el}">${styleName(u.el)}</span>${u.kin ? `<span class="el kin ${u.kin}">${u.kin}</span>` : ""}<span class="cls">${clsName(u.cls)}</span></div></div></div>
     <div class="statgrid" style="margin-top:10px">
       <div><span>HP</span><b>${fmtFull(u.hp)} / ${fmtFull(u.max.hp)}</b></div><div><span>Shield</span><b>${fmtFull(u.shield)}</b></div>
       <div><span>ATK</span><b>${fmtFull(e.atk(u))}</b></div><div><span>DEF</span><b>${fmtFull(e.def(u))}</b></div>
@@ -357,7 +357,7 @@ function unitPop(u) {
     </div>
     ${u.eff.length ? `<div class="stack" style="gap:4px;margin-top:10px">${u.eff.map(x => `<div class="small"><span class="tag ${FX[x.id].b ? "ls" : "ds"}">${FX[x.id].n}</span> <span class="dim">${FX[x.id].d} · ${x.turns}T</span></div>`).join("")}</div>` : `<p class="tiny dim" style="margin-top:10px">No active effects.</p>`}
     ${[...u.sets].length ? `<p class="small" style="margin-top:8px"><b class="gold">Mystic Codes:</b> <span class="dim">${[...u.sets].map(s => `${setName(s)} (${RUNE_INFO[s]})`).join(", ")}</span></p>` : ""}
-    ${u.passives.length ? `<p class="small" style="margin-top:6px"><b class="gold">Ability:</b> <span class="dim">${u.passives.map(p => esc(p.text || p.id)).join(" ")}</span></p>` : ""}`;
+    ${u.passives.length ? `<p class="small" style="margin-top:6px"><b class="gold">Talent:</b> <span class="dim">${u.passives.map(p => esc(p.text || p.id)).join(" ")}</span></p>` : ""}`;
 }
 function popup(html) {
   const p = $("#bPop"); if (!p) return;

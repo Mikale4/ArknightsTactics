@@ -1,7 +1,7 @@
 
 // =====================================================================
-//  BATTLE ENGINE — turn gauges, Moon-style affinity, Mystic Codes, statuses,
-//  passives, AI styles and the Magic Circuit, emitting events for the renderer.
+//  BATTLE ENGINE — turn gauges, Moon-style affinity and traits, Holy/Blood, Mystic Codes,
+//  statuses, Talents (passives), AI styles and the Magic Circuit, emitting events for the renderer.
 // =====================================================================
 let UID = 0;
 const MELEE = new Set(["Vanguard", "Guard", "Defender", "Specialist"]);
@@ -26,6 +26,7 @@ function makeBattle(cfg) {
   };
   const allies = u => B.units.filter(x => x.team === u.team && x.alive);
   const enemies = u => B.units.filter(x => x.team !== u.team && x.alive);
+  const pv = (u, id) => u.passives.find(p => p.id === id);
 
   // ---------- units ----------
   function buildUnit(spec, team, slot) {
@@ -40,7 +41,7 @@ function makeBattle(cfg) {
       ({ st, sets } = enemyStats(spec.en, spec.LV));
       const r = Math.min(7, 1 + Math.floor(spec.LV / 18)); sk = [r, r, r];
     }
-    return { uid: ++UID, key: spec.op || spec.en, def, isOp: !!spec.op, team, slot, n: def.n, el: def.el, cls: def.cls, boss: !!(def.boss || spec.boss),
+    return { uid: ++UID, key: spec.op || spec.en, def, isOp: !!spec.op, team, slot, n: def.n, el: def.el, kin: def.kin || null, cls: def.cls, boss: !!(def.boss || spec.boss),
       max: { ...st }, hp: st.hp, shield: 0, atb: 0, eff: [], cool: { 1: 0, 2: 0, 3: 0 }, skills: def.skills, sk, passives: def.passives || [],
       sets: new Set(sets), leader: def.leader || null, flags: {}, alive: true, provokedBy: null };
   }
@@ -63,7 +64,12 @@ function makeBattle(cfg) {
     for (const u of list) {
       if (u.sets.has("Will")) addEff(u, "IMMUNITY", 1, u, true);
       if (u.sets.has("Shield")) { const v = Math.round(u.max.hp * .15); for (const a of list) { a.shield += v; addEff(a, "SHIELD", 3, u, true); } }
-      for (const p of u.passives) if (p.id === "TEAM_ATB_START") for (const a of list) a.atb = clamp(a.atb + p.amount * 100, 0, 100);
+      for (const p of u.passives) {
+        if (p.id === "TEAM_ATB_START") for (const a of list) a.atb = clamp(a.atb + p.amount * 100, 0, 100);
+        else if (p.id === "SELF_ATB_START") u.atb = clamp(u.atb + p.amount * 100, 0, 100);
+        else if (p.id === "MC_START") gainMC(u.team, Math.round(p.amount * 100));
+        else if (p.id === "START_BUFF") for (const a of p.team ? list : [u]) for (const w of p.what) addEff(a, w, p.turns || 2, u, true);
+      }
     }
   }
   function spawnWave(w) {
@@ -151,7 +157,10 @@ function makeBattle(cfg) {
     }
     u.alive = false; u.hp = 0; u.eff = []; u.shield = 0; u.atb = 0;
     ev({ k: "death", u: u.uid });
-    if (killer && killer.alive) for (const p of killer.passives) if (p.id === "TEAM_ATB_ON_KILL") for (const a of allies(killer)) addATB(a, p.amount);
+    if (killer && killer.alive) for (const p of killer.passives) {
+      if (p.id === "TEAM_ATB_ON_KILL") for (const a of allies(killer)) addATB(a, p.amount);
+      else if (p.id === "MC_ON_KILL") gainMC(killer.team, Math.round(p.amount * 100));
+    }
   }
   function applyDamage(att, tar, dmg, meta) {
     if (!tar.alive) return 0;
@@ -164,6 +173,22 @@ function makeBattle(cfg) {
     if (tar.sets.has("Nemesis") && dealt > 0 && tar.hp > 0) addATB(tar, (dealt / tar.max.hp) * (.04 / .07), true);
     if (tar.hp <= 0) kill(tar, att);
     return dealt;
+  }
+  // Style traits, Holy/Blood and damage Talents: an additive damage bonus and a multiplier on damage taken
+  function dmgMods(att, tar, sk) {
+    let bonus = 0, taken = 1;
+    if (kinRel(att.kin, tar.kin)) bonus += KIN_BONUS;
+    if (sk.arc && att.el === "Full") bonus += FULL_ARC;
+    if (att.el === "Crescent" && B.mc[att.team] >= CRES_HEAT_AT) bonus += CRES_HEAT;
+    for (const p of att.passives) {
+      if (p.id === "BLOOD_HEAT" && att.hp < att.max.hp * p.below) bonus += p.amount;
+      else if (p.id === "EXECUTE" && tar.hp < tar.max.hp * p.below) bonus += p.amount;
+      else if (p.id === "BONUS_VS_DEBUFFED" && tar.eff.some(x => !FX[x.id].b)) bonus += p.amount;
+    }
+    if (tar.el === "Half") taken *= 1 - HALF_GUARD;
+    const dr = pv(tar, "DMG_REDUCE"); if (dr) taken *= 1 - dr.amount;
+    let td = 0; for (const a of allies(tar)) { const p = pv(a, "TEAM_DMG_REDUCE"); if (p) td = Math.max(td, p.amount); }
+    return { bonus, taken: taken * (1 - td) };
   }
   function attackOnce(att, tar, sk, isCounter) {
     if (!att.alive || !tar.alive) return;
@@ -179,11 +204,22 @@ function makeBattle(cfg) {
     const mitig = 1000 / (1000 + Math.max(0, effDef(tar) * (1 - (sk.ignoreDef || 0))));
     let dmg = effAtk(att) * (sk.mult || 1) * lvMult(att, sk.slot) * mitig;
     if (crit) dmg *= 1 + att.max.cd;
-    dmg *= (1 + (rel === "adv" ? .15 : 0) + (glance ? -.3 : 0) + bonus) * (has(tar, "BRAND") ? 1.25 : 1);
+    const M = dmgMods(att, tar, sk);
+    dmg *= (1 + (rel === "adv" ? .15 : 0) + (glance ? -.3 : 0) + bonus + M.bonus) * (has(tar, "BRAND") ? 1.25 : 1) * M.taken;
     dmg = Math.max(1, Math.round(dmg));
     const dealt = applyDamage(att, tar, dmg, { crit, glance, adv: rel === "adv" });
     if (dealt > 0) gainMC(tar.team, 3);
+    if (tar.alive && tar.el === "Half" && !tar.flags.spark && tar.hp < tar.max.hp / 2) {
+      tar.flags.spark = true; ev({ k: "txt", u: tar.uid, s: "CIRCUIT SPARK", c: "buff" }); cleanse(tar, 9);
+    }
     if (crit) B.ctxCrits++;
+    // on-hit Talents (scaled down per hit so multi-hit skills don't trigger them many times over)
+    const per = 1 / (sk.hits || 1);
+    if (tar.alive && dmg > 0) {
+      const oh = pv(tar, "ON_HIT_ATB"); if (oh) addATB(tar, oh.amount * per, true);
+      const hd = pv(tar, "HIT_DEBUFF"); if (hd && att.alive && !isCounter) tryDebuff(tar, att, hd.what, hd.turns || 2, hd.chance * per);
+    }
+    const cdb = pv(att, "CRIT_DEBUFF"); if (crit && cdb && tar.alive) tryDebuff(att, tar, cdb.what, cdb.turns || 2, cdb.chance);
     if (tar.alive && att.sets.has("Despair") && R() < .25) tryDebuff(att, tar, "STUN", 1, 1);
     for (const e of sk.effects || []) {
       if (e.on === "target" || e.on === "enemy") {
@@ -193,7 +229,8 @@ function makeBattle(cfg) {
       } else if (e.on === "self" && e.type === "atkbar+" && e.perCrit && crit) addATB(att, e.amount || 0);
     }
     if (tar.alive && att.alive && !isCounter && B.depth < 3) {
-      if ((has(tar, "COUNTER") && R() < .3) || (tar.sets.has("Revenge") && R() < .15)) {
+      const pc = pv(tar, "COUNTER");
+      if ((has(tar, "COUNTER") && R() < .3) || (tar.sets.has("Revenge") && R() < .15) || (pc && R() < pc.chance * per)) {
         ev({ k: "txt", u: tar.uid, s: "COUNTER", c: "buff" });
         const s1 = tar.skills[0];
         B.depth++; ev({ k: "atk", a: tar.uid, t: [att.uid], anim: animFor(tar, s1), aoe: 0, counter: 1 }); attackOnce(tar, att, s1, true); B.depth--;
@@ -226,7 +263,8 @@ function makeBattle(cfg) {
         else if (e.type === "shieldCasterHP") giveShield(actor, actor.max.hp * (e.amount || 0), e.turns);
         break;
       case "ally": case "team": case "aoe_allies": {
-        const list = targets.filter(t => t.team === actor.team && t.alive);
+        // ally effects inside attack or self skills reach the whole team; ally_single skills reach only their target
+        const list = sk.target === "ally_single" ? targets.filter(t => t.team === actor.team && t.alive) : allies(actor);
         if (e.type === "reviveOne") { const dead = B.units.filter(u => u.team === actor.team && !u.alive); if (dead.length) revive(dead[dead.length - 1], e.amount || .3); break; }
         for (const a of list) {
           if (e.type === "healPctTarget") heal(a, a.max.hp * (e.amount || 0));
@@ -266,7 +304,8 @@ function makeBattle(cfg) {
     const mit = 1000 / (1000 + Math.max(0, effDef(tar) * (1 - (s.ignoreDef || 0))));
     const base = effAtk(att) * s.mult * lvMult(att, s.slot), brand = has(tar, "BRAND") ? 1.25 : 1;
     const glance = rel === "dis" ? .5 : 0, pCrit = clamp(effCR(att) + (rel === "adv" ? .15 : 0), 0, 1);
-    const nc = base * mit * (1 + adv + glPen) * brand, cr = base * mit * (1 + att.max.cd + adv + glPen) * brand;
+    const M = dmgMods(att, tar, s);
+    const nc = base * mit * (1 + adv + glPen + M.bonus) * brand * M.taken, cr = base * mit * (1 + att.max.cd + adv + glPen + M.bonus) * brand * M.taken;
     return Math.max(1, Math.round((1 - glance) * ((1 - pCrit) * nc + pCrit * cr) + glance * nc * .7)) * (s.hits || 1);
   }
   const isHeal = s => (s.effects || []).some(e => /heal|revive/i.test(e.type));
@@ -370,9 +409,15 @@ function makeBattle(cfg) {
     }
     if (u.alive) for (const e of sk.effects || []) applyEffect(u, targets, e, sk);
     gainMC(u.team, sk.arc ? 0 : sk.slot === 1 ? 22 : 12);
+    if (sk.arc && u.alive) for (const p of u.passives) {
+      if (p.id === "ARC_TEAM_ATB") for (const a of allies(u)) addATB(a, p.amount);
+      else if (p.id === "ARC_TEAM_HEAL") for (const a of allies(u)) heal(a, a.max.hp * p.amount);
+      else if (p.id === "ARC_SELF_ATB") addATB(u, p.amount);
+    }
     if (sk.slot > 1 && !sk.arc) u.cool[sk.slot] = cdOf(u, sk);
     if (u.flags.resetCD) { u.cool[u.flags.resetCD] = 0; u.flags.resetCD = 0; }
-    if (u.alive && u.sets.has("Violent") && R() < .22) { ev({ k: "txt", u: u.uid, s: "EXTRA TURN", c: "buff" }); u.atb = 100; ev({ k: "tm", u: u.uid, tm: 100, v: 100, quiet: 1 }); }
+    const xt = pv(u, "EXTRA_TURN");
+    if (u.alive && ((u.sets.has("Violent") && R() < .22) || (xt && R() < xt.chance))) { ev({ k: "txt", u: u.uid, s: "EXTRA TURN", c: "buff" }); u.atb = 100; ev({ k: "tm", u: u.uid, tm: 100, v: 100, quiet: 1 }); }
     ev({ k: "end", u: u.uid });
     endTurn(u);
   }
@@ -394,6 +439,8 @@ function makeBattle(cfg) {
     if (dots) applyDamage(null, u, Math.max(1, Math.floor(u.max.hp * .05 * dots)), { trueDmg: true });
     const hots = u.eff.filter(e => e.id === "HOT").length;
     if (u.alive && hots) heal(u, u.max.hp * .05 * hots);
+    const rg = pv(u, "REGEN"); if (u.alive && rg) heal(u, u.max.hp * rg.amount);
+    if (u.alive && u.el === "Full") gainMC(u.team, FULL_CHARGE);
     if (!u.alive) { ev({ k: "end", u: u.uid }); endTurn(u); return "acted"; }
     if (has(u, "STUN")) { removeEff(u, "STUN"); ev({ k: "txt", u: u.uid, s: "STUNNED", c: "debuff" }); ev({ k: "end", u: u.uid }); endTurn(u); return "acted"; }
     if (has(u, "PROVOKE") && u.provokedBy && u.provokedBy.alive) { act(u, 1, u.provokedBy); return "acted"; }

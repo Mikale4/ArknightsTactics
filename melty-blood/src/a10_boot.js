@@ -37,7 +37,7 @@ function chapterModal(ch, list) {
   const i = STORY[0].chapters.indexOf(ch), nx = STORY[0].chapters[i + 1];
   openModal(`<div class="stack" style="align-items:center;text-align:center">
     <div class="eyebrow">Night ${ch.no} cleared</div><h2>${esc(ch.title)}</h2>
-    ${ch.reward.op ? `<img src="${spriteURL(OPS[ch.reward.op])}" alt="" style="height:200px;max-width:100%;object-fit:contain;filter:drop-shadow(0 10px 18px #000)"><p class="small"><b class="gold">${esc(OPS[ch.reward.op].n)}</b> has joined your party.</p>` : ""}
+    ${ch.reward.op ? `<img src="${spriteURL(OPS[ch.reward.op])}" alt="" style="height:200px;max-width:100%;object-fit:contain;filter:drop-shadow(0 10px 18px #000)"><p class="small"><b class="gold">${esc(opLabel(OPS[ch.reward.op]))}</b> has joined your party.</p>` : ""}
     <div class="rewards">${rewardsHTML(list)}</div>
     ${nx ? `<p class="small dim">Night ${nx.no}, ${esc(nx.title)}, is now open.</p><button class="btn wide" data-act="chapter" data-c="${nx.id}">Continue</button>` : `<p class="small dim">You have finished the story. The moon sets over Misaki Town.</p><button class="btn wide" data-act="closeModal">Close</button>`}
   </div>`);
@@ -200,7 +200,7 @@ function launchArena(k) {
 // =====================================================================
 function quip() {
   const st = $(".stage"); if (!st) return;
-  const key = S.assistant, lines = QUIPS[key] || QUIPS._;
+  const key = S.assistant, lines = (OPS[key] && QUIPS[OPS[key].base]) || QUIPS._;
   st.querySelector(".quip") && st.querySelector(".quip").remove();
   const q = document.createElement("div"); q.className = "quip";
   q.innerHTML = `<b>${esc(OPS[key] ? OPS[key].n : "")}</b>${esc(pick(lines))}`;
@@ -211,10 +211,10 @@ function quip() {
 }
 function introModal() {
   openModal(`<div class="stack" style="align-items:center;text-align:center">
-    <img src="${spriteURL(OPS.shiki)}" alt="Shiki Tohno" style="height:230px;max-width:100%;object-fit:contain;filter:drop-shadow(0 12px 20px #000)">
+    <img src="${spriteURL(OPS["shiki-c"])}" alt="Shiki Tohno" style="height:230px;max-width:100%;object-fit:contain;filter:drop-shadow(0 12px 20px #000)">
     <div class="eyebrow">Misaki Town · After midnight</div>
     <h1>Melty Blood<span style="display:block;color:var(--moon);font-size:18px;letter-spacing:.24em;margin-top:4px">Night of Rumors</span></h1>
-    <p class="small dim" style="max-width:36ch">Lead a squad of four through the Tatari incident. Every action charges your Magic Circuit; at 100%, unleash an Arc Drive. Moon styles matter: Crescent beats Full, Full beats Half, Half beats Crescent, and Holy and Blood each beat the other.</p>
+    <p class="small dim" style="max-width:36ch">Lead a squad of four through the Tatari incident. Every action charges your Magic Circuit; at 100%, unleash an Arc Drive. Each character comes in Crescent, Half and Full Moon styles, and every style is its own unit with its own skills and Talent. Crescent beats Full, Full beats Half, Half beats Crescent.</p>
     <button class="btn wide" data-act="introGo">Begin the night</button>
     <p class="tiny dim">Unofficial, non-commercial fan game. Melty Blood and Tsukihime belong to TYPE-MOON and French-Bread. All art here is drawn by the game.</p>
   </div>`);
@@ -374,9 +374,14 @@ function migrate(s) {
     for (const id in NODES) { const nd = NODES[id]; if (old[nd.legacy]) s.story[id] = old[nd.legacy]; }
     s.codes2 = 1;
   }
-  for (const k in s.team) s.team[k] = s.team[k].filter(x => OPS[x]);
+  // characters split into Moon-style variants: an old "arcueid" becomes "arcueid-c" (the kit it had)
+  const nk = k => OPS[k] ? k : OPS[k + "-c"] ? k + "-c" : k;
+  for (const k of Object.keys(s.ops)) if (!OPS[k] && OPS[nk(k)]) { if (!s.ops[nk(k)]) s.ops[nk(k)] = s.ops[k]; delete s.ops[k]; }
+  for (const r of s.runes || []) if (r.eq) { r.eq.k = nk(r.eq.k); if (!s.ops[r.eq.k]) r.eq = null; }
+  for (const k in s.team) s.team[k] = [...new Set(s.team[k].map(nk))].filter(x => OPS[x]);
+  s.assistant = nk(s.assistant);
   for (const k in s.ops) if (!OPS[k]) delete s.ops[k];
-  if (!s.ops[s.assistant]) s.assistant = Object.keys(s.ops)[0] || "shiki";
+  if (!s.ops[s.assistant]) s.assistant = Object.keys(s.ops)[0] || "shiki-c";
   return s;
 }
 function start(data) {
