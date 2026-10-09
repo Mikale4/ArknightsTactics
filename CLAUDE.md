@@ -50,14 +50,19 @@ Pokémon text must be Pokémon terminology (Safari Zone, PP, Gems, Poké Dollars
 first-frame icons and `sprites/anim.json` (the menus' animated GIFs are re-encoded in the browser by `gifOf()` in `a5_sprites.js`);
 trainers are the FireRed/LeafGreen set. Tests: `node pokemon/tests/{phone,figures,sim}.js`.
 
-`beyblade/src` uses Melty Blood's part order plus `a5b_bey.js` (Beyblades, Bit-Beasts, menu art) after `a5_art.js`. The roster is
+`beyblade/src` uses Melty Blood's part order plus `a3c_parts.js` (Customize Parts: Attack Ring, Weight Disk, Spin Gear, Blade Base and the
+physics each gives) after `a3b_kits.js` and `a5b_bey.js` (Beyblades, Bit-Beasts, menu art) after `a5_art.js`. Battles are real-time 1-on-1 tag
+matches (teams of `TEAM_SIZE` = 3): `makeBattle({allies, foes})`, then `B.start(launchQ, rivalQ)`, `B.tick()` per 1/30 s and
+`B.press("atk"|"s2"|"s3"|"tag:<uid>")`; movement is automatic. Effect "turns" in the move data last `T_SEC` seconds. The roster is
 `BLADERS` in `a3a_roster.js` (each Blader: `fig`, `beast` {n, kind, el, col}, `squad`, and `beys` versions with `type`, `rar`, `season`,
 `look`, `skills`, `talent`, optional `leader`/`team`/`beast` override); units are keyed `<blader>-<version>` (e.g. `tyson-gt`). `el` and
-`cls` both hold the type. Story bosses are made with `bossOf(id, unitKey, spinMult, atkMult)` in `a4_story.js`; rival Beyblades in
-story waves (`O("key")`) fight 3 levels under the stage at 80% Spin/ATK without parts (`convWave` in `a10_boot.js`). Every visible
+`cls` both hold the type. Story bosses are made with `bossOf(id, unitKey, spinMult, atkMult)` in `a4_story.js`; a stage's rival team is up to three
+Beyblades from its waves, bosses last (`rivalTeam` in `a10_boot.js`), and rival Bladers' Beyblades (`O("key")`) fight 3 levels under
+the stage at 80% Spin/ATK with stock parts. Every visible
 term must be Beyblade terminology (glossary in `beyblade/README.md`): Spin, Bit Power, Bit-Beast attack, Ring Out / Sleep Out,
 Captain skill, Blader Ability, Upgrade, Bit-Beast Sync, Customize Parts, Random Booster, BeyPoints, Street Battles, BBA Tower,
-Ranked Battles, Hobby Shop, Mailbox, BBA Records. Tests: `node beyblade/tests/{phone,figures,sim}.js`.
+Ranked Battles, Hobby Shop, Mailbox, BBA Records, Attack Ring, Weight Disk, Spin Gear, Blade Base, tag in. Tests:
+`node beyblade/tests/{phone,figures,sim}.js`.
 
 ## Terminology (the Arknights game's UI must use real Arknights terms)
 Internal identifiers kept their old names; only visible text changed:

@@ -2,7 +2,7 @@
 // =====================================================================
 //  SCREENS (1/2): shell, lobby, story map, node sheet, team, dialogue
 // =====================================================================
-const UI = { view: "home", arg: null, el: "all", sty: "all", cls: "all", sort: "power", all: false, opTab: "info", team: null, depotTab: "runes", shopTab: "credit", runeSet: "all", hhStd: false };
+const UI = { view: "home", arg: null, el: "all", sty: "all", cls: "all", sort: "power", all: false, opTab: "info", team: null, depotTab: "parts", shopTab: "credit", partSlot: "ar", hhStd: false };
 
 function toast(msg, cls = "") { const t = document.createElement("div"); t.className = "toast " + cls; t.textContent = msg; $("#toast").appendChild(t); setTimeout(() => t.remove(), 2600); }
 function openModal(html) { const m = $("#modal"); m.innerHTML = `<div class="mbox" role="dialog">${html}</div>`; m.hidden = false; m.onclick = e => { if (e.target === m) closeModal(); }; }
@@ -30,10 +30,10 @@ function enHTML(spec, s = 46) {
 function itemIcon(k) { return k === "sanity" ? IC.sanity : (ITEMS[k] && ITEMS[k].ic) || IC.boost; }
 function rewardsHTML(list) {
   const merged = [];
-  for (const r of list) { const m = merged.find(x => x.k === r.k && !r.rune && !x.rune && !r.k.startsWith("op:")); if (m) m.n += r.n; else merged.push({ ...r }); }
+  for (const r of list) { const m = merged.find(x => x.k === r.k && !r.part && !x.part && !r.k.startsWith("op:")); if (m) m.n += r.n; else merged.push({ ...r }); }
   return merged.map(r => {
     if (r.k.startsWith("op:")) { const k = r.k.slice(3); return `<div class="rw">${opHTML(k, { s: 54, nostars: 1, nolv: 1, show: 1 })}<span>${r.isNew === false ? "Bit-Beast Sync +1" : "New Beyblade"}</span><span class="tiny dim">${esc(opLabel(OPS[k]))}</span></div>`; }
-    if (r.k === "rune") return `<div class="rw"><div class="ri" style="width:54px;height:54px;color:${RUNE_RC[r.rune.rar]}">${IC.rune}</div><span>${setName(r.rune.set)}</span><span class="tiny dim">${RUNE_RAR[r.rune.rar]}</span></div>`;
+    if (r.k === "part") return `<div class="rw"><div class="ri" style="width:54px;height:54px;color:${PART_GC[r.part.rar]}">${IC.rune}</div><span>${esc(partName(r.part))}</span><span class="tiny" style="color:${PART_GC[r.part.rar]}">${PART_GRADE[r.part.rar]}</span></div>`;
     const name = r.k === "xp" ? "Beyblade EXP" : r.k === "rank" ? "Rank" : (ITEMS[r.k] && ITEMS[r.k].n) || r.k;
     return `<div class="rw"><div class="ri" style="width:54px;height:54px">${r.k === "xp" ? IC.boost : r.k === "rank" ? IC.arena : itemIcon(r.k)}</div><span class="num">${r.k === "rank" ? "#" + r.n : "×" + fmt(r.n)}</span><span class="tiny dim">${esc(name)}</span></div>`;
   }).join("");
@@ -199,14 +199,14 @@ SCREENS.chapter = cid => {
 };
 function nodeSheet(nd) {
   const st = nodeStars(nd.id), cost = nodeCost(nd), lv = nd.lv;
-  const waves = nd.waves ? nd.waves.map(w => w.map(s => ({ ...s, LV: lv + (s.e && ENEMY[s.e].boss ? 3 : 0), en: s.e }))) : null;
-  const goal = nodeTurnGoal(nd);
+  const foes = nd.waves ? nodeFoes(nd) : null;
+  const goal = nodeTimeGoal(nd);
   openModal(`<div class="stack">
     <div class="spread"><div><div class="eyebrow">${nd.id} · ${{ story: "Story", battle: "Battle", side: "Side Story", chest: "Supplies", boss: "Big Match" }[nd.type]}</div><h2 style="margin-top:4px">${esc(nd.name)}</h2></div>
       ${nd.waves ? `<div class="nstars">${[1, 2, 3].map(k => k <= st ? IC.star : IC.starOff).join("")}</div>` : ""}</div>
-    ${waves ? waves.map((w, k) => `<div><div class="tiny dim" style="margin-bottom:4px">Round ${k + 1} of ${waves.length}</div><div class="row wrap">${w.map(s => enHTML(s, s.en && ENEMY[s.en].boss ? 56 : 46)).join("")}</div></div>`).join("") : ""}
+    ${foes ? `<div><div class="tiny dim" style="margin-bottom:4px">Rival team · one-on-one tag battle</div><div class="row wrap">${foes.map(s => enHTML(s, s.en && ENEMY[s.en].boss ? 56 : 46)).join("")}</div></div>` : ""}
     ${nd.waves ? `<div class="stack" style="gap:4px"><div class="tiny dim">Star conditions</div>
-      ${["Win the battle", "No Beyblade knocked out", `Win within ${goal} of your turns`].map((m, k) => `<div class="mission">${k < st ? IC.star : IC.starOff}<span>${m}</span></div>`).join("")}</div>
+      ${["Win the battle", "No Beyblade knocked out", `Win within ${goal} seconds`].map((m, k) => `<div class="mission">${k < st ? IC.star : IC.starOff}<span>${m}</span></div>`).join("")}</div>
       <div><div class="tiny dim" style="margin-bottom:4px">${st ? "Regular prizes" : "First clear"}${st < 3 ? " · first 3-star clear adds 1 Sports Drink" : ""}</div><div class="rewards" style="justify-content:flex-start">${rewardsHTML(st ? [{ k: "lmd", n: 80 + lv * 15 }, { k: lv < 20 ? "rec1" : lv < 40 ? "rec2" : "rec3", n: 2 }, { k: "summ", n: 1 }] : [{ k: "orundum", n: nd.type === "boss" ? 150 : nd.type === "side" ? 100 : 60 }, { k: "lmd", n: 80 + lv * 15 }, { k: lv < 20 ? "rec1" : lv < 40 ? "rec2" : "rec3", n: 3 }])}</div></div>` : ""}
     ${nd.type === "chest" ? `<div class="rewards" style="justify-content:flex-start">${rewardsHTML(Object.entries(nd.reward).map(([k, n]) => ({ k, n })))}</div>` : ""}
     <div class="row">
@@ -220,7 +220,7 @@ function nodeSheet(nd) {
 // ---------- team select ----------
 SCREENS.team = arg => {
   const key = arg.mode;
-  if (!UI.team || UI.team.key !== key) UI.team = { key, ids: (S.team[key] || []).filter(owned).slice(0, 4) };
+  if (!UI.team || UI.team.key !== key) UI.team = { key, ids: (S.team[key] || []).filter(owned).slice(0, TEAM_SIZE) };
   const ids = UI.team.ids;
   const pool = Object.keys(S.ops).filter(k => UI.el === "all" || OPS[k].el === UI.el).sort((a, b) => power(b, S.ops[b]) - power(a, S.ops[a]));
   const lead = ids[0] && OPS[ids[0]].leader;
@@ -231,11 +231,11 @@ SCREENS.team = arg => {
     <div class="spread">${back("teamBack", "Back")}<div class="eyebrow">${esc(arg.title || "")}</div></div>
     <h2>Team</h2>
     ${foeEls.length ? `<div class="small">Rival types: ${foeEls.map(elChip).join(" ")} ${counter.length ? `<span class="dim">· Strong picks:</span> ${[...new Set(counter)].map(elChip).join(" ")}` : ""}</div>` : ""}
-    <div class="squad">${[0, 1, 2, 3].map(k => {
+    <div class="squad">${[...Array(TEAM_SIZE).keys()].map(k => {
       const id = ids[k];
       return `<div class="slot">${k === 0 ? `<span class="crown">${IC.crown}</span>` : ""}${id ? `<button data-act="slot" data-k="${k}" aria-label="${esc(OPS[id].n)}">${opHTML(id, { s: 66 })}</button>` : '<div class="empty"></div>'}</div>`;
     }).join("")}</div>
-    <div class="leadtxt small">${lead ? `<b class="gold">Captain · ${esc(opLabel(OPS[ids[0]]))}</b> <span class="dim">${leaderText(lead)}</span>` : ids[0] ? `<span class="dim">${esc(OPS[ids[0]].n)} has no Captain skill. The first slot is the team captain.</span>` : `<span class="dim">Pick up to four Beyblades. The first slot is the captain and leads with their Captain skill.</span>`}</div>
+    <div class="leadtxt small">${lead ? `<b class="gold">Captain · ${esc(opLabel(OPS[ids[0]]))}</b> <span class="dim">${leaderText(lead)}</span>` : ids[0] ? `<span class="dim">${esc(OPS[ids[0]].n)} has no Captain skill. The first slot is the team captain.</span>` : `<span class="dim">Pick up to three Beyblades. The first slot is the captain: it launches first and leads with its Captain skill. The other two wait on the bench to tag in.</span>`}</div>
     <div class="spread small"><span>Team power <b class="num">${fmtFull(myPw)}</b></span>${arg.cost ? `<span class="cost">${IC.sanity}${arg.cost}</span>` : ""}</div>
     <button class="btn wide" data-act="deploy" ${ids.length ? "" : "disabled"}>Let it rip!</button>
     <div class="filters">${["all", ...ELS].map(e => `<button class="chip ${UI.el === e ? "on" : ""}" data-act="elf" data-e="${e}">${e === "all" ? "All types" : e}</button>`).join("")}</div>

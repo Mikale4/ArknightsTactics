@@ -107,7 +107,7 @@ const ACH = [
     tiers: [tier(1, { orundum: 500, permit: 1 }), tier(3, { orundum: 1000, permit: 3 })] },
   { id: "codes", cat: "Growth", n: "Chief Mechanic", d: g => `Tune up Customize Parts ${g} times`, v: () => S.stats.codeUps,
     tiers: [tier(10, { lmd: 10000 }), tier(50, { lmd: 30000, orundum: 200 }), tier(200, { lmd: 80000, orundum: 400 }), tier(500, { orundum: 800, permit: 2 })] },
-  { id: "code15", cat: "Growth", n: "Tournament Grade", d: g => `Tune ${g} Customize Part${g > 1 ? "s" : ""} to +15`, v: () => S.runes.filter(r => r.lvl >= 15).length,
+  { id: "code15", cat: "Growth", n: "Tournament Grade", d: g => `Tune ${g} Customize Part${g > 1 ? "s" : ""} to +15`, v: () => S.parts.filter(pt => pt.lvl >= 15).length,
     tiers: [tier(1, { orundum: 200 }), tier(5, { orundum: 500, permit: 1 }), tier(20, { orundum: 1000, permit: 2 })] },
   { id: "plv", cat: "Growth", n: "Blader Rank", d: g => `Reach Blader Rank ${g}`, v: () => S.lvl,
     tiers: [tier(10, { orundum: 200 }), tier(20, { orundum: 400, permit: 1 }), tier(40, { orundum: 800, permit: 2 }), tier(60, { orundum: 1200, permit: 3 }), tier(100, { orundum: 2000, permit: 5 })] },

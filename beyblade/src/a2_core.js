@@ -49,10 +49,10 @@ const elKey = el => el.toLowerCase();
 const weakTo = el => Object.keys(BEATS).find(k => BEATS[k] === el);
 // Type traits (each type's built-in edge in battle)
 const TYPE_TRAIT = {
-  Attack: { n: "Smash Attack", d: "Deals 12% more damage." },
-  Defense: { n: "Iron Wall", d: "Takes 8% less damage. The first time its Spin drops below half, it shakes off every debuff." },
-  Endurance: { n: "Long Spin", d: "Recovers 5% of its max Spin at the start of each of its turns." },
-  Balance: { n: "Bit Charge", d: "Builds 8% Bit Power at the start of each of its turns. Its Bit-Beast attacks deal 20% more damage." },
+  Attack: { n: "Smash Attack", d: "Deals 12% more damage and 15% more knockback." },
+  Defense: { n: "Iron Wall", d: "Takes 8% less damage and holds its ground against knockback. The first time its Spin drops below half, it shakes off every debuff." },
+  Endurance: { n: "Long Spin", d: "Loses Spin to friction 40% more slowly, so it outlasts other types." },
+  Balance: { n: "Bit Charge", d: "Builds Bit Power over time twice as fast while it's in the dish. Its Bit-Beast attacks deal 20% more damage." },
 };
 const ATK_SMASH = .12, DEF_GUARD = .08, END_SPIN = .05, BAL_CHARGE = 8, BAL_BIT = .2;
 // Seasons of the original anime: each Blader's Beyblades are versions from one of them
@@ -131,41 +131,38 @@ const ITEMS = {
   summ: { n: "Training Scroll", ic: IC.summ, d: "Grandpa's training notes. Used to raise a technique's level." },
   free10: { n: "Starter Booster ×10", ic: IC.free10, d: "Ten free Random Boosters. Open them at the Booster shop." },
   gold5: { n: "Legendary Bit-Chip", ic: IC.gold5, d: "A Bit-Chip with a sleeping Bit-Beast inside: it always becomes a random 5★ Beyblade." },
+  part3: { n: "Pro grade part", ic: IC.rune, d: "A random Pro grade Beyblade part." },
+  part4: { n: "Metal grade part", ic: IC.rune, d: "A random Metal grade Beyblade part." },
+  part5: { n: "Championship part", ic: IC.rune, d: "A random Championship grade Beyblade part." },
 };
 
 // ---------- status effects (Beyblade battle terms) ----------
 const FX = {
   ATK_UP:       { n: "Attack Up", b: 1, s: "A↑", d: "+50% ATK" },
   DEF_UP:       { n: "Defense Up", b: 1, s: "D↑", d: "+50% DEF" },
-  SPD_UP:       { n: "Spin Speed Up", b: 1, s: "S↑", d: "+30% Speed" },
+  SPD_UP:       { n: "Spin Speed Up", b: 1, s: "S↑", d: "Moves faster; techniques recharge 30% faster" },
   CRIT_RATE_UP: { n: "Focus", b: 1, s: "C↑", d: "+30% Critical Rate" },
   IMMUNITY:     { n: "Bit Shield", b: 1, s: "BS", d: "Blocks new debuffs" },
-  HOT:          { n: "Spin Recovery", b: 1, s: "SR", d: "Recovers 5% max Spin at the start of each turn (stacks)" },
+  HOT:          { n: "Spin Recovery", b: 1, s: "SR", d: "Recovers 2% max Spin per second (stacks)" },
   SHIELD:       { n: "Barrier", b: 1, s: "BR", d: "Absorbs damage before Spin" },
   INVINCIBLE:   { n: "Invincible", b: 1, s: "IV", d: "Takes no damage" },
-  COUNTER:      { n: "Counter Spin", b: 1, s: "CS", d: "30% chance to counterattack when hit" },
-  TAUNT:        { n: "Center Hold", b: 1, s: "CH", d: "Holds the centre of the dish: single-target attacks must hit it" },
-  STEALTH:      { n: "Phantom Spin", b: 1, s: "PS", d: "Can't be targeted by single-target attacks" },
+  COUNTER:      { n: "Counter Spin", b: 1, s: "CS", d: "30% chance to hit straight back when rushed" },
+  TAUNT:        { n: "Center Hold", b: 1, s: "CH", d: "Holds the centre: knockback greatly reduced, and it can't be knocked out of the dish" },
+  STEALTH:      { n: "Phantom Spin", b: 1, s: "PS", d: "The next rush against it misses" },
   DEF_BREAK:    { n: "Cracked Ring", b: 0, s: "D↓", d: "DEF is 40% less effective" },
   ATK_DOWN:     { n: "Attack Down", b: 0, s: "A↓", d: "-30% ATK" },
   BRAND:        { n: "Weak Spot", b: 0, s: "WS", d: "Takes 25% more damage" },
   HEAL_BLOCK:   { n: "Spin Lock", b: 0, s: "SL", d: "Can't recover Spin" },
-  STUN:         { n: "Stalled", b: 0, s: "ST", d: "Loses the next turn" },
-  SLOW:         { n: "Slowed", b: 0, s: "SW", d: "-30% Speed" },
+  STUN:         { n: "Stalled", b: 0, s: "ST", d: "Wobbles out of control: can't move or act" },
+  SLOW:         { n: "Slowed", b: 0, s: "SW", d: "Moves slower; techniques recharge 25% slower" },
   GLANCING:     { n: "Off Balance", b: 0, s: "OB", d: "50% chance to land glancing hits (-30%, no crit)" },
-  DOT:          { n: "Friction", b: 0, s: "FR", d: "Loses 5% max Spin per stack at the start of each turn" },
-  PROVOKE:      { n: "Taunted", b: 0, s: "TT", d: "Forced to use S1 on the taunter" },
+  DOT:          { n: "Friction", b: 0, s: "FR", d: "Loses 2% max Spin per second per stack" },
+  PROVOKE:      { n: "Taunted", b: 0, s: "TT", d: "Can only Attack, and charges at the taunter" },
   SILENCE:      { n: "Bit-Beast Sealed", b: 0, s: "SE", d: "Can't use S2 or the Bit-Beast attack" },
 };
-const RUNE_INFO = {
-  Swift: "+25% SPD", Fatal: "+35% ATK", Blade: "+12% Crit Rate", Focus: "+20% Accuracy", Energy: "+15% Spin", Guard: "+15% DEF",
-  Rage: "+40% Crit Damage", Despair: "25% chance to Stall the target on each hit", Revenge: "15% chance to counterattack", Violent: "22% chance of an extra turn",
-  Will: "Bit Shield for 1 turn at battle start", Shield: "Team Barrier (15% of Spin) at battle start", Nemesis: "Gains turn meter when hit", Endure: "+20% Resistance",
-};
-const RUNE_SETS = Object.keys(RUNE_INFO);
-// Customize Parts: the gear sets, named after Beyblade parts from the plastic generation (internal keys drive the engine)
-const SETN = { Swift: "Spin Gear", Fatal: "Wing Attack Ring", Blade: "Sharp Base", Focus: "Grip Base", Energy: "Heavy Weight Disk", Guard: "Defense Ring",
-  Rage: "Upper Attack Ring", Despair: "Smash Attack Ring", Revenge: "Spike Ring", Violent: "Engine Gear", Will: "Magnecore", Shield: "Wide Survivor Base", Nemesis: "Reverse Spin Gear", Endure: "Metal Weight Disk" };
+// battles are 1-on-1 tag matches: a team is three Beyblades, one in the dish at a time
+const TEAM_SIZE = 3;
+// battle time: an effect lasting one "turn" in the move data lasts T_SEC seconds; 100% "turn meter" is ATB_S seconds of cooldown
+const T_SEC = 2.5, ATB_S = 6;
 // technique levels 1–7 (7 is MAX)
 const RANK = ["", "1", "2", "3", "4", "5", "6", "MAX"];
-const setName = k => SETN[k] || k;

@@ -30,33 +30,37 @@ const atk = (slot, name, target, hits, mult, effects = [], x = {}) => ({ slot, n
 const sup = (slot, name, target, effects, x = {}) => ({ slot, name, cd: slot === 1 ? 0 : 3, target, effects, ...x });
 
 // ---------- generated move text ----------
+// Battles run in real time: effect lengths in the data are "turns" (T_SEC seconds each) and turn-meter amounts
+// are shares of ATB_S seconds of cooldown.
 const P = v => Math.round(v * 100) + "%";
+const secs = v => `${+v.toFixed(1)}s`;
+const durOf = e => e.turns ? ` (${secs(e.turns * T_SEC * (e.what === "STUN" ? .55 : 1))})` : "";
 function skillDesc(sk) {
   const out = [], E = sk.effects || [], multi = (sk.hits || 1) > 1;
   if (sk.mult > 0) {
-    let s = sk.target === "aoe_enemies" ? (multi ? `Hits every opposing Beyblade ${sk.hits} times (${P(sk.mult)} ATK each)` : `Hits every opposing Beyblade (${P(sk.mult)} ATK)`)
-      : multi ? `${sk.hits} hits (${P(sk.mult)} ATK each)` : `${P(sk.mult)} ATK`;
+    const dmg = multi ? `${sk.hits} hits of ${P(sk.mult)} ATK` : `${P(sk.mult)} ATK`;
+    let s = sk.target === "aoe_enemies" ? `Sends a shockwave across the dish: ${dmg}` : sk.slot === 1 ? `Rushes the rival: ${dmg}` : `Charges straight at the rival: ${dmg}`;
     if (sk.ignoreDef) s += sk.ignoreDef >= 1 ? ", ignoring DEF" : `, ignoring ${P(sk.ignoreDef)} DEF`;
+    if (sk.slot === 3 || sk.arc) s += ", with huge knockback";
     out.push(s);
   }
   for (const e of E) {
-    const ch = e.chance != null && e.chance < 1 ? `${P(e.chance)} chance${multi && e.on === "target" ? " per hit" : ""} to ` : "";
-    const T = e.turns ? ` (${e.turns}T)` : "";
-    const nm = e.what && FX[e.what] ? FX[e.what].n : "";
-    if (e.type === "debuff") out.push(ch ? `${ch}inflict ${nm}${T}${e.on === "aoe_enemies" ? " on every opponent" : ""}` : `Inflicts ${nm}${T}${e.on === "aoe_enemies" ? " on every opponent" : ""}`);
-    else if (e.type === "atkbar-") { const who = e.on === "aoe_enemies" ? "every opponent's " : ""; out.push(ch ? `${ch}reduce ${who}turn meter by ${P(e.amount)}` : `Reduces ${who}turn meter by ${P(e.amount)}`); }
-    else if (e.type === "strip") out.push(`Removes ${e.amount} buff${e.amount > 1 ? "s" : ""}`);
-    else if (e.type === "bonusPerDebuff") out.push(`+${P(e.per)} damage per debuff on the target (up to +${P(e.cap)})`);
-    else if (e.type === "bonusIf") out.push(`+${P(e.bonusDmg)} damage against targets with ${FX[e.cond].n}`);
-    else if (e.type === "buff") out.push(`${e.on === "self" ? "Gains" : sk.target === "ally_single" ? "Gives the ally" : "Gives all allies"} ${nm}${T}`);
+    const ch = e.chance != null && e.chance < 1 ? `${P(e.chance)} chance${multi && e.on !== "self" && e.on !== "ally" ? " per hit" : ""} to ` : "";
+    const T = durOf(e), nm = e.what && FX[e.what] ? FX[e.what].n : "";
+    if (e.type === "debuff") out.push(ch ? `${ch}inflict ${nm}${T}` : `Inflicts ${nm}${T}`);
+    else if (e.type === "atkbar-") out.push(ch ? `${ch}delay the rival's technique by ${secs(e.amount * ATB_S)}` : `Delays the rival's technique by ${secs(e.amount * ATB_S)}`);
+    else if (e.type === "strip") out.push(`Removes ${e.amount} buff${e.amount > 1 ? "s" : ""} from the rival`);
+    else if (e.type === "bonusPerDebuff") out.push(`+${P(e.per)} damage per debuff on the rival (up to +${P(e.cap)})`);
+    else if (e.type === "bonusIf") out.push(`+${P(e.bonusDmg)} damage against a rival with ${FX[e.cond].n}`);
+    else if (e.type === "buff") out.push(`Gains ${nm}${T}`);
     else if (e.type === "taunt") out.push(`Gains ${FX.TAUNT.n}${T}`);
-    else if (e.type === "atkbar+") out.push(`${e.on === "self" ? (e.onKill ? "On a knockout, gains" : "Gains") : "All allies gain"} ${P(e.amount)} turn meter${e.perCrit ? " per critical hit" : ""}`);
+    else if (e.type === "atkbar+") out.push(e.on === "self" ? `${e.onKill ? "On a knockout, recharges" : "Recharges"} its moves by ${secs(e.amount * ATB_S)}` : `Recharges its moves and shortens its partners' tag cooldowns by ${secs(e.amount * ATB_S)}`);
     else if (e.type === "healPct") out.push(ch ? `${ch}recover ${P(e.amount)} of max Spin` : `Recovers ${P(e.amount)} of max Spin`);
-    else if (e.type === "healPctTarget") out.push(`${sk.target === "ally_single" ? "The ally recovers" : "All allies recover"} ${P(e.amount)} of their max Spin`);
-    else if (e.type === "healFlatCasterHP") out.push(`All allies recover Spin equal to ${P(e.amount)} of this Beyblade's max Spin`);
-    else if (e.type === "cleanse") out.push(`Cleanses ${e.amount} debuff${e.amount > 1 ? "s" : ""} from ${sk.target === "ally_single" ? "the ally" : "all allies"}`);
-    else if (e.type === "shieldCasterHP") out.push(`${e.on === "self" ? "Gains" : "Gives all allies"} a ${FX.SHIELD.n} worth ${P(e.amount)} of this Beyblade's max Spin${T}`);
-    else if (e.type === "reviveOne") out.push(`Relaunches one knocked-out ally at ${P(e.amount)} Spin`);
+    else if (e.type === "healPctTarget") out.push(`It and its partners recover ${P(e.amount)} of their max Spin`);
+    else if (e.type === "healFlatCasterHP") out.push(`It and its partners recover Spin equal to ${P(e.amount)} of its max Spin`);
+    else if (e.type === "cleanse") out.push(`Cleanses ${e.amount} debuff${e.amount > 1 ? "s" : ""}${e.on === "self" ? "" : " from it and its partners"}`);
+    else if (e.type === "shieldCasterHP") out.push(`Gains a ${FX.SHIELD.n} worth ${P(e.amount)} of its max Spin${T}`);
+    else if (e.type === "reviveOne") out.push(`Relaunches one knocked-out partner at ${P(e.amount)} Spin`);
   }
   if (sk.arc) out.push(`Bit-Beast attack: costs ${sk.arc}% Bit Power`);
   return out.map(x => x.charAt(0).toUpperCase() + x.slice(1)).join(". ") + ".";
@@ -68,28 +72,28 @@ const STATN = { hp: "Spin", atk: "ATK", def: "DEF", spd: "SPD", cr: "Crit Rate",
 const fxList = l => l.map(x => FX[x].n).join(" and ");
 const PASSIVE_TEXT = {
   LIFESTEAL: p => `recovers Spin equal to ${P(p.amount)} of the damage it deals`,
-  REVIVE_ONCE: p => `once per battle, survives a finishing blow with ${P(p.amount)} Spin and ${FX[p.buff || "INVINCIBLE"].n} (${p.turns || 1}T)`,
-  TEAM_ATB_START: p => `all allies start battle with ${P(p.amount)} turn meter`,
-  SELF_ATB_START: p => `starts battle with ${P(p.amount)} turn meter`,
+  REVIVE_ONCE: p => `once per battle, survives a finishing blow (even a Ring Out) with ${P(p.amount)} Spin and ${FX[p.buff || "INVINCIBLE"].n} (${secs((p.turns || 1) * T_SEC)})`,
+  TEAM_ATB_START: p => `the whole team's techniques start ${P(p.amount)} more charged`,
+  SELF_ATB_START: p => `its technique starts ${P(p.amount)} more charged`,
   MC_START: p => `the team starts battle with ${P(p.amount)} Bit Power`,
   IMMUNE_LIST: p => `immune to ${fxList(p.list)}`,
-  TEAM_ATB_ON_KILL: p => `on a knockout, all allies gain ${P(p.amount)} turn meter`,
+  TEAM_ATB_ON_KILL: p => `on a knockout, recharges its moves and shortens its partners' tag cooldowns by ${secs(p.amount * ATB_S)}`,
   MC_ON_KILL: p => `on a knockout, adds ${P(p.amount)} Bit Power`,
-  COUNTER: p => `${P(p.chance)} chance to counterattack when hit`,
-  START_BUFF: p => `${p.team ? "all allies start" : "starts"} battle with ${fxList(p.what)} (${p.turns || 2}T)`,
+  COUNTER: p => `${P(p.chance)} chance to hit straight back when rushed`,
+  START_BUFF: p => `enters the dish with ${fxList(p.what)} (${secs((p.turns || 2) * T_SEC)})`,
   BLOOD_HEAT: p => `deals ${P(p.amount)} more damage while below ${P(p.below)} Spin`,
   DMG_REDUCE: p => `takes ${P(p.amount)} less damage`,
-  TEAM_DMG_REDUCE: p => `while spinning, all allies take ${P(p.amount)} less damage`,
-  REGEN: p => `recovers ${P(p.amount)} of max Spin at the start of each turn`,
-  BONUS_VS_DEBUFFED: p => `deals ${P(p.amount)} more damage to opponents with a debuff`,
-  EXECUTE: p => `deals ${P(p.amount)} more damage to opponents below ${P(p.below)} Spin`,
-  CRIT_DEBUFF: p => `critical hits have a ${P(p.chance)} chance to inflict ${FX[p.what].n} (${p.turns || 2}T)`,
-  ON_HIT_ATB: p => `gains ${P(p.amount)} turn meter when hit`,
-  HIT_DEBUFF: p => `when hit, ${P(p.chance)} chance to inflict ${FX[p.what].n} (${p.turns || 2}T) on the attacker`,
-  EXTRA_TURN: p => `${P(p.chance)} chance to act again after each turn`,
-  ARC_TEAM_ATB: p => `after a Bit-Beast attack, all allies gain ${P(p.amount)} turn meter`,
-  ARC_TEAM_HEAL: p => `after a Bit-Beast attack, all allies recover ${P(p.amount)} of their max Spin`,
-  ARC_SELF_ATB: p => `after a Bit-Beast attack, gains ${P(p.amount)} turn meter`,
+  TEAM_DMG_REDUCE: p => `until it's knocked out, the whole team takes ${P(p.amount)} less damage`,
+  REGEN: p => `recovers ${+(p.amount / T_SEC * 100).toFixed(1)}% of max Spin every second`,
+  BONUS_VS_DEBUFFED: p => `deals ${P(p.amount)} more damage to a rival with a debuff`,
+  EXECUTE: p => `deals ${P(p.amount)} more damage to a rival below ${P(p.below)} Spin`,
+  CRIT_DEBUFF: p => `critical hits have a ${P(p.chance)} chance to inflict ${FX[p.what].n} (${secs((p.turns || 2) * T_SEC * (p.what === "STUN" ? .55 : 1))})`,
+  ON_HIT_ATB: p => `each hit it takes recharges its moves by ${secs(p.amount * ATB_S)}`,
+  HIT_DEBUFF: p => `when hit, ${P(p.chance)} chance to inflict ${FX[p.what].n} (${secs((p.turns || 2) * T_SEC * (p.what === "STUN" ? .55 : 1))}) on the attacker`,
+  EXTRA_TURN: p => `${P(p.chance)} chance to recharge a move instantly after using it`,
+  ARC_TEAM_ATB: p => `after a Bit-Beast attack, recharges its moves and shortens its partners' tag cooldowns by ${secs(p.amount * ATB_S)}`,
+  ARC_TEAM_HEAL: p => `after a Bit-Beast attack, it and its partners recover ${P(p.amount)} of their max Spin`,
+  ARC_SELF_ATB: p => `after a Bit-Beast attack, recharges its moves by ${secs(p.amount * ATB_S)}`,
   STAT: p => Object.entries(p.stats).map(([k, v]) => `+${P(v)} ${STATN[k]}`).join(", "),
 };
 const passiveDesc = p => { const t = PASSIVE_TEXT[p.id](p); return t.charAt(0).toUpperCase() + t.slice(1); };

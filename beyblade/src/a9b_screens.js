@@ -14,7 +14,7 @@ SCREENS.battle = () => {
       return `<button class="tile wide" data-act="go" data-v="hunt" data-a="${h.id}" style="min-height:96px;background:linear-gradient(120deg,${mapTheme(h.env).a},var(--hull2) 70%)">
         <span class="ticon" style="width:56px;height:56px;right:10px;top:10px"><img src="${enemyArt(boss).head}" alt="" style="width:100%;border-radius:50%"></span>
         <div class="eyebrow">${h.code}-1 to ${h.code}-6 · ${best ? h.code + "-" + best + " cleared" : "not cleared"}</div><h3>${esc(h.n)}</h3><span class="tsub">${esc(h.sub)}</span>
-        <span class="tsub">Parts: ${h.sets.map(setName).join(", ")}</span></button>`;
+        <span class="tsub">Prizes: ${h.parts.map(m => PART_MODELS[m].n).slice(0, 4).join(", ")}${h.parts.length > 4 ? "…" : ""}</span></button>`;
     }).join("")}
     <div class="tiles">
       <button class="tile" data-act="go" data-v="tower"><span class="ticon" style="color:var(--holo)">${IC.tower}</span><h3>BBA Tower</h3><span class="tsub">Floor ${Math.min(S.tower + 1, TOWER_FLOORS)}/${TOWER_FLOORS}</span></button>
@@ -25,15 +25,15 @@ SCREENS.battle = () => {
 SCREENS.hunt = id => {
   const h = HUNTS.find(x => x.id === id), best = (S.hunt && S.hunt[id]) || 0;
   const lvl = UI.huntLv && UI.huntLv[id] || Math.min(6, best + 1);
-  const lv = HUNT_LV[lvl - 1], waves = h.waves(lv).map(w => w.map(s => ({ en: s.e, LV: lv + (ENEMY[s.e].boss ? 3 : 0) })));
+  const lv = HUNT_LV[lvl - 1], foes = huntTeam(h, lvl);
   return `<div class="stack">
     <div class="spread">${back("go", "Battle", 'data-v="battle"')}<span class="eyebrow">Street Battles</span></div>
     <h2>${h.code}-${lvl} ${esc(h.n)}</h2><p class="small dim">${esc(h.sub)}. Rivals are level ${lv}; the boss is level ${lv + 3}.</p>
     <div class="chips">${[1, 2, 3, 4, 5, 6].map(k => `<button class="chip ${k === lvl ? "on" : ""}" data-act="huntLv" data-h="${id}" data-l="${k}" ${k <= best + 1 ? "" : "disabled"}>${h.code}-${k}</button>`).join("")}</div>
-    ${waves.map((w, k) => `<div><div class="tiny dim" style="margin-bottom:4px">Round ${k + 1}</div><div class="row wrap">${w.map(s => enHTML(s, ENEMY[s.en].boss ? 56 : 46)).join("")}</div></div>`).join("")}
+    <div><div class="tiny dim" style="margin-bottom:4px">Rival team · one-on-one tag battle</div><div class="row wrap">${foes.map(s => enHTML(s, s.en && ENEMY[s.en].boss ? 56 : 46)).join("")}</div></div>
     <section class="sub stack" style="gap:6px"><div class="small"><b>Customize Part prizes</b> <span class="dim">· 2–3 per win</span></div>
-      <div class="chips">${h.sets.map(s => `<span class="chip" title="${esc(RUNE_INFO[s])}">${setName(s)}</span>`).join("")}</div>
-      <div class="tiny dim">${HUNT_RAR[lvl - 1].map((p, i) => p ? `${RUNE_RAR[i + 1]} ${Math.round(p * 100)}%` : "").filter(Boolean).join(" · ")}</div></section>
+      <div class="chips">${h.parts.map(m => `<span class="chip" title="${esc(PART_MODELS[m].d)}">${esc(PART_MODELS[m].n)}</span>`).join("")}</div>
+      <div class="tiny dim">${HUNT_RAR[lvl - 1].map((p, i) => p ? `${PART_GRADE[i + 1]} ${Math.round(p * 100)}%` : "").filter(Boolean).join(" · ")}</div></section>
     <div class="row">
       ${best >= lvl ? `<button class="btn ghost" data-act="huntSweep" data-h="${id}" data-l="${lvl}">Quick Clear ×3</button>` : ""}
       <button class="btn" style="flex:1" data-act="huntGo" data-h="${id}" data-l="${lvl}">Battle <span class="cost">${IC.sanity}${HUNT_COST[lvl - 1]}</span></button>
@@ -52,7 +52,7 @@ SCREENS.tower = () => {
       const state = T.f <= S.tower ? "done" : T.f === cur ? "next" : "locked";
       return `<section class="panel stack" style="gap:8px;${state === "next" ? "box-shadow:inset 0 0 0 2px var(--gold)" : state === "locked" ? "opacity:.5" : ""}">
         <div class="spread"><b>Floor ${T.f}${T.f % 5 === 0 ? " · Champion" : ""}</b><span class="tiny dim">Lv ${T.lv}</span></div>
-        <div class="row wrap">${T.waves[T.waves.length - 1].map(s => enHTML(s.op ? { op: s.op, LV: T.lv } : { en: s.e, LV: T.lv }, 40)).join("")}</div>
+        <div class="row wrap">${rivalTeam(T.waves, T.lv).map(s => enHTML(s, 40)).join("")}</div>
         <div class="spread"><div class="rewards" style="justify-content:flex-start;transform:scale(.85);transform-origin:left">${rewardsHTML(Object.entries(T.reward).map(([k, n]) => ({ k, n })))}</div>
         ${state === "next" ? `<button class="btn sm" data-act="towerGo" data-f="${T.f}">Battle</button>` : state === "done" ? `<span class="tiny gold">Cleared</span>` : ""}</div>
       </section>`;
@@ -111,17 +111,17 @@ SCREENS.op = key => {
       ${op.passives.length ? `<div><b class="gold">Blader Ability</b><p class="small dim">${op.passives.map(x => esc(x.text)).join(" ")}</p></div>` : ""}
       <div><b class="gold">${elName(op.el)} · ${TYPE_TRAIT[op.el].n}</b><p class="small dim">${TYPE_TRAIT[op.el].d} ${BEATS[op.el] ? `Strong against ${BEATS[op.el]}, weak to ${weakTo(op.el)}.` : "Balance types have no weakness and no edge."}</p></div>
       <div><b class="gold">Bit-Beast · ${esc(op.beast.n)}</b><p class="small dim">${esc(op.beast.d || "")} ${esc(op.beast.el)} element: ${esc(op.beastKit)}</p></div>
-      <div><b class="gold">Recommended Customize Parts</b><p class="small dim">${op.runes.map(r => `${setName(r)} (${RUNE_INFO[r]})`).join(" · ")}</p></div>
+      <div><b class="gold">Stock parts</b><p class="small dim">${(b => PART_SLOTS.map(s => PART_MODELS[b[s]].n).join(" · "))(stockModels(op, key))}. ${esc(partTraitText(stockModels(op, key).bb))}.</p></div>
       ${p ? `<div><b class="gold">Bit-Beast Sync ${p.pot}/6</b><p class="small dim">+2% to all stats per level. Raised by getting the same Beyblade again from Boosters.</p></div>` : `<p class="small dim">Find this Beyblade in a Random Booster.</p>`}
     </section>`;
   else if (tab === "skills") body = `<section class="panel stack" style="gap:10px">${op.skills.map((sk, i) => {
       const r = p.sk[i], c = skillCost(r), lock = r >= 4 && p.elite < 1;
       return `<div class="ab"><div class="abicon ${i ? "special" : ""}">${skillIcon({ cls: op.cls }, sk)}</div>
-        <div class="stack" style="gap:4px;min-width:0"><div class="spread"><b>${sk.arc ? "Bit" : "S" + sk.slot} ${esc(sk.name)}</b><span class="tag">${sk.arc ? "Bit-Beast attack" : sk.cd ? "Technique · CD " + sk.cd : "Basic"}</span></div>
+        <div class="stack" style="gap:4px;min-width:0"><div class="spread"><b>${sk.arc ? "Bit" : "S" + sk.slot} ${esc(sk.name)}</b><span class="tag">${sk.arc ? "Bit-Beast attack" : sk.cd ? `Technique · ${Math.round(sk.cd * S2_TURN)}s cooldown` : "Attack · " + S1_CD + "s"}</span></div>
         <p class="small dim">${esc(sk.desc)}</p>
         <div class="spread"><div class="row" style="gap:6px"><b class="tiny gold">Level ${RANK[r]}</b><div class="pips">${[1, 2, 3, 4, 5, 6, 7].map(k => `<i class="${k <= r ? "on" : ""} ${k >= 5 ? "om" : ""}"></i>`).join("")}</div></div>
         ${r < 7 ? `<button class="btn sm ghost" data-act="skUp" data-k="${key}" data-i="${i}" ${!lock && S.inv.summ >= c.summ && S.lmd >= c.lmd ? "" : "disabled"}>${lock ? "Needs Upgrade 1" : `<span class="cost">${IC.summ}${c.summ}</span><span class="cost">${IC.lmd}${fmt(c.lmd)}</span>`}</button>` : '<span class="tiny gold">Level MAX</span>'}</div></div></div>`;
-    }).join('<div class="divider"></div>')}<p class="tiny dim">Moves level from 1 to MAX with Training Scrolls. Each level adds 6% damage and Spin recovery; MAX also cuts the S2 cooldown by one turn. Levels 5 to MAX need Upgrade 1. The Bit-Beast attack costs 100% Bit Power instead of a cooldown.</p></section>`;
+    }).join('<div class="divider"></div>')}<p class="tiny dim">Moves level from 1 to MAX with Training Scrolls. Each level adds 6% damage and Spin recovery; MAX also shortens the technique's cooldown. Levels 5 to MAX need Upgrade 1. Attack is your rush at the rival, the technique has a cooldown, and the Bit-Beast attack costs 100% Bit Power. Higher SPD shortens every cooldown.</p></section>`;
   else if (tab === "upgrade") {
     const cap = LV_CAP[p.elite], need = xpNeed(p.lvl, p.elite), nextE = p.elite + 1, ec = nextE <= op.maxElite ? eliteCost(key, nextE) : null;
     body = `<section class="panel stack" style="gap:8px">
@@ -138,13 +138,23 @@ SCREENS.op = key => {
       : `<p class="small gold">${op.maxElite === p.elite ? "Fully Upgraded." : ""}</p>`}
     </section>`;
   } else if (tab === "runes") {
-    const sets = [...new Set(p.runes.map(runeById).filter(Boolean).map(r => r.set))];
-    const free = S.runes.filter(r => !r.eq || r.eq.k !== key).sort((a, b) => b.rar - a.rar || b.lvl - a.lvl);
-    body = `<section class="panel stack" style="gap:8px"><h3>Customize Part slots</h3>
-      <div class="runeslots">${[0, 1].map(s => { const r = runeById(p.runes[s]); return r ? `<button class="rslot full" data-act="runeSheet" data-id="${r.id}"><b style="color:${RUNE_RC[r.rar]}">${r.set} +${r.lvl}</b><span class="tiny">${runeMainText(r)}</span><span class="tiny dim">${RUNE_INFO[r.set]}</span></button>` : `<div class="rslot"><b>Slot ${s + 1}</b><span class="tiny">Empty</span></div>`; }).join("")}</div>
-      <p class="tiny dim">Active sets: ${sets.length ? sets.map(s => `${setName(s)} (${RUNE_INFO[s]})`).join(" · ") : "none"}</p></section>
-      <section class="stack" style="gap:6px"><div class="spread"><h3>Your Customize Parts</h3><span class="tiny dim">${S.runes.length} owned</span></div>
-      ${free.length ? free.slice(0, 40).map(r => runeRow(r, `<span class="row"><button class="btn sm ghost" data-act="equip" data-k="${key}" data-s="0" data-id="${r.id}">Slot 1</button><button class="btn sm ghost" data-act="equip" data-k="${key}" data-s="1" data-id="${r.id}">Slot 2</button></span>`)).join("") : '<p class="small dim">No spare parts. Street Battles give them as prizes.</p>'}</section>`;
+    const build = opStats(key, p).build, slot = PART_SLOTS.includes(UI.partSlot) ? UI.partSlot : "ar", cur = build[slot];
+    const P = physOf(build, op.el);
+    const free = S.parts.filter(x => partSlot(x) === slot && (!x.eq || x.eq.k !== key)).sort((a, b) => b.rar - a.rar || b.lvl - a.lvl);
+    body = `<section class="panel stack" style="gap:8px"><h3>Customize Parts</h3>
+      <div class="pslots">${PART_SLOTS.map(s => { const b = build[s], pt = b.part;
+        return `<button class="pslot ${s === slot ? "on" : ""}" data-act="partSlotF" data-s="${s}" style="--pc:${PART_GC[pt ? pt.rar : 0]}"><span class="tiny dim">${SLOT_NAME[s]}</span><b>${esc(PART_MODELS[b.m].n)}</b><span class="tiny" style="color:var(--pc)">${pt ? PART_GRADE[pt.rar] + (pt.lvl ? " +" + pt.lvl : "") : "Stock"}</span></button>`; }).join("")}</div>
+      <div class="sub stack" style="gap:4px"><div class="small"><b>${esc(PART_MODELS[cur.m].n)}</b> <span class="dim">${esc(PART_MODELS[cur.m].d)}</span></div>
+        <div class="tiny dim">${esc(partStatText(cur.m, cur.part ? cur.part.rar : 0, cur.part ? cur.part.lvl : 0))}${partTraitText(cur.m) ? " · " + esc(partTraitText(cur.m)) : ""}</div>
+        ${cur.part ? `<div class="row" style="margin-top:4px"><button class="btn sm ghost" data-act="partSheet" data-id="${cur.part.id}">Tune up</button><button class="btn sm ghost" data-act="unfit" data-k="${key}" data-s="${slot}">Use stock part</button></div>` : ""}</div>
+      <div class="statgrid">
+        <div><span>Weight</span><b>${P.weight.toFixed(2)}</b></div><div><span>Speed</span><b>${Math.round(P.speed * 100)}%</b></div>
+        <div><span>Knockback</span><b>×${P.smash.toFixed(2)}</b></div><div><span>Holds ground</span><b>${P.guard >= 0 ? "+" : ""}${Math.round(P.guard * 100)}%</b></div>
+        <div><span>Stamina</span><b>${P.stamina >= 0 ? "+" : ""}${Math.round(P.stamina * 100)}%</b></div><div><span>Rotation</span><b>${P.spin === "D" ? "Dual" : P.spin === "L" ? "Left" : "Right"}</b></div>
+      </div>
+      <p class="tiny dim">Parts change how the Beyblade moves and fights in the dish: the Blade Base sets its movement, the Weight Disk its weight, the Attack Ring its knockback and recoil, and the Spin Gear its rotation. Opposite spins clash harder; the same spin grinds.</p></section>
+      <section class="stack" style="gap:6px"><div class="spread"><h3>Your ${SLOT_NAME[slot]}s</h3><span class="tiny dim">${free.length} available</span></div>
+      ${free.length ? free.slice(0, 40).map(x => partRow(x, `<button class="btn sm" data-act="fit" data-k="${key}" data-id="${x.id}">Fit</button>`)).join("") : `<p class="small dim">No other ${SLOT_NAME[slot]}s yet. Street Battles and the Hobby Shop have more.</p>`}</section>`;
   }
   return `<div class="stack">
     <div class="spread">${back("go", "Beyblades", 'data-v="ops"')}${p ? `<button class="btn ghost sm" data-act="assistant" data-k="${key}" ${S.assistant === key ? "disabled" : ""}>${S.assistant === key ? "Partner" : "Set as partner"}</button>` : ""}</div>
@@ -170,19 +180,21 @@ const verLabel = k => { const n = OPS[k].n; return /^Black /.test(n) ? "Black" :
 function verRow(title, keys, cur, label, col) {
   return `<div><div class="eyebrow" style="margin-bottom:6px">${title}</div><div class="variants">${keys.map(k => `<button class="${k === cur ? "cur" : ""} ${S.ops[k] ? "" : "unowned"}" data-act="go" data-v="op" data-a="${k}" ${k === cur ? "disabled" : ""}>${opHTML(k, { s: 46, nostars: 1, show: 1 })}<span class="tiny" style="color:${col(k)}">${label(k)}</span></button>`).join("")}</div></div>`;
 }
-function runeRow(r, right = "") {
-  return `<div class="rune ${r.eq ? "eq" : ""}" style="--rc:${RUNE_RC[r.rar]}"><button class="rg" data-act="runeSheet" data-id="${r.id}" aria-label="${setName(r.set)}">+${r.lvl}</button>
-    <div style="min-width:0"><b>${setName(r.set)}</b> <span class="tiny" style="color:${RUNE_RC[r.rar]}">${RUNE_RAR[r.rar]}</span><div class="tiny dim">${runeMainText(r)}${r.eq ? ` · on ${esc(OPS[r.eq.k].n)}` : ""}</div></div>${right}</div>`;
+function partRow(pt, right = "") {
+  const m = PART_MODELS[pt.m];
+  return `<div class="rune ${pt.eq ? "eq" : ""}" style="--rc:${PART_GC[pt.rar]}"><button class="rg" data-act="partSheet" data-id="${pt.id}" aria-label="${esc(m.n)}">+${pt.lvl}</button>
+    <div style="min-width:0"><b>${esc(m.n)}</b> <span class="tiny" style="color:${PART_GC[pt.rar]}">${PART_GRADE[pt.rar]}</span><div class="tiny dim">${SLOT_NAME[m.slot]} · ${esc(partStatText(pt.m, pt.rar, pt.lvl))}${pt.eq ? ` · on ${esc(OPS[pt.eq.k].n)}` : ""}</div></div>${right}</div>`;
 }
-function runeSheet(r) {
-  const c = enhanceCost(r);
-  openModal(`<div class="stack"><div class="rune" style="--rc:${RUNE_RC[r.rar]}"><span class="rg">+${r.lvl}</span><div><b>${setName(r.set)}</b> <span class="tiny" style="color:${RUNE_RC[r.rar]}">${RUNE_RAR[r.rar]}</span><div class="tiny dim">${RUNE_INFO[r.set]}</div></div></div>
-    <div class="statgrid"><div><span>Main stat</span><b>${runeMainText(r)}</b></div><div><span>Level</span><b>+${r.lvl} / 15</b></div></div>
-    <p class="small dim">${r.eq ? `Fitted to ${esc(opLabel(OPS[r.eq.k]))}.` : "Not fitted."} Tune-ups always succeed and raise the main stat.</p>
-    <div class="row wrap"><button class="btn" data-act="enhance" data-id="${r.id}" ${r.lvl < 15 && S.lmd >= c ? "" : "disabled"}>Tune up <span class="cost">${IC.lmd}${fmt(c)}</span></button>
-      <button class="btn ghost" data-act="enhanceMax" data-id="${r.id}" ${r.lvl < 15 && S.lmd >= c ? "" : "disabled"}>Max level</button>
-      ${r.eq ? `<button class="btn ghost" data-act="unequip" data-id="${r.id}">Remove</button>` : ""}
-      <button class="btn red" data-act="sell" data-id="${r.id}">Sell <span class="cost">${IC.lmd}${fmt(sellValue(r))}</span></button></div>
+function partSheet(pt) {
+  const c = partCost(pt), m = PART_MODELS[pt.m];
+  openModal(`<div class="stack"><div class="rune" style="--rc:${PART_GC[pt.rar]}"><span class="rg">+${pt.lvl}</span><div><b>${esc(m.n)}</b> <span class="tiny" style="color:${PART_GC[pt.rar]}">${PART_GRADE[pt.rar]} ${SLOT_NAME[m.slot]}</span><div class="tiny dim">${esc(m.d)}</div></div></div>
+    <div class="statgrid"><div><span>Stats</span><b>${esc(partStatText(pt.m, pt.rar, pt.lvl))}</b></div><div><span>Level</span><b>+${pt.lvl} / 15</b></div></div>
+    ${partTraitText(pt.m) ? `<p class="small">${esc(partTraitText(pt.m))}</p>` : ""}
+    <p class="small dim">${pt.eq ? `Fitted to ${esc(opLabel(OPS[pt.eq.k]))}.` : "Not fitted."} Tune-ups always succeed and raise the part's stats; its grade sets how far they go.</p>
+    <div class="row wrap"><button class="btn" data-act="tune" data-id="${pt.id}" ${pt.lvl < 15 && S.lmd >= c ? "" : "disabled"}>Tune up <span class="cost">${IC.lmd}${fmt(c)}</span></button>
+      <button class="btn ghost" data-act="tuneMax" data-id="${pt.id}" ${pt.lvl < 15 && S.lmd >= c ? "" : "disabled"}>Max level</button>
+      ${pt.eq ? `<button class="btn ghost" data-act="takeOff" data-id="${pt.id}">Take off</button>` : ""}
+      <button class="btn red" data-act="sell" data-id="${pt.id}">Sell <span class="cost">${IC.lmd}${fmt(partSellValue(pt))}</span></button></div>
     <button class="btn ghost wide" data-act="closeModal">Close</button></div>`);
 }
 
@@ -268,20 +280,20 @@ SCREENS.shop = () => {
     <h2>Hobby Shop</h2><p class="small dim">Max's dad keeps a little of everything behind the counter, and a Beystadium out back for testing.</p>
     <div class="tabs2">${[["credit", "Coupons"], ["cert", "Spare Parts"], ["tokens", "Ranking"], ["prime", "Drinks"]].map(([k, n]) => `<button class="${tab === k ? "on" : ""}" data-act="shopTab" data-t="${k}">${n}</button>`).join("")}</div>
     <div class="tiles">${SHOP[tab].map(it => `<button class="tile" data-act="buy" data-t="${tab}" data-id="${it.id}" ${S[cur[0]] >= it.cost ? "" : "disabled"} style="min-height:104px">
-      <span class="ticon">${it.give.rune ? IC.rune : itemIcon(Object.keys(it.give)[0] === "sanityMax" ? "sanity" : Object.keys(it.give)[0])}</span>
+      <span class="ticon">${itemIcon(Object.keys(it.give)[0] === "sanityMax" ? "sanity" : Object.keys(it.give)[0])}</span>
       <h3 style="font-size:15px">${esc(it.n)}</h3>${it.d ? `<span class="tsub">${esc(it.d)}</span>` : ""}<span class="tsub cost">${cur[1]}${fmt(it.cost)}</span></button>`).join("")}</div>
   </div>`;
 };
 SCREENS.depot = () => {
   const tab = UI.depotTab;
-  const runes = S.runes.filter(r => UI.runeSet === "all" || r.set === UI.runeSet).sort((a, b) => b.rar - a.rar || b.lvl - a.lvl);
+  const f = UI.depotSlot || "all", parts = S.parts.filter(pt => f === "all" || partSlot(pt) === f).sort((a, b) => b.rar - a.rar || b.lvl - a.lvl);
   return `<div class="stack">
     <div class="spread">${back("go", "Home", 'data-v="home"')}<span class="eyebrow">Items</span></div>
     <h2>Items</h2>
-    <div class="tabs2"><button class="${tab === "runes" ? "on" : ""}" data-act="depotTab" data-t="runes">Parts · ${S.runes.length}</button><button class="${tab === "mats" ? "on" : ""}" data-act="depotTab" data-t="mats">Materials</button></div>
-    ${tab === "runes" ? `<div class="filters">${["all", ...RUNE_SETS].map(s => `<button class="chip ${UI.runeSet === s ? "on" : ""}" data-act="runeSetF" data-s="${s}">${s === "all" ? "All sets" : setName(s)}</button>`).join("")}</div>
-      ${runes.length ? runes.map(r => runeRow(r, `<button class="btn sm ghost" data-act="runeSheet" data-id="${r.id}">Manage</button>`)).join("") : '<p class="small dim">No parts yet. Win Street Battles from the Battle tab to get them.</p>'}
-      ${S.runes.some(r => !r.eq && r.rar <= 2) ? `<button class="btn ghost wide" data-act="sellJunk">Sell all spare Plastic and Custom parts</button>` : ""}`
+    <div class="tabs2"><button class="${tab === "parts" ? "on" : ""}" data-act="depotTab" data-t="parts">Parts · ${S.parts.length}</button><button class="${tab === "mats" ? "on" : ""}" data-act="depotTab" data-t="mats">Materials</button></div>
+    ${tab === "parts" ? `<div class="filters">${["all", ...PART_SLOTS].map(s => `<button class="chip ${f === s ? "on" : ""}" data-act="depotSlot" data-s="${s}">${s === "all" ? "All parts" : SLOT_NAME[s] + "s"}</button>`).join("")}</div>
+      ${parts.length ? parts.map(pt => partRow(pt, `<button class="btn sm ghost" data-act="partSheet" data-id="${pt.id}">Manage</button>`)).join("") : '<p class="small dim">No parts yet. Win Street Battles from the Battle tab to get them.</p>'}
+      ${S.parts.some(pt => !pt.eq && pt.rar <= 2) ? `<button class="btn ghost wide" data-act="sellJunk">Sell all spare Plastic and Custom parts</button>` : ""}`
     : `<div class="rewards" style="justify-content:flex-start">${["rec1", "rec2", "rec3", "rec4", "chip", "summ", "permit", "cert", "tokens", "prime", "credit", "free10", "gold5"].filter(k => k !== "free10" && k !== "gold5" || have(k) > 0).map(k => `<div class="rw"><div class="ri" style="width:54px;height:54px">${itemIcon(k)}</div><span class="num">×${fmt(have(k))}</span><span class="tiny dim">${ITEMS[k].n}</span></div>`).join("")}</div>`}
   </div>`;
 };

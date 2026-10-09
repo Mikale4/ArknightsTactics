@@ -9,7 +9,6 @@ const CLASS_BASE = {
   Endurance: { hp: 11000, atk: 640, def: 560, spd: 108 },
   Balance:   { hp: 9600, atk: 760, def: 540, spd: 112 },
 };
-const CLASS_RUNES = { Attack: ["Fatal", "Blade"], Defense: ["Guard", "Energy"], Endurance: ["Energy", "Will"], Balance: ["Swift", "Rage"] };
 const CLASS_LEADER = {
   Attack: { stat: "ATK", amount: .24, scope: "Element" }, Defense: { stat: "HP", amount: .25, scope: "All" },
   Endurance: { stat: "RES", amount: .3, scope: "All" }, Balance: { stat: "SPD", amount: .15, scope: "All" },
@@ -73,7 +72,7 @@ for (const c of BLADERS) for (const v of c.beys) {
   const op = { key, base: c.k, fam: key, n: v.n, short: v.short || beast.n, blader: c.short || c.n, bladerFull: c.n, team: v.team || c.squad, squad: c.squad, slug: c.k,
     rar: v.rar, cls: type, el: type, season: v.season || 1, beast, left: !!v.left,
     bey: { ...v.look, chip: v.look.chip || beast.col, kind: beast.kind }, fig: c.fig, stats, skills, leader: { ...(v.leader || CLASS_LEADER[type]) },
-    passives, runes: CLASS_RUNES[type], maxElite: 2, featured: true, beastKit: X.d };
+    passives, maxElite: 2, featured: true, beastKit: X.d };
   if (op.leader.scope === "Element") op.leader.element = type;
   OPS[key] = op; OP_KEYS.push(key); FAMS.push(key);
 }
@@ -131,12 +130,12 @@ const ENEMY = {
     skills: [S1("Data Strike", 2.7, [dbf("GLANCING", .2)])] },
 };
 // Bosses are tougher versions of playable Beyblades (same Bit-Beast and moves, Bit-Beast attack included).
-// [unit, Spin multiplier, ATK multiplier]
-const BOSS = {};
+// [unit, Spin multiplier, ATK multiplier]; in 1-on-1 battles a boss keeps BOSS_SPIN of the Spin multiplier
+const BOSS = {}, BOSS_SPIN = .62;
 function bossOf(id, key, hp, atk) {
   BOSS[id] = [key, hp, atk];
   const op = OPS[key];
-  ENEMY[id] = { key: id, enemy: true, runes: [], n: op.n, boss: 1, op: key, cls: op.cls, el: op.el, fig: op.fig, bey: op.bey, beast: op.beast, skills: op.skills,
-    passives: op.passives, blader: op.blader, left: op.left, m: { hp, atk, def: 1.0, spd: op.stats.spd - 4 } };
+  ENEMY[id] = { key: id, enemy: true, n: op.n, boss: 1, op: key, cls: op.cls, el: op.el, fig: op.fig, bey: op.bey, beast: op.beast, skills: op.skills,
+    passives: op.passives, blader: op.blader, left: op.left, season: op.season, rar: op.rar, m: { hp: hp * BOSS_SPIN, atk, def: 1.0, spd: op.stats.spd - 4 } };
 }
-for (const k in ENEMY) { ENEMY[k].key = k; ENEMY[k].enemy = true; ENEMY[k].passives = ENEMY[k].passives || []; ENEMY[k].runes = []; }
+for (const k in ENEMY) { ENEMY[k].key = k; ENEMY[k].enemy = true; ENEMY[k].passives = ENEMY[k].passives || []; }

@@ -1,13 +1,12 @@
 
 // =====================================================================
 //  BATTLE RENDERER — a small 3D scene on a 2D canvas.
-//  World: ground plane y=0, battle axis x (allies -x, enemies +x), depth z.
+//  World: ground plane y=0, the dish centred on the origin (DISH_R from the engine); your side enters at -x.
 //  Camera: orbit (yaw/pitch/dist) around a target point, eased every frame.
 // =====================================================================
-const SLOTS = [[150, -40], [168, 78], [262, -104], [282, 18]];
 const BT = { on: false, cv: null, g: null, W: 0, H: 0, dpr: 1, clock: 0, speed: 1, paused: false, vus: new Map(),
-  parts: [], bolts: [], floats: [], arcs: [], rings: [], nades: [], waits: [], tweens: [],
-  cam: null, camT: null, camK: 3, home: null, shake: 0, env: null, B: null, target: null, active: null, picking: false,
+  parts: [], bolts: [], floats: [], arcs: [], rings: [], nades: [], waits: [], tweens: [], slashes: [], beasts: [],
+  cam: null, camT: null, camK: 3, home: null, shake: 0, env: null, B: null, step: null, acc: 0, alpha: 0, mTop: 96, mBot: 130,
   raf: 0, last: 0, orbit: false, shx: 0, shy: 0, K: null, flash: 0, flashCol: "#fff", letterbox: 0, letterboxT: 0 };
 
 const v3 = {
@@ -149,7 +148,7 @@ function seg3(K, a, b, col, w, alpha) {
   g.beginPath(); g.moveTo(pa[0], pa[1]); g.lineTo(pb[0], pb[1]); g.stroke(); g.globalAlpha = 1;
 }
 // ---------- the Beystadium ----------
-const DISH_R = 430, DISH_LIP = 40, DISH_H = 34;
+const DISH_LIP = 40, DISH_H = 34;
 // a ring of projected points at radius r and height y (null where it's behind the camera)
 const ringPts = (K, r, y, n = 72) => { const out = []; for (let k = 0; k <= n; k++) { const a = k / n * Math.PI * 2; out.push(proj(K, Math.cos(a) * r, y, Math.sin(a) * r)); } return out; };
 function polyFill(g, pts, style) { const ok = pts.filter(Boolean); if (ok.length < 3) return; g.fillStyle = style; g.beginPath(); ok.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.closePath(); g.fill(); }
@@ -274,58 +273,52 @@ function applyCamXform() {
 }
 
 // ---------- units ----------
-function billboard(vu, lp) {
-  const K = BT.K, bs = vu.bs;
-  const lx = lp[0] * vu.face * bs, ly = -lp[1] * bs;
-  return [vu.pos.x + K.r[0] * lx + K.u[0] * ly, vu.y + K.r[1] * lx + K.u[1] * ly, vu.pos.z + K.r[2] * lx + K.u[2] * ly];
-}
-const chestW = vu => billboard(vu, (vu.out && vu.out.chest) || [0, -60]);
-const headW = vu => billboard(vu, (vu.out && vu.out.head) || [0, -92]);
-const tipW = (vu, key = "tip") => billboard(vu, (vu.out && (vu.out[key] || vu.out.tip)) || [20, -60]);
+// world points on a Beyblade for effects: its Bit-Chip on top and its middle
+const topOf = vu => [vu.pos.x, vu.y + 46 * vu.bs, vu.pos.z];
+const chestW = vu => [vu.pos.x, vu.y + 22 * vu.bs, vu.pos.z];
+const headW = topOf;
 
 function drawUnitShadow(K, vu) {
-  if (vu.gone || vu.ringOut) return;
-  const a = vu.dead ? .25 * (1 - clamp((BT.clock - vu.deathT) / 1600, 0, 1)) : .4;
-  groundEllipse(K, vu.pos.x + (vu.dx || 0), vu.pos.z + (vu.dz || 0), 36 * vu.bs, `rgba(0,0,0,${a})`, true);
+  if (!vu.shown || vu.gone) return;
+  let a = .42 * clamp(1 - vu.y / 260, 0, 1);
+  if (vu.dead && !vu.ringOut) a *= 1 - clamp((BT.clock - vu.deathT - 2400) / 800, 0, 1);
+  if (vu.leaveT != null) a *= 1 - clamp((BT.clock - vu.leaveT) / 520, 0, 1);
+  groundEllipse(K, vu.pos.x, vu.pos.z, 34 * vu.bs, `rgba(0,0,0,${a})`, true);
 }
-// a Beyblade in the dish: it spins faster the more Spin (HP) it has left, wobbles as it runs low, drifts around its
-// spot, leans into attacks, and on defeat either winds down and topples (Sleep Out) or flies out of the dish (Ring Out)
+// a Beyblade in the dish: it spins faster the more Spin it has left and starts to wobble (precess) as it runs low; it
+// leans into its rushes, drops in when launched or tagged in, lifts out when tagged out, and on defeat either winds
+// down and topples (Sleep Out) or flies over the lip of the dish (Ring Out)
 function drawUnit(K, vu) {
-  const g = BT.g, T = BT.clock / 1000, d = vu.u.def;
+  const g = BT.g, T = BT.clock / 1000, d = vu.u.def, u = vu.u;
   const dtS = Math.min(.05, Math.max(0, (BT.clock - (vu.lastT ?? BT.clock)) / 1000)); vu.lastT = BT.clock;
-  const idle = !vu.dead && vu.pose.name === "idle";
-  vu.dx = lerp(vu.dx || 0, idle ? Math.sin(T * 1.3 + vu.ph) * 12 : 0, .08); vu.dz = lerp(vu.dz || 0, idle ? Math.cos(T * 1.1 + vu.ph * 1.7) * 9 : 0, .08);
-  const q = proj(K, vu.pos.x + vu.dx, vu.y, vu.pos.z + vu.dz);
-  if (!q) { vu.scr = null; return; }
+  vu.scr = null;
+  if (!vu.shown || vu.gone) return;
+  const q = proj(K, vu.pos.x, vu.y, vu.pos.z); if (!q) return;
   const [sx, sy, s] = q, sc = s * vu.bs;
   vu.scr = { x: sx, y: sy, s: sc };
-  if (vu.gone) return;
-  let alpha = 1, drop = 0;
-  if (vu.spawnT != null) { const k = clamp((BT.clock - vu.spawnT) / 520, 0, 1); drop = (1 - ease(k)) * 160; alpha = Math.min(1, k * 3); if (k >= 1) { vu.spawnT = null; addParts([vu.pos.x, 2, vu.pos.z], 10, { col: "#ffe2a0", speed: 160, life: 300, size: 2.2, g: 300 }); } }
-  const hpF = clamp(vu.hp / vu.u.max.hp, 0, 1);
-  let w = 18 * (.3 + .7 * hpF), lean = (1 - hpF) ** 1.4 * .3 * Math.sin(T * 7 + vu.ph), glow = 0;
-  const pose = vu.pose, pt = pose.dur ? clamp((BT.clock - pose.t0) / pose.dur, 0, 1) : 0;
-  if (pose.dur && pt >= 1 && pose.back) { vu.pose = { name: "idle", t0: BT.clock, dur: 0 }; }
-  if (pose.name === "run") lean += .2;
-  else if (pose.name === "swing") lean += .38 * Math.sin(pt * Math.PI);
-  else if (pose.name === "hit") lean -= .34 * (1 - pt) * Math.cos(pt * 18);
-  else if (pose.name === "buff" || pose.name === "cast") { glow = Math.sin(pt * Math.PI) * .8; w *= 1.4; }
-  else if (pose.name === "victory") { glow = .35 + .2 * Math.sin(T * 4); }
+  const hpF = clamp(vu.hp / u.max.hp, 0, 1);
+  let w = 26 * (.22 + .78 * hpF), alpha = 1, glow = 0;
+  let lean = (1 - hpF) ** 1.5 * .34 * Math.sin(T * 8 + vu.ph);
+  if (vu.stall) lean += .24 * Math.sin(T * 13 + vu.ph);
+  if (vu.rushing) { lean += clamp((vu.svx || 0) / 1100, -.32, .32); glow = .3; }
+  if (vu.aura > BT.clock) glow = Math.max(glow, (vu.aura - BT.clock) / 900 * .8);
+  if (vu.enterT != null) { const k = clamp((BT.clock - vu.enterT) / 420, 0, 1); alpha = Math.min(1, k * 3); }
+  if (vu.leaveT != null) { const k = clamp((BT.clock - vu.leaveT) / 520, 0, 1); alpha = 1 - k; if (k >= 1) { vu.shown = false; vu.leaveT = null; } }
   if (vu.dead) {
-    const k = clamp((BT.clock - vu.deathT) / 1400, 0, 1);
-    if (vu.ringOut) { alpha = 1 - k; }
-    else { w *= Math.max(0, 1 - k * 1.6); lean = ease(clamp(k * 1.3 - .25, 0, 1)) * 1.25 + Math.sin(k * 30) * .12 * (1 - k); alpha = k > .8 ? 1 - (k - .8) * 5 : 1; }
-    if (k >= 1) vu.gone = true;
+    const k = (BT.clock - vu.deathT) / 1000;
+    if (vu.ringOut) { lean = vu.tumble * k * 3.2; alpha = clamp(1.6 - k, 0, 1); if (k > 1.6) vu.gone = true; }
+    else {
+      w *= Math.max(0, 1 - k * 1.2);
+      lean = (ease(clamp(k * 1.1 - .2, 0, 1)) * 1.3 + Math.sin(k * 26) * .14 * Math.max(0, 1 - k)) * vu.fallDir;
+      alpha = clamp(3.2 - k, 0, 1); if (k > 3.2) vu.gone = true;
+    }
   }
-  if (vu.spin) w *= 2;
-  vu.spinA = (vu.spinA || vu.ph) + w * dtS * (vu.team === "A" ? 1 : -1) * (d.left ? -1 : 1);
+  vu.spinA = (vu.spinA || vu.ph) + w * dtS * vu.rot;
   if (vu.stealth) alpha *= .45;
-  const e = clamp(-K.f[1] * 1.15 + .12, .2, .85);
-  g.save(); g.globalAlpha = alpha; g.translate(sx, sy - drop * s); g.scale(sc, sc);
-  vu.out = drawBey(g, d.bey, { e, spin: vu.spinA, tilt: lean * vu.face, blur: clamp(w / 18, 0, 1) * .85, glow });
+  const e = clamp(-K.f[1] * 1.15 + .12, .2, .9);
+  g.save(); g.globalAlpha = alpha; g.translate(sx, sy); g.scale(sc, sc);
+  vu.out = drawBey(g, d.bey, { e, spin: vu.spinA, tilt: lean, blur: clamp(w / 20, 0, 1) * .9, glow });
   g.restore();
-  // spark trail while charging across the dish
-  if ((pose.name === "run" || vu.spin) && !vu.dead && R() < .7) addParts([vu.pos.x, 2, vu.pos.z], 2, { col: "#ffe2a0", speed: 120, life: 220, size: 1.8, g: 200 });
   if (vu.flash > BT.clock) {
     const k = (vu.flash - BT.clock) / 160, c = proj(K, ...chestW(vu));
     if (c) { g.save(); g.globalCompositeOperation = "lighter"; const gr = g.createRadialGradient(c[0], c[1], 0, c[0], c[1], 46 * sc);
@@ -337,42 +330,54 @@ function drawUnit(K, vu) {
       gr.addColorStop(0, vu.auraCol + "aa"); gr.addColorStop(1, vu.auraCol + "00"); g.globalAlpha = Math.min(1, k * 1.5); g.fillStyle = gr; g.fillRect(c[0] - 90 * sc, c[1] - 100 * sc, 180 * sc, 200 * sc); g.restore(); }
   }
 }
+// streaks along the floor behind a Beyblade moving fast
+function drawTrails(K) {
+  const g = BT.g;
+  g.save(); g.globalCompositeOperation = "lighter"; g.lineCap = "round";
+  for (const vu of BT.vus.values()) {
+    const tr = vu.trail; if (!tr || !vu.shown) continue;
+    while (tr.length && BT.clock - tr[0][2] > 280) tr.shift();
+    for (let i = 1; i < tr.length; i++) {
+      const a = proj(K, tr[i - 1][0], 5, tr[i - 1][1]), b = proj(K, tr[i][0], 5, tr[i][1]); if (!a || !b) continue;
+      const k = 1 - (BT.clock - tr[i][2]) / 280;
+      g.strokeStyle = vu.col; g.globalAlpha = k * .5; g.lineWidth = (16 * b[2] + 1) * k;
+      g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke();
+    }
+  }
+  g.restore(); g.globalAlpha = 1;
+}
 // Bit-Beasts rising out of their Bit-Chips for a Bit-Beast attack
 function drawBeasts(K) {
   const g = BT.g;
-  BT.beasts = (BT.beasts || []).filter(b => BT.clock - b.t0 < b.dur);
+  BT.beasts = BT.beasts.filter(b => BT.clock - b.t0 < b.dur);
   for (const b of BT.beasts) {
-    const vu = b.vu, k = (BT.clock - b.t0) / b.dur, p = proj(K, vu.pos.x, 40 * vu.bs + ease(Math.min(1, k * 2)) * 150, vu.pos.z); if (!p) continue;
+    const vu = b.vu, k = (BT.clock - b.t0) / b.dur, p = proj(K, vu.pos.x, 50 * vu.bs + ease(Math.min(1, k * 2)) * 150, vu.pos.z); if (!p) continue;
     const a = k < .2 ? k / .2 : k > .8 ? (1 - k) / .2 : 1, sc = p[2] * 1.15 * (.7 + .3 * ease(Math.min(1, k * 2)));
-    g.save(); g.translate(p[0], p[1]); g.scale(sc * vu.dir, sc);
+    g.save(); g.translate(p[0], p[1]); g.scale(sc * (vu.team === "A" ? 1 : -1), sc);
     drawBeast(g, b.kind, b.col, BT.clock / 1000, a);
     g.restore();
   }
 }
-
+// a small Spin bar and the effect chips over each Beyblade in the dish
 function drawOverhead(K, vu) {
-  if (!vu.scr || vu.dead || vu.gone || vu.spawnT != null) return;
-  const g = BT.g, hp = proj(K, ...billboard(vu, (vu.out && vu.out.top) || (vu.out && vu.out.head) || [0, -100])); if (!hp) return;
-  const w = clamp(64 * vu.scr.s * 1.25, 46, 80), x = hp[0] - w / 2 + 5, y = hp[1] - 18;
-  const m = vu.u.max;
-  g.fillStyle = "rgba(0,0,0,.65)"; g.fillRect(x - 1.5, y - 1.5, w + 3, 11);
-  g.fillStyle = "#3a1218"; g.fillRect(x, y, w, 5);
-  g.fillStyle = "#ff9c9c"; g.fillRect(x, y, w * clamp(vu.lag / m.hp, 0, 1), 5);
-  g.fillStyle = vu.team === "A" ? "#3ddc84" : "#ff5a5a"; g.fillRect(x, y, w * clamp(vu.hp / m.hp, 0, 1), 5);
-  if (vu.sh > 0) { g.fillStyle = "#c8ffd6"; g.fillRect(x, y, w * clamp(vu.sh / m.hp, 0, 1), 2); }
-  g.fillStyle = "#0b2230"; g.fillRect(x, y + 6, w, 2.5);
-  g.fillStyle = "#5fd4ff"; g.fillRect(x, y + 6, w * clamp(vu.tm / 100, 0, 1), 2.5);
-  g.fillStyle = ELC[vu.u.el]; g.beginPath(); g.arc(x - 7, y + 4, 5.5, 0, 7); g.fill();
-  g.strokeStyle = "#000"; g.lineWidth = 1.5; g.stroke();
-  g.fillStyle = "#08090c"; g.font = "900 7px Saira Condensed, Arial Narrow, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(vu.u.el[0], x - 7, y + 4.5);
-  if (vu.u.boss) { g.fillStyle = "#ff4b4b"; g.font = "800 9px Saira Condensed, Arial Narrow, sans-serif"; g.textAlign = "left"; g.textBaseline = "bottom"; g.fillText("BOSS", x, y - 2); }
-  const ef = vu.effs; if (!ef.length) return;
-  const sz = 12, per = Math.max(1, Math.floor((w + 6) / (sz + 1)));
-  g.font = "800 7.5px Saira Condensed, Arial Narrow, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
-  ef.slice(0, per * 2).forEach(([id, st], i) => {
-    const row = Math.floor(i / per), col = i % per, ex = x + col * (sz + 1), ey = y - 14 - row * (sz + 1) - (vu.u.boss ? 9 : 0);
-    g.fillStyle = FX[id].b ? "#1d7a45" : "#a3242e"; g.fillRect(ex, ey, sz, sz - 1);
-    g.fillStyle = "#fff"; g.fillText(FX[id].s + (st > 1 ? st : ""), ex + sz / 2, ey + sz / 2);
+  if (!vu.scr || vu.dead || vu.gone || !vu.shown || vu.enterT != null || vu.leaveT != null) return;
+  const g = BT.g, hp = proj(K, vu.pos.x, vu.y + 70 * vu.bs, vu.pos.z); if (!hp) return;
+  const w = clamp(58 * vu.scr.s * 1.4, 40, 66), x = hp[0] - w / 2, y = hp[1] - 6, m = vu.u.max;
+  g.fillStyle = "rgba(0,0,0,.65)"; g.fillRect(x - 1.5, y - 1.5, w + 3, 7);
+  g.fillStyle = "#3a1218"; g.fillRect(x, y, w, 4);
+  g.fillStyle = "#ff9c9c"; g.fillRect(x, y, w * clamp(vu.lag / m.hp, 0, 1), 4);
+  g.fillStyle = vu.team === "A" ? "#3ddc84" : "#ff5a5a"; g.fillRect(x, y, w * clamp(vu.hp / m.hp, 0, 1), 4);
+  if (vu.sh > 0) { g.fillStyle = "#c8ffd6"; g.fillRect(x, y, w * clamp(vu.sh / m.hp, 0, 1), 1.5); }
+  // a marker: blue over yours, red over the rival
+  g.fillStyle = vu.team === "A" ? "#5fd4ff" : "#ff5a5a"; g.beginPath(); g.moveTo(hp[0] - 5, y - 9); g.lineTo(hp[0] + 5, y - 9); g.lineTo(hp[0], y - 3); g.closePath(); g.fill();
+  const ef = vu.u.eff; if (!ef.length) return;
+  const seen = new Set(), list = ef.filter(x => !seen.has(x.id) && seen.add(x.id));
+  const sz = 11, per = Math.max(1, Math.floor((w + 6) / (sz + 1)));
+  g.font = "800 7px Saira Condensed, Arial Narrow, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+  list.slice(0, per * 2).forEach((x, i) => {
+    const row = Math.floor(i / per), col = i % per, ex = x + col * (sz + 1), ey = y - 22 - row * (sz + 1);
+    g.fillStyle = FX[x.id].b ? "#1d7a45" : "#a3242e"; g.fillRect(ex, ey, sz, sz - 1);
+    g.fillStyle = "#fff"; g.fillText(FX[x.id].s, ex + sz / 2, ey + sz / 2);
   });
 }
 // ---------- fx ----------
@@ -454,13 +459,13 @@ function drawFloats(K) {
     const vu = BT.vus.get(f.uid); if (!vu) continue;
     const hp = proj(K, ...headW(vu)); if (!hp) continue;
     const k = (BT.clock - f.t0) / f.dur;
-    const y = hp[1] - 40 - k * 46 - f.row * 15, x = hp[0] + f.dx;
-    const big = f.cls === "crit" ? 27 : f.cls === "dmg" || f.cls === "prot" || f.cls === "heal" || f.cls === "dot" ? 21 : 13;
+    const y = hp[1] - 34 - k * 46 - f.row * 15, x = hp[0] + f.dx;
+    const big = f.cls === "crit" ? 27 : f.cls === "dmg" || f.cls === "heal" || f.cls === "dot" ? 21 : f.cls === "prot" ? 17 : f.cls === "chip" ? 14 : 13;
     const pop = k < .12 ? 1.35 - k * 2.9 : 1;
     g.globalAlpha = k > .75 ? (1 - k) / .25 : 1;
     g.font = `800 ${Math.round(big * pop)}px "Saira Condensed", "Arial Narrow", sans-serif`;
     g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.85)"; g.strokeText(f.s, x, y);
-    g.fillStyle = { crit: "#ffd34d", dmg: "#ff6b6b", prot: "#eef2fa", heal: "#5dfc9b", dot: "#d68bff", buff: "#57e08f", debuff: "#ff8a8a", txt: "#cfe3ff" }[f.cls] || "#fff";
+    g.fillStyle = { crit: "#ffd34d", dmg: "#ff6b6b", prot: "#eef2fa", chip: "#ffd9b0", heal: "#5dfc9b", dot: "#d68bff", buff: "#57e08f", debuff: "#ff8a8a", txt: "#cfe3ff" }[f.cls] || "#fff";
     g.fillText(f.s, x, y);
   }
   g.globalAlpha = 1;
@@ -480,6 +485,7 @@ function frame(now) {
   // tweens + waits
   for (const tw of BT.tweens.slice()) { const k = clamp((BT.clock - tw.t0) / tw.dur, 0, 1); tw.fn(tw.ease ? ease(k) : k); if (k >= 1) { BT.tweens.splice(BT.tweens.indexOf(tw), 1); tw.res(); } }
   for (const w of BT.waits.slice()) if (BT.clock >= w.until) { BT.waits.splice(BT.waits.indexOf(w), 1); w.res(); }
+  if (BT.step) BT.step(dt);
   // camera
   const c = BT.cam, t = BT.camT;
   if (BT.orbit) { t.yaw += dt * .00028; }
@@ -488,7 +494,7 @@ function frame(now) {
   BT.shake *= Math.exp(-dt / 1000 * 7); if (BT.shake < .3) BT.shake = 0;
   BT.shx = (R() - .5) * BT.shake; BT.shy = (R() - .5) * BT.shake;
   // bars ease
-  for (const vu of BT.vus.values()) { vu.lag += (vu.hp - vu.lag) * (1 - Math.exp(-dt / 350)); vu.tm += (vu.tmT - vu.tm) * (1 - Math.exp(-dt / 120)); }
+  for (const vu of BT.vus.values()) vu.lag += (vu.hp - vu.lag) * (1 - Math.exp(-dt / 350));
   render(dt);
 }
 function render(dt) {
@@ -500,7 +506,8 @@ function render(dt) {
   drawSky(K);
   drawLights(K);
   drawGround(K);
-  const props = BT.env.props.map(p => ({ p, d: proj(K, p.x, p.h / 2, p.z) })).filter(o => o.d).sort((a, b) => b.d[3] - a.d[3]);
+  // only the scenery behind the dish (the camera looks down on it from the near side)
+  const props = BT.env.props.filter(p => p.z > 300).map(p => ({ p, d: proj(K, p.x, p.h / 2, p.z) })).filter(o => o.d).sort((a, b) => b.d[3] - a.d[3]);
   for (const o of props) drawProp(K, o.p);
   // haze over the far field
   const hy = H / 2 - Math.tan(BT.cam.pitch) * K.focal;
@@ -509,13 +516,11 @@ function render(dt) {
   // ground decals
   const vus = [...BT.vus.values()];
   for (const vu of vus) drawUnitShadow(K, vu);
-  for (const vu of vus) if (!vu.dead && vu.spawnT == null) groundEllipse(K, vu.pos.x + (vu.dx || 0), vu.pos.z + (vu.dz || 0), 40 * vu.bs, ELC[vu.u.el] + "66", false, 1.6);
-  if (BT.active && !BT.active.dead) groundEllipse(K, BT.active.home.x, BT.active.home.z, 46 * BT.active.bs, "#f2c14e", false, 3, BT.clock / 600);
-  if (BT.picking && BT.B) for (const u of BT.B.targetable(BT.B.waiting || BT.B.units[0])) { const vu = BT.vus.get(u.uid); if (vu && vu !== BT.target) groundEllipse(K, vu.pos.x, vu.pos.z, 42 * vu.bs, "rgba(255,90,90,.45)", false, 1.5); }
-  if (BT.target && !BT.target.dead && BT.picking) groundEllipse(K, BT.target.pos.x, BT.target.pos.z, 48 * BT.target.bs, "#ff4b4b", false, 3, BT.clock / 300, [10, 6]);
+  for (const vu of vus) if (vu.shown && !vu.dead && vu.y < 30) groundEllipse(K, vu.pos.x, vu.pos.z, 42 * vu.bs, vu.col + "88", false, 2);
   drawRings(K);
+  drawTrails(K);
   // units, far to near
-  const order = vus.map(vu => ({ vu, d: proj(K, vu.pos.x, 40, vu.pos.z) })).filter(o => o.d).sort((a, b) => b.d[3] - a.d[3]);
+  const order = vus.filter(vu => vu.shown && !vu.gone).map(vu => ({ vu, d: proj(K, vu.pos.x, 40, vu.pos.z) })).filter(o => o.d).sort((a, b) => b.d[3] - a.d[3]);
   for (const o of order) drawUnit(K, o.vu);
   drawBeasts(K);
   drawBolts(K);
@@ -553,13 +558,15 @@ function camTo(p, k = 3, cut = false) { Object.assign(BT.camT, p); BT.camK = k; 
 function camHome(k = 2.6) { BT.orbit = false; camTo({ ...BT.home }, k); }
 function fitHome() {
   const land = BT.W / BT.H > 1.05;
-  const c = { tx: 0, ty: 40, tz: 0, yaw: land ? 0 : -1.2, pitch: land ? .24 : .5, dist: 900, fov: land ? .62 : .7, roll: 0 };
-  const pts = [];
-  // pad each slot along both ground axes; 120 covers a Beyblade plus its overhead bars
-  for (const s of SLOTS) for (const sx of [-1, 1]) for (const [dx, dz] of [[-50, 0], [50, 0], [0, -50], [0, 50]]) pts.push([s[0] * sx + dx, 0, s[1] + dz], [s[0] * sx + dx, 120, s[1] + dz]);
-  const topM = land ? 64 : 84, botM = land ? 112 : 140, sideM = 4;
+  const c = { tx: 0, ty: 0, tz: 0, yaw: 0, pitch: land ? .7 : 1.12, dist: 900, fov: land ? .6 : .66, roll: 0 };
+  const pts = [], RR = DISH_R + DISH_LIP;
+  for (let k = 0; k < 36; k++) {
+    const a = k / 36 * Math.PI * 2, x = Math.cos(a), z = Math.sin(a);
+    pts.push([x * RR, 0, z * RR], [x * RR, DISH_H, z * RR], [x * DISH_R * .8, 90, z * DISH_R * .8]);
+  }
+  const topM = BT.mTop, botM = BT.mBot, sideM = 4;
   const fit = () => {
-    let lo = 150, hi = 6000;
+    let lo = 150, hi = 8000;
     for (let k = 0; k < 26; k++) {
       const mid = (lo + hi) / 2; c.dist = mid; const K = camBasis(c); let ok = true;
       for (const p of pts) { const q = proj(K, ...p); if (!q || q[0] < sideM || q[0] > BT.W - sideM || q[1] < topM || q[1] > BT.H - botM) { ok = false; break; } }

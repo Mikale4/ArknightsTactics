@@ -10,7 +10,7 @@ const SAN_MS = 30000;
 const pxpNeed = l => 100 + 50 * l;
 const xpNeed = (l, e) => Math.round((60 + l * 22) * (1 + e * .9));
 const effLV = p => p.lvl + LV_OFF[p.elite];
-const mkProg = () => ({ lvl: 1, xp: 0, elite: 0, pot: 1, sk: [1, 1, 1], runes: [null, null] });
+const mkProg = () => ({ lvl: 1, xp: 0, elite: 0, pot: 1, sk: [1, 1, 1], parts: { ar: null, wd: null, sg: null, bb: null } });
 
 // play statistics behind the achievements
 const newStats = () => ({ battles: 0, wins: 0, arcs: 0, kills: 0, flawless: 0, versus: 0, patrols: 0, fives: 0, codeUps: 0, loginDays: 0 });
@@ -22,8 +22,8 @@ function newSave() {
     sanity: maxSanity(1), sTime: Date.now(),
     lmd: 20000, orundum: 6000, permit: 10, cert: 0, tokens: 0, prime: 6, credit: 300,
     inv: { rec1: 20, rec2: 6, rec3: 0, rec4: 0, chip: 4, summ: 6 },
-    ops: {}, runes: [], runeSeq: 1,
-    story: {}, team: { story: STARTERS.slice(0, 4), hunt: STARTERS.slice(0, 4), tower: STARTERS.slice(0, 4), arena: STARTERS.slice(0, 4) },
+    ops: {}, parts: [], partSeq: 1, v2: 1,
+    story: {}, team: { story: STARTERS.slice(0, TEAM_SIZE), hunt: STARTERS.slice(0, TEAM_SIZE), tower: STARTERS.slice(0, TEAM_SIZE), arena: STARTERS.slice(0, TEAM_SIZE) },
     assistant: STARTERS[0], tower: 0,
     arena: { rank: 1500, attempts: 5, aTime: Date.now(), payTime: Date.now(), opps: null },
     gacha: { pity: 0, firstTen: true, total: 0 },
@@ -62,7 +62,8 @@ function give(rw) {
   for (const k in rw) {
     const v = rw[k];
     if (k === "op") { const r = grantOp(v); out.push({ k: "op:" + v, n: 1, isNew: r.isNew }); continue; }
-    if (k === "rune") { const r = makeRune(pick(RUNE_SETS), v); S.runes.push(r); out.push({ k: "rune", n: 1, rune: r }); continue; }
+    // partN: v random parts of grade N
+    if (/^part\d$/.test(k)) { for (let i = 0; i < v; i++) { const pt = makePart(randomModel(), +k[4]); S.parts.push(pt); out.push({ k: "part", n: 1, part: pt }); } continue; }
     if (k === "sanityMax") { S.sanity = Math.max(S.sanity, maxSanity(S.lvl)); S.sTime = Date.now(); out.push({ k: "sanity", n: maxSanity(S.lvl) }); continue; }
     if (WALLET.includes(k)) S[k] += v; else if (k === "sanity") S.sanity += v; else S.inv[k] = (S.inv[k] || 0) + v;
     out.push({ k, n: v });
@@ -76,66 +77,40 @@ function spendSanity(n) {
   if (ups) { S.sanity = Math.max(S.sanity, maxSanity(S.lvl)); S.orundum += 30 * ups; toast(`Blader Rank ${S.lvl}! Energy restored, +${30 * ups} BeyPoints.`, "gold"); }
 }
 
-// ---------- operator stats ----------
-const MAINS = {
-  atk: { n: "ATK", p: 1, a: .06, b: .3 }, hp: { n: "Spin", p: 1, a: .06, b: .3 }, def: { n: "DEF", p: 1, a: .06, b: .3 },
-  spd: { n: "SPD", p: 0, a: 3, b: 18 }, cr: { n: "Crit Rate", p: 1, a: .04, b: .24 }, cd: { n: "Crit Dmg", p: 1, a: .07, b: .38 },
-  acc: { n: "Accuracy", p: 1, a: .06, b: .32 }, res: { n: "Resistance", p: 1, a: .06, b: .32 },
-};
-const RUNE_RAR = ["", "Plastic", "Custom", "Pro", "Metal", "Championship"];
-const RUNE_RC = ["", "#9aa4b8", "#4fd17f", "#3fa7ff", "#b26bff", "#ff9a3c"];
-const runeMain = r => { const m = MAINS[r.main]; return (m.a + (m.b - m.a) * r.lvl / 15) * [0, .6, .7, .8, .9, 1][r.rar]; };
-const runeMainText = r => { const m = MAINS[r.main], v = runeMain(r); return `${m.n} +${m.p ? Math.round(v * 100) + "%" : Math.round(v)}`; };
-function makeRune(set, rar) { return { id: S.runeSeq++, set, rar, lvl: 0, main: pick(Object.keys(MAINS)), eq: null }; }
-const runeById = id => id == null ? null : S.runes.find(r => r.id === id);
-const enhanceCost = r => 400 * (r.lvl + 1) * r.rar;
-const sellValue = r => Math.round(300 * r.rar * (1 + r.lvl / 5));
-
-function applySetStats(st, sets) {
-  if (sets.has("Swift")) st.spd *= 1.25;
-  if (sets.has("Fatal")) st.atk *= 1.35;
-  if (sets.has("Blade")) st.cr += .12;
-  if (sets.has("Focus")) st.acc += .2;
-  if (sets.has("Energy")) st.hp *= 1.15;
-  if (sets.has("Guard")) st.def *= 1.15;
-  if (sets.has("Rage")) st.cd += .4;
-  if (sets.has("Endure")) st.res += .2;
-}
+// ---------- Beyblade stats ----------
 // STAT Abilities: percentage boosts to Spin/ATK/DEF/SPD, flat boosts to the rate stats
 function applyStatTalents(st, passives) {
   for (const t of passives || []) if (t.id === "STAT") for (const k in t.stats) {
     if (k === "hp" || k === "atk" || k === "def" || k === "spd") st[k] *= 1 + t.stats[k]; else st[k] += t.stats[k];
   }
 }
-function opStats(key, p, virtualSets) {
+// a Beyblade's stats: level, rarity and Bit-Beast Sync, then its four parts (fitted or stock), then Abilities
+function opStats(key, p) {
   const op = OPS[key], LV = effLV(p);
   const f = (.32 + .68 * LV / 120) * RAR_MULT[op.rar] * (1 + .02 * (p.pot - 1));
   const st = { hp: op.stats.hp * f, atk: op.stats.atk * f, def: op.stats.def * f, spd: op.stats.spd + p.elite * 2, cr: .15, cd: .5, acc: .25, res: .15 };
-  const sets = new Set(virtualSets || []);
-  for (const rid of p.runes || []) {
-    const r = runeById(rid); if (!r) continue;
-    sets.add(r.set);
-    const v = runeMain(r);
-    if (r.main === "atk" || r.main === "hp" || r.main === "def") st[r.main] *= 1 + v; else st[r.main] += v;
-  }
-  applySetStats(st, sets);
+  const build = buildOf(op, key, p.parts);
+  applyPartStats(st, build);
   applyStatTalents(st, op.passives);
   st.hp = Math.round(st.hp); st.atk = Math.round(st.atk); st.def = Math.round(st.def); st.spd = Math.round(st.spd);
-  return { st, sets: [...sets] };
+  return { st, build };
 }
+// rival Bladers: generic stats by type, with the stock parts their Beyblade would come with
 function enemyStats(key, LV) {
   const d = ENEMY[key], b = CLASS_BASE[d.cls], f = .32 + .68 * LV / 120;
   const st = { hp: b.hp * d.m.hp * f, atk: b.atk * d.m.atk * f, def: b.def * d.m.def * f, spd: d.m.spd + Math.floor(LV / 12), cr: .15, cd: .5, acc: .2 + LV / 400, res: .1 + LV / 500 };
+  const build = d.op ? buildOf(OPS[d.op], d.op, null) : buildOf(d, key, null);
+  applyPartStats(st, build);
   applyStatTalents(st, d.passives);
   st.hp = Math.round(st.hp); st.atk = Math.round(st.atk); st.def = Math.round(st.def); st.spd = Math.round(st.spd);
-  return { st, sets: [] };
+  return { st, build };
 }
 function progForLV(key, LV) {
   const op = OPS[key];
   let elite = 0;
   if (LV > 80 && op.maxElite >= 2) elite = 2; else if (LV > 30 && op.maxElite >= 1) elite = 1;
   const lvl = clamp(LV - LV_OFF[elite], 1, LV_CAP[elite]), sk = Math.min(7, 1 + Math.floor(LV / 18));
-  return { lvl, xp: 0, elite, pot: 1, sk: [sk, sk, sk], runes: [null, null] };
+  return { lvl, xp: 0, elite, pot: 1, sk: [sk, sk, sk], parts: null };
 }
 function power(key, p) {
   const { st } = opStats(key, p);
@@ -143,7 +118,7 @@ function power(key, p) {
 }
 const owned = k => !!S.ops[k];
 const rosterPower = () => Object.keys(S.ops).reduce((a, k) => a + power(k, S.ops[k]), 0);
-const topTeam = (n = 4) => Object.keys(S.ops).sort((a, b) => power(b, S.ops[b]) - power(a, S.ops[a])).slice(0, n);
+const topTeam = (n = TEAM_SIZE) => Object.keys(S.ops).sort((a, b) => power(b, S.ops[b]) - power(a, S.ops[a])).slice(0, n);
 
 // ---------- upgrades ----------
 function opXp(key, n) {
@@ -179,18 +154,20 @@ function skillUp(key, i) {
   const c = skillCost(p.sk[i]); if (S.inv.summ < c.summ || S.lmd < c.lmd) return false;
   S.inv.summ -= c.summ; S.lmd -= c.lmd; p.sk[i]++; S.daily.upgrade++; return true;
 }
-function equipRune(key, slot, rid) {
-  const p = S.ops[key], r = runeById(rid); if (!p || !r) return;
-  if (r.eq) { const o = S.ops[r.eq.k]; if (o) o.runes[r.eq.s] = null; }
-  const old = runeById(p.runes[slot]); if (old) old.eq = null;
-  p.runes[slot] = rid; r.eq = { k: key, s: slot };
+// ---------- parts ----------
+function fitPart(key, pid) {
+  const p = S.ops[key], pt = partById(pid); if (!p || !pt) return;
+  const slot = partSlot(pt);
+  if (pt.eq) { const o = S.ops[pt.eq.k]; if (o) o.parts[pt.eq.s] = null; }
+  const old = partById(p.parts[slot]); if (old) old.eq = null;
+  p.parts[slot] = pid; pt.eq = { k: key, s: slot };
 }
-function unequipRune(key, slot) { const p = S.ops[key], r = runeById(p.runes[slot]); if (r) r.eq = null; p.runes[slot] = null; }
-function enhanceRune(r) {
-  if (r.lvl >= 15) return false; const c = enhanceCost(r); if (S.lmd < c) return false;
-  S.lmd -= c; r.lvl++; S.daily.rune++; S.stats.codeUps++; return true;
+function removePart(key, slot) { const p = S.ops[key], pt = partById(p.parts[slot]); if (pt) pt.eq = null; p.parts[slot] = null; }
+function tunePart(pt) {
+  if (pt.lvl >= 15) return false; const c = partCost(pt); if (S.lmd < c) return false;
+  S.lmd -= c; pt.lvl++; S.daily.rune++; S.stats.codeUps++; return true;
 }
-function sellRune(r) { if (r.eq) unequipRune(r.eq.k, r.eq.s); S.lmd += sellValue(r); S.runes = S.runes.filter(x => x !== r); }
+function sellPart(pt) { if (pt.eq) removePart(pt.eq.k, pt.eq.s); S.lmd += partSellValue(pt); S.parts = S.parts.filter(x => x !== pt); }
 
 // ---------- headhunting ----------
 // Random Booster: one featured 5★ and two featured 4★ Beyblades per day
@@ -244,7 +221,7 @@ function genOpps() {
   S.arena.opps = [.04, .1, .18].map(f => {
     const rank = Math.max(1, r - Math.max(1, Math.ceil(r * f)) - ri(0, 3));
     const mult = .8 + .6 * (1 - rank / 1600) + (f - .1) * .5;
-    const team = [...pool].sort(() => R() - .5).slice(0, 4);
+    const team = [...pool].sort(() => R() - .5).slice(0, TEAM_SIZE);
     const lead = team.find(k => OPS[k].leader); if (lead) { team.splice(team.indexOf(lead), 1); team.unshift(lead); }
     const units = team.map(k => {
       let lo = 1, hi = 120, best = 1;

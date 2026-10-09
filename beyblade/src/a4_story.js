@@ -4,15 +4,15 @@
 //  Node types: story · battle · side · chest · boss
 // =====================================================================
 // story bosses: tougher versions of playable Beyblades [unit, Spin multiplier, ATK multiplier]
-bossOf("b_kai", "kai-s", 2.6, 1.0); bossOf("b_lee", "lee-s", 2.6, 1.0); bossOf("b_michael", "michael-s", 2.6, 1.02);
-bossOf("b_sanguinex", "sanguinex-s", 2.3, 1.0); bossOf("b_robert", "robert-s", 2.8, 1.04); bossOf("b_bryan", "bryan-s", 2.6, 1.04);
-bossOf("b_blackdranzer", "kai-bd", 2.3, 1.0); bossOf("b_tala", "tala-s", 3.0, 1.08);
-bossOf("b_dunga", "dunga-v", 2.5, 1.0); bossOf("b_ozuma", "ozuma-v", 2.7, 1.02); bossOf("b_jim", "jim-v", 2.6, 1.0); bossOf("b_kane", "kane-v", 2.8, 1.05);
-bossOf("b_ozuma2", "ozuma-v2", 2.2, .95); bossOf("b_king", "king-v", 2.6, 1.02); bossOf("b_gordo", "gordo-v", 2.6, 1.02); bossOf("b_zeo", "zeo-v", 2.5, 1.06);
-bossOf("b_daichi", "daichi-v", 2.6, 1.0); bossOf("b_hiro", "hiro-g", 3.0, 1.08); bossOf("b_julia", "julia-g", 2.6, 1.02); bossOf("b_miguel", "miguel-g", 2.6, 1.02);
-bossOf("b_ray", "ray-g", 2.6, 1.04); bossOf("b_max", "max-g", 2.3, .92); bossOf("b_tala4", "tala-g", 2.7, 1.04); bossOf("b_kaigt", "kai-gt", 3.0, 1.08);
-bossOf("b_mingming", "mingming-g", 2.6, 1.0); bossOf("b_mystel", "mystel-g", 2.6, 1.04); bossOf("b_crusher", "crusher-g", 3.0, 1.05);
-bossOf("b_garland", "garland-g", 3.0, 1.08); bossOf("b_brooklyn", "brooklyn-g", 3.0, 1.1);
+bossOf("b_kai", "kai-s", 3.0, 1.0); bossOf("b_lee", "lee-s", 3.0, 1.0); bossOf("b_michael", "michael-s", 2.9, 1.02);
+bossOf("b_sanguinex", "sanguinex-s", 2.3, 1.0); bossOf("b_robert", "robert-s", 2.5, 1.0); bossOf("b_bryan", "bryan-s", 2.6, 1.04);
+bossOf("b_blackdranzer", "kai-bd", 2.3, 1.0); bossOf("b_tala", "tala-s", 4.3, 1.15);
+bossOf("b_dunga", "dunga-v", 2.5, 1.0); bossOf("b_ozuma", "ozuma-v", 2.3, 1.0); bossOf("b_jim", "jim-v", 2.6, 1.0); bossOf("b_kane", "kane-v", 3.5, 1.1);
+bossOf("b_ozuma2", "ozuma-v2", 2.6, 1.0); bossOf("b_king", "king-v", 2.6, 1.02); bossOf("b_gordo", "gordo-v", 2.6, 1.02); bossOf("b_zeo", "zeo-v", 1.7, 0.95);
+bossOf("b_daichi", "daichi-v", 2.6, 1.0); bossOf("b_hiro", "hiro-g", 4.4, 1.18); bossOf("b_julia", "julia-g", 2.6, 1.02); bossOf("b_miguel", "miguel-g", 1.5, 0.95);
+bossOf("b_ray", "ray-g", 2.6, 1.04); bossOf("b_max", "max-g", 2.3, .92); bossOf("b_tala4", "tala-g", 2.7, 1.04); bossOf("b_kaigt", "kai-gt", 2.0, 0.96);
+bossOf("b_mingming", "mingming-g", 2.4, .98); bossOf("b_mystel", "mystel-g", 1.7, 0.95); bossOf("b_crusher", "crusher-g", 2.4, 1.0);
+bossOf("b_garland", "garland-g", 3.0, 1.08); bossOf("b_brooklyn", "brooklyn-g", 3.5, 1.14);
 // Carlos, leader of the Blade Sharks, isn't a collectable Beyblade: he launches three tops at once
 ENEMY.b_carlos = { key: "b_carlos", enemy: true, boss: 1, runes: [], passives: [], n: "Spin Cutter", blader: "Carlos", cls: "Attack", el: "Attack", m: { hp: 2.2, atk: .95, def: .8, spd: 110 },
   fig: kid("#1a1a20", "#2a6a6a", "#1a1a24", { hs: "spiky", bandana: "#d83a2a", h: 1.08 }), bey: { ring: "#2a8a8a", ring2: "#ffd34d", disk: "#7a8090", base: "#1a2a2a", shape: "saw", chip: "#5fd4ff" },
@@ -69,12 +69,14 @@ const STORY = [{
           L("carlos", "Hand over those Beys, kids. Blade Shark rules."),
           L("tyson", "Not a chance. Bladers ready? 3, 2, 1..."),
           L("max", "Let it rip!"),
-          L("kenny", "Tap a rival Beyblade to target it, then pick a move. I'll keep the data running.") ], post: [
+          L("kenny", "Tap the launcher when the needle hits the sweet spot for a perfect launch!"),
+          L("kenny", "Then your Beyblade circles the dish on its own. Tap ATTACK to rush the rival, and use your technique when it's charged.") ], post: [
           L("max", "Hi! I'm Max. My dad runs the hobby shop. You guys spin pretty good!"),
           L("tyson", "Pretty good? Watch me get even better.") ] },
         { id: "1-3", type: "battle", name: "The Hobby Shop", lv: 2, waves: [W("bully", "street", "bully")], pre: [
           L("max", "Dad lets anyone test their Beys in the stadium out back. Some kids just use it to push people around."),
           L("kenny", "Every hit builds Bit Power, the bar at the bottom. At 100%, a Beyblade can call its Bit-Beast for a special attack!"),
+          L("max", "And it's one on one, but you can tag in a partner. Each of us can tag in once, and whoever tags out gets to rest and recover some Spin."),
           L("dizzi", "And I'll be in this laptop, being ignored. As usual.") ] },
         { id: "1-4", type: "chest", name: "Kenny's Toolbox", reward: { lmd: 2000, rec1: 6, orundum: 100 }, pre: [
           L("kenny", "Spare Weight Disks, a Blade Base or two... take what you need. A good Blader customizes!") ] },
@@ -85,7 +87,8 @@ const STORY = [{
         { id: "1-6", type: "battle", name: "Regional Qualifiers", lv: 5, waves: [W("street", "trainee", "street"), W("shark", "trainee", "shark", "street")], pre: [
           L("jazzman", "Welcome to the Bey City Regional Tournament! Bladers, are you ready?"),
           L("ray", "Watch the badges over each Beyblade. Attack beats Endurance, Endurance beats Defense, and Defense beats Attack. Balance has no edge and no weakness."),
-          L("kenny", "And knock them hard enough and they fly right out of the dish. That's a Ring Out!") ] },
+          L("kenny", "Every Beyblade slows down over time. Hit a weakened one hard near the rim and it flies right out of the dish. That's a Ring Out!"),
+          L("kenny", "Parts matter too: the Attack Ring, Weight Disk, Spin Gear and Blade Base all change how a Beyblade moves and hits. Swap them in the Customize tab.") ] },
         { id: "1-7", type: "boss", name: "Tyson vs. Kai", lv: 7, waves: [W("shark", "shark"), W("b_kai", "shark", "shark")], pre: [
           L("kai_e", "So you're the one beating my Sharks. Your Beyblade is a toy."),
           L("tyson", "My Dragoon's no toy. Grandpa's sword had a Bit-Beast in it all along, and it chose me."),
@@ -450,17 +453,18 @@ for (const ep of STORY) ep.chapters.forEach((ch, ci) => {
   ch.nodes.forEach((nd, i) => { nd.legacy = nd.id; nd.id = nd.type === "side" ? `S${ci + 1}-${++sc}` : `${ci + 1}-${++mc}`; nd.ch = ch; nd.ep = ep; nd.idx = i; NODES[nd.id] = nd; });
 });
 const nodeCost = nd => nd.type === "story" || nd.type === "chest" ? 0 : 6 + Math.floor(nd.lv / 10) * 2;
-const nodeTurnGoal = nd => (nd.waves ? nd.waves.length : 1) * 9 + (nd.type === "boss" ? 4 : 0);
+// 3-star time goal: about 25 seconds per rival Beyblade, more for a boss
+const nodeTimeGoal = nd => 25 * Math.min(TEAM_SIZE, nd.waves ? nd.waves.flat().length : 1) + (nd.type === "boss" ? 30 : 15);
 
 // =====================================================================
 //  STREET BATTLES · BBA TOWER · RANKED BATTLES · DAILY TRAINING · HOBBY SHOP
 // =====================================================================
 const HUNTS = [
-  { id: "river", code: "RB", n: "Riverbank Battles", sub: "Bey City's street Bladers meet under the bridge", env: "river", sets: ["Swift", "Energy", "Focus", "Will", "Endure"],
+  { id: "river", code: "RB", n: "Riverbank Battles", sub: "Bey City's street Bladers meet under the bridge", env: "river", parts: ["flat", "grip", "semiflat", "rsg", "lsg", "tenbal", "sixatk"],
     waves: lv => [W("street", "shark", "street"), W("b_carlos", "shark", "shark")] },
-  { id: "shop", code: "HS", n: "Hobby Shop Cup", sub: "The weekly tournament in the stadium out back", env: "street", sets: ["Fatal", "Blade", "Rage", "Violent", "Revenge"],
+  { id: "shop", code: "HS", n: "Hobby Shop Cup", sub: "The weekly tournament in the stadium out back", env: "street", parts: ["wing", "spike", "upper", "smash", "absorb", "egr", "egl", "instant"],
     waves: lv => [W("trainee", "bully", "allstar"), W("b_michael", "allstar", "trainee")] },
-  { id: "abbey", code: "BA", n: "Balkov Abbey", sub: "Biovolt's training halls under Moscow", env: "russia", sets: ["Guard", "Shield", "Nemesis", "Despair", "Endure"],
+  { id: "abbey", code: "BA", n: "Balkov Abbey", sub: "Biovolt's training halls under Moscow", env: "russia", parts: ["defring", "survivor", "widedef", "eightheavy", "tenwide", "magne", "neor", "neol", "ball", "sharp", "bearing"],
     waves: lv => [W("biovolt", "dark", "biovolt"), W("b_bryan", "biovolt", "dark")] },
 ];
 const HUNT_LV = [10, 22, 34, 46, 58, 70];
@@ -478,7 +482,7 @@ function towerFloor(f) {
   if (f % 5 === 0) waves = [W(pickE(), pickE(), pickE()), W(bosses[(f / 5 - 1) % bosses.length], pickE(), pickE())];
   else if (f >= 8 && f % 2 === 0) {
     const pool = OP_KEYS.filter(k => OPS[k].rar >= 4);
-    waves = [[0, 1, 2, 3].map(() => ({ op: pool[Math.floor(rng() * pool.length)] }))];
+    waves = [[0, 1, 2].map(() => ({ op: pool[Math.floor(rng() * pool.length)] }))];
   } else waves = [W(pickE(), pickE(), pickE()), ...(f > 3 ? [W(pickE(), pickE(), pickE(), pickE())] : [])];
   const reward = f % 5 === 0 ? { orundum: 200, permit: 1, chip: 2 } : { orundum: 50, lmd: 1500 + f * 300, ["rec" + Math.min(4, 1 + Math.floor(f / 8))]: 3 };
   return { id: "T" + f, f, lv, waves, reward, env: ["bba", "street", "china", "usa", "europe", "russia"][Math.floor((f - 1) / 5)] };
@@ -509,20 +513,20 @@ const SHOP = {
     { id: "c_permit", n: "Booster Ticket", cost: 25, give: { permit: 1 } },
     { id: "c_summ", n: "Training Scroll ×3", cost: 8, give: { summ: 3 } },
     { id: "c_chip", n: "Upgrade Kit ×2", cost: 12, give: { chip: 2 } },
-    { id: "c_rune", n: "Metal grade Customize Part", cost: 20, give: { rune: 4 } },
+    { id: "c_part", n: "Metal grade part", d: "A random Attack Ring, Weight Disk, Spin Gear or Blade Base", cost: 20, give: { part4: 1 } },
   ],
   tokens: [
     { id: "t_permit", n: "Booster Ticket", cost: 240, give: { permit: 1 } },
     { id: "t_chip", n: "Upgrade Kit ×3", cost: 90, give: { chip: 3 } },
     { id: "t_summ", n: "Training Scroll ×4", cost: 60, give: { summ: 4 } },
-    { id: "t_rune", n: "Championship grade Customize Part", cost: 220, give: { rune: 5 } },
+    { id: "t_part", n: "Championship part", d: "A random Attack Ring, Weight Disk, Spin Gear or Blade Base", cost: 220, give: { part5: 1 } },
   ],
   prime: [
     { id: "p_san", n: "Restore Energy", d: "Refill Energy to max", cost: 1, give: { sanityMax: 1 } },
     { id: "p_oru", n: "Trade for BeyPoints", d: "1 Sports Drink → 180 BeyPoints", cost: 1, give: { orundum: 180 } },
   ],
 };
-// the starting team: Tyson, Max, Ray and Kenny from Season 1 (Kai joins after the regionals)
+// the starting Beyblades: Tyson, Max, Ray and Kenny from Season 1 (Kai joins after the regionals); teams take three
 const STARTERS = ["tyson-s", "max-s", "ray-s", "kenny-s"];
 // any 5★ Beyblade can headline the Booster of the Day
 const BANNER_TOP = OP_KEYS.filter(k => OPS[k].rar === 5);

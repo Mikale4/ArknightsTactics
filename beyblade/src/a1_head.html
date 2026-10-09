@@ -410,6 +410,10 @@ p{margin:0}
   font:800 11px var(--f-display);color:#08101e}
 .rune.eq{box-shadow:inset 0 0 0 2px var(--gold)}
 .runeslots{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pslots{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pslot{min-height:64px;padding:8px;border:1px solid var(--line2);border-left:3px solid var(--pc,#7a869c);border-radius:8px;text-align:left;color:var(--text);background:var(--hull2);display:flex;flex-direction:column;gap:2px;justify-content:center;font:inherit}
+.pslot b{font-size:13px;line-height:1.15}
+.pslot.on{box-shadow:inset 0 0 0 2px var(--gold)}
 .rslot{min-height:64px;padding:8px;border:1px dashed var(--line2);border-radius:8px;text-align:left;color:var(--dim);display:flex;flex-direction:column;gap:2px;justify-content:center}
 .rslot.full{border-style:solid;color:var(--text);background:var(--hull2)}
 .opart{position:relative;height:300px;margin:-12px -12px 0;overflow:hidden;background:radial-gradient(70% 80% at 50% 70%,var(--ecs,#16335f),transparent 70%),linear-gradient(180deg,#070b16,#0b1222)}
@@ -427,6 +431,89 @@ p{margin:0}
   *{animation-duration:.01s!important;transition-duration:.01s!important}
 }
 @media (min-width:600px){ #app{border-left:1px solid var(--line);border-right:1px solid var(--line)} }
+/* ---------- real-time battle HUD: both Beyblades' panels, the clock, tag and move buttons, the launch meter ---------- */
+.bhud{position:absolute;left:0;right:0;top:48px;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:6px;padding:0 8px;pointer-events:none;z-index:5}
+.bpan{display:flex;align-items:flex-start;gap:5px;min-width:0;pointer-events:auto;cursor:pointer}
+.bpan.E{flex-direction:row-reverse;text-align:right}
+.bpan.down{opacity:.55}
+.bpan .pp{width:38px;height:38px;border-radius:50%;border:2px solid var(--ls);background:#0b1426;flex:none}
+.bpan.E .pp{border-color:var(--ds)}
+.bpan .pm{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.bpan .pn{display:flex;align-items:center;gap:4px;min-width:0}
+.bpan.E .pn{flex-direction:row-reverse}
+.bpan .pn b{min-width:0;font:800 12.5px var(--f-display);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 3px #000}
+.pel{flex:none;width:15px;height:15px;border-radius:50%;display:grid;place-items:center;font:900 9px/1 var(--f-display);color:#08090c;background:var(--ec);box-shadow:0 0 0 1.5px #000}
+.pboss{font:800 8.5px var(--f-display);color:#fff;background:var(--ds);padding:0 3px;border-radius:2px;flex:none}
+.bpan .ph{position:relative;height:9px;background:#3a1218;border:1px solid #000;border-radius:2px;overflow:hidden;transform:skewX(-14deg)}
+.bpan.E .ph{transform:skewX(14deg)}
+.bpan .ph i{position:absolute;top:0;bottom:0;left:0;width:0}
+.bpan.E .ph i{left:auto;right:0}
+.bpan .ph .lag{background:#ff9c9c}
+.bpan .ph .cur{background:linear-gradient(180deg,#7dffb0,#2ab866)}
+.bpan.E .ph .cur{background:linear-gradient(180deg,#ff9a8a,#d8302a)}
+.bpan .ph .sh{bottom:auto;height:3px;background:#e8fff0}
+.bpan .pb{display:flex;align-items:center;gap:4px}
+.bpan.E .pb{flex-direction:row-reverse}
+.bpan .pb .segs{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.bpan .pb .segs i{height:5px;background:#0008;border:1px solid #fff3;overflow:hidden;transform:skewX(-18deg)}
+.bpan .pb .segs b{display:block;height:100%;width:0;background:linear-gradient(90deg,#0a3a8a,#3aa8ff 60%,#d8f0ff)}
+.bpan.E .pb .segs b{background:linear-gradient(90deg,#8a2a0a,#ff7a2a 60%,#ffe0c0)}
+.bpan .pb .segs i.full{box-shadow:0 0 6px #3aa8ff}
+.bpan .pb em{font:900 11px/1 var(--f-title);font-style:normal;color:#fff;min-width:30px;text-shadow:0 1px 2px #000}
+.bpan .pe{display:flex;flex-wrap:wrap;gap:2px;min-height:11px}
+.bpan.E .pe{justify-content:flex-end}
+.bpan .pe span{font:800 8px/11px var(--f-display);padding:0 3px;border-radius:2px;color:#fff;background:#1d7a45}
+.bpan .pe span.d{background:#a3242e}
+.pbench{display:flex;flex-direction:column;gap:3px;flex:none}
+.bm{position:relative;width:22px;height:22px;border-radius:50%;overflow:hidden;border:1.5px solid #ffffff66;background:#0b1426}
+.bm img{width:100%;height:100%;display:block}
+.bm i{position:absolute;inset:0;background:conic-gradient(#000c calc(var(--cd,0)*360deg),transparent 0)}
+.bm.ready{border-color:var(--holo)}
+.bm.out{filter:grayscale(1) brightness(.4)}
+.bm.used{opacity:.5}
+.bclock{margin-top:2px;padding:3px 8px;font:900 16px/1 var(--f-title);color:#fff;background:#000a;border:1px solid #ffffff30;border-radius:6px;text-shadow:0 0 8px #3aa8ff}
+.btags{display:flex;gap:10px;padding-bottom:16px}
+.tagbtn{position:relative;width:52px;height:52px;border-radius:50%;padding:0;border:2px solid #9aa4b8;background:#0b1426;flex:none;color:#fff}
+.tagbtn img{width:100%;height:100%;border-radius:50%;display:block}
+.tagbtn .cdw,.actb .cdw{position:absolute;inset:0;border-radius:50%;background:conic-gradient(#000b calc(var(--cd,0)*360deg),transparent 0);pointer-events:none}
+.tagbtn .cdt,.actb .cdt{position:absolute;inset:0;display:grid;place-items:center;font:900 16px var(--f-display);color:#fff;text-shadow:0 1px 3px #000;pointer-events:none}
+.tagbtn .tl{position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);font:800 9.5px var(--f-display);letter-spacing:.08em;color:#c9d3e6;white-space:nowrap}
+.tagbtn .hpb{position:absolute;left:8px;right:8px;bottom:-5px;height:4px;background:#000;border-radius:2px;overflow:hidden}
+.tagbtn .hpb i{display:block;height:100%;width:0;background:#3ddc84}
+.tagbtn.ready{border-color:var(--holo);box-shadow:0 0 12px #5fd4ff88}
+.tagbtn.ready .tl{color:var(--holo)}
+.tagbtn.out{filter:grayscale(1) brightness(.4)}
+.tagbtn.used{opacity:.55}
+.tagbtn.hit,.actb.hit{transform:scale(.9)}
+.bacts{display:flex;align-items:flex-end;gap:16px;padding-bottom:16px}
+.actb{position:relative;width:56px;height:56px;border-radius:50%;display:grid;place-items:center;padding:0;flex:none;color:#fff;
+  background:radial-gradient(circle at 35% 30%,#2b3d63,#070c18);border:2px solid var(--holo);box-shadow:0 4px 14px #000a;transition:transform .08s,filter .2s;touch-action:manipulation}
+.actb svg{width:28px;height:28px}
+.actb img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+.actb.s1{width:80px;height:80px;border-color:#ffb36a;background:radial-gradient(circle at 35% 30%,#ffb36a,#c8400a 55%,#5a1404);box-shadow:0 0 18px #ff7a1a66,0 4px 14px #000a}
+.actb.s1 svg{width:40px;height:40px}
+.actb.s1 .alabel{max-width:90px}
+.actb.s3{border-color:var(--gold)}
+.actb.s3.ready{animation:pulse 1.4s infinite}
+.actb.off{filter:grayscale(.7) brightness(.75)}
+.actb.no,.tagbtn.no{animation:nope .25s}
+@keyframes nope{25%{translate:-4px 0}75%{translate:4px 0}}
+.actb .alabel{position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);max-width:64px;overflow:hidden;text-overflow:ellipsis;font:700 9.5px var(--f-display);letter-spacing:.05em;text-transform:uppercase;color:#c9d3e6;white-space:nowrap}
+.launch{position:absolute;left:0;right:0;bottom:18%;display:flex;flex-direction:column;align-items:center;gap:12px;z-index:20;padding:0 20px;touch-action:manipulation}
+.lhint{font:700 12px var(--f-display);letter-spacing:.12em;text-transform:uppercase;color:#fff;text-shadow:0 1px 4px #000;text-align:center}
+.lmeter{position:relative;width:min(340px,86vw);height:24px;border-radius:12px;background:linear-gradient(90deg,#3a1218,#4a3a14 70%,#3a1218);border:2px solid #fff8;overflow:hidden}
+.lmeter .lz{position:absolute;top:0;bottom:0;background:linear-gradient(180deg,#fff0b8,#f2c14e);box-shadow:0 0 12px #f2c14e}
+.lmeter .ln{position:absolute;top:0;bottom:0;left:0;width:4px;margin-left:-2px;background:#fff;box-shadow:0 0 8px #fff,0 0 2px #000}
+.lgo{font-size:18px;padding:14px 30px}
+.lres{font:900 30px var(--f-title);color:var(--gold);text-shadow:0 0 14px #f2c14e,0 2px 4px #000}
+@media (max-height:500px){
+  .bhud{top:42px}
+  .bpan .pp{width:32px;height:32px}
+  .actb{width:48px;height:48px}.actb.s1{width:64px;height:64px}.actb.s1 svg{width:32px;height:32px}
+  .tagbtn{width:44px;height:44px}
+  .btags,.bacts{padding-bottom:14px}
+  .launch{bottom:10%}
+}
 /* ================= Beyblade theme ================= */
 h1,h2{font-family:var(--f-title);letter-spacing:.06em;font-weight:700}
 h1{font-weight:900}
