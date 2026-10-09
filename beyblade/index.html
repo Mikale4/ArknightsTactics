@@ -594,6 +594,24 @@ h1{font-weight:900}
 .tbtn svg{width:20px;height:20px}
 .tver{position:absolute;left:0;right:0;bottom:calc(10px + env(safe-area-inset-bottom,0px));text-align:center;font:500 10.5px/1.5 var(--f-body);color:#ffffff88;pointer-events:none;padding:0 12px}
 @media (max-height:500px){.tlogo{top:6%}.tlogo h1{font-size:clamp(36px,9vh,60px)}.ttap,.tload{bottom:16%}}
+/* ================= Blader Card, looks, challengers ================= */
+.tcard{background:radial-gradient(120% 140% at 100% 0%,#1e3a7a,transparent 60%),linear-gradient(135deg,#14203e,#0a1226);border:1px solid #3a5aa8;box-shadow:inset 0 0 0 1px #ffffff10}
+.tcard h2{font-size:26px;line-height:1.05;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tlook{width:84px;height:118px;object-fit:contain;object-position:bottom;flex:none;margin:-6px -4px -8px 0;filter:drop-shadow(0 6px 6px #0008)}
+.trophies{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:10px;padding:8px;background:#060b18;border-radius:12px;border:1px solid var(--line2);box-shadow:inset 0 2px 8px #0008}
+.tro{aspect-ratio:5/6;display:grid;place-items:center} .tro svg{width:88%;height:88%}
+.tro.on svg{filter:drop-shadow(0 0 6px #f2c14e66)}
+.avgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:6px}
+.avgrid button,.avpick button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 2px;border-radius:12px;border:2px solid var(--line2);background:var(--hull2);color:var(--text);font:700 10.5px var(--f-display);letter-spacing:.04em;text-transform:uppercase}
+.avgrid button.on,.avpick button.on{border-color:var(--gold);background:#3a2a0a;box-shadow:0 0 10px #f2c14e55}
+.avgrid img{width:54px;height:54px;border-radius:50%}
+.avgrid span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.avpick{display:flex;gap:12px;justify-content:center}
+.avpick button{padding:8px 12px;font-size:12px}
+.avpick img{width:66px;height:66px;border-radius:50%}
+.stage img.trainer{position:absolute;left:3%;bottom:15%;height:40%;max-width:34%;object-fit:contain;object-position:bottom;filter:drop-shadow(0 6px 6px #0008);z-index:1}
+.stage .nameplate,.stage .sidebtns{z-index:2}
+.rvlook{width:46px;height:46px;border-radius:50%;flex:none;border:2px solid var(--line2)}
 </style>
 </head>
 <body>
@@ -2158,6 +2176,10 @@ function towerFloor(f) {
 
 const ARENA_N1 = ["Bey City", "Hong Kong", "Las Vegas", "Moscow", "Glasgow", "Madrid", "Cairo", "Sydney", "Rome", "New York", "Bai Hu", "Dish Central"];
 const ARENA_N2 = ["Bladers", "Spinners", "Storm", "Sharks", "Tigers", "Stars", "Knights", "Wolves", "Shields", "Dynasty", "Revolution", "Smashers"];
+// challengers' titles, by how high they rank
+const ARENA_CLS = [[60, ["World Class Blader", "BBA Champion", "Grand Prix Winner"]], [300, ["Pro Blader", "Regional Champion", "Tournament Blader", "Blading Club Captain"]],
+  [1e9, ["Street Blader", "Junior Blader", "Hobby Shop Regular", "BBA Trainee", "Riverbank Blader"]]];
+const arenaCls = rank => pick(ARENA_CLS.find(([r]) => rank <= r)[1]);
 const ARENA_MS = 10 * 60000, PAYOUT_MS = 6 * 3600000;
 
 const DAILIES = [
@@ -2197,7 +2219,10 @@ const SHOP = {
 // the starting Beyblades: Tyson, Max, Ray and Kenny from Season 1 (Kai joins after the regionals); teams take three
 const STARTERS = ["tyson-s", "max-s", "ray-s", "kenny-s"];
 // any 5★ Beyblade can headline the Booster of the Day
-const BANNER_TOP = OP_KEYS.filter(k => OPS[k].rar === 5);
+// Black Dranzer never comes out of a Booster: it arrives as a Mystery Gift after the World Championship (a9c_meta.js)
+const MYSTERY_OP = "kai-bd";
+const boosterPool = rar => OP_KEYS.filter(k => OPS[k].rar === rar && k !== MYSTERY_OP);
+const BANNER_TOP = boosterPool(5);
 
 // =====================================================================
 //  FIGURE RENDERER — procedural full-body characters on canvas.
@@ -3447,7 +3472,7 @@ const mkProg = () => ({ lvl: 1, xp: 0, elite: 0, pot: 1, sk: [1, 1, 1], parts: {
 const newStats = () => ({ battles: 0, wins: 0, arcs: 0, kills: 0, flawless: 0, versus: 0, patrols: 0, fives: 0, codeUps: 0, loginDays: 0 });
 function newSave() {
   const s = {
-    v: 1, codes2: 1, name: "Blader", named: false, lvl: 1, xp: 0, seenIntro: false,
+    v: 1, codes2: 1, name: "Blader", named: false, look: "rookie", lvl: 1, xp: 0, seenIntro: false,
     playerId: String(100000000 + Math.floor(R() * 899999999)), created: Date.now(),
     inbox: [], mailSeq: 0, achv: {}, lastLogin: "", lastGift: Date.now(), lvlGift: 1,
     sanity: maxSanity(1), sTime: Date.now(),
@@ -3605,7 +3630,7 @@ function sellPart(pt) { if (pt.eq) removePart(pt.eq.k, pt.eq.s); S.lmd += partSe
 function bannerToday() {
   const rng = seeded(hash(today() + "banner"));
   const f6 = BANNER_TOP[Math.floor(rng() * BANNER_TOP.length)];
-  const four = OP_KEYS.filter(k => OPS[k].rar === 4);
+  const four = boosterPool(4);
   const f5 = [four[Math.floor(rng() * four.length)], four[Math.floor(rng() * four.length)]];
   return { feat6: f6, feat5: [...new Set(f5)] };
 }
@@ -3630,7 +3655,7 @@ function pullOne(featured, forceMin) {
   let key;
   if (B && rar === 5 && R() < .5) key = B.feat6;
   else if (B && rar === 4 && R() < .5) key = pick(B.feat5);
-  else key = pick(OP_KEYS.filter(k => OPS[k].rar === rar));
+  else key = pick(boosterPool(rar));
   return grantOp(key);
 }
 function headhunt(n, featured) {
@@ -3659,7 +3684,7 @@ function genOpps() {
       for (let i = 0; i < 12; i++) { const m = (lo + hi) >> 1; if (power(k, progForLV(k, m)) < avg * mult) { lo = m + 1; best = m; } else hi = m - 1; }
       return { op: k, LV: best };
     });
-    return { rank, name: pick(ARENA_N1) + " " + pick(ARENA_N2) + " " + ri(2, 99), team: units, pw: units.reduce((a, u) => a + power(u.op, progForLV(u.op, u.LV)), 0) };
+    return { rank, name: pick(ARENA_N1) + " " + pick(ARENA_N2) + " " + ri(2, 99), cls: arenaCls(rank), look: ri(1, 1e9), team: units, pw: units.reduce((a, u) => a + power(u.op, progForLV(u.op, u.LV)), 0) };
   });
 }
 const payout = rank => ({ orundum: Math.max(20, Math.round(360 / (1 + rank / 45))), tokens: Math.max(40, Math.round(900 / (1 + rank / 90))) });
@@ -5497,7 +5522,7 @@ function renderTop() {
   tickTimers();
   const mx = maxSanity(S.lvl);
   $("#topbar").innerHTML = `
-    <button class="me" data-act="settings" aria-label="Settings">
+    <button class="me" data-act="settings" aria-label="Blader Card">
       <div class="me-badge num">${S.lvl}</div>
       <div style="min-width:0;text-align:left"><div class="me-name">${esc(S.name)}</div><div class="me-xp"><i style="width:${S.xp / pxpNeed(S.lvl) * 100}%"></i></div></div>
     </button>
@@ -5527,6 +5552,36 @@ function route(view, arg, keep) {
   renderTop(); save();
 }
 const rerender = () => route(UI.view, UI.arg, true);
+
+// ---------- looks (the Blader Card) ----------
+// Two original looks to start with, then dress like a Blader from the show: 19 in all.
+const ROOKIE_LOOKS = {
+  rookie: { n: "Cap & Jacket", fig: F({ hair: "#3a2414", hs: "spiky", cap: "#2f6fd8", cap2: "#f2f2f6", capBack: 1, col: "#f2a62a", col2: "#2a3a5a", acc: "#2f6fd8", trim: "#f2f2f6", glove: "#d8302a", eyec: "#5a3a2a", lc: "#2f6fd8", sc: "#5fd4ff" }) },
+  rookie2: { n: "Ponytail", fig: F({ hair: "#8a3a1a", hs: "pony", hlen: 26, bandana: "#ff5a7a", col: "#6a4ad8", col2: "#f2f2f6", acc: "#ff5a7a", trim: "#f2d04e", eyec: "#3a8a5a", slim: 1, h: .95, lc: "#ff5a7a", sc: "#ff9ad0" }) },
+};
+const LOOK_BLADERS = ["tyson", "kai", "ray", "max", "kenny", "daichi", "hiro", "mariah", "lee", "emily", "michael", "oliver", "tala", "julia", "mingming", "zeo", "brooklyn"];
+const LOOKS = [...Object.keys(ROOKIE_LOOKS), ...LOOK_BLADERS];
+const bladerOf = k => BLADERS.find(b => b.k === k);
+const lookName = k => ROOKIE_LOOKS[k] ? ROOKIE_LOOKS[k].n : bladerOf(k).short || bladerOf(k).n.split(" ")[0];
+const lookFig = k => ROOKIE_LOOKS[k] ? ROOKIE_LOOKS[k].fig : bladerOf(k).fig;
+const myLook = () => LOOKS.includes(S.look) ? S.look : "rookie";
+const LOOK_BG = ["#2a4a8a", "#122244", "#060c1a"];
+const lookArt = k => figFull("look:" + k, lookFig(k)).url;
+const lookHead = k => figHead("look:" + k, lookFig(k), LOOK_BG);
+// a Ranked Battles challenger: a kid Blader built from a seed (hair, cap, clothes, colours)
+function rivalFig(seed) {
+  const r = seeded(seed), p = a => a[Math.floor(r() * a.length)];
+  const COL = ["#d8302a", "#2f6fd8", "#3a9a4a", "#f2a62a", "#6a4ad8", "#2a2a30", "#f2f2f6", "#ff5aa8", "#2aa8a8", "#8a2a3a", "#f2d04e"];
+  const hs = p(["spiky", "short", "pony", "long", "bob", "swoop", "spiky"]), acc = p(COL);
+  const f = { skin: p(["#f3d6bf", "#e8c4a0", "#c8946a", "#8a5a3a", "#f6dcc8"]), hair: p(["#141418", "#3a2414", "#8a5a2a", "#f2d27a", "#a8302a", "#1e2a5a", "#5a5a6a", "#d87a2a", "#2a6a3a", "#8ac8e8"]),
+    hs, col: p(COL), col2: p(COL), acc, trim: p(COL), eyec: p(["#5a3a2a", "#2f6fd8", "#3a8a5a", "#5a5a6a"]), h: .9 + r() * .2, lc: acc, sc: p(["#5fd4ff", "#ff9a3c", "#c8ff8a", "#ff8ad8", "#ffd34d"]) };
+  if (hs === "pony" || hs === "long") f.hlen = Math.round(16 + r() * 26);
+  if (r() < .35) { f.cap = p(COL); f.capBack = r() < .5 ? 1 : 0; }
+  if (r() < .4) f.slim = 1;
+  return F(f);
+}
+const rivalSeed = o => o.look || hash(o.name);
+const rivalHead = o => figHead("rv:" + rivalSeed(o), rivalFig(rivalSeed(o)), LOOK_BG);
 
 // ---------- lobby ----------
 const QUIPS = {
@@ -5563,6 +5618,7 @@ SCREENS.home = () => {
     <section class="stage">
       <div class="floor"></div><div class="ring3d"></div>
       <img class="assist" src="${spriteURL(op)}" alt="${esc(op.n)}" data-act="poke" draggable="false">
+      <img class="trainer" src="${lookArt(myLook())}" alt="You" data-act="settings" draggable="false">
       <div class="nameplate"><span class="eyebrow">Partner · ${esc(op.blader)}</span><b>${esc(op.n)}</b><div class="row" style="gap:4px">${elChip(op.el)}${beastChip(op)}</div></div>
       <div class="sidebtns left">
         <button class="sidebtn" data-act="inbox" aria-label="Mailbox">${IC.mail}<small>Mail</small>${mails ? `<i class="cnt num">${mails}</i>` : ""}</button>
@@ -5859,7 +5915,7 @@ SCREENS.arena = () => {
     </section>
     <div class="spread"><h3>Challengers</h3><button class="btn ghost sm" data-act="newOpps">New challengers</button></div>
     ${A.opps.map((o, k) => `<section class="panel stack" style="gap:8px">
-      <div class="spread"><div><b>${esc(o.name)}</b><div class="tiny dim">Rank #${o.rank} · Power <span class="num">${fmtFull(o.pw)}</span></div></div>
+      <div class="spread"><div class="row" style="gap:8px;min-width:0"><img class="rvlook" src="${rivalHead(o)}" alt=""><div style="min-width:0"><b>${esc(o.name)}</b><div class="tiny gold">${esc(o.cls || "Street Blader")}</div><div class="tiny dim">Rank #${o.rank} · Power <span class="num">${fmtFull(o.pw)}</span></div></div></div>
       <button class="btn sm" data-act="arenaGo" data-k="${k}" ${A.attempts > 0 ? "" : "disabled"}>Battle</button></div>
       <div class="row">${o.team.map(u => opHTML(u.op, { s: 48, prog: progForLV(u.op, u.LV) })).join("")}</div></section>`).join("")}
     <p class="tiny dim">Spend Ranking Points at the hobby shop.</p>
@@ -6094,7 +6150,7 @@ function rewardModal(title, list, sub = "") {
 }
 
 // =====================================================================
-//  META — Mailbox (mail with gifts), BBA Records (achievements), Settings and the title screen
+//  META — Mailbox (gifts and Mystery Gifts), BBA Records (achievements), the Blader Card with settings, and the title screen
 // =====================================================================
 const GAME_VER = "1.0.0";
 const MAIL_DAYS = 30;            // gifts expire after this many days; claimed mail is cleared after the same time
@@ -6166,6 +6222,16 @@ function rankGifts() {
     sendMail({ from: "BBA", tag: "rank", title: `Blader Rank ${L}`, body: `You reached Blader Rank ${L}. The BBA has noticed your skill.`,
       rewards: L % 10 === 0 ? { orundum: 100 + L * 4, permit: 1 } : { orundum: 100 + L * 4 } });
   }
+}
+
+// Mystery Gift: once the World Championship is won, Black Dranzer turns up in the Mailbox (it never comes out of a Booster)
+function mysteryGift() {
+  const ch = STORY[0].chapters.find(c => c.id === "c5");
+  if (S.mysterySent || !ch || !chapterCleared(ch)) return;
+  S.mysterySent = 1;
+  sendMail({ from: "Mystery Gift", tag: "mystery", noExp: 1, title: "Mystery Gift: Black Dranzer",
+    body: "A sealed case arrived with no return address, stamped with the crest of Balkov Abbey. Inside is Black Dranzer, the Beyblade Voltaire built to steal every Bit-Beast in the world. Kenny says it's safe now. Probably.",
+    rewards: { op: MYSTERY_OP } });
 }
 
 // ---------- achievements ----------
@@ -6252,11 +6318,11 @@ function recordBattle(res, B) {
 // everything the meta layer does on its own: expire mail, login gift, rank gifts, letters, achievements
 function metaTick() {
   if (!UI.inGame || BT.on) return;
-  purgeMail(); dailyLogin(); rankGifts(); castGift(); checkAchievements();
+  purgeMail(); dailyLogin(); rankGifts(); castGift(); mysteryGift(); checkAchievements();
 }
 
 // ---------- screens: inbox ----------
-const mailIcon = m => ({ welcome: IC.gift, gift: IC.gift, login: IC.cert, ach: IC.trophy.replace("<svg", '<svg style="color:var(--gold)"'), rank: IC.star }[m.tag] || IC.mail);
+const mailIcon = m => ({ welcome: IC.gift, gift: IC.gift, mystery: IC.gift.replace("<svg", '<svg style="color:var(--gold)"'), login: IC.cert, ach: IC.trophy.replace("<svg", '<svg style="color:var(--gold)"'), rank: IC.star }[m.tag] || IC.mail);
 const ago = t => { const d = Math.floor((Date.now() - t) / DAY_MS); return d < 1 ? "Today" : d === 1 ? "Yesterday" : d + " days ago"; };
 const rewardChips = r => Object.entries(r).map(([k, n]) => `<span class="cost">${itemIcon(k)}${fmt(n)}</span>`).join(" ");
 SCREENS.inbox = () => {
@@ -6309,26 +6375,42 @@ SCREENS.ach = () => {
   </div>`;
 };
 
-// ---------- screens: settings ----------
+// ---------- screens: Blader Card + settings ----------
+// a trophy for every tournament (story chapter) won, coloured by season
+const SEASON_COL = { "Season 1": "#f2c14e", "V-Force": "#5fd4ff", "G-Revolution": "#ff8a3c" };
+function trophySVG(ch, on) {
+  const c = on ? SEASON_COL[ch.season] || "#f2c14e" : "#2e3548", d = on ? shade(c, -.35) : "#1e2432";
+  return `<svg viewBox="0 0 40 48" aria-hidden="true"><path d="M12 6h16v10a8 8 0 0 1-16 0z" fill="${c}"/><path d="M12 9H6v3a6 6 0 0 0 6 6M28 9h6v3a6 6 0 0 1-6 6" fill="none" stroke="${c}" stroke-width="2.5"/>
+    <rect x="18" y="24" width="4" height="9" fill="${d}"/><rect x="11" y="33" width="18" height="5" rx="1" fill="${c}"/><rect x="9" y="38" width="22" height="5" rx="1" fill="${d}"/>${on ? '<path d="M15 8h3v8a5 5 0 0 1-3-3z" fill="#fff" opacity=".45"/>' : ""}</svg>`;
+}
+const trophies = () => STORY[0].chapters.filter(chapterCleared).length;
+// the title on your Blader Card, from the tournaments you've won
+const bladerTitle = n => n >= 13 ? "Legendary Blader" : n >= 9 ? "Tag Team Champion" : n >= 5 ? "World Champion" : n >= 1 ? "Regional Champion" : "Rookie Blader";
 const chipRow = (act, cur, opts) => `<div class="filters">${opts.map(([v, n]) => `<button class="chip ${String(cur) === String(v) ? "on" : ""}" data-act="${act}" data-v="${v}">${n}</button>`).join("")}</div>`;
 SCREENS.settings = () => {
   const st = S.settings;
   return `<div class="stack">
-    <div class="spread">${back("go", "Home", 'data-v="home"')}<span class="eyebrow">Settings</span></div>
-    <h2>Settings</h2>
+    <div class="spread">${back("go", "Home", 'data-v="home"')}<span class="eyebrow">Blader Card</span></div>
+    <section class="panel tcard">
+      <div class="spread" style="align-items:flex-start"><div style="min-width:0"><div class="eyebrow">BBA License · ID No. ${S.playerId.replace(/(\d{3})(?=\d)/g, "$1 ")}</div><h2 style="margin-top:4px">${esc(S.name)}</h2>
+        <div class="small gold">${bladerTitle(trophies())}</div></div><img class="tlook" src="${lookArt(myLook())}" alt=""></div>
+      <div class="statgrid small" style="margin-top:6px">
+        <div><span>Yen</span><b>¥${fmtFull(S.lmd)}</b></div><div><span>Beyblades</span><b>${Object.keys(S.ops).length} / ${OP_KEYS.length}</b></div>
+        <div><span>Blader Rank</span><b>${S.lvl}</b></div><div><span>Started</span><b>${new Date(S.created).toLocaleDateString()}</b></div>
+        <div><span>Battles won</span><b>${fmtFull(S.stats.wins)}</b></div><div><span>BBA Records</span><b>${achDone()}/${achTotal}</b></div>
+        <div><span>World ranking</span><b>#${fmtFull(S.arena.rank)}</b></div><div><span>Login days</span><b>${S.stats.loginDays}</b></div>
+      </div>
+      <div class="trophies">${STORY[0].chapters.map(ch => `<span class="tro ${chapterCleared(ch) ? "on" : ""}" title="${esc(ch.title)}">${trophySVG(ch, chapterCleared(ch))}</span>`).join("")}</div>
+      <p class="tiny dim" style="margin-top:4px">A trophy for every tournament you win in the Story: ${trophies()} of ${STORY[0].chapters.length}.</p>
+    </section>
     <section class="panel stack" style="gap:10px"><h3>Profile</h3>
       <label class="small dim" for="pname">Name</label>
       <div class="row" style="gap:8px"><input id="pname" class="tinput" maxlength="16" value="${esc(S.name)}"><button class="btn sm" data-act="saveName">Save</button></div>
-      <div class="statgrid small">
-        <div><span>Player ID</span><b class="num">${S.playerId.replace(/(\d{3})(?=\d)/g, "$1 ")}</b></div><div><span>Blader Rank</span><b>${S.lvl}</b></div>
-        <div><span>Started</span><b>${new Date(S.created).toLocaleDateString()}</b></div><div><span>Login days</span><b>${S.stats.loginDays}</b></div>
-        <div><span>Battles won</span><b>${fmtFull(S.stats.wins)}</b></div><div><span>Boosters opened</span><b>${fmtFull(S.gacha.total)}</b></div>
-        <div><span>Beyblades</span><b>${Object.keys(S.ops).length}/${OP_KEYS.length}</b></div><div><span>BBA Records</span><b>${achDone()}/${achTotal}</b></div>
-      </div></section>
+      <span class="small dim">Look</span><div class="avgrid">${LOOKS.map(k => `<button class="${myLook() === k ? "on" : ""}" data-act="setLook" data-v="${k}"><img src="${lookHead(k)}" alt=""><span>${esc(lookName(k))}</span></button>`).join("")}</div></section>
     <section class="panel stack" style="gap:10px"><h3>Sound</h3>
       ${chipRow("setSound", st.sound ? 1 : 0, [[1, "On"], [0, "Off"]])}</section>
     <section class="panel stack" style="gap:10px"><h3>Battle</h3>
-      <span class="small dim">Battle speed</span>${chipRow("setSpeed", st.speed, [[1, "1×"], [2, "2×"], [3, "3×"]])}
+      <span class="small dim">Battle speed</span>${chipRow("setSpeed", st.speed, [[1, "1×"], [2, "1.5×"], [3, "2×"]])}
       <span class="small dim">Start battles on auto</span>${chipRow("setAuto", st.auto ? 1 : 0, [[1, "On"], [0, "Off"]])}
       <span class="small dim">Auto-battle tactics</span>${chipRow("setAi", st.ai, [["balanced", "Balanced"], ["aggressive", "Aggressive"], ["safe", "Defensive"]])}</section>
     <section class="panel stack" style="gap:10px"><h3>Account</h3>
@@ -6347,8 +6429,9 @@ function resetModal() {
 }
 function nameModal() {
   openModal(`<div class="stack" style="text-align:center;align-items:center"><div class="eyebrow">New account</div><h2>What's your Blader name?</h2>
+    <div class="avpick">${Object.keys(ROOKIE_LOOKS).map(k => `<button class="${myLook() === k ? "on" : ""}" data-act="pickLook" data-v="${k}"><img src="${lookHead(k)}" alt=""><span>${ROOKIE_LOOKS[k].n}</span></button>`).join("")}</div>
     <input id="nname" class="tinput" maxlength="16" placeholder="Blader" style="text-align:center;width:100%">
-    <p class="tiny dim">You can change your name later in Settings.</p>
+    <p class="tiny dim">You can change your name, and pick from ${LOOKS.length} looks, later on your Blader Card.</p>
     <button class="btn wide" data-act="nameGo">Confirm</button></div>`);
   m0Click();
 }
@@ -6479,6 +6562,8 @@ const META_ACT = {
   setSpeed: d => { S.settings.speed = +d.v; rerender(); },
   setAuto: d => { S.settings.auto = d.v === "1"; rerender(); },
   setAi: d => { S.settings.ai = d.v; rerender(); },
+  setLook: d => { if (LOOKS.includes(d.v)) { S.look = d.v; sfx("tap"); rerender(); } },
+  pickLook: d => { if (!ROOKIE_LOOKS[d.v]) return; S.look = d.v; sfx("tap"); $$(".avpick button").forEach(b => b.classList.toggle("on", b.dataset.v === d.v)); },
   saveName: () => { const v = ($("#pname") || {}).value; S.name = (v || "").trim().slice(0, 16) || "Blader"; toast("Name saved."); rerender(); },
   askReset: () => resetModal(),
   doReset: () => {
@@ -6710,7 +6795,7 @@ function launchArena(k) {
   if (A.attempts >= 5) A.aTime = Date.now();
   A.attempts--; S.stats.battles++; save();
   startBattle({
-    allies: allySpecs(ids), foes: o.team.slice(0, TEAM_SIZE).map(u => ({ op: u.op, LV: u.LV })), env: "bba", title: o.name, sub: `Ranked Battle · Rank #${o.rank}`,
+    allies: allySpecs(ids), foes: o.team.slice(0, TEAM_SIZE).map(u => ({ op: u.op, LV: u.LV })), env: "bba", title: o.cls ? `${o.cls} ${o.name}` : o.name, sub: `Ranked Battle · Rank #${o.rank}`,
     onWin() {
       const before = A.rank;
       A.rank = o.rank < A.rank ? o.rank : Math.max(1, A.rank - ri(1, 4));

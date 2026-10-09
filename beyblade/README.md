@@ -74,17 +74,25 @@ Play: open `beyblade/index.html` (on GitHub Pages: `/ArknightsTactics/beyblade/`
 - **Battle modes.**
   - **Street Battles** (Customize Part prizes): Riverbank Battles, the Hobby Shop Cup and Balkov Abbey.
   - **BBA Tower:** 30 floors with champions and other Bladers' teams.
-  - **Ranked Battles:** the BBA world ranking.
+  - **Ranked Battles:** the BBA world ranking. Each challenger has their own look and a title that goes with their
+    rank (Street Blader, Tournament Blader, Pro Blader, BBA Champion…).
 - **Home.**
-  - A partner Beyblade with its Blader and Bit-Beast; tap it for a line.
+  - A partner Beyblade with its Blader and Bit-Beast; tap it for a line. You stand beside them in the look you picked.
   - Daily Training.
   - Max's dad's **Hobby Shop**: Coupons, Spare Parts, Ranking and Sports Drinks.
 - **Meta.**
   - Title screen: a Beystadium under the lights, Dragoon and Dranzer clashing, Tyson and Kai launching.
   - **Mailbox:** a welcome gift from Mr. Dickenson with ten free Boosters and a Legendary Bit-Chip (a random 5★).
     Mail also brings a daily login gift and letters from Kenny, Dizzi, Grandpa, Max, Hilary, Kai and others.
+  - **Mystery Gift:** win the World Championship (chapter 5) and Black Dranzer arrives in the Mailbox. It never
+    comes out of a Booster.
   - **BBA Records:** tiered achievements.
-  - Settings, including *Reset account*.
+  - **Blader Card** (tap your name at the top, or yourself on Home): your BBA License with ID No., name, title
+    (Rookie Blader up to Legendary Blader), Yen, Beyblades, Blader Rank, battles won, BBA Records, world ranking and
+    a trophy case with a trophy for each Story tournament won. Change your name and pick from 19 looks: two
+    originals (also offered when you make your account) or dress like Tyson, Kai, Ray, Max, Kenny, Daichi, Hiro,
+    Mariah, Lee, Emily, Michael, Oliver, Tala, Julia, Ming-Ming, Zeo or Brooklyn. Settings live on the card too,
+    including *Reset account*.
 
 ## Terminology
 
@@ -101,7 +109,7 @@ Play: open `beyblade/index.html` (on GitHub Pages: `/ArknightsTactics/beyblade/`
 | Stamina / currencies | Energy; Yen, BeyPoints, Spare Parts, Ranking Points, Sports Drinks, Hobby Shop Coupons |
 | Materials | Battle Data S/M/L, Dizzi's Master Data, Upgrade Kit, Training Scroll |
 | Modes | Main Story (Season 1, V-Force, G-Revolution), Street Battles, BBA Tower, Ranked Battles, Daily Training |
-| Meta | Mailbox, BBA Records, Blader Rank |
+| Meta | Mailbox (Mystery Gift), BBA Records, Blader Rank, Blader Card (BBA License, trophy case) |
 
 Bladers, Beyblades, Bit-Beasts and attack names follow the Beyblade Fandom wiki and the English dub. S1/S2 moves are
 written for the game. A few Bit-Beasts whose creature isn't confirmed (Vanishing Moot, Amphilyon, Trypio) use the
@@ -143,7 +151,7 @@ Parts in build order:
 | `a8a_render.js` | Stadium, camera and drawing |
 | `a8c_sfx.js` | Sounds |
 | `a8b_battle.js` | Battle director, launch meter, HUD and buttons |
-| `a9a`/`a9b`/`a9c` | Screens and meta |
+| `a9a`/`a9b`/`a9c` | Screens (looks and challengers' looks in `a9a`) and meta (Mailbox, Mystery Gift, BBA Records, Blader Card, title) |
 | `a10_boot.js` | Actions and boot |
 
 Unofficial, non-commercial fan game. Beyblade belongs to Takao Aoki, Takara Tomy, Hasbro, d-rights and Nelvana.

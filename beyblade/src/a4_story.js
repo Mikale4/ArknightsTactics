@@ -490,6 +490,10 @@ function towerFloor(f) {
 
 const ARENA_N1 = ["Bey City", "Hong Kong", "Las Vegas", "Moscow", "Glasgow", "Madrid", "Cairo", "Sydney", "Rome", "New York", "Bai Hu", "Dish Central"];
 const ARENA_N2 = ["Bladers", "Spinners", "Storm", "Sharks", "Tigers", "Stars", "Knights", "Wolves", "Shields", "Dynasty", "Revolution", "Smashers"];
+// challengers' titles, by how high they rank
+const ARENA_CLS = [[60, ["World Class Blader", "BBA Champion", "Grand Prix Winner"]], [300, ["Pro Blader", "Regional Champion", "Tournament Blader", "Blading Club Captain"]],
+  [1e9, ["Street Blader", "Junior Blader", "Hobby Shop Regular", "BBA Trainee", "Riverbank Blader"]]];
+const arenaCls = rank => pick(ARENA_CLS.find(([r]) => rank <= r)[1]);
 const ARENA_MS = 10 * 60000, PAYOUT_MS = 6 * 3600000;
 
 const DAILIES = [
@@ -529,4 +533,7 @@ const SHOP = {
 // the starting Beyblades: Tyson, Max, Ray and Kenny from Season 1 (Kai joins after the regionals); teams take three
 const STARTERS = ["tyson-s", "max-s", "ray-s", "kenny-s"];
 // any 5★ Beyblade can headline the Booster of the Day
-const BANNER_TOP = OP_KEYS.filter(k => OPS[k].rar === 5);
+// Black Dranzer never comes out of a Booster: it arrives as a Mystery Gift after the World Championship (a9c_meta.js)
+const MYSTERY_OP = "kai-bd";
+const boosterPool = rar => OP_KEYS.filter(k => OPS[k].rar === rar && k !== MYSTERY_OP);
+const BANNER_TOP = boosterPool(5);

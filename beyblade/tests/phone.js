@@ -81,9 +81,13 @@ const PAGE = 'file://' + path.resolve(__dirname, '../index.html');
   await skipDlg();
   const done2 = await waitResult('27_boss_');
   await shot('28_boss_result');
+  // win chapters 1–5 on paper: the Mystery Gift (Black Dranzer) arrives and the trophy case fills up
+  console.log('mystery gift:', await page.evaluate(() => { for (const id of Object.keys(NODES).filter(k => /^[1-5]-/.test(k))) S.story[id] = S.story[id] || 1; mysteryGift(); return S.inbox.some(m => m.tag === 'mystery'); }));
   console.log('boss won:', await page.evaluate(() => !!(BT.B && BT.B.result && BT.B.result.win)), 'mc:', await page.evaluate(() => JSON.stringify(BT.B && BT.B.mc)));
   if (done2) { await page.click('#rDone'); await page.waitForTimeout(900); await skipDlg(); await page.waitForTimeout(600); await shot('29_chapter_cleared'); }
   await ev(() => closeModal());
+  await ev(() => { ACT.setLook({ v: 'kai' }); route('settings'); }, null, 600); await shot('29b_blader_card');
+  await ev(() => route('home'), null, 500); await shot('29c_home_look');
   await page.setViewportSize({ width: 844, height: 390 }); await page.waitForTimeout(300);
   await ev(() => { S.settings.auto = false; S.team.tower = ['tyson-f', 'zeo-v', 'ray-v2']; launchTower(S.tower + 1); }, null, 4200);
   await shot('30_landscape_launch');

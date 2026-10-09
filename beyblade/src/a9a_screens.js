@@ -45,7 +45,7 @@ function renderTop() {
   tickTimers();
   const mx = maxSanity(S.lvl);
   $("#topbar").innerHTML = `
-    <button class="me" data-act="settings" aria-label="Settings">
+    <button class="me" data-act="settings" aria-label="Blader Card">
       <div class="me-badge num">${S.lvl}</div>
       <div style="min-width:0;text-align:left"><div class="me-name">${esc(S.name)}</div><div class="me-xp"><i style="width:${S.xp / pxpNeed(S.lvl) * 100}%"></i></div></div>
     </button>
@@ -75,6 +75,36 @@ function route(view, arg, keep) {
   renderTop(); save();
 }
 const rerender = () => route(UI.view, UI.arg, true);
+
+// ---------- looks (the Blader Card) ----------
+// Two original looks to start with, then dress like a Blader from the show: 19 in all.
+const ROOKIE_LOOKS = {
+  rookie: { n: "Cap & Jacket", fig: F({ hair: "#3a2414", hs: "spiky", cap: "#2f6fd8", cap2: "#f2f2f6", capBack: 1, col: "#f2a62a", col2: "#2a3a5a", acc: "#2f6fd8", trim: "#f2f2f6", glove: "#d8302a", eyec: "#5a3a2a", lc: "#2f6fd8", sc: "#5fd4ff" }) },
+  rookie2: { n: "Ponytail", fig: F({ hair: "#8a3a1a", hs: "pony", hlen: 26, bandana: "#ff5a7a", col: "#6a4ad8", col2: "#f2f2f6", acc: "#ff5a7a", trim: "#f2d04e", eyec: "#3a8a5a", slim: 1, h: .95, lc: "#ff5a7a", sc: "#ff9ad0" }) },
+};
+const LOOK_BLADERS = ["tyson", "kai", "ray", "max", "kenny", "daichi", "hiro", "mariah", "lee", "emily", "michael", "oliver", "tala", "julia", "mingming", "zeo", "brooklyn"];
+const LOOKS = [...Object.keys(ROOKIE_LOOKS), ...LOOK_BLADERS];
+const bladerOf = k => BLADERS.find(b => b.k === k);
+const lookName = k => ROOKIE_LOOKS[k] ? ROOKIE_LOOKS[k].n : bladerOf(k).short || bladerOf(k).n.split(" ")[0];
+const lookFig = k => ROOKIE_LOOKS[k] ? ROOKIE_LOOKS[k].fig : bladerOf(k).fig;
+const myLook = () => LOOKS.includes(S.look) ? S.look : "rookie";
+const LOOK_BG = ["#2a4a8a", "#122244", "#060c1a"];
+const lookArt = k => figFull("look:" + k, lookFig(k)).url;
+const lookHead = k => figHead("look:" + k, lookFig(k), LOOK_BG);
+// a Ranked Battles challenger: a kid Blader built from a seed (hair, cap, clothes, colours)
+function rivalFig(seed) {
+  const r = seeded(seed), p = a => a[Math.floor(r() * a.length)];
+  const COL = ["#d8302a", "#2f6fd8", "#3a9a4a", "#f2a62a", "#6a4ad8", "#2a2a30", "#f2f2f6", "#ff5aa8", "#2aa8a8", "#8a2a3a", "#f2d04e"];
+  const hs = p(["spiky", "short", "pony", "long", "bob", "swoop", "spiky"]), acc = p(COL);
+  const f = { skin: p(["#f3d6bf", "#e8c4a0", "#c8946a", "#8a5a3a", "#f6dcc8"]), hair: p(["#141418", "#3a2414", "#8a5a2a", "#f2d27a", "#a8302a", "#1e2a5a", "#5a5a6a", "#d87a2a", "#2a6a3a", "#8ac8e8"]),
+    hs, col: p(COL), col2: p(COL), acc, trim: p(COL), eyec: p(["#5a3a2a", "#2f6fd8", "#3a8a5a", "#5a5a6a"]), h: .9 + r() * .2, lc: acc, sc: p(["#5fd4ff", "#ff9a3c", "#c8ff8a", "#ff8ad8", "#ffd34d"]) };
+  if (hs === "pony" || hs === "long") f.hlen = Math.round(16 + r() * 26);
+  if (r() < .35) { f.cap = p(COL); f.capBack = r() < .5 ? 1 : 0; }
+  if (r() < .4) f.slim = 1;
+  return F(f);
+}
+const rivalSeed = o => o.look || hash(o.name);
+const rivalHead = o => figHead("rv:" + rivalSeed(o), rivalFig(rivalSeed(o)), LOOK_BG);
 
 // ---------- lobby ----------
 const QUIPS = {
@@ -111,6 +141,7 @@ SCREENS.home = () => {
     <section class="stage">
       <div class="floor"></div><div class="ring3d"></div>
       <img class="assist" src="${spriteURL(op)}" alt="${esc(op.n)}" data-act="poke" draggable="false">
+      <img class="trainer" src="${lookArt(myLook())}" alt="You" data-act="settings" draggable="false">
       <div class="nameplate"><span class="eyebrow">Partner · ${esc(op.blader)}</span><b>${esc(op.n)}</b><div class="row" style="gap:4px">${elChip(op.el)}${beastChip(op)}</div></div>
       <div class="sidebtns left">
         <button class="sidebtn" data-act="inbox" aria-label="Mailbox">${IC.mail}<small>Mail</small>${mails ? `<i class="cnt num">${mails}</i>` : ""}</button>

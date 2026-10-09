@@ -16,7 +16,7 @@ const mkProg = () => ({ lvl: 1, xp: 0, elite: 0, pot: 1, sk: [1, 1, 1], parts: {
 const newStats = () => ({ battles: 0, wins: 0, arcs: 0, kills: 0, flawless: 0, versus: 0, patrols: 0, fives: 0, codeUps: 0, loginDays: 0 });
 function newSave() {
   const s = {
-    v: 1, codes2: 1, name: "Blader", named: false, lvl: 1, xp: 0, seenIntro: false,
+    v: 1, codes2: 1, name: "Blader", named: false, look: "rookie", lvl: 1, xp: 0, seenIntro: false,
     playerId: String(100000000 + Math.floor(R() * 899999999)), created: Date.now(),
     inbox: [], mailSeq: 0, achv: {}, lastLogin: "", lastGift: Date.now(), lvlGift: 1,
     sanity: maxSanity(1), sTime: Date.now(),
@@ -174,7 +174,7 @@ function sellPart(pt) { if (pt.eq) removePart(pt.eq.k, pt.eq.s); S.lmd += partSe
 function bannerToday() {
   const rng = seeded(hash(today() + "banner"));
   const f6 = BANNER_TOP[Math.floor(rng() * BANNER_TOP.length)];
-  const four = OP_KEYS.filter(k => OPS[k].rar === 4);
+  const four = boosterPool(4);
   const f5 = [four[Math.floor(rng() * four.length)], four[Math.floor(rng() * four.length)]];
   return { feat6: f6, feat5: [...new Set(f5)] };
 }
@@ -199,7 +199,7 @@ function pullOne(featured, forceMin) {
   let key;
   if (B && rar === 5 && R() < .5) key = B.feat6;
   else if (B && rar === 4 && R() < .5) key = pick(B.feat5);
-  else key = pick(OP_KEYS.filter(k => OPS[k].rar === rar));
+  else key = pick(boosterPool(rar));
   return grantOp(key);
 }
 function headhunt(n, featured) {
@@ -228,7 +228,7 @@ function genOpps() {
       for (let i = 0; i < 12; i++) { const m = (lo + hi) >> 1; if (power(k, progForLV(k, m)) < avg * mult) { lo = m + 1; best = m; } else hi = m - 1; }
       return { op: k, LV: best };
     });
-    return { rank, name: pick(ARENA_N1) + " " + pick(ARENA_N2) + " " + ri(2, 99), team: units, pw: units.reduce((a, u) => a + power(u.op, progForLV(u.op, u.LV)), 0) };
+    return { rank, name: pick(ARENA_N1) + " " + pick(ARENA_N2) + " " + ri(2, 99), cls: arenaCls(rank), look: ri(1, 1e9), team: units, pw: units.reduce((a, u) => a + power(u.op, progForLV(u.op, u.LV)), 0) };
   });
 }
 const payout = rank => ({ orundum: Math.max(20, Math.round(360 / (1 + rank / 45))), tokens: Math.max(40, Math.round(900 / (1 + rank / 90))) });

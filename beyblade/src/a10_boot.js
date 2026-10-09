@@ -194,7 +194,7 @@ function launchArena(k) {
   if (A.attempts >= 5) A.aTime = Date.now();
   A.attempts--; S.stats.battles++; save();
   startBattle({
-    allies: allySpecs(ids), foes: o.team.slice(0, TEAM_SIZE).map(u => ({ op: u.op, LV: u.LV })), env: "bba", title: o.name, sub: `Ranked Battle · Rank #${o.rank}`,
+    allies: allySpecs(ids), foes: o.team.slice(0, TEAM_SIZE).map(u => ({ op: u.op, LV: u.LV })), env: "bba", title: o.cls ? `${o.cls} ${o.name}` : o.name, sub: `Ranked Battle · Rank #${o.rank}`,
     onWin() {
       const before = A.rank;
       A.rank = o.rank < A.rank ? o.rank : Math.max(1, A.rank - ri(1, 4));

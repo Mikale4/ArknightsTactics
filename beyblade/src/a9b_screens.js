@@ -74,7 +74,7 @@ SCREENS.arena = () => {
     </section>
     <div class="spread"><h3>Challengers</h3><button class="btn ghost sm" data-act="newOpps">New challengers</button></div>
     ${A.opps.map((o, k) => `<section class="panel stack" style="gap:8px">
-      <div class="spread"><div><b>${esc(o.name)}</b><div class="tiny dim">Rank #${o.rank} · Power <span class="num">${fmtFull(o.pw)}</span></div></div>
+      <div class="spread"><div class="row" style="gap:8px;min-width:0"><img class="rvlook" src="${rivalHead(o)}" alt=""><div style="min-width:0"><b>${esc(o.name)}</b><div class="tiny gold">${esc(o.cls || "Street Blader")}</div><div class="tiny dim">Rank #${o.rank} · Power <span class="num">${fmtFull(o.pw)}</span></div></div></div>
       <button class="btn sm" data-act="arenaGo" data-k="${k}" ${A.attempts > 0 ? "" : "disabled"}>Battle</button></div>
       <div class="row">${o.team.map(u => opHTML(u.op, { s: 48, prog: progForLV(u.op, u.LV) })).join("")}</div></section>`).join("")}
     <p class="tiny dim">Spend Ranking Points at the hobby shop.</p>

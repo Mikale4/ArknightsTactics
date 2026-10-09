@@ -586,4 +586,22 @@ h1{font-weight:900}
 .tbtn svg{width:20px;height:20px}
 .tver{position:absolute;left:0;right:0;bottom:calc(10px + env(safe-area-inset-bottom,0px));text-align:center;font:500 10.5px/1.5 var(--f-body);color:#ffffff88;pointer-events:none;padding:0 12px}
 @media (max-height:500px){.tlogo{top:6%}.tlogo h1{font-size:clamp(36px,9vh,60px)}.ttap,.tload{bottom:16%}}
+/* ================= Blader Card, looks, challengers ================= */
+.tcard{background:radial-gradient(120% 140% at 100% 0%,#1e3a7a,transparent 60%),linear-gradient(135deg,#14203e,#0a1226);border:1px solid #3a5aa8;box-shadow:inset 0 0 0 1px #ffffff10}
+.tcard h2{font-size:26px;line-height:1.05;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tlook{width:84px;height:118px;object-fit:contain;object-position:bottom;flex:none;margin:-6px -4px -8px 0;filter:drop-shadow(0 6px 6px #0008)}
+.trophies{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:10px;padding:8px;background:#060b18;border-radius:12px;border:1px solid var(--line2);box-shadow:inset 0 2px 8px #0008}
+.tro{aspect-ratio:5/6;display:grid;place-items:center} .tro svg{width:88%;height:88%}
+.tro.on svg{filter:drop-shadow(0 0 6px #f2c14e66)}
+.avgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:6px}
+.avgrid button,.avpick button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 2px;border-radius:12px;border:2px solid var(--line2);background:var(--hull2);color:var(--text);font:700 10.5px var(--f-display);letter-spacing:.04em;text-transform:uppercase}
+.avgrid button.on,.avpick button.on{border-color:var(--gold);background:#3a2a0a;box-shadow:0 0 10px #f2c14e55}
+.avgrid img{width:54px;height:54px;border-radius:50%}
+.avgrid span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.avpick{display:flex;gap:12px;justify-content:center}
+.avpick button{padding:8px 12px;font-size:12px}
+.avpick img{width:66px;height:66px;border-radius:50%}
+.stage img.trainer{position:absolute;left:3%;bottom:15%;height:40%;max-width:34%;object-fit:contain;object-position:bottom;filter:drop-shadow(0 6px 6px #0008);z-index:1}
+.stage .nameplate,.stage .sidebtns{z-index:2}
+.rvlook{width:46px;height:46px;border-radius:50%;flex:none;border:2px solid var(--line2)}
 </style>

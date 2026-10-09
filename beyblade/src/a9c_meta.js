@@ -1,6 +1,6 @@
 
 // =====================================================================
-//  META — Mailbox (mail with gifts), BBA Records (achievements), Settings and the title screen
+//  META — Mailbox (gifts and Mystery Gifts), BBA Records (achievements), the Blader Card with settings, and the title screen
 // =====================================================================
 const GAME_VER = "1.0.0";
 const MAIL_DAYS = 30;            // gifts expire after this many days; claimed mail is cleared after the same time
@@ -72,6 +72,16 @@ function rankGifts() {
     sendMail({ from: "BBA", tag: "rank", title: `Blader Rank ${L}`, body: `You reached Blader Rank ${L}. The BBA has noticed your skill.`,
       rewards: L % 10 === 0 ? { orundum: 100 + L * 4, permit: 1 } : { orundum: 100 + L * 4 } });
   }
+}
+
+// Mystery Gift: once the World Championship is won, Black Dranzer turns up in the Mailbox (it never comes out of a Booster)
+function mysteryGift() {
+  const ch = STORY[0].chapters.find(c => c.id === "c5");
+  if (S.mysterySent || !ch || !chapterCleared(ch)) return;
+  S.mysterySent = 1;
+  sendMail({ from: "Mystery Gift", tag: "mystery", noExp: 1, title: "Mystery Gift: Black Dranzer",
+    body: "A sealed case arrived with no return address, stamped with the crest of Balkov Abbey. Inside is Black Dranzer, the Beyblade Voltaire built to steal every Bit-Beast in the world. Kenny says it's safe now. Probably.",
+    rewards: { op: MYSTERY_OP } });
 }
 
 // ---------- achievements ----------
@@ -158,11 +168,11 @@ function recordBattle(res, B) {
 // everything the meta layer does on its own: expire mail, login gift, rank gifts, letters, achievements
 function metaTick() {
   if (!UI.inGame || BT.on) return;
-  purgeMail(); dailyLogin(); rankGifts(); castGift(); checkAchievements();
+  purgeMail(); dailyLogin(); rankGifts(); castGift(); mysteryGift(); checkAchievements();
 }
 
 // ---------- screens: inbox ----------
-const mailIcon = m => ({ welcome: IC.gift, gift: IC.gift, login: IC.cert, ach: IC.trophy.replace("<svg", '<svg style="color:var(--gold)"'), rank: IC.star }[m.tag] || IC.mail);
+const mailIcon = m => ({ welcome: IC.gift, gift: IC.gift, mystery: IC.gift.replace("<svg", '<svg style="color:var(--gold)"'), login: IC.cert, ach: IC.trophy.replace("<svg", '<svg style="color:var(--gold)"'), rank: IC.star }[m.tag] || IC.mail);
 const ago = t => { const d = Math.floor((Date.now() - t) / DAY_MS); return d < 1 ? "Today" : d === 1 ? "Yesterday" : d + " days ago"; };
 const rewardChips = r => Object.entries(r).map(([k, n]) => `<span class="cost">${itemIcon(k)}${fmt(n)}</span>`).join(" ");
 SCREENS.inbox = () => {
@@ -215,26 +225,42 @@ SCREENS.ach = () => {
   </div>`;
 };
 
-// ---------- screens: settings ----------
+// ---------- screens: Blader Card + settings ----------
+// a trophy for every tournament (story chapter) won, coloured by season
+const SEASON_COL = { "Season 1": "#f2c14e", "V-Force": "#5fd4ff", "G-Revolution": "#ff8a3c" };
+function trophySVG(ch, on) {
+  const c = on ? SEASON_COL[ch.season] || "#f2c14e" : "#2e3548", d = on ? shade(c, -.35) : "#1e2432";
+  return `<svg viewBox="0 0 40 48" aria-hidden="true"><path d="M12 6h16v10a8 8 0 0 1-16 0z" fill="${c}"/><path d="M12 9H6v3a6 6 0 0 0 6 6M28 9h6v3a6 6 0 0 1-6 6" fill="none" stroke="${c}" stroke-width="2.5"/>
+    <rect x="18" y="24" width="4" height="9" fill="${d}"/><rect x="11" y="33" width="18" height="5" rx="1" fill="${c}"/><rect x="9" y="38" width="22" height="5" rx="1" fill="${d}"/>${on ? '<path d="M15 8h3v8a5 5 0 0 1-3-3z" fill="#fff" opacity=".45"/>' : ""}</svg>`;
+}
+const trophies = () => STORY[0].chapters.filter(chapterCleared).length;
+// the title on your Blader Card, from the tournaments you've won
+const bladerTitle = n => n >= 13 ? "Legendary Blader" : n >= 9 ? "Tag Team Champion" : n >= 5 ? "World Champion" : n >= 1 ? "Regional Champion" : "Rookie Blader";
 const chipRow = (act, cur, opts) => `<div class="filters">${opts.map(([v, n]) => `<button class="chip ${String(cur) === String(v) ? "on" : ""}" data-act="${act}" data-v="${v}">${n}</button>`).join("")}</div>`;
 SCREENS.settings = () => {
   const st = S.settings;
   return `<div class="stack">
-    <div class="spread">${back("go", "Home", 'data-v="home"')}<span class="eyebrow">Settings</span></div>
-    <h2>Settings</h2>
+    <div class="spread">${back("go", "Home", 'data-v="home"')}<span class="eyebrow">Blader Card</span></div>
+    <section class="panel tcard">
+      <div class="spread" style="align-items:flex-start"><div style="min-width:0"><div class="eyebrow">BBA License · ID No. ${S.playerId.replace(/(\d{3})(?=\d)/g, "$1 ")}</div><h2 style="margin-top:4px">${esc(S.name)}</h2>
+        <div class="small gold">${bladerTitle(trophies())}</div></div><img class="tlook" src="${lookArt(myLook())}" alt=""></div>
+      <div class="statgrid small" style="margin-top:6px">
+        <div><span>Yen</span><b>¥${fmtFull(S.lmd)}</b></div><div><span>Beyblades</span><b>${Object.keys(S.ops).length} / ${OP_KEYS.length}</b></div>
+        <div><span>Blader Rank</span><b>${S.lvl}</b></div><div><span>Started</span><b>${new Date(S.created).toLocaleDateString()}</b></div>
+        <div><span>Battles won</span><b>${fmtFull(S.stats.wins)}</b></div><div><span>BBA Records</span><b>${achDone()}/${achTotal}</b></div>
+        <div><span>World ranking</span><b>#${fmtFull(S.arena.rank)}</b></div><div><span>Login days</span><b>${S.stats.loginDays}</b></div>
+      </div>
+      <div class="trophies">${STORY[0].chapters.map(ch => `<span class="tro ${chapterCleared(ch) ? "on" : ""}" title="${esc(ch.title)}">${trophySVG(ch, chapterCleared(ch))}</span>`).join("")}</div>
+      <p class="tiny dim" style="margin-top:4px">A trophy for every tournament you win in the Story: ${trophies()} of ${STORY[0].chapters.length}.</p>
+    </section>
     <section class="panel stack" style="gap:10px"><h3>Profile</h3>
       <label class="small dim" for="pname">Name</label>
       <div class="row" style="gap:8px"><input id="pname" class="tinput" maxlength="16" value="${esc(S.name)}"><button class="btn sm" data-act="saveName">Save</button></div>
-      <div class="statgrid small">
-        <div><span>Player ID</span><b class="num">${S.playerId.replace(/(\d{3})(?=\d)/g, "$1 ")}</b></div><div><span>Blader Rank</span><b>${S.lvl}</b></div>
-        <div><span>Started</span><b>${new Date(S.created).toLocaleDateString()}</b></div><div><span>Login days</span><b>${S.stats.loginDays}</b></div>
-        <div><span>Battles won</span><b>${fmtFull(S.stats.wins)}</b></div><div><span>Boosters opened</span><b>${fmtFull(S.gacha.total)}</b></div>
-        <div><span>Beyblades</span><b>${Object.keys(S.ops).length}/${OP_KEYS.length}</b></div><div><span>BBA Records</span><b>${achDone()}/${achTotal}</b></div>
-      </div></section>
+      <span class="small dim">Look</span><div class="avgrid">${LOOKS.map(k => `<button class="${myLook() === k ? "on" : ""}" data-act="setLook" data-v="${k}"><img src="${lookHead(k)}" alt=""><span>${esc(lookName(k))}</span></button>`).join("")}</div></section>
     <section class="panel stack" style="gap:10px"><h3>Sound</h3>
       ${chipRow("setSound", st.sound ? 1 : 0, [[1, "On"], [0, "Off"]])}</section>
     <section class="panel stack" style="gap:10px"><h3>Battle</h3>
-      <span class="small dim">Battle speed</span>${chipRow("setSpeed", st.speed, [[1, "1×"], [2, "2×"], [3, "3×"]])}
+      <span class="small dim">Battle speed</span>${chipRow("setSpeed", st.speed, [[1, "1×"], [2, "1.5×"], [3, "2×"]])}
       <span class="small dim">Start battles on auto</span>${chipRow("setAuto", st.auto ? 1 : 0, [[1, "On"], [0, "Off"]])}
       <span class="small dim">Auto-battle tactics</span>${chipRow("setAi", st.ai, [["balanced", "Balanced"], ["aggressive", "Aggressive"], ["safe", "Defensive"]])}</section>
     <section class="panel stack" style="gap:10px"><h3>Account</h3>
@@ -253,8 +279,9 @@ function resetModal() {
 }
 function nameModal() {
   openModal(`<div class="stack" style="text-align:center;align-items:center"><div class="eyebrow">New account</div><h2>What's your Blader name?</h2>
+    <div class="avpick">${Object.keys(ROOKIE_LOOKS).map(k => `<button class="${myLook() === k ? "on" : ""}" data-act="pickLook" data-v="${k}"><img src="${lookHead(k)}" alt=""><span>${ROOKIE_LOOKS[k].n}</span></button>`).join("")}</div>
     <input id="nname" class="tinput" maxlength="16" placeholder="Blader" style="text-align:center;width:100%">
-    <p class="tiny dim">You can change your name later in Settings.</p>
+    <p class="tiny dim">You can change your name, and pick from ${LOOKS.length} looks, later on your Blader Card.</p>
     <button class="btn wide" data-act="nameGo">Confirm</button></div>`);
   m0Click();
 }
@@ -385,6 +412,8 @@ const META_ACT = {
   setSpeed: d => { S.settings.speed = +d.v; rerender(); },
   setAuto: d => { S.settings.auto = d.v === "1"; rerender(); },
   setAi: d => { S.settings.ai = d.v; rerender(); },
+  setLook: d => { if (LOOKS.includes(d.v)) { S.look = d.v; sfx("tap"); rerender(); } },
+  pickLook: d => { if (!ROOKIE_LOOKS[d.v]) return; S.look = d.v; sfx("tap"); $$(".avpick button").forEach(b => b.classList.toggle("on", b.dataset.v === d.v)); },
   saveName: () => { const v = ($("#pname") || {}).value; S.name = (v || "").trim().slice(0, 16) || "Blader"; toast("Name saved."); rerender(); },
   askReset: () => resetModal(),
   doReset: () => {

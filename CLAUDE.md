@@ -61,7 +61,7 @@ Beyblades from its waves, bosses last (`rivalTeam` in `a10_boot.js`), and rival 
 the stage at 80% Spin/ATK with stock parts. Every visible
 term must be Beyblade terminology (glossary in `beyblade/README.md`): Spin, Bit Power, Bit-Beast attack, Ring Out / Sleep Out,
 Captain skill, Blader Ability, Upgrade, Bit-Beast Sync, Customize Parts, Random Booster, BeyPoints, Street Battles, BBA Tower,
-Ranked Battles, Hobby Shop, Mailbox, BBA Records, Attack Ring, Weight Disk, Spin Gear, Blade Base, tag in. Tests:
+Ranked Battles, Hobby Shop, Mailbox, Mystery Gift, BBA Records, Blader Card, Attack Ring, Weight Disk, Spin Gear, Blade Base, tag in. Tests:
 `node beyblade/tests/{phone,figures,sim}.js`.
 
 ## Terminology (the Arknights game's UI must use real Arknights terms)
