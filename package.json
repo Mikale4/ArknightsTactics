@@ -1,9 +1,9 @@
 {
   "name": "arknights-tactics",
   "private": true,
-  "description": "Single-file HTML games: Arknights Tactics (original and mobile), Galactic Heroes, Melty Blood RPG and Pokémon Kanto Squad.",
+  "description": "Single-file HTML games: Arknights Tactics (original and mobile), Galactic Heroes, Melty Blood RPG, Pokémon Kanto Squad and Beyblade: Let It Rip!.",
   "scripts": {
-    "build": "sh mobile/src/build.sh && sh galactic-heroes/src/build.sh && sh melty-blood/src/build.sh && sh pokemon/src/build.sh",
+    "build": "sh mobile/src/build.sh && sh galactic-heroes/src/build.sh && sh melty-blood/src/build.sh && sh pokemon/src/build.sh && sh beyblade/src/build.sh",
     "build:mobile": "sh mobile/src/build.sh",
     "build:gh": "sh galactic-heroes/src/build.sh",
     "test:mobile": "node mobile/tests/phone.js",
@@ -15,7 +15,11 @@
     "build:pokemon": "sh pokemon/src/build.sh",
     "test:pokemon": "node pokemon/tests/phone.js",
     "test:pokemon:data": "node pokemon/tests/figures.js",
-    "test:pokemon:balance": "node pokemon/tests/sim.js"
+    "test:pokemon:balance": "node pokemon/tests/sim.js",
+    "build:beyblade": "sh beyblade/src/build.sh",
+    "test:beyblade": "node beyblade/tests/phone.js",
+    "test:beyblade:figures": "node beyblade/tests/figures.js",
+    "test:beyblade:balance": "node beyblade/tests/sim.js"
   },
   "devDependencies": {
     "playwright": "1.56.1"

@@ -9,6 +9,7 @@ Single-file HTML games, served by GitHub Pages from `main` (https://mikale4.gith
 | `galactic-heroes/` | **Galactic Heroes**: Star Wars Galaxy of Heroes–style mobile squad battler (the battle engine `mobile/` borrows from). |
 | `melty-blood/` | **Melty Blood RPG**: Melty Blood as a turn-based squad RPG, forked from `mobile/`'s engine. All art is procedural; S3 skills are Arc Drives paid with the Magic Circuit gauge. See `melty-blood/README.md`. |
 | `pokemon/` | **Pokémon Kanto Squad**: the 151 Kanto Pokémon on the same engine, everything in Pokémon terminology. Showdown's animated Black/White sprites (packed and embedded at build), PokeAPI data, Gym Badges, evolution, Safari Zone. See `pokemon/README.md`. |
+| `beyblade/` | **Beyblade: Let It Rip!**: the original anime (Season 1, V-Force, G-Revolution, English dub names) on the same engine. 82 Beyblades from 52 Bladers, every version (S, F, V, V2, G, GT, MS) its own unit; Attack/Defense/Endurance/Balance types; Bit-Beast attacks paid with Bit Power; Ring Out / Sleep Out. All art procedural. See `beyblade/README.md`. |
 | `assets/sprites/`, `assets/heads/` | Trimmed WebP operator art (`<slug>.webp`, slug = lowercase name, non-alphanumerics → `-`). Used in menus and dialogue. |
 | `assets/data/operators.json` | Operator roster source (UTF-8 BOM; load with `utf-8-sig`). |
 
@@ -20,6 +21,7 @@ sh mobile/src/build.sh            # also writes mobile/dist/index.html (artifact
 sh galactic-heroes/src/build.sh
 sh melty-blood/src/build.sh
 sh pokemon/src/build.sh            # embeds pokemon/sprites/*.png as base64
+sh beyblade/src/build.sh
 ```
 
 `mobile/src` parts, in build order (each relies on globals from earlier ones):
@@ -47,6 +49,15 @@ Pokémon text must be Pokémon terminology (Safari Zone, PP, Gems, Poké Dollars
 (`sh pokemon/tools/fetch_sprites.sh`): the animated `gen5ani`/`gen5ani-back` GIFs, which `tools/pack_sprites.py` turns into frame strips,
 first-frame icons and `sprites/anim.json` (the menus' animated GIFs are re-encoded in the browser by `gifOf()` in `a5_sprites.js`);
 trainers are the FireRed/LeafGreen set. Tests: `node pokemon/tests/{phone,figures,sim}.js`.
+
+`beyblade/src` uses Melty Blood's part order plus `a5b_bey.js` (Beyblades, Bit-Beasts, menu art) after `a5_art.js`. The roster is
+`BLADERS` in `a3a_roster.js` (each Blader: `fig`, `beast` {n, kind, el, col}, `squad`, and `beys` versions with `type`, `rar`, `season`,
+`look`, `skills`, `talent`, optional `leader`/`team`/`beast` override); units are keyed `<blader>-<version>` (e.g. `tyson-gt`). `el` and
+`cls` both hold the type. Story bosses are made with `bossOf(id, unitKey, spinMult, atkMult)` in `a4_story.js`; rival Beyblades in
+story waves (`O("key")`) fight 3 levels under the stage at 80% Spin/ATK without parts (`convWave` in `a10_boot.js`). Every visible
+term must be Beyblade terminology (glossary in `beyblade/README.md`): Spin, Bit Power, Bit-Beast attack, Ring Out / Sleep Out,
+Captain skill, Blader Ability, Upgrade, Bit-Beast Sync, Customize Parts, Random Booster, BeyPoints, Street Battles, BBA Tower,
+Ranked Battles, Hobby Shop, Mailbox, BBA Records. Tests: `node beyblade/tests/{phone,figures,sim}.js`.
 
 ## Terminology (the Arknights game's UI must use real Arknights terms)
 Internal identifiers kept their old names; only visible text changed:
@@ -76,5 +87,5 @@ npm run serve           # then open http://localhost:8000/mobile/
 Check screenshots at 390×844 portrait and 844×390 landscape after visual changes.
 
 ## Open items
-- `mobile/`, `galactic-heroes/`, `melty-blood/` and `pokemon/` live on branch `claude/swgoh-mobile-game-html-ajhk0t`; Pages only serves them after a merge to `main`.
+- `mobile/`, `galactic-heroes/`, `melty-blood/`, `pokemon/` and `beyblade/` live on branch `claude/swgoh-mobile-game-html-ajhk0t`; Pages only serves them after a merge to `main`.
 - The owner wanted Galactic Heroes in its own repo named `star-wars-test`; it still needs creating on GitHub. Its content is `galactic-heroes/`.
