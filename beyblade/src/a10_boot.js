@@ -142,7 +142,7 @@ function huntDrops(h, l) {
 function launchHunt(id, l) {
   const h = HUNTS.find(x => x.id === id), cost = HUNT_COST[l - 1], ids = squadOrToast("hunt");
   if (!ids || !needSanity(cost)) return;
-  route("hunt", id);
+  if (!DEMO.quiet) route("hunt", id);
   spendSanity(cost); S.stats.battles++; save();
   startBattle({
     allies: allySpecs(ids), foes: huntTeam(h, l), env: h.env, title: h.n, sub: `Street Battles · ${h.code}-${l}`,
@@ -190,7 +190,7 @@ function launchArena(k) {
   const A = S.arena, o = A.opps && A.opps[k], ids = squadOrToast("arena");
   if (!o || !ids) return;
   if (A.attempts <= 0) { toast("No attempts left. One refills every 10 minutes."); return; }
-  route("arena");
+  if (!DEMO.quiet) route("arena");
   if (A.attempts >= 5) A.aTime = Date.now();
   A.attempts--; S.stats.battles++; save();
   startBattle({
@@ -233,6 +233,7 @@ function introModal() {
 }
 const ACT = {
   ...META_ACT,
+  ...DEMO_ACT,
   go: d => { if (d.v === "op" && d.a !== UI.arg) UI.opTab = "info"; closeModal(); route(d.v, d.a || null); },
   poke: () => quip(),
   missions: () => missionsModal(),

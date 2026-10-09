@@ -436,8 +436,9 @@ function sizeCanvas() {
   measureHUD();
 }
 function startBattle(cfg) {
+  if (DEMO.on) { cfg = demoWrap(cfg); if (DEMO.sim) { demoSim(cfg); return; } }
   const B = makeBattle({ allies: cfg.allies, foes: cfg.foes, auto: S.settings.auto, aiStyle: S.settings.ai });
-  Object.assign(BT, { B, cfg, quit: false, paused: false, speed: SPEEDS[clamp((S.settings.speed || 1) - 1, 0, 2)], clock: 0, last: 0, parts: [], bolts: [], floats: [], arcs: [], rings: [], nades: [], slashes: [], beasts: [],
+  Object.assign(BT, { B, cfg, quit: false, paused: !!(DEMO.on && DEMO.paused), speed: DEMO.on ? (DEMO.mode === "watch" ? 2 : 3) : SPEEDS[clamp((S.settings.speed || 1) - 1, 0, 2)], clock: 0, last: 0, parts: [], bolts: [], floats: [], arcs: [], rings: [], nades: [], slashes: [], beasts: [],
     waits: [], tweens: [], orbit: false, home: null, shake: 0, shx: 0, shy: 0, flash: 0, letterbox: 1, letterboxT: 1, live: false, acc: 0, alpha: 0,
     cur: { A: null, E: null }, hud: {}, ctl: null, hudDirty: true, banT: 0, meterTick: null, onOver: null, step: stepBattle });
   BT.vus = new Map();

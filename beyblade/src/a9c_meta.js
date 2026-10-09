@@ -162,6 +162,7 @@ function checkAchievements(silent) {
 }
 // battle statistics (called by the battle director when a fight ends)
 function recordBattle(res, B) {
+  if (DEMO.on) DEMO.result = res;
   S.stats.arcs += B.tally.arcs; S.stats.kills += B.tally.kills;
   if (res.win && !res.lost) S.stats.flawless++;
 }
@@ -253,6 +254,9 @@ SCREENS.settings = () => {
       <div class="trophies">${STORY[0].chapters.map(ch => `<span class="tro ${chapterCleared(ch) ? "on" : ""}" title="${esc(ch.title)}">${trophySVG(ch, chapterCleared(ch))}</span>`).join("")}</div>
       <p class="tiny dim" style="margin-top:4px">A trophy for every tournament you win in the Story: ${trophies()} of ${STORY[0].chapters.length}.</p>
     </section>
+    <section class="panel stack" style="gap:8px"><div class="spread"><h3>Completion</h3><b class="num gold" style="font-size:22px">${completionPct()}%</b></div>
+      ${completionParts().map(x => `<div class="cmprow"><div class="spread small"><span>${esc(x.n)}</span><span class="num dim">${x.label || `${fmtFull(x.v)} / ${fmtFull(x.max)}`}</span></div><div class="bar"><i style="width:${Math.min(100, x.v / x.max * 100)}%"></i></div></div>`).join("")}
+      ${DEMO.on ? "" : `<button class="btn ghost wide" data-act="demoAsk">Watch the demo: the whole game played to 100%</button>`}</section>
     <section class="panel stack" style="gap:10px"><h3>Profile</h3>
       <label class="small dim" for="pname">Name</label>
       <div class="row" style="gap:8px"><input id="pname" class="tinput" maxlength="16" value="${esc(S.name)}"><button class="btn sm" data-act="saveName">Save</button></div>
@@ -300,7 +304,7 @@ function showTitle() {
     <div class="tlogo"><div class="tpre">3 · 2 · 1</div><h1>BEYBLADE</h1><div class="tsub">LET IT RIP!</div></div>
     <div class="tload" id="tload"><div class="tbar"><i id="tbarI"></i></div><span id="tloadT">Winding the ripcord… 0%</span></div>
     <div class="ttap" id="ttap" hidden>Tap to Start</div>
-    <div class="tfoot"><button class="tbtn" data-act="titleSettings">${IC.gearIc}<span>Settings</span></button><button class="tbtn" data-act="titleCredits">${IC.book}<span>Credits</span></button></div>
+    <div class="tfoot"><button class="tbtn" data-act="demoAsk">${IC.launcher}<span>Demo</span></button><button class="tbtn" data-act="titleSettings">${IC.gearIc}<span>Settings</span></button><button class="tbtn" data-act="titleCredits">${IC.book}<span>Credits</span></button></div>
     <div class="tver">Ver ${GAME_VER} · ${S.named ? "ID " + S.playerId.replace(/(\d{3})(?=\d)/g, "$1 ") : "New account"}<br>Unofficial fan game. Beyblade © Takao Aoki / Takara Tomy / Hasbro / Nelvana.</div>`;
   el.hidden = false; el.classList.remove("out");
   UI.inGame = false; TITLE.on = true; TITLE.t0 = performance.now();

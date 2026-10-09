@@ -31,7 +31,10 @@ const pct = v => Math.round(v * 100) + "%";
 function seeded(seed) { let s = seed >>> 0 || 1; return () => { s ^= s << 13; s >>>= 0; s ^= s >> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; }; }
 function hash(str) { let h = 2166136261; for (const c of str) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
 const dur = ms => { const m = Math.floor(ms / 60000), s = Math.floor(ms % 60000 / 1000); if (m >= 60) return Math.floor(m / 60) + "h " + (m % 60) + "m"; return m + ":" + String(s).padStart(2, "0"); };
-const today = () => new Date().toISOString().slice(0, 10);
+// the demo (a9d_demo.js) plays in a sandbox and moves the calendar forward a day at a time
+let DAY_SHIFT = 0;
+const DEMO = { on: false };
+const today = () => new Date(Date.now() + DAY_SHIFT * 864e5).toISOString().slice(0, 10);
 
 // ---------- Beyblade types + rarity ----------
 // Every Beyblade is one of the four types from the toys and the show. Internally the type lives in the `el` field (it

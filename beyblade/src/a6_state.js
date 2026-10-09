@@ -41,6 +41,7 @@ function load() {
 let saveTimer = 0;
 function save() {
   clearTimeout(saveTimer);
+  if (DEMO.on) return;
   saveTimer = setTimeout(() => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { /* storage unavailable */ } }, 150);
 }
 function tickTimers() {

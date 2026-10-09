@@ -91,8 +91,24 @@ Play: open `beyblade/index.html` (on GitHub Pages: `/ArknightsTactics/beyblade/`
     (Rookie Blader up to Legendary Blader), Yen, Beyblades, Blader Rank, battles won, BBA Records, world ranking and
     a trophy case with a trophy for each Story tournament won. Change your name and pick from 19 looks: two
     originals (also offered when you make your account) or dress like Tyson, Kai, Ray, Max, Kenny, Daichi, Hiro,
-    Mariah, Lee, Emily, Michael, Oliver, Tala, Julia, Ming-Ming, Zeo or Brooklyn. Settings live on the card too,
-    including *Reset account*.
+    Mariah, Lee, Emily, Michael, Oliver, Tala, Julia, Ming-Ming, Zeo or Brooklyn. A **Completion** panel tracks
+    100%: story stages, 3 stars on every battle, Street Battle levels, BBA Tower floors, world ranking #1, Beyblades
+    collected and BBA Records. Settings live on the card too, including *Reset account*.
+- **Demo** (title screen, or *Watch the demo* on the Blader Card): a hands-free playthrough of the whole game from a
+  brand-new account to 100%.
+  - It covers making an account, the welcome gifts and free Boosters, a tour of the menus, all 13 chapters (scenes,
+    caches, side stories and every battle to 3 stars), Street Battles, the BBA Tower, Ranked Battles up to #1, the
+    Mystery Gift and every Beyblade. It then upgrades and tunes the collection and fast-forwards a year of battles,
+    Boosters and logins until every BBA Record is done.
+  - **Highlights** (the default) plays the first battle of each chapter, every boss and the first battle of each mode
+    on screen, on Auto at 3×; the rest are simulated. **Watch all** plays every story battle on screen. **Fast**
+    simulates every battle and reaches 100% in about three minutes. Switch, pause or exit from the bar at the bottom.
+  - Simulated battles run through the same battle engine and the same rewards, so stars, drops and Records come out
+    the same as a real battle. Between chapters a day passes (daily login, Energy, Ranked attempts), and the demo
+    scouts matchups and retries for 3 stars like a player would. When it runs short of Energy or materials it tops
+    them up, and the last screen says how much.
+  - It plays in a sandbox: your own save is set aside while it runs (nothing is written) and comes back when you
+    exit.
 
 ## Terminology
 
@@ -130,6 +146,7 @@ sh beyblade/src/build.sh          # writes index.html (and dist/index.html for a
 node beyblade/tests/phone.js      # phone playthrough, screenshots in tests/shots/
 node beyblade/tests/figures.js    # every Blader, Beyblade and Bit-Beast shape, and a pose sheet
 node beyblade/tests/sim.js        # auto-vs-auto win rates and battle length per story stage, Street Battle and Tower floor
+node beyblade/tests/demo.js       # the demo in Fast mode must reach 100% and leave the player's save untouched
 VARIANTS=1 node beyblade/tests/sim.js  # win rate of every Beyblade in the same team
 TYPES=1 node beyblade/tests/sim.js     # average win rate per type
 ```
@@ -152,6 +169,7 @@ Parts in build order:
 | `a8c_sfx.js` | Sounds |
 | `a8b_battle.js` | Battle director, launch meter, HUD and buttons |
 | `a9a`/`a9b`/`a9c` | Screens (looks and challengers' looks in `a9a`) and meta (Mailbox, Mystery Gift, BBA Records, Blader Card, title) |
+| `a9d_demo.js` | The demo: sandbox, autopilot, the playthrough script, completion tracking |
 | `a10_boot.js` | Actions and boot |
 
 Unofficial, non-commercial fan game. Beyblade belongs to Takao Aoki, Takara Tomy, Hasbro, d-rights and Nelvana.

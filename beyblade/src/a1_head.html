@@ -604,4 +604,24 @@ h1{font-weight:900}
 .stage img.trainer{position:absolute;left:3%;bottom:15%;height:40%;max-width:34%;object-fit:contain;object-position:bottom;filter:drop-shadow(0 6px 6px #0008);z-index:1}
 .stage .nameplate,.stage .sidebtns{z-index:2}
 .rvlook{width:46px;height:46px;border-radius:50%;flex:none;border:2px solid var(--line2)}
+/* ================= demo ================= */
+#demobar{position:fixed;left:0;right:0;bottom:0;z-index:120;display:flex;align-items:center;gap:6px;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));
+  background:linear-gradient(180deg,#1a0a2ae6,#08040ef2);border-top:1px solid #ff8a3c88;box-shadow:0 -4px 18px #000a;font-family:var(--f-body)}
+#demobar .dtag{flex:none;padding:3px 7px;border-radius:5px;background:linear-gradient(180deg,#ffb36a,#c8400a);color:#1a0602;font:900 12px var(--f-display);letter-spacing:.12em}
+#demobar .dcap{flex:1;min-width:0;line-height:1.15}
+#demobar .dcap small{display:block;font:700 9.5px var(--f-display);letter-spacing:.1em;text-transform:uppercase;color:#ffb36a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#demobar .dcap span{display:block;font:700 13px var(--f-body);color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#demobar .dpct{flex:none;width:44px;text-align:center;font:900 14px/1 var(--f-title);color:var(--gold)}
+#demobar .dpct i{display:block;height:4px;margin-top:3px;border-radius:2px;background:#ffffff22;overflow:hidden}
+#demobar .dpct i b{display:block;height:100%;width:0;background:linear-gradient(90deg,#ff8a3c,#f2c14e)}
+#demobar button{flex:none;height:32px;min-width:32px;padding:0 8px;border-radius:6px;border:1px solid #ffffff33;background:#ffffff14;color:#fff;font:800 11px var(--f-display);letter-spacing:.05em;text-transform:uppercase}
+#demoshield{position:fixed;inset:0;z-index:110}
+#demomont{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:115;width:min(360px,92vw);padding:16px;border-radius:14px;background:#0a1226f2;border:1px solid #ff8a3c88;box-shadow:0 10px 40px #000c}
+#demomont h3{margin:2px 0 10px}
+#demomont .mrow{display:grid;grid-template-columns:1fr auto;gap:2px 8px;margin-top:6px;font-size:12.5px}
+#demomont .mrow i{grid-column:1 / -1;display:block;height:5px;border-radius:3px;background:#ffffff1a;overflow:hidden}
+#demomont .mrow i b{display:block;height:100%;background:linear-gradient(90deg,#3aa8ff,#f2c14e)}
+.cmprow{display:flex;flex-direction:column;gap:3px}
+body.demo #app{padding-bottom:calc(46px + env(safe-area-inset-bottom,0px))}
+body.demo #modal{padding-bottom:calc(52px + env(safe-area-inset-bottom,0px))}
 </style>
