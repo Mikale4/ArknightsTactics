@@ -1,426 +1,273 @@
-
 // =====================================================================
-//  BATTLE DIRECTOR — runs a real-time battle: the launch, the HUD (Spin, Bit Power, partners on the bench), the
-//  Attack / technique / Bit-Beast / tag buttons, and the effects for everything the engine reports in B.ev.
-//  The engine moves the Beyblades; the player (or Auto) only decides when to attack, use moves and tag.
+//  BATTLE DIRECTOR — runs the engine, turns its events into animation, and owns the HUD: both fighters' HP, ki
+//  and guard gauges, the turn planner (pick up to three commands, then GO), and the action buttons: hold POWER to
+//  charge an attack, tap GUARD as the ring closes, VANISH to dodge, and mash POWER in a beam struggle.
 // =====================================================================
 const VU = uid => BT.vus.get(uid);
-const avg = a => a.reduce((s, v) => s + v, 0) / (a.length || 1);
 const SPEEDS = [1, 1.5, 2];
-const aspect = () => Math.min(1.7, BT.W / BT.H);
-const fitDist = (extent, minD, fov = .62) => Math.max(minD, extent / (2 * Math.tan(fov / 2) * aspect()));
+const PLAN_TIME = 15;
 const artOf = u => u.isOp ? opArt(u.key) : enemyArt(u.key);
-const sideCls = vu => vu.team === "A" ? "ls" : "ds";
+const KIND_IC = { melee: "👊", ki: "✦", beam: "≋", finger: "☝", disc: "◎", bomb: "●", flash: "☀", freeze: "❄", buff: "▲", heal: "✚", swap: "⇄", charge: "⚡", move: "⇆", tag: "⟳" };
 
-// ---------- camera shots ----------
-function focusShot(vu) {
-  return { tx: vu.pos.x, ty: 70, tz: vu.pos.z, yaw: BT.home.yaw + (vu.team === "A" ? .35 : -.35), pitch: .3, dist: fitDist(320, 560), fov: .62, roll: 0 };
-}
-
-// ---------- fx helpers ----------
-const elc = vu => ELC[vu.u.el] || "#ffffff";
-function sparks(p, col, n = 14, k = 1) {
-  addParts(p, n, { col, speed: 240 * k, life: 380, size: 2.4, g: 380, spread: 10 });
-  addParts(p, Math.ceil(n / 2), { col: "#ffe9a0", speed: 300 * k, life: 260, size: 1.8, g: 500 });
-}
-function slashAt(p, col, big) { BT.slashes.push({ p, t0: BT.clock, dur: 260, col, rot: R() * Math.PI, big }); }
-function drawSlashes(K) {
-  const g = BT.g;
-  BT.slashes = BT.slashes.filter(s => BT.clock - s.t0 < s.dur);
-  for (const s of BT.slashes) {
-    const p = proj(K, ...s.p); if (!p) continue;
-    const k = (BT.clock - s.t0) / s.dur, r = (s.big ? 70 : 46) * p[2] * (.7 + k * .5);
-    g.save(); g.translate(p[0], p[1]); g.rotate(s.rot + k * .6); g.globalCompositeOperation = "lighter"; g.globalAlpha = 1 - k;
-    g.lineCap = "round";
-    g.strokeStyle = s.col; g.lineWidth = 10 * p[2] + 2; g.beginPath(); g.arc(0, 0, r, -1.1, 1.1); g.stroke();
-    g.strokeStyle = "#fff"; g.lineWidth = 3 * p[2] + 1; g.beginPath(); g.arc(0, 0, r, -.9, .9); g.stroke();
-    g.restore();
-  }
-}
-function auraBurst(vu, col, ring = true) {
-  vu.aura = BT.clock + 900; vu.auraCol = col;
-  if (ring) BT.rings.push({ x: vu.pos.x, z: vu.pos.z, r0: 10, r1: 80, t0: BT.clock, dur: 700, col, w: 3 });
-  addParts([vu.pos.x, 10, vu.pos.z], 16, { col, speed: 40, vy: 110, life: 800, size: 2.4, g: -20, spread: 40 });
-}
-function cutIn(vu, skillName) {
-  const wrap = $(".bwrap"); if (!wrap) return;
-  const d = (950 / BT.speed / 1000).toFixed(2) + "s";
-  const el = document.createElement("div");
-  el.className = "cutin"; el.style.setProperty("--ec", elc(vu));
-  el.innerHTML = `<div class="band" style="animation-duration:${d}"></div><div class="lines" style="animation-duration:${d}"></div>
-    <img src="${artOf(vu.u).beast}" alt="" style="animation-duration:${d};${vu.team === "E" ? "left:auto;right:-10%;transform:scaleX(-1)" : ""}">
-    <div class="sk" style="animation-duration:${d}"><small>${esc(vu.u.def.beast && vu.u.def.beast.n ? vu.u.def.beast.n : vu.u.n)} · Bit-Beast attack</small><b>${esc(skillName)}</b></div>`;
-  wrap.appendChild(el);
-  setTimeout(() => el.remove(), 1000 / BT.speed + 60);
-}
 function banner(name, sub, cls, ms) {
   const b = $("#bBan"); if (!b) return;
-  b.className = "bban show " + (cls || ""); b.innerHTML = `<small>${esc(sub)}</small><b>${esc(name)}</b>`;
-  BT.banT = ms ? BT.clock + ms : 0;
+  b.className = "bban show " + (cls || "");
+  b.innerHTML = `${sub ? `<small>${esc(sub)}</small>` : ""}<b>${esc(name)}</b>`;
+  clearTimeout(BT.banT);
+  if (ms) BT.banT = setTimeout(() => { if (b.isConnected) b.className = "bban"; }, ms / Math.max(1, BT.speed * .8));
 }
-function hideBanner() { const b = $("#bBan"); if (b) b.className = "bban"; BT.banT = 0; }
+function hideBanner() { const b = $("#bBan"); if (b) b.className = "bban"; }
+// a technique's name across the screen, with the fighter's portrait
+function cutIn(u, name) {
+  const w = $(".bwrap"); if (!w) return;
+  const col = u.def.kiCol || "#7ad0ff", el = document.createElement("div");
+  el.className = "cutin" + (u.team === "E" ? " foe" : ""); el.style.setProperty("--ec", col);
+  el.innerHTML = `<div class="band"></div><div class="lines"></div><img src="${artOf(u).full}" alt=""><div class="sk"><small>${esc(u.n)}</small><b>${esc(name)}</b></div>`;
+  w.appendChild(el);
+  setTimeout(() => el.remove(), 1000 / Math.max(1, BT.speed * .7));
+}
 
-// ---------- engine events → visuals ----------
+// ---------- events → animation ----------
 function onEv(e) {
-  const vu = e.u != null ? VU(e.u) : null;
-  switch (e.k) {
-    case "enter": {
-      if (!vu) break;
-      Object.assign(vu, { shown: true, gone: false, dead: false, ringOut: false, fly: null, enterT: BT.clock, leaveT: null, y: 200, hp: vu.u.hp, lag: vu.u.hp, trail: [] });
-      vu.pos.x = vu.u.x; vu.pos.z = vu.u.z;
-      BT.cur[vu.team] = vu.u; BT.hudDirty = true;
-      bwait(380).then(() => {
-        BT.rings.push({ x: vu.pos.x, z: vu.pos.z, r0: 10, r1: 90, t0: BT.clock, dur: 500, col: vu.col, w: 3 });
-        addParts([vu.pos.x, 4, vu.pos.z], 16, { col: "#ffe2a0", speed: 220, life: 340, size: 2.2, g: 320 });
-      });
-      sfx("launch");
-      if (e.how === "tag") { banner(vu.u.n, vu.team === "A" ? "Tag in!" : "The rival tags in", sideCls(vu), 1000); floatText(e.u, "TAG IN!", "buff"); }
-      else if (e.how === "ko") banner(vu.u.n, vu.team === "A" ? "Your next Beyblade" : "The rival's next Beyblade", sideCls(vu), 1100);
-      break;
-    }
-    case "tagout": if (vu) { vu.leaveT = BT.clock; vu.trail = []; sfx("warp"); BT.hudDirty = true; } break;
-    case "rush": if (vu) sfx("saber"); break;
-    case "use": {
-      if (!vu) break;
-      if (e.slot === 2) banner(e.name, vu.u.n, sideCls(vu), 900);
-      if (e.anim === "buff" || e.anim === "heal") { auraBurst(vu, e.anim === "heal" ? "#5dfc9b" : "#f2c14e"); sfx(e.anim === "heal" ? "heal" : "special"); }
-      break;
-    }
-    case "hit": {
-      if (!vu) break;
-      if (e.kind === "wall") { sparks([e.x, 14, e.z], "#ffe2a0", 6, .7); break; }
-      const av = e.a != null ? VU(e.a) : null, col = av ? elc(av) : "#ffffff", big = e.crit || e.big;
-      const show = () => {
-        if (!vu.shown) return;
-        // clashes and recoil only show their bigger hits, so the numbers don't pile up
-        if (e.kind === "recoil" || e.kind === "clash") { if (e.n >= vu.u.max.hp * .025) floatText(e.u, fmtFull(e.n), "chip"); return; }
-        floatText(e.u, fmtFull(e.n), e.crit ? "crit" : e.glance ? "prot" : "dmg");
-        if (e.adv && BT.clock - (vu.advT || -1e9) > 3000) { vu.advT = BT.clock; floatText(e.u, "TYPE ADVANTAGE", "txt"); }
-        if (e.glance) floatText(e.u, "GLANCING", "txt");
-        vu.flash = BT.clock + 160; sparks(chestW(vu), col, big ? 26 : 14); slashAt(chestW(vu), col, big);
-        BT.shake = Math.max(BT.shake, e.crit ? 10 : big ? 8 : 4); sfx(e.crit ? "crit" : "clash");
-      };
-      if (e.delay) bwait(e.delay * 1000).then(show); else show();
-      break;
-    }
-    case "clash": {
-      const k = clamp(e.p / 400, .3, 1.6);
-      sparks([e.x, 22, e.z], e.opp ? "#ffd34d" : "#cfe3ff", Math.round(10 * k), k);
-      BT.shake = Math.max(BT.shake, 2 + 4 * k);
-      if (BT.clock - (BT.clashT || -1e9) > 120) { BT.clashT = BT.clock; sfx("clash"); }
-      break;
-    }
-    case "wave": {
-      const col = vu ? elc(vu) : "#ffffff";
-      BT.rings.push({ x: e.x, z: e.z, r0: 30, r1: e.big ? 560 : 400, t0: BT.clock, dur: 560, col, w: 5 });
-      BT.rings.push({ x: e.x, z: e.z, r0: 20, r1: e.big ? 380 : 280, t0: BT.clock, dur: 420, col: "#ffffff", w: 2 });
-      sfx("boom"); BT.shake = Math.max(BT.shake, 8);
-      if (e.big) { BT.flash = .3; BT.flashCol = col; }
-      break;
-    }
-    case "miss": if (vu) floatText(e.u, "DODGED", "txt"); break;
-    case "txt": if (vu) floatText(e.u, e.s, e.c); break;
-    case "heal": {
-      if (!vu || (!e.shield && e.n < vu.u.max.hp * .02)) break;
-      floatText(e.u, "+" + fmtFull(e.n), e.shield ? "prot" : "heal");
-      addParts([vu.pos.x, 30, vu.pos.z], 8, { col: e.shield ? "#c8ffd6" : "#5dfc9b", speed: 30, vy: 90, life: 700, size: 2.2, g: -10, spread: 30 });
-      break;
-    }
-    case "arc": {
-      // the Bit-Beast rises out of the Bit-Chip while everything pauses
-      if (!vu) break;
-      const bst = vu.u.def.beast;
-      BT.letterboxT = 1; sfx("special"); cutIn(vu, e.name);
-      camTo(focusShot(vu), 4.5);
-      if (bst && bst.kind) BT.beasts.push({ vu, kind: bst.kind, col: bst.col, t0: BT.clock, dur: 1900 });
-      auraBurst(vu, bst && bst.col || elc(vu), true);
-      break;
-    }
-    case "arcgo": {
-      if (!vu) break;
-      BT.letterboxT = 0; camHome(2.6);
-      BT.flash = .45; BT.flashCol = (vu.u.def.beast && vu.u.def.beast.col) || elc(vu); BT.shake = 12; sfx("boom");
-      break;
-    }
-    case "ko": {
-      if (!vu) break;
-      Object.assign(vu, { dead: true, deathT: BT.clock, hp: 0, sh: 0, rushing: false, trail: [] });
-      if (e.ring) {
-        // Ring Out: knocked over the lip of the dish and out of the stadium
-        vu.ringOut = true; floatText(e.u, "RING OUT!", "crit"); sfx("ringout");
-        banner("RING OUT!", vu.u.n, vu.team === "A" ? "ds" : "ls", 1300);
-        const u = vu.u, r = Math.hypot(u.x, u.z) || 1, sp = Math.max(480, Math.hypot(u.vx, u.vz));
-        vu.fly = { vx: u.x / r * sp * .85 + u.vx * .15, vz: u.z / r * sp * .85 + u.vz * .15, vy: 420 }; vu.tumble = R() < .5 ? -1 : 1;
-        sparks(chestW(vu), "#ffe2a0", 30, 1.2); BT.shake = Math.max(BT.shake, 10);
-      } else {
-        floatText(e.u, "SLEEP OUT", "debuff"); sfx("sleepout");
-        banner("SLEEP OUT", vu.u.n, vu.team === "A" ? "ds" : "ls", 1300);
-        vu.fallDir = R() < .5 ? -1 : 1;
-        addParts(chestW(vu), 14, { col: "#cfd6e2", speed: 50, vy: 30, life: 900, size: 2, g: -20, spread: 20 });
-      }
-      BT.hudDirty = true;
-      break;
-    }
-    case "revive": if (vu) { Object.assign(vu, { dead: false, gone: false, ringOut: false, fly: null }); auraBurst(vu, "#ffd76b"); } break;
-    case "burst": if (vu) { auraBurst(vu, "#ff7a2a"); sfx("special"); } break;
-    case "over": BT.live = false; if (BT.onOver) { const f = BT.onOver; BT.onOver = null; f(); } break;
-  }
+  const B = BT.B, vu = e.u ? VU(e.u) : null;
+  if (e.k === "enter") {
+    const v = vu; v.shown = true; v.gone = false; v.x = v.u.x - v.face * 420; v.alt = 260; v.alpha = 1;
+    BT.hudDirty = true;
+    if (BT.live) { floatText(e.u, v.u.n.toUpperCase(), "buff"); sfx("vanish"); }
+  } else if (e.k === "turn") { BT.hudDirty = true; BT.planOpen = false; }
+  else if (e.k === "go") { BT.hudDirty = true; }
+  else if (e.k === "special") { cutIn(vu.u, e.name); sfx(e.kind === "beam" || e.kind === "bomb" || e.kind === "finger" ? "charge" : "special"); }
+  else if (e.k === "act") { if (e.ph === "charge") sfx("charge"); if (e.ph === "dash") sfx("vanish"); }
+  else if (e.k === "fire") {
+    const from = VU(e.u);
+    if (e.kind === "melee") { sfx("punch"); return; }
+    if (e.kind === "flash") { BT.flash = 520; BT.flashCol = "#ffffff"; sfx("zap"); return; }
+    const sp = from.u.def.kiCol || "#7ad0ff";
+    addShot({ atk: e.atk, from: e.u, to: e.t, kind: e.kind, hits: e.hits, pow: e.pow, col: sp, spiral: /Special Beam/.test(e.name) });
+    sfx(e.kind === "ki" || e.kind === "freeze" ? "ki" : e.kind === "disc" ? "zap" : "beam");
+  } else if (e.k === "hit") {
+    const tv = VU(e.u); if (!tv) return;
+    const p = chestPos(tv);
+    if (e.resp === "perfect") { tv.guardT = 320; ringAt(p[0], p[1], "#ffd34d", 90); sparks(p[0], p[1], "#ffe08a", 14); sfx("perfect"); }
+    else if (e.resp === "guard") { tv.guardT = 320; ringAt(p[0], p[1], "#7ad0ff", 70); sparks(p[0], p[1], "#bfe8ff", 10); sfx("guard"); BT.shake = Math.max(BT.shake, 4); }
+    else { tv.hitT = 380; tv.flash = 120; sparks(p[0], p[1], e.kind === "melee" ? "#ffffff" : VU(e.from).u.def.kiCol || "#ffd34d", e.heavy ? 26 : 14, e.heavy ? 1.6 : 1); if (e.heavy || e.kind === "bomb") { ringAt(p[0], p[1], "#ffffff", 140, 500); BT.shake = Math.max(BT.shake, e.kind === "bomb" ? 18 : 10); }
+      sfx(e.crit ? "crit" : e.kind === "melee" ? "punch" : e.kind === "bomb" ? "boom" : "hit"); BT.shake = Math.max(BT.shake, 5); }
+    if (e.dmg > 0) floatText(e.u, fmtFull(e.dmg), e.crit ? "crit" : "dmg");
+    BT.hudDirty = true;
+  } else if (e.k === "vanish") { vu.vanishT = 440; const p = chestPos(vu); sparks(p[0], p[1], "#ffffff", 8, .6); sfx("vanish"); }
+  else if (e.k === "ko") { banner("KO", vu.u.n, vu.team === "A" ? "ds" : "ls", 1100); sfx("ko"); BT.shake = 12; BT.hudDirty = true; }
+  else if (e.k === "transform") {
+    BT.flash = 700; BT.flashCol = "#ffffff"; vu.auraCol = vu.u.def.aura || vu.auraCol; vu.aura = 1;
+    banner(vu.u.n, `${ENEMY[e.from] ? ENEMY[e.from].n : "It"} transforms!`, "ds", 2000); sfx("transform"); BT.shake = 16; BT.hudDirty = true;
+    const p = chestPos(vu); ringAt(p[0], p[1], vu.auraCol, 220, 800);
+  } else if (e.k === "zenkai") { BT.flash = 300; BT.flashCol = "#ffd34d"; vu.aura = 1; sfx("transform"); }
+  else if (e.k === "clash") { banner("BEAM STRUGGLE", BT.B.auto ? "" : "Mash POWER!", "ls", 1600); sfx("beam"); BT.shake = 6; BT.hudDirty = true; }
+  else if (e.k === "clashPos") { BT.shake = Math.max(BT.shake, 3); }
+  else if (e.k === "clashEnd") { BT.shake = 14; sfx("boom"); BT.hudDirty = true; }
+  else if (e.k === "heal") { floatText(e.u, "+" + fmtFull(e.n), "heal"); sfx("heal"); BT.hudDirty = true; }
+  else if (e.k === "txt") floatText(e.u, e.s, e.c);
+  else if (e.k === "stun") { if (e.s === "BLIND") { BT.flash = 420; BT.flashCol = "#ffffff"; } }
+  else if (e.k === "guardBreak") { const p = chestPos(vu); sparks(p[0], p[1], "#7ad0ff", 20, 1.4); sfx("crit"); }
+  else if (e.k === "swap") { BT.flash = 500; BT.flashCol = "#b07bff"; sfx("warp"); BT.hudDirty = true; }
+  else if (e.k === "guardUp") { vu.guardT = Math.max(vu.guardT, 240); }
+  else if (e.k === "aura") { vu.aura = 1; }
+  else if (e.k === "over") { if (BT.onOver) BT.onOver(); }
 }
-
-// ---------- the loop: step the engine on its fixed time step, then place the Beyblades ----------
 function stepBattle(dt) {
-  const B = BT.B; if (!B) return;
-  if (BT.live && !BT.paused) {
-    BT.acc += dt / 1000; let n = 0;
-    while (BT.acc >= DT && n++ < 8) {
-      B.tick(); BT.acc -= DT;
-      for (const e of B.ev) onEv(e);
-      B.ev.length = 0;
-      if (B.over) break;
-    }
-    if (n >= 8) BT.acc = 0;
-  }
-  BT.alpha = clamp(BT.acc / DT, 0, 1);
-  if (BT.meterTick) BT.meterTick();
-  if (BT.banT && BT.clock > BT.banT) hideBanner();
+  const B = BT.B;
+  if (BT.live && B.phase === "act") {
+    BT.acc += dt;
+    let n = 0;
+    while (BT.acc >= DT * 1000 && n++ < 8 && B.phase === "act") { BT.acc -= DT * 1000; B.tick(); for (const e of B.ev) onEv(e); B.ev.length = 0; }
+  } else BT.acc = 0;
+  for (const e of B.ev) onEv(e); B.ev.length = 0;
   syncVUs(dt);
-  // the camera leans a little toward the action
-  if (BT.home && !BT.letterboxT && BT.live) {
-    const a = B.activeOf("A"), e = B.activeOf("E");
-    const pts = [a, e].filter(Boolean);
-    if (pts.length) { const mx = avg(pts.map(u => u.x)), mz = avg(pts.map(u => u.z)); BT.camT.tx = BT.home.tx + mx * .08; BT.camT.tz = BT.home.tz + mz * .08; }
+  if (BT.live && B.phase === "plan" && !BT.planOpen) openPlan();
+  if (BT.live && B.phase === "plan" && BT.planOpen && !B.auto && BT.planT != null && !BT.paused) {
+    BT.planT -= dt / 1000 / BT.speed;
+    const bar = $("#pTime"); if (bar) bar.style.width = clamp(BT.planT / PLAN_TIME, 0, 1) * 100 + "%";
+    if (BT.planT <= 0) goPlan();
   }
-  updHUD();
+  if (BT.hudDirty || (BT.hudT = (BT.hudT || 0) + dt) > 90) { BT.hudT = 0; updHUD(); }
 }
 function syncVUs(dt) {
-  const B = BT.B, a = BT.alpha, sdt = dt / 1000, K = BT.K;
+  const s = dt / 1000;
   for (const vu of BT.vus.values()) {
     const u = vu.u;
-    if (vu.fly) { vu.pos.x += vu.fly.vx * sdt; vu.pos.z += vu.fly.vz * sdt; vu.fly.vy -= 1100 * sdt; vu.y = Math.max(0, vu.y + vu.fly.vy * sdt); continue; }
-    if (vu.leaveT != null) { vu.y += 460 * sdt; continue; }   // lifted out of the dish by its Blader
-    if (vu.dead || u.status !== "field") continue;
-    // after the battle the winner keeps spinning round the dish
-    if (B.over) { u.vx -= u.x * 1.4 * sdt; u.vz -= u.z * 1.4 * sdt; const f = Math.exp(-sdt * .8); u.vx *= f; u.vz *= f; u.px = u.x += u.vx * sdt; u.pz = u.z += u.vz * sdt; }
-    vu.pos.x = lerp(u.px, u.x, a); vu.pos.z = lerp(u.pz, u.z, a);
-    if (vu.enterT != null) { const k = clamp((BT.clock - vu.enterT) / 420, 0, 1); vu.y = 200 * (1 - k) * (1 - k); if (k >= 1) vu.enterT = null; }
-    else vu.y = 0;
-    vu.hp = u.hp; vu.sh = u.shield; vu.rushing = !!u.rush; vu.stall = B.has(u, "STUN"); vu.stealth = B.has(u, "STEALTH");
-    if (K) vu.svx = u.vx * K.r[0] + u.vz * K.r[2];
-    if (BT.paused) continue;
-    if (vu.rushing || Math.hypot(u.vx, u.vz) > 400) { vu.trail.push([vu.pos.x, vu.pos.z, BT.clock]); if (vu.trail.length > 24) vu.trail.shift(); }
-    if (vu.rushing && R() < .5) addParts([vu.pos.x, 2, vu.pos.z], 1, { col: "#ffe2a0", speed: 120, life: 200, size: 1.6, g: 200 });
+    if (u.status === "bench" && vu.shown) { vu.alt += 900 * s; vu.x -= vu.face * 600 * s; if (vu.alt > 600) { vu.shown = false; } continue; }
+    if (!vu.shown) continue;
+    // fighters hover; giants and a fallen fighter stand on the ground
+    const baseAlt = u.status === "out" ? 0 : grounded(u) ? 0 : 70 + Math.sin(BT.clock / 500 + vu.ph) * 8;
+    vu.alt += (baseAlt - vu.alt) * (1 - Math.exp(-s * (u.status === "out" ? 3 : 6)));
+    let tx = u.x;
+    // a melee strike lunges in so the fists connect
+    if (u.act && u.act.c.kind === "melee" && (u.act.ph === "rec" || u.act.ph === "wind")) tx += Math.sign(BT.B.foeOf(u) ? BT.B.foeOf(u).x - u.x : vu.face) * 55;
+    vu.x += (tx - vu.x) * (1 - Math.exp(-s * 14));
+    const foe = u.status === "field" && BT.B.foeOf(u); if (foe) vu.face = Math.sign(foe.x - u.x) || vu.face;
+    for (const k of ["hitT", "guardT", "vanishT", "flash"]) if (vu[k] > 0) vu[k] = Math.max(0, vu[k] - dt);
+    if (vu.aura > 0) vu.aura = Math.max(0, vu.aura - s * .8);
   }
 }
 
 // ---------- HUD ----------
-function skillIcon(u, sk) {
-  if (!sk) return IC.boost;
-  const ef = sk.effects || [];
-  if (sk.target === "ally_single" || ef.some(e => /heal|revive/.test(e.type))) return IC.heal;
-  if (ef.some(e => e.what === "TAUNT" || e.type === "shieldCasterHP")) return IC.shield;
-  if (sk.target === "self" || sk.target === "team" || sk.target === "aoe_allies") return IC.boost;
-  if (sk.target === "aoe_enemies") return IC.orb;
-  return IC.claw || IC.sword;
-}
-// one side's panel: the Beyblade in the dish (Spin, Bit Power, effects) and its partners on the bench
 function panelHTML(side) {
-  const B = BT.B, u = BT.cur[side]; if (!u) return "";
-  const bench = B.side[side].units.filter(m => m !== u);
+  const B = BT.B, u = B.curOf(side) || B.side[side].cur;
+  if (!u) return "";
+  const bench = B.side[side].units.filter(x => x !== u);
   return `<img class="pp" src="${artOf(u).head}" alt="">
     <div class="pm">
-      <div class="pn"><span class="pel" style="--ec:${ELC[u.el]}" title="${u.el}">${u.el[0]}</span><b>${esc(u.n)}</b>${u.boss ? `<span class="pboss">BOSS</span>` : ""}</div>
-      <div class="ph"><i class="lag"></i><i class="cur"></i><i class="sh"></i></div>
-      <div class="pb"><span class="segs">${"<i><b></b></i>".repeat(3)}</span><em>0%</em></div>
+      <div class="pn"><span class="pel" style="--ec:${ELC[u.el]}">${u.el[0]}</span>${u.boss ? '<span class="pboss">BOSS</span>' : ""}<b>${esc(u.n)}</b></div>
+      <div class="ph"><i class="lag"></i><i class="cur"></i></div>
+      <div class="pk"><i class="neg"></i><i class="pos"></i><em></em></div>
+      <div class="pg"><i></i></div>
       <div class="pe"></div>
     </div>
-    <div class="pbench">${bench.map(m => `<span class="bm" data-uid="${m.uid}"><img src="${artOf(m).head}" alt=""><i></i></span>`).join("")}</div>`;
-}
-// your buttons: tag partners on the left; technique, Bit-Beast attack and the big Attack button on the right
-function ctlHTML() {
-  const B = BT.B, u = BT.cur.A;
-  if (B.over) return "";
-  if (!u) return `<div class="bwait">Next Beyblade…</div>`;
-  const sk = s => u.skills.find(x => x.slot === s) || { name: "", slot: s };
-  const partners = B.side.A.units.filter(m => m !== u);
-  return `<div class="btags">${partners.map(m => `<button class="tagbtn" data-uid="${m.uid}" aria-label="Tag in ${esc(m.n)}"><img src="${artOf(m).head}" alt=""><span class="cdw"></span><span class="cdt"></span><span class="hpb"><i></i></span><span class="tl">TAG</span></button>`).join("")}</div>
-    <div class="bacts">
-      <button class="actb s2" data-a="s2" aria-label="${esc(sk(2).name)}">${skillIcon(u, sk(2))}<span class="cdw"></span><span class="cdt"></span><span class="alabel">${esc(sk(2).name)}</span></button>
-      <button class="actb s3" data-a="s3" aria-label="${esc(sk(3).name)}"><img src="${artOf(u).beast}" alt=""><span class="cdw"></span><span class="cdt"></span><span class="alabel">Bit-Beast</span></button>
-      <button class="actb s1" data-a="atk" aria-label="Attack">${IC.launcher || IC.sword}<span class="cdw"></span><span class="alabel">Attack</span></button>
-    </div>`;
-}
-function buildHUD() {
-  const B = BT.B;
-  for (const side of ["A", "E"]) {
-    const el = $("#p" + side); if (!el) continue;
-    el.innerHTML = panelHTML(side);
-    el.classList.toggle("down", !!(BT.cur[side] && BT.cur[side].status === "out"));
-    BT.hud[side] = { cur: $(".ph .cur", el), lag: $(".ph .lag", el), sh: $(".ph .sh", el), segs: $$(".segs i", el), pct: $(".pb em", el), fx: $(".pe", el), bench: $$(".bm", el), fxKey: "" };
-    el.onclick = () => { if (BT.cur[side]) popup(unitPop(BT.cur[side])); };
-  }
-  const c = $("#bCtl"); if (!c) return;
-  c.innerHTML = ctlHTML();
-  for (const btn of $$(".actb", c)) btn.addEventListener("pointerdown", ev => { ev.preventDefault(); act(btn.dataset.a, btn); });
-  for (const btn of $$(".tagbtn", c)) btn.addEventListener("pointerdown", ev => { ev.preventDefault(); act("tag:" + btn.dataset.uid, btn); });
-  BT.ctl = { acts: $$(".actb", c), tags: $$(".tagbtn", c) };
-  measureHUD();
-}
-function act(a, btn) {
-  const B = BT.B; if (!B || !BT.live || BT.paused) return;
-  if (B.press(a)) { sfx("tap"); btn.classList.add("hit"); setTimeout(() => btn.classList.remove("hit"), 140); }
-  else { btn.classList.remove("no"); void btn.offsetWidth; btn.classList.add("no"); }
+    <div class="pbench">${bench.map(b => `<div class="bm ${b.status === "out" ? "out" : ""}" data-uid="${b.uid}"><img src="${artOf(b).head}" alt=""><i style="--hp:${clamp(b.hp / b.max.hp, 0, 1)}"></i></div>`).join("")}</div>`;
 }
 const setW = (el, f) => { if (!el) return; const v = Math.round(clamp(f, 0, 1) * 1000) / 10 + "%"; if (el.style.width !== v) el.style.width = v; };
 const setTxt = (el, t) => { if (el && el.textContent !== t) el.textContent = t; };
-const setCD = (el, f) => { if (!el) return; const v = String(Math.round(clamp(f, 0, 1) * 100) / 100); if (el.style.getPropertyValue("--cd") !== v) el.style.setProperty("--cd", v); };
-function benchState(side, m) {
-  const B = BT.B, S = B.side[side];
-  if (m.status === "out") return ["out", 0, ""];
-  if (m.status === "field") return ["", 0, ""];
-  if (m.tagUsed) return ["used", 0, "USED"];
-  if (m.benchCD > 0) return ["cd", m.benchCD / TAG_CD, Math.ceil(m.benchCD) + "s"];
-  if (S.tagLock > 0) return ["cd", S.tagLock / TAG_LOCK, Math.ceil(S.tagLock) + "s"];
-  return ["ready", 0, "TAG"];
-}
 function updHUD() {
   const B = BT.B; if (!B) return;
-  if (BT.hudDirty) { BT.hudDirty = false; buildHUD(); }
   for (const side of ["A", "E"]) {
-    const h = BT.hud[side], u = BT.cur[side]; if (!h || !u || !h.cur) continue;
-    const m = u.max.hp, vu = VU(u.uid);
-    setW(h.cur, u.hp / m); setW(h.lag, (vu ? vu.lag : u.hp) / m); setW(h.sh, u.shield / m);
-    const mc = B.mc[side];
-    h.segs.forEach((s, k) => { const f = clamp((mc - k * 100) / 100, 0, 1); setW(s.firstChild, f); s.classList.toggle("full", f >= 1); });
-    setTxt(h.pct, Math.floor(mc) + "%");
-    const seen = new Set(), list = u.eff.filter(x => !seen.has(x.id) && seen.add(x.id)), key = list.map(x => x.id).join();
-    if (key !== h.fxKey) { h.fxKey = key; h.fx.innerHTML = list.map(x => `<span class="${FX[x.id].b ? "" : "d"}">${FX[x.id].s}</span>`).join(""); }
-    for (const el of h.bench) {
-      const mb = B.byId(+el.dataset.uid), [st, cd] = benchState(side, mb);
-      el.className = "bm " + st; setCD(el.lastChild, cd);
-    }
+    const el = $("#p" + side); if (!el) continue;
+    const u = B.side[side].cur; if (!u) continue;
+    if (BT.hudDirty || el.dataset.uid !== String(u.uid) || el.dataset.key !== u.key) { el.innerHTML = panelHTML(side); el.dataset.uid = u.uid; el.dataset.key = u.key; el.classList.toggle("down", u.status === "out"); }
+    const vu = VU(u.uid), f = clamp(u.hp / u.max.hp, 0, 1);
+    vu.lag = vu.lag == null ? f : Math.max(f, vu.lag - .01);
+    setW(el.querySelector(".ph .cur"), f); setW(el.querySelector(".ph .lag"), vu.lag);
+    setW(el.querySelector(".pk .pos"), Math.max(0, u.ki) / KI_MAX); setW(el.querySelector(".pk .neg"), Math.max(0, -u.ki) / -KI_MIN);
+    setTxt(el.querySelector(".pk em"), `${Math.round(u.ki)}`);
+    el.querySelector(".pk").classList.toggle("ex", u.ki < 0);
+    setW(el.querySelector(".pg i"), u.guard / GUARD_MAX); el.querySelector(".pg").classList.toggle("broken", !!u.broken);
+    const pe = el.querySelector(".pe"), fx = u.eff.map(x => `<span class="${FX[x.id].b ? "" : "d"}">${FX[x.id].s}${x.turns}</span>`).join("") + (u.stunT > 0 ? `<span class="d">${u.stunK === "BREAK" ? "BRK" : FX[u.stunK] ? FX[u.stunK].s : "ST"}</span>` : "");
+    if (pe && pe.innerHTML !== fx) pe.innerHTML = fx;
+    for (const bm of el.querySelectorAll(".bm")) { const b = B.units.find(x => String(x.uid) === bm.dataset.uid); if (b) { bm.classList.toggle("out", b.status === "out"); bm.querySelector("i").style.setProperty("--hp", clamp(b.hp / b.max.hp, 0, 1)); } }
   }
-  const left = Math.max(0, TIME_LIMIT - B.t);
-  setTxt($("#bClock"), Math.floor(left / 60) + ":" + String(Math.floor(left % 60)).padStart(2, "0"));
-  const u = BT.cur.A, C = BT.ctl; if (!u || !C || u.status !== "field") return;
-  for (const btn of C.acts) {
-    const slot = btn.dataset.a === "atk" ? 1 : btn.dataset.a === "s2" ? 2 : 3, ok = B.ready(u, slot);
-    let cd = 0, t = "";
-    if (slot === 3) { const need = (u.skills.find(s => s.slot === 3) || {}).arc || 100; cd = 1 - clamp(B.mc.A / need, 0, 1); if (!ok) t = Math.floor(Math.min(B.mc.A, need)) + "%"; }
-    else { cd = (u.cool[slot] || 0) / B.cdFor(u, slot); if (slot === 2 && u.cool[2] > 0) t = Math.ceil(u.cool[2]) + ""; }
-    if (!ok && slot > 1 && (B.has(u, "SILENCE") || B.has(u, "PROVOKE"))) t = "✕";
-    if (B.has(u, "STUN")) t = slot === 1 ? "" : "✕";
-    btn.classList.toggle("off", !ok); btn.classList.toggle("ready", ok && slot === 3);
-    setCD($(".cdw", btn), cd); if (slot > 1) setTxt($(".cdt", btn), t);
+  const d = B.dist();
+  setTxt($("#bTurn"), `TURN ${B.turn}`);
+  setTxt($("#bRange"), d <= NEAR + 30 ? "Close range" : d >= FAR - 60 ? "Long range" : "Mid range");
+  BT.hudDirty = false;
+  updCtl();
+}
+// ---------- the planner ----------
+function planCost(list) { return list.reduce((a, c) => a + (c.kind === "charge" ? -c.gain : BT.B.kiCost(BT.B.curOf("A"), c)), 0); }
+function openPlan() {
+  const B = BT.B, u = B.curOf("A");
+  BT.planOpen = true; BT.pick = []; BT.planT = PLAN_TIME;
+  if (!u) return;
+  if (B.auto || DEMO.on) {
+    const list = B.planFor(u);
+    if (DEMO.on) { BT.pick = []; renderCtl(); demoPlanTap(B, list); return; }
+    BT.pick = list; renderCtl();
+    bwait(DEMO.on ? 250 : 420).then(() => { if (BT.B === B && B.phase === "plan") goPlan(); });
+    return;
   }
-  for (const btn of C.tags) {
-    const m = B.byId(+btn.dataset.uid), [st, cd, t] = benchState("A", m), ok = B.canTag("A", m);
-    btn.className = "tagbtn " + (ok ? "ready" : st);
-    setCD($(".cdw", btn), cd); setTxt($(".tl", btn), ok ? "TAG" : t || "TAG"); setTxt($(".cdt", btn), st === "cd" ? t : "");
-    setW($(".hpb i", btn), m.hp / m.max.hp);
+  renderCtl();
+}
+function goPlan() {
+  const B = BT.B; if (B.phase !== "plan") return;
+  B.plan(BT.pick.length ? BT.pick : null); B.go(); BT.planT = null;
+  renderCtl();
+}
+function renderCtl() {
+  const c = $("#bCtl"); if (!c) return;
+  const B = BT.B;
+  c.innerHTML = B.phase === "plan" ? planHTML() : actHTML();
+  c.className = "bctl " + (B.phase === "plan" ? "planning" : "acting");
+  bindCtl();
+  measureHUD();
+}
+function planHTML() {
+  const B = BT.B, u = B.curOf("A"); if (!u) return "";
+  const H = B.hand(u), spent = planCost(BT.pick), left = u.ki - spent;
+  const slots = [0, 1, 2].map(i => { const c = BT.pick[i]; return `<button class="pq ${c ? "on" : ""}" data-i="${i}" ${c ? "" : "disabled"}>${c ? `<span>${KIND_IC[c.kind] || ""}</span>${esc(c.name)}` : `<small>${i + 1}</small>`}</button>`; }).join("");
+  return `<div class="plan">
+    <div class="ptop"><div class="pti"><b>Turn ${B.turn}</b><small>Pick up to ${PLAN_SLOTS} commands · ki after: <b class="${left < 0 ? "neg" : ""}">${Math.round(left)}</b></small></div>
+      <button class="btn pgo" id="pGo">GO!</button></div>
+    <div class="pqs">${slots}</div>
+    <div class="ptime"><i id="pTime"></i></div>
+    <div class="cmds">${H.map(h => { const c = h.c, cost = h.cost, full = BT.pick.length >= PLAN_SLOTS, once = c.once && BT.pick.includes(c), tagged = BT.pick.some(x => x.kind === "tag");
+      const no = !h.ok || full || once || tagged || (cost > 0 && left - cost < KI_MIN);
+      const cls = c.basic ? (c.kind === "move" ? "mv" : c.kind === "charge" ? "chg" : c.kind === "tag" ? "tg" : "bas") : "tech";
+      return `<button class="cmd ${cls}" data-c="${esc(c.id || c.name)}" ${no ? "disabled" : ""} title="${esc(c.desc || "")}"><span class="ci">${KIND_IC[c.kind] || ""}</span><b class="${Math.max(...c.name.split(" ").map(w => w.length)) > 9 ? "sm" : ""}">${esc(c.name)}</b><small>${c.kind === "charge" ? `+${c.gain} ki` : cost ? `${cost} ki` : h.why || "free"}</small></button>`; }).join("")}</div>
+  </div>`;
+}
+function actHTML() {
+  const B = BT.B;
+  return `<div class="bacts">
+    <div class="dcol"><button class="actb van" id="bVan" aria-label="Vanish"><b>VANISH</b><small>${VANISH_KI} ki</small></button>
+      <button class="actb grd" id="bGrd" aria-label="Guard"><b>GUARD</b></button></div>
+    <div class="qline" id="bQ"></div>
+    <button class="actb pow" id="bPow" aria-label="Power"><i class="pfill"></i><b id="bPowL">POWER</b><small>hold</small></button>
+  </div>`;
+}
+function updCtl() {
+  const B = BT.B, u = B.curOf("A");
+  if (B.phase === "act" && !$("#bPow")) renderCtl();
+  if (B.phase === "plan" && BT.planOpen && !$(".plan")) renderCtl();
+  const pw = $("#bPow");
+  if (pw && u) {
+    const a = u.act, winding = a && a.ph === "wind" && !a.noPow;
+    pw.classList.toggle("ready", !!winding && !B.auto); pw.classList.toggle("mash", !!B.struggle);
+    pw.style.setProperty("--p", winding ? a.pow : 0);
+    setTxt($("#bPowL"), B.struggle ? "MASH!" : winding ? (a.pow >= 1 ? "MAX!" : "HOLD") : "POWER");
+    $("#bGrd").classList.toggle("off", !B.canGuard(u)); $("#bVan").classList.toggle("off", !B.canVanish(u) || !B.incoming());
+    const q = $("#bQ");
+    if (q) { const cur = a && a.c ? [a.c] : [], list = [...cur, ...B.side.A.q]; const html = list.map((c, i) => `<span class="${i === 0 && a ? "now" : ""}">${KIND_IC[c.kind] || ""} ${esc(c.name)}</span>`).join("") || `<span class="dim">${u.stunT > 0 ? "Can't move!" : "…"}</span>`; if (q.innerHTML !== html) q.innerHTML = html; }
   }
 }
-function skillLine(u, sk) {
-  return `<div class="small" style="margin-top:6px"><b>${sk.arc ? "Bit-Beast" : sk.slot === 1 ? "Attack" : "S2"} · ${esc(sk.name)}</b> <span class="dim">${esc(sk.desc)}</span></div>`;
+function bindCtl() {
+  const B = BT.B;
+  for (const b of $$(".cmd")) b.onclick = () => {
+    const u = B.curOf("A"), h = B.hand(u).find(x => (x.c.id || x.c.name) === b.dataset.c);
+    if (!h || BT.pick.length >= PLAN_SLOTS) return;
+    BT.pick.push(h.c); sfx("tap"); renderCtl();
+    if (BT.pick.length >= PLAN_SLOTS && S.settings.autoGo) goPlan();
+  };
+  for (const b of $$(".pq.on")) b.onclick = () => { BT.pick.splice(+b.dataset.i, 1); sfx("tap"); renderCtl(); };
+  const go = $("#pGo"); if (go) go.onclick = () => { sfx("go"); goPlan(); };
+  const pw = $("#bPow");
+  if (pw) {
+    const down = ev => { ev.preventDefault(); if (B.struggle) { B.mash(); pw.classList.add("hit"); setTimeout(() => pw.classList.remove("hit"), 80); return; } B.hold(true); pw.classList.add("held"); };
+    const up = () => { B.hold(false); pw.classList.remove("held"); };
+    pw.addEventListener("pointerdown", down); pw.addEventListener("pointerup", up); pw.addEventListener("pointerleave", up); pw.addEventListener("pointercancel", up);
+  }
+  const gd = $("#bGrd"); if (gd) gd.addEventListener("pointerdown", ev => { ev.preventDefault(); if (!B.auto && B.guard()) { gd.classList.add("hit"); setTimeout(() => gd.classList.remove("hit"), 120); } else if (!B.auto) gd.classList.add("no"), setTimeout(() => gd.classList.remove("no"), 250); });
+  const vn = $("#bVan"); if (vn) vn.addEventListener("pointerdown", ev => { ev.preventDefault(); if (!B.auto && !B.vanish()) { vn.classList.add("no"); setTimeout(() => vn.classList.remove("no"), 250); } });
+}
+// keyboard: Space holds POWER, G or J guards, V or K vanishes, Enter plans
+function battleKeys(ev) {
+  const B = BT.B; if (!BT.on || !B || B.auto) return;
+  if (ev.repeat) return;
+  const down = ev.type === "keydown";
+  if (ev.code === "Space") { ev.preventDefault(); if (B.struggle && down) B.mash(); else B.hold(down); }
+  else if (down && (ev.key === "g" || ev.key === "j")) B.guard();
+  else if (down && (ev.key === "v" || ev.key === "k")) B.vanish();
+  else if (down && ev.key === "Enter" && B.phase === "plan") goPlan();
 }
 function unitPop(u) {
-  const B = BT.B, e = B.effStat, bl = u.def.blader, bst = u.def.beast;
-  const parts = PART_SLOTS.map(s => { const b = u.build[s], p = b.part;
-    return `<div class="small">${SLOT_NAME[s]}: <b>${esc(PART_MODELS[b.m].n)}</b> <span style="color:${PART_GC[p ? p.rar : 0]}">${p ? PART_GRADE[p.rar] + (p.lvl ? " +" + p.lvl : "") : "Stock"}</span></div>`; }).join("");
-  const st = benchState(u.team, u);
-  return `<div class="row"><img class="bpt" src="${artOf(u).head}" alt=""><div><div class="eyebrow">${u.team === "A" ? "Your team" : "Rival"}${u.boss ? " · Boss" : ""}${bl ? " · " + esc(bl) : ""}</div><h3>${esc(u.n)}</h3>
-    <div class="row" style="gap:4px;margin-top:3px"><span class="el ${u.el}">${u.el}</span>${bst && bst.n ? `<span class="el sty">${esc(bst.n)} · ${esc(bst.el)}</span>` : ""}</div></div></div>
-    ${u.status === "bench" ? `<p class="small" style="margin-top:8px;color:var(--holo)">On the bench${st[0] === "cd" ? ` · can tag in after ${st[2]}` : st[0] === "used" ? " · already tagged in once (comes in if your Beyblade is knocked out)" : ""}</p>` : u.status === "out" ? `<p class="small" style="margin-top:8px;color:var(--debuff)">Out of the battle.</p>` : ""}
-    <div class="statgrid" style="margin-top:10px">
-      <div><span>Spin</span><b>${fmtFull(Math.round(u.hp))} / ${fmtFull(u.max.hp)}</b></div><div><span>Barrier</span><b>${fmtFull(Math.round(u.shield))}</b></div>
-      <div><span>ATK</span><b>${fmtFull(Math.round(e.atk(u)))}</b></div><div><span>DEF</span><b>${fmtFull(Math.round(e.def(u)))}</b></div>
-      <div><span>SPD</span><b>${Math.round(e.spd(u))}</b></div><div><span>Crit Rate</span><b>${pct(e.cr(u))}</b></div>
-      <div><span>Accuracy</span><b>${pct(u.max.acc)}</b></div><div><span>Resistance</span><b>${pct(u.max.res)}</b></div>
-    </div>
-    ${u.eff.length ? `<div class="stack" style="gap:4px;margin-top:10px">${u.eff.map(x => `<div class="small"><span class="tag ${FX[x.id].b ? "ls" : "ds"}">${FX[x.id].n}</span> <span class="dim">${FX[x.id].d} · ${Math.ceil(x.t)}s</span></div>`).join("")}</div>` : `<p class="tiny dim" style="margin-top:10px">No active effects.</p>`}
-    <div class="stack" style="gap:2px;margin-top:10px"><b class="gold small">Parts</b>${parts}<div class="tiny dim">${esc(partTraitText(u.build.bb.m))}</div></div>
-    ${u.passives.length ? `<p class="small" style="margin-top:8px"><b class="gold">Blader Ability:</b> <span class="dim">${u.passives.map(p => esc(p.text || p.id)).join(" ")}</span></p>` : ""}
+  const op = u.isOp ? OPS[u.key] : null, d = u.def;
+  const techs = [BASIC.rush, BASIC.blast, ...(u.techs || [])];
+  return `<div class="row" style="gap:10px;align-items:center"><img class="bpt" src="${artOf(u).head}" alt="">
+    <div><b class="gold" style="font:800 18px var(--f-display);letter-spacing:.04em">${esc(u.n)}</b><div class="small dim">Lv ${u.LV} · ${esc(u.el)}${u.boss ? " · Boss" : ""}</div></div></div>
+    <p class="small" style="margin-top:6px">HP <b>${fmtFull(Math.max(0, u.hp))}</b> / ${fmtFull(u.max.hp)} · Ki <b>${Math.round(u.ki)}</b> · ATK ${fmtFull(u.max.atk)} · DEF ${fmtFull(u.max.def)} · SPD ${u.max.spd}</p>
     <p class="small" style="margin-top:6px"><b class="gold">${esc(TYPE_TRAIT[u.el].n)}:</b> <span class="dim">${esc(TYPE_TRAIT[u.el].d)}</span></p>
-    ${u.skills.slice().sort((a, b) => a.slot - b.slot).map(sk => skillLine(u, sk)).join("")}`;
+    ${(u.passives || []).map(p => `<p class="small" style="margin-top:6px"><b>${esc(p.name)}</b> <span class="dim">${esc(passiveDesc(p))}.</span></p>`).join("")}
+    <div class="stack" style="gap:6px;margin-top:8px">${techs.map(t => `<div class="small"><b>${esc(t.name)}</b> <span class="dim">${esc(t.desc || "")}</span></div>`).join("")}</div>
+    ${op ? "" : d.next ? `<p class="tiny dim" style="margin-top:6px">Beat it and it transforms.</p>` : ""}`;
 }
-// pop-ups pause the battle while they're open
 function popup(html, keepPaused) {
   const p = $("#bPop"); if (!p) return;
   const was = BT.paused; BT.paused = true;
-  p.innerHTML = `<div class="bpopbox">${html}<button class="btn ghost sm wide" style="margin-top:12px" id="bPopX">Close</button></div>`;
+  p.innerHTML = `<div class="bpopbox">${html}<button class="btn wide" id="bPopX" style="margin-top:12px">Close</button></div>`;
   p.hidden = false;
-  const close = () => { p.hidden = true; BT.paused = keepPaused ? was : false; };
-  $("#bPopX").onclick = close;
-  p.onclick = ev => { if (ev.target === p) close(); };
-}
-function unitAt(x, y) {
-  let best = null, bd = 1e9;
-  for (const vu of BT.vus.values()) {
-    if (!vu.scr || vu.dead || vu.gone || !vu.shown) continue;
-    const s = vu.scr.s, cx = vu.scr.x, cy = vu.scr.y - 26 * s, d = Math.hypot(x - cx, y - cy);
-    if (d < 52 * s + 14 && d < bd) { bd = d; best = vu; }
-  }
-  return best;
-}
-
-// ---------- the launch ----------
-// Pull the ripcord: a needle swings across the meter, and tapping while it's in the gold zone is a Perfect Launch
-const LAUNCH_ZONE = [.8, .94];
-function launchQ(p) {
-  const c = (LAUNCH_ZONE[0] + LAUNCH_ZONE[1]) / 2, h = (LAUNCH_ZONE[1] - LAUNCH_ZONE[0]) / 2, d = Math.abs(p - c);
-  return d <= h ? .9 + .1 * (1 - d / h) : clamp(.85 - (d - h) * 2.2, .15, .85);
-}
-function launchMeter() {
-  return new Promise(res => {
-    const wrap = $(".bwrap"), el = document.createElement("div");
-    el.className = "launch";
-    el.innerHTML = `<div class="lhint">Pull the ripcord! Tap when the needle hits the gold zone</div>
-      <div class="lmeter"><i class="lz" style="left:${LAUNCH_ZONE[0] * 100}%;width:${(LAUNCH_ZONE[1] - LAUNCH_ZONE[0]) * 100}%"></i><i class="ln"></i></div>
-      <button class="btn lgo">LET IT RIP!</button>`;
-    wrap.appendChild(el);
-    const t0 = BT.clock, ln = $(".ln", el);
-    let done = false;
-    const pos = () => { const f = ((BT.clock - t0) / 1100) % 2; return f < 1 ? f : 2 - f; };
-    const fire = ev => {
-      if (ev) ev.preventDefault();
-      if (done || BT.paused) return; done = true; BT.meterTick = null;
-      const q = launchQ(pos());
-      el.innerHTML = `<div class="lres">${q >= .9 ? "PERFECT!" : q >= .6 ? "GOOD!" : q >= .3 ? "OK" : "WEAK…"}</div>`;
-      setTimeout(() => el.remove(), 700);
-      res(q);
-    };
-    BT.meterTick = () => { ln.style.left = pos() * 100 + "%"; if (BT.clock - t0 > 8000) fire(); };
-    el.addEventListener("pointerdown", fire);
-  });
-}
-async function launchPhase() {
-  const h = BT.home;
-  banner(BT.cfg.title || "Battle", BT.cfg.sub || "", "ls");
-  camTo({ ...h, yaw: h.yaw - .7, pitch: h.pitch * .75, dist: h.dist * 1.15 }, 1, true);
-  camTo({ ...h }, 1.3);
-  await bwait(900);
-  for (const n of ["3", "2", "1"]) { banner(n, "Get ready", "ds"); sfx("count"); await bwait(400); }
-  hideBanner();
-  const q = BT.B.auto && !DEMO.on ? .75 : await launchMeter();
-  banner("LET IT RIP!", "", "ls", 900); sfx("go");
-  BT.letterboxT = 0;
-  return q;
-}
-
-// ---------- lifecycle ----------
-function addVU(u) {
-  const vu = { uid: u.uid, u, team: u.team, pos: { x: u.x, z: u.z }, y: 0, bs: u.r / 38, ph: R() * 6, rot: u.def.left ? -1 : 1,
-    hp: u.hp, lag: u.hp, sh: 0, shown: false, dead: false, gone: false, trail: [], out: null, col: u.team === "A" ? "#5fd4ff" : "#ff6a5a" };
-  BT.vus.set(u.uid, vu);
-  return vu;
+  $("#bPopX").onclick = () => { p.hidden = true; BT.paused = keepPaused ? was : false; };
 }
 function measureHUD() {
   const w = $(".bwrap"); if (!w) return;
-  const r = w.getBoundingClientRect(), hud = $(".bhud"), c1 = $(".bacts"), c2 = $(".btags");
-  const top = hud ? hud.getBoundingClientRect().bottom - r.top + 4 : 96;
-  const tops = [c1, c2].filter(Boolean).map(e => e.getBoundingClientRect().top - r.top).filter(v => v > 0);
-  // in landscape the buttons sit in the bottom corners, so the dish can reach down between them
-  const bot = r.width / r.height > 1.05 ? 20 : tops.length ? r.height - Math.min(...tops) + 4 : 130;
-  if (Math.abs(top - BT.mTop) > 2 || Math.abs(bot - BT.mBot) > 2) { BT.mTop = top; BT.mBot = bot; if (BT.home) { BT.home = fitHome(); if (!BT.letterboxT) Object.assign(BT.camT, BT.home); } }
+  const r = w.getBoundingClientRect(), hud = $(".bhud"), ctl = $("#bCtl");
+  BT.mTop = hud ? hud.getBoundingClientRect().bottom - r.top + 6 : 96;
+  BT.mBot = ctl && ctl.offsetHeight ? Math.min(r.height * .55, ctl.offsetHeight + 6) : 150;
 }
 function sizeCanvas() {
   const cv = BT.cv; if (!cv) return;
@@ -429,21 +276,19 @@ function sizeCanvas() {
   BT.W = Math.max(200, r.width); BT.H = Math.max(200, r.height);
   cv.width = Math.round(BT.W * BT.dpr); cv.height = Math.round(BT.H * BT.dpr);
   cv.style.width = BT.W + "px"; cv.style.height = BT.H + "px";
-  const old = BT.home;
-  BT.home = fitHome();
-  if (!old) { BT.cam = { ...BT.home }; BT.camT = { ...BT.home }; }
-  else if (!BT.letterboxT) Object.assign(BT.camT, BT.home);
   measureHUD();
 }
+
+// ---------- lifecycle ----------
 function startBattle(cfg) {
   if (DEMO.on) { cfg = demoWrap(cfg); if (DEMO.sim) { demoSim(cfg); return; } }
-  const B = makeBattle({ allies: cfg.allies, foes: cfg.foes, auto: S.settings.auto, aiStyle: S.settings.ai });
-  Object.assign(BT, { B, cfg, quit: false, paused: !!(DEMO.on && DEMO.paused), speed: DEMO.on ? (DEMO.mode === "watch" ? 2 : 3) : SPEEDS[clamp((S.settings.speed || 1) - 1, 0, 2)], clock: 0, last: 0, parts: [], bolts: [], floats: [], arcs: [], rings: [], nades: [], slashes: [], beasts: [],
-    waits: [], tweens: [], orbit: false, home: null, shake: 0, shx: 0, shy: 0, flash: 0, letterbox: 1, letterboxT: 1, live: false, acc: 0, alpha: 0,
-    cur: { A: null, E: null }, hud: {}, ctl: null, hudDirty: true, banT: 0, meterTick: null, onOver: null, step: stepBattle });
+  const B = makeBattle({ allies: cfg.allies, foes: cfg.foes, auto: S.settings.auto || DEMO.on, aiStyle: S.settings.ai });
+  Object.assign(BT, { B, cfg, quit: false, paused: !!(DEMO.on && DEMO.paused), speed: DEMO.on ? (DEMO.mode === "watch" ? 1.5 : 2) : SPEEDS[clamp((S.settings.speed || 1) - 1, 0, 2)], clock: 0, last: 0,
+    parts: [], floats: [], shots: [], rings: [], waits: [], tweens: [], shake: 0, flash: 0, live: false, acc: 0, hudDirty: true, banT: 0, onOver: null, step: stepBattle, planOpen: false, pick: [], planT: null,
+    cam: { x: 0, z: 1 } });
   BT.vus = new Map();
   if (DEMO.on) B.pilot = demoPilot;
-  BT.env = buildEnv(cfg.env || "bba");
+  BT.env = buildEnv(cfg.env || "wasteland");
   const root = $("#battle");
   root.innerHTML = `<div class="bwrap">
     <canvas id="bcv"></canvas>
@@ -453,7 +298,7 @@ function startBattle(cfg) {
       <button class="tog" id="bSpd" aria-label="Battle speed">${BT.speed}×</button>
       <button class="tog" id="bPause" aria-label="Pause">II</button>
     </div>
-    <div class="bhud"><div class="bpan A" id="pA"></div><div class="bclock" id="bClock">5:00</div><div class="bpan E" id="pE"></div></div>
+    <div class="bhud"><div class="bpan A" id="pA"></div><div class="bmid"><b id="bTurn">TURN 1</b><small id="bRange"></small></div><div class="bpan E" id="pE"></div></div>
     <div class="bban" id="bBan"></div>
     <div class="bctl" id="bCtl"></div>
     <div class="bpop" id="bPop" hidden></div>
@@ -461,10 +306,9 @@ function startBattle(cfg) {
   root.hidden = false;
   BT.cv = $("#bcv"); BT.g = BT.cv.getContext("2d");
   for (const u of B.units) addVU(u);
-  BT.cur = { A: B.side.A.units[0], E: B.side.E.units[0] };
   sizeCanvas();
   BT.on = true; BT.raf = requestAnimationFrame(frame);
-  $("#bAuto").onclick = () => { B.auto = !B.auto; S.settings.auto = B.auto; save(); $("#bAuto").classList.toggle("on", B.auto); sfx("tap"); };
+  $("#bAuto").onclick = () => { if (DEMO.on) return; B.auto = !B.auto; S.settings.auto = B.auto; save(); $("#bAuto").classList.toggle("on", B.auto); sfx("tap"); if (B.phase === "plan") { BT.planOpen = false; } renderCtl(); };
   $("#bSpd").onclick = () => {
     const k = (SPEEDS.indexOf(BT.speed) + 1) % SPEEDS.length; BT.speed = SPEEDS[k]; S.settings.speed = k + 1; save();
     $("#bSpd").textContent = BT.speed + "×"; sfx("tap");
@@ -472,55 +316,58 @@ function startBattle(cfg) {
   $("#bPause").onclick = () => {
     sfx("tap");
     popup(`<h2>Paused</h2><p class="small dim" style="margin:6px 0 12px">${esc(cfg.title || "")}</p>
+      <div class="small dim" style="margin-bottom:10px;text-align:left">Plan up to three commands, then GO. While they play out: <b>hold POWER</b> as an attack winds up to hit harder,
+        tap <b>GUARD</b> as the ring around your fighter closes (gold = perfect guard), and <b>VANISH</b> to dodge (20 ki). Two beams at once make a beam struggle: mash POWER.
+        Keys: Space = POWER, G = GUARD, V = VANISH, Enter = GO.</div>
       <div class="stack" style="gap:8px"><button class="btn wide" id="bRes">Resume</button>
       <button class="btn ghost wide" id="bAi">Auto AI: ${S.settings.ai}</button>
       <button class="btn ghost wide" id="bSnd">Sound: ${S.settings.sound ? "On" : "Off"}</button>
-      <button class="btn red wide" id="bQuit">Forfeit</button></div>`);
+      <button class="btn red wide" id="bQuit">Give Up</button></div>`);
     $("#bPopX").remove();
     $("#bRes").onclick = () => { $("#bPop").hidden = true; BT.paused = false; };
     $("#bAi").onclick = () => { const order = ["balanced", "aggressive", "safe"]; S.settings.ai = order[(order.indexOf(S.settings.ai) + 1) % 3]; B.aiStyle = S.settings.ai; save(); $("#bAi").textContent = "Auto AI: " + S.settings.ai; };
     $("#bSnd").onclick = () => { S.settings.sound = !S.settings.sound; save(); $("#bSnd").textContent = "Sound: " + (S.settings.sound ? "On" : "Off"); };
     $("#bQuit").onclick = () => { BT.quit = true; BT.paused = false; BT.live = false; closeBattle(); cfg.onQuit && cfg.onQuit(); };
   };
-  BT.cv.addEventListener("pointerdown", ev => {
-    const r = BT.cv.getBoundingClientRect(), vu = unitAt(ev.clientX - r.left, ev.clientY - r.top);
-    if (vu) popup(unitPop(vu.u));
-  });
+  $("#pA").onclick = () => { const u = B.curOf("A"); if (u) popup(unitPop(u)); };
+  $("#pE").onclick = () => { const u = B.curOf("E"); if (u) popup(unitPop(u)); };
   window.addEventListener("resize", sizeCanvas);
+  document.addEventListener("keydown", battleKeys); document.addEventListener("keyup", battleKeys);
   runBattle();
 }
 function closeBattle() {
   BT.on = false; cancelAnimationFrame(BT.raf);
   window.removeEventListener("resize", sizeCanvas);
+  document.removeEventListener("keydown", battleKeys); document.removeEventListener("keyup", battleKeys);
   const root = $("#battle"); root.hidden = true; root.innerHTML = "";
-  BT.cv = null; BT.home = null; BT.step = null; BT.meterTick = null; BT.onOver = null;
+  BT.cv = null; BT.step = null; BT.onOver = null;
   renderTop(); route(UI.view, UI.arg, true);
 }
 async function runBattle() {
   const B = BT.B;
-  const q = await launchPhase();
+  B.start();
+  for (const e of B.ev) onEv(e); B.ev.length = 0;
+  fitCam(0, true);
+  updHUD();
+  const boss = B.side.E.units.find(u => u.boss);
+  banner(BT.cfg.title || "Battle", boss ? `${boss.n} is here` : "Battle start", "ds", 1400);
+  await bwait(1300);
   if (BT.quit || !BT.on) return;
-  const boss = B.side.E.units.some(u => u.boss);
-  B.start(q, boss ? .85 + R() * .1 : .5 + R() * .35);
-  for (const e of B.ev) onEv(e);
-  B.ev.length = 0;
-  const first = B.side.A.units[0];
-  if (first && q >= .6 && q < .9) floatText(first.uid, "GOOD LAUNCH", "buff");
+  banner("FIGHT!", "", "ls", 700); sfx("go");
   BT.live = true;
   await new Promise(res => { BT.onOver = res; });
   if (BT.quit || !BT.on) return;
   await outro();
 }
 async function outro() {
-  const B = BT.B, res = B.result, h = BT.home;
-  BT.cur.A = null; BT.hudDirty = true;
+  const B = BT.B, res = B.result;
+  BT.live = false; renderCtl();
+  const c = $("#bCtl"); if (c) c.innerHTML = "";
   await bwait(700);
-  const win = [...BT.vus.values()].find(v => v.team === (res.win ? "A" : "E") && v.shown && !v.dead);
-  if (win) { camTo({ ...focusShot(win), pitch: .26, dist: fitDist(260, 460) }, 1.6); BT.orbit = true; }
-  if (res.win) { sfx("win"); banner("VICTORY", "Your Beyblade is still spinning", "ls"); }
-  else { sfx("lose"); banner("DEFEAT", "Your team is out", "ds"); }
-  BT.letterboxT = 1;
-  await bwait(1800);
+  for (const vu of BT.vus.values()) if (vu.team === (res.win ? "A" : "E") && vu.u.status === "field") vu.aura = 1;
+  if (res.win) { sfx("win"); banner("VICTORY", "Your party stands", "ls"); }
+  else { sfx("lose"); banner("DEFEAT", "Your party has fallen", "ds"); }
+  await bwait(1600);
   hideBanner();
   recordBattle(res, B);
   const out = res.win ? BT.cfg.onWin(res, B) : (BT.cfg.onLose ? BT.cfg.onLose(res, B) : { rewards: [] });
@@ -530,10 +377,11 @@ async function outro() {
   const missions = out.missions || null;
   el.innerHTML = `<div class="eyebrow">${esc(BT.cfg.sub || "")}</div>
     <h1 class="${res.win ? "gold" : "ds"}">${res.win ? "Victory" : "Defeat"}</h1>
-    <p class="small dim">Battle time ${Math.floor(res.time / 60)}:${String(Math.floor(res.time % 60)).padStart(2, "0")} · ${res.alive} of ${res.alive + res.lost} Beyblades still spinning</p>
+    <p class="small dim">${res.turns} turn${res.turns === 1 ? "" : "s"} · ${res.alive} of ${res.alive + res.lost} fighters still standing</p>
     ${missions ? `<div class="bigstars">${[0, 1, 2].map(k => `<span class="${missions[k].ok ? "on" : ""}">${missions[k].ok ? IC.star : IC.starOff}</span>`).join("")}</div>
       <div class="stack" style="gap:4px;text-align:left">${missions.map(m => `<div class="mission">${m.ok ? IC.check : IC.cross}<span>${esc(m.n)}</span></div>`).join("")}</div>` : ""}
-    ${!res.win ? `<p class="small dim" style="max-width:36ch">Level up and Upgrade your Beyblades, fit better Customize Parts, tag tired Beyblades out before they stop, or bring types that beat the rival team: Attack beats Endurance, Endurance beats Defense, Defense beats Attack.</p>` : ""}
+    ${!res.win ? `<p class="small dim" style="max-width:36ch">Train your fighters (level, Zenkai Awakening, techniques and Proficiency), bring styles that beat the enemy (Striker beats Blaster, Blaster beats Defender, Defender beats Striker), and guard as the ring closes: a perfect guard stops everything.</p>` : ""}
+    ${B.profNote && B.profNote.length ? `<p class="small" style="max-width:36ch"><b class="gold">Proficiency up:</b> ${B.profNote.map(esc).join(", ")}</p>` : ""}
     ${out.rewards && out.rewards.length ? `<div class="rewards">${rewardsHTML(out.rewards)}</div>` : ""}
     <div class="row" style="gap:10px;margin-top:6px">
       ${BT.cfg.retry ? `<button class="btn ghost" id="rRetry">Retry</button>` : ""}

@@ -35,14 +35,20 @@ function sfx(kind) {
     else if (kind === "flame") noise(.6, .2, 700);
     else if (kind === "tap") osc("sine", 880, 660, .05, .03);
     else if (kind === "warp") osc("sine", 200, 1400, .4, .04);
-    // Beyblade sounds: metal on metal, the ripcord, the countdown, a top flying out of the dish
-    else if (kind === "clash") { noise(.09, .3, 5200); osc("square", 1800 + R() * 600, 900, .08, .035); osc("sine", 2600, 2200, .12, .02, .01); }
-    else if (kind === "launch") { noise(.35, .22, 2200); osc("sawtooth", 140, 900, .35, .04); }
+    // Dragon Ball sounds: punches, ki blasts, the beam's roar, powering up, vanishing, guards
+    else if (kind === "punch") { noise(.08, .32, 1400); osc("square", 160, 60, .08, .05); }
+    else if (kind === "ki") { osc("sawtooth", 900, 260, .16, .045); noise(.1, .12, 3000); }
+    else if (kind === "beam") { noise(.9, .26, 1800); osc("sawtooth", 110, 220, .9, .05); osc("sine", 440, 880, .9, .03); }
+    else if (kind === "charge") { noise(.6, .14, 500); osc("sawtooth", 60, 140, .6, .05); }
+    else if (kind === "vanish") { osc("sine", 2400, 600, .12, .04); noise(.06, .1, 6000); }
+    else if (kind === "guard") { osc("square", 520, 400, .07, .05); noise(.05, .15, 2400); }
+    else if (kind === "perfect") { osc("square", 1320, 1320, .08, .05); osc("sine", 1980, 1980, .16, .04, .05); }
     else if (kind === "count") osc("square", 880, 880, .12, .04);
     else if (kind === "go") { osc("square", 1320, 1320, .3, .05); osc("sawtooth", 220, 880, .4, .03); }
-    else if (kind === "ringout") { noise(.5, .3, 1800); osc("sine", 900, 120, .5, .06); }
-    else if (kind === "sleepout") { osc("triangle", 500, 90, .7, .05); }
+    else if (kind === "transform") { noise(1.2, .3, 900); osc("sawtooth", 80, 640, 1.2, .06); }
+    else if (kind === "ko") { noise(.5, .3, 600); osc("sine", 300, 60, .5, .08); }
+    else if (kind === "jump") osc("sine", 300, 700, .12, .04);
+    else if (kind === "coin") { osc("square", 1320, 1320, .05, .03); osc("square", 1760, 1760, .1, .03, .05); }
   } catch (e) { /* audio unavailable */ }
 }
 
-// ---------- camera shots ----------
