@@ -622,6 +622,13 @@ h1{font-weight:900}
 #demomont .mrow i{grid-column:1 / -1;display:block;height:5px;border-radius:3px;background:#ffffff1a;overflow:hidden}
 #demomont .mrow i b{display:block;height:100%;background:linear-gradient(90deg,#3aa8ff,#f2c14e)}
 .cmprow{display:flex;flex-direction:column;gap:3px}
+#democursor{position:fixed;left:0;top:0;z-index:130;width:26px;height:35px;margin:-2px 0 0 -2px;pointer-events:none;filter:drop-shadow(0 3px 4px #000c) drop-shadow(0 0 6px #ffd34d88);will-change:transform}
+#democursor svg{width:100%;height:100%;display:block;transform-origin:2px 2px}
+#democursor.press svg{animation:dpress .28s ease-out}
+@keyframes dpress{35%{transform:scale(.72)}}
+.demotap{position:fixed;z-index:129;width:48px;height:48px;margin:-24px 0 0 -24px;border-radius:50%;border:3px solid #ffd34d;pointer-events:none;box-shadow:0 0 14px #ffd34d;animation:dtap .55s ease-out forwards}
+@keyframes dtap{from{transform:scale(.25);opacity:1}to{transform:scale(1.35);opacity:0}}
 body.demo #app{padding-bottom:calc(46px + env(safe-area-inset-bottom,0px))}
 body.demo #modal{padding-bottom:calc(52px + env(safe-area-inset-bottom,0px))}
+body.demo #battle,body.demo #dlg,body.demo #gacha{bottom:calc(46px + env(safe-area-inset-bottom,0px))}
 </style>

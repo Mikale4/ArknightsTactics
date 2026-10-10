@@ -100,8 +100,11 @@ Play: open `beyblade/index.html` (on GitHub Pages: `/ArknightsTactics/beyblade/`
     caches, side stories and every battle to 3 stars), Street Battles, the BBA Tower, Ranked Battles up to #1, the
     Mystery Gift and every Beyblade. It then upgrades and tunes the collection and fast-forwards a year of battles,
     Boosters and logins until every BBA Record is done.
+  - A **pointer** shows everything the demo does: it glides to each button and taps it (tabs, stages, Let it rip!, Mail,
+    Boosters, story scenes, result screens). In battles on screen it times the launch meter and presses Attack, the
+    technique, the Bit-Beast attack and Tag itself, as the battle AI decides.
   - **Highlights** (the default) plays the first battle of each chapter, every boss and the first battle of each mode
-    on screen, on Auto at 3×; the rest are simulated. **Watch all** plays every story battle on screen. **Fast**
+    on screen at 3×; the rest are simulated. **Watch all** plays every story battle on screen. **Fast**
     simulates every battle and reaches 100% in about three minutes. Switch, pause or exit from the bar at the bottom.
   - Simulated battles run through the same battle engine and the same rewards, so stars, drops and Records come out
     the same as a real battle. Between chapters a day passes (daily login, Energy, Ranked attempts), and the demo

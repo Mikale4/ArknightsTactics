@@ -77,26 +77,129 @@ function montage(title, rows) {
   el.innerHTML = `<div class="eyebrow">Fast-forward</div><h3>${esc(title)}</h3>${rows.map(([n, v, max]) => `<div class="mrow"><span>${esc(n)}</span><b class="num">${fmtFull(Math.min(v, max))} / ${fmtFull(max)}</b><i><b style="width:${Math.min(100, v / max * 100)}%"></b></i></div>`).join("")}`;
 }
 
-// ---------- autopilot: story scenes, Booster reveals and result screens advance by themselves ----------
+// ---------- the cursor: a pointer that glides to whatever the demo taps, so you can follow what it's doing ----------
+function cursor() {
+  let c = $("#democursor");
+  if (!c) {
+    c = document.createElement("div"); c.id = "democursor";
+    c.innerHTML = `<svg viewBox="0 0 24 32" aria-hidden="true"><path d="M2 2v24l6.5-6 4.5 10 4-2-4.5-9.5H21z" fill="#fff" stroke="#120818" stroke-width="2" stroke-linejoin="round"/></svg>`;
+    document.body.appendChild(c);
+    DEMO.cx = innerWidth / 2; DEMO.cy = innerHeight * .55;
+    c.style.transform = `translate(${DEMO.cx}px,${DEMO.cy}px)`;
+  }
+  return c;
+}
+// glide to (x, y); `quick` for button presses in battle
+async function glide(x, y, quick) {
+  const c = cursor(), d = Math.hypot(x - DEMO.cx, y - DEMO.cy);
+  const base = quick ? clamp(110 + d * .35, 120, 320) : clamp(240 + d * .8, 260, 720), ms = base * DEMO_MODES[DEMO.mode].pace;
+  c.style.transition = `transform ${Math.round(ms)}ms cubic-bezier(.35,.1,.25,1)`;
+  c.style.transform = `translate(${x}px,${y}px)`;
+  DEMO.cx = x; DEMO.cy = y;
+  await dwait(base + 30);
+}
+function ripple(x, y) {
+  const r = document.createElement("div"); r.className = "demotap"; r.style.left = x + "px"; r.style.top = y + "px";
+  document.body.appendChild(r); setTimeout(() => r.remove(), 600);
+  const c = cursor(); c.classList.remove("press"); void c.offsetWidth; c.classList.add("press");
+}
+const visibleEl = el => { if (!el || el.disabled) return false; const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
+const findEl = t => !t ? null : typeof t !== "string" ? (visibleEl(t) ? t : null) : [...document.querySelectorAll(t)].find(visibleEl) || null;
+// scroll a button into view when it sits below the fold of a screen
+async function reveal(el) {
+  const r = el.getBoundingClientRect();
+  if (r.top < 70 || r.bottom > innerHeight - 120) { el.scrollIntoView({ block: "center", behavior: "smooth" }); await dwait(550); }
+}
+// one cursor: taps from the playthrough, the autopilot and the battle pilot take turns
+function cursorDo(fn) { const p = (DEMO.cq || Promise.resolve()).then(fn, fn); DEMO.cq = p.catch(() => {}); return p; }
+// the cursor taps a button (an element or a selector): glide over, press, and fire it as a click, or as a pointerdown
+// for the battle buttons. Returns false when there's nothing to tap.
+function tap(t, how = "click", quick = false) {
+  return cursorDo(async () => {
+    let el = findEl(t); if (!el) return false;
+    if (!quick) { await reveal(el); el = findEl(t) || el; }
+    const r = el.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+    await glide(x, y, quick);
+    if (!el.isConnected || el.disabled) return false;
+    ripple(x, y);
+    if (how === "pointer") el.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true })); else el.click();
+    await dwait(quick ? 40 : 240);
+    return true;
+  });
+}
+// tap, or do it directly if the button isn't there
+async function press(t, fallback) { if (!(await tap(t)) && fallback) fallback(); }
+async function typeInto(t, text) {
+  const el = findEl(t); if (!el) return;
+  await tap(el);
+  for (const ch of text) { el.value += ch; await dwait(75); }
+}
+// close a pop-up with its own button (Collect, Close, Continue)
+async function closeM() {
+  if (!modalOpen()) return;
+  if (!(await tap(`#modal [data-act="closeModal"]`)) && !(await tap(`#modal [data-act="chapter"]`))) closeModal();
+  await dwait(300);
+}
+// go to a screen the way a player would: tabs, the Home buttons, the tiles on the Story and Battle screens
+async function nav(view, arg) {
+  const on = () => UI.view === view && (arg == null || UI.arg === arg);
+  const step = async sel => { if (!on()) { await tap(sel); await dwait(380); } };
+  const via = async (hub, sel) => { if (UI.view !== hub) await step(`#tabs [data-v="${hub}"]`); await step(sel); };
+  if (on()) return;
+  if (["home", "story", "battle", "ops", "hh"].includes(view)) await step(`#tabs [data-v="${view}"]`);
+  else if (view === "inbox") await via("home", `.stage [data-act="inbox"]`);
+  else if (["ach", "shop", "depot"].includes(view)) await via("home", `.stage [data-act="go"][data-v="${view}"]`);
+  else if (view === "settings") await step(`#topbar [data-act="settings"]`);
+  else if (view === "chapter") await via("story", `[data-act="chapter"][data-c="${arg}"]`);
+  else if (["hunt", "tower", "arena"].includes(view)) await via("battle", `[data-act="go"][data-v="${view}"]${arg ? `[data-a="${arg}"]` : ""}`);
+  else if (view === "op") await via("ops", `[data-act="go"][data-v="op"][data-a="${arg}"]`);
+  if (!on()) route(view, arg);
+}
+// in battles on screen the AI decides and the cursor presses the button (startBattle sets B.pilot)
+function demoPilot(a) {
+  const B = BT.B, sel = a.startsWith("tag:") ? `.tagbtn[data-uid="${a.slice(4)}"]` : `.actb[data-a="${a}"]`;
+  tap(sel, "pointer", true).then(ok => { if (!ok && BT.B === B && !B.over) B.press(a); }, () => {}).finally(() => { B.pilotBusy = false; });
+}
+// the launch: hover over LET IT RIP! and tap when the needle reaches the gold zone (now and then only a good launch)
+function launchTap() {
+  return cursorDo(async () => {
+    const btn = findEl(".launch .lgo"); if (!btn) return;
+    const r = btn.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+    await glide(x, y);
+    const [lo, hi] = R() < .8 ? [83, 91] : [68, 78];
+    await new Promise(res => { const t0 = performance.now(); const f = () => { const ln = $(".launch .ln"), p = ln ? parseFloat(ln.style.left) : -1;
+      if (!ln || DEMO.stop || (p >= lo && p <= hi) || performance.now() - t0 > 7000) res(); else requestAnimationFrame(f); }; f(); });
+    const L = $(".launch"); if (!L) return;
+    ripple(x, y); L.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+    await dwait(300);
+  });
+}
+
+// ---------- autopilot: story scenes, Booster reveals, the launch and result screens, tapped by the cursor ----------
 function autopilot() {
   if (!DEMO.on) return;
   demoBar();
-  if (DEMO.paused) return;
-  const now = performance.now(), dlg = $("#dlg");
+  if (DEMO.paused || DEMO.apBusy || DEMO.done) return;
+  const now = performance.now(), dlg = $("#dlg"), g = $("#gacha"), rd = $("#rDone"), lg = $(".launch .lgo");
+  const run = job => { DEMO.apBusy = true; job().catch(() => {}).finally(() => { DEMO.apBusy = false; }); };
   if (!dlg.hidden) {
     DEMO.dlgT = DEMO.dlgT || now;
     const quick = DEMO.mode === "fast" || (DEMO.sim && DEMO.mode !== "watch");
-    if (DEMO.mode === "watch" && !DEMO.sim) { const a = $("#dAuto"); if (a && !a.classList.contains("on")) a.click(); }
-    else if (now - DEMO.dlgT > (quick ? 700 : 2600)) { const s = $("#dSkip"); if (s) s.click(); DEMO.dlgT = 0; }
-  } else DEMO.dlgT = 0;
-  const g = $("#gacha");
+    if (DEMO.mode === "watch" && !DEMO.sim) { const a = $("#dAuto"); if (a && !a.classList.contains("on")) run(() => tap(a)); }
+    else if (now - DEMO.dlgT > (quick ? 700 : 2600)) { DEMO.dlgT = 0; run(() => tap("#dSkip")); }
+    return;
+  }
+  DEMO.dlgT = 0;
   if (!g.hidden) {
     const done = $("#gDone");
-    if (done && !done.hidden) { DEMO.gT = DEMO.gT || now; if (now - DEMO.gT > (DEMO.mode === "fast" ? 500 : 1600)) { DEMO.gT = 0; done.click(); } }
-    else if (now - (DEMO.gT2 = DEMO.gT2 || now) > 700) { DEMO.gT2 = 0; g.click(); }
-  } else DEMO.gT = DEMO.gT2 = 0;
-  const rd = $("#rDone");
-  if (rd) { DEMO.rT = DEMO.rT || now; if (now - DEMO.rT > (DEMO.mode === "fast" ? 600 : 2200)) { DEMO.rT = 0; rd.click(); } } else DEMO.rT = 0;
+    if (done && !done.hidden) { DEMO.gT = DEMO.gT || now; if (now - DEMO.gT > (DEMO.mode === "fast" ? 500 : 1600)) { DEMO.gT = 0; run(() => tap(done)); } }
+    else if (now - (DEMO.gT2 = DEMO.gT2 || now) > 700) { DEMO.gT2 = 0; run(() => tap(g)); }
+    return;
+  }
+  DEMO.gT = DEMO.gT2 = 0;
+  if (lg) { if (!DEMO.launching) { DEMO.launching = true; run(launchTap); } return; }
+  DEMO.launching = false;
+  if (rd) { DEMO.rT = DEMO.rT || now; if (now - DEMO.rT > (DEMO.mode === "fast" ? 600 : 2200)) { DEMO.rT = 0; run(() => tap(rd)); } } else DEMO.rT = 0;
 }
 
 // ---------- battles: shown on screen, or simulated with the same rules ----------
@@ -118,12 +221,12 @@ async function demoSimRun(cfg) {
   if (res.win) cfg.onWin(res, B); else if (cfg.onLose) cfg.onLose(res, B);
   await cfg.onClose(res);
 }
-// run one battle through a launcher; `visible` shows it on screen (and the screens before it); `quick` skips the pauses
-// between simulated battles (the long fast-forwards)
-async function fight(launch, visible, showPrep, quick) {
+// run one battle; `visible` shows it on screen, reached by tapping through the screens (`taps`, which ends on the team
+// screen's Let it rip!), otherwise `launch` starts it off screen. `quick` skips the pauses between simulated battles.
+async function fight(launch, visible, taps, quick) {
   DEMO.sim = !visible; DEMO.result = null; DEMO.closed = false; DEMO.simP = null;
-  if (visible && showPrep) await showPrep();
-  launch();
+  const started = visible && taps ? await taps() : false;
+  if (!started) launch();
   if (quick && !visible) {
     if (DEMO.simP) await DEMO.simP; else await until(() => DEMO.closed);
     if (DEMO.stop) throw DEMO_STOP;
@@ -131,7 +234,7 @@ async function fight(launch, visible, showPrep, quick) {
   } else {
     await until(() => DEMO.closed && !BT.on);
     await settle(visible ? 600 : 150);
-    if (modalOpen()) { await dwait(visible ? 1400 : 300); closeModal(); }
+    if (modalOpen()) { await dwait(visible ? 1400 : 300); if (visible) await closeM(); else closeModal(); }
   }
   visible ? DEMO.shown++ : DEMO.simmed++;
   DEMO.sim = false;
@@ -246,21 +349,27 @@ function pickTeam(mode, foes, target, ok) {
   return best;
 }
 
+// tap through to a battle: open it, then Let it rip! on the team screen
+async function tapsTo(...sels) {
+  for (const sel of sels) { if (!(await tap(sel))) return false; await dwait(1000); }
+  return tap(`[data-act="deploy"]`);
+}
+
 // ---------- the playthrough ----------
 async function runDemo() {
   // a new account, like a new player
   demoCap("Making a new account", "Title screen");
-  nameModal(); await dwait(1100);
-  ACT.pickLook({ v: "rookie2" }); await dwait(700);
-  const nn = $("#nname"); if (nn) nn.value = "Demo Blader";
-  await dwait(800); ACT.nameGo(); await dwait(2600);
-  if (modalOpen()) { ACT.introGo(); await dwait(1800); }
+  nameModal(); await dwait(900);
+  await press(`[data-act="pickLook"][data-v="rookie2"]`, () => ACT.pickLook({ v: "rookie2" }));
+  await typeInto("#nname", "Demo Blader"); await dwait(400);
+  await press(`[data-act="nameGo"]`, () => ACT.nameGo()); await dwait(2200);
+  if (modalOpen()) { await press(`[data-act="introGo"]`, () => ACT.introGo()); await dwait(1500); }
   closeModal();
   await showMail("Mr. Dickenson's welcome gifts");
   demoCap("Opening the free Boosters", "Booster shop");
-  route("hh"); await dwait(1200);
-  await ACT.pullFree10(); await settle();
-  if (S.inv.gold5 > 0) { await ACT.pullGold5(); await settle(); }
+  await nav("hh"); await dwait(900);
+  await press(`[data-act="pullFree10"]`, () => ACT.pullFree10()); await settle();
+  if (S.inv.gold5 > 0) { await press(`[data-act="pullGold5"]`, () => ACT.pullGold5()); await settle(); }
   await tour();
   // the story, with the other modes in between chapters
   for (const ch of STORY[0].chapters) { await playChapter(ch); await interlude(ch); }
@@ -278,44 +387,45 @@ async function runDemo() {
 async function showMail(sub = "Mailbox") {
   metaTick();
   if (!unclaimedMail().length) return;
-  demoCap("Claiming mail", sub); route("inbox"); await dwait(1300);
-  ACT.claimAllMail(); await dwait(1500); closeModal();
+  demoCap("Claiming mail", sub); await nav("inbox"); await dwait(900);
+  await press(`[data-act="claimAllMail"]`, () => ACT.claimAllMail()); await dwait(1300); await closeM();
 }
 // a quick look at the menus, once
 async function tour() {
   const k = topTeam(1)[0];
-  const stops = [
-    ["Your Beyblades", "Beyblades", () => route("ops")],
-    [`${OPS[k].n}: status`, "Beyblades", () => { UI.opTab = "info"; route("op", k); }],
-    ["Moves", "Beyblades", () => { UI.opTab = "skills"; rerender(); }],
-    ["Level Up with Battle Data", "Beyblades", () => { UI.opTab = "upgrade"; rerender(); }],
-    ["Customize Parts: Attack Ring, Weight Disk, Spin Gear, Blade Base", "Beyblades", () => { UI.opTab = "runes"; UI.partSlot = "bb"; rerender(); }],
-    ["Max's dad's Hobby Shop", "Home", () => { UI.shopTab = "credit"; route("shop"); }],
-    ["Daily Training", "Home", () => { route("home"); missionsModal(); }],
-    ["BBA Records", "Home", () => { closeModal(); route("ach"); }],
-    ["Your Blader Card", "Home", () => route("settings")],
-  ];
-  for (const [cap, sub, fn] of stops) { demoCap(cap, sub); fn(); await dwait(1500); }
-  ACT.setLook({ v: "rookie2" }); closeModal(); route("home"); await dwait(1200);
+  demoCap("Your Beyblades", "Beyblades"); await nav("ops"); await dwait(1100);
+  demoCap(`${OPS[k].n}: status`, "Beyblades"); await nav("op", k); await dwait(1300);
+  for (const [t, cap] of [["skills", "Moves"], ["upgrade", "Level Up with Battle Data"], ["runes", "Customize Parts: Attack Ring, Weight Disk, Spin Gear, Blade Base"]]) {
+    demoCap(cap, "Beyblades"); await press(`[data-act="opTab"][data-t="${t}"]`, () => ACT.opTab({ t })); await dwait(1300);
+  }
+  await press(`[data-act="partSlotF"][data-s="bb"]`); await dwait(1100);
+  demoCap("Max's dad's Hobby Shop", "Home"); await nav("shop"); await dwait(1400);
+  demoCap("Daily Training", "Home"); await nav("home"); await press(`.stage [data-act="missions"]`, () => missionsModal()); await dwait(1400); await closeM();
+  demoCap("BBA Records", "Home"); await nav("ach"); await dwait(1400);
+  demoCap("Your Blader Card", "Home"); await nav("settings"); await dwait(1100);
+  await press(`[data-act="setLook"][data-v="rookie2"]`); await dwait(900);
+  await nav("home"); await dwait(1000);
 }
 
 async function playChapter(ch) {
   demoCap(`Chapter ${ch.no}: ${ch.title}`, ch.season);
-  route("chapter", ch.id); await dwait(1500);
+  await nav("chapter", ch.id); await dwait(1200);
   let first = true;
   for (const nd of ch.nodes) {
     if (nd.type === "story" || nd.type === "chest") {
       if (nodeStars(nd.id)) continue;
       demoCap(`${nd.id} ${nd.name}`, `Chapter ${ch.no}: ${ch.title}`);
-      ACT.openNode({ id: nd.id }); await dwait(1000);
-      await ACT.startNode({ id: nd.id }); await settle(900); closeModal();
+      await nav("chapter", ch.id);
+      await press(`[data-act="openNode"][data-id="${nd.id}"]`, () => ACT.openNode({ id: nd.id })); await dwait(800);
+      await press(`#modal [data-act="startNode"]`, () => ACT.startNode({ id: nd.id }));
+      await settle(900); await closeM();
     } else {
       await storyBattle(nd, first || nd.type === "boss");
       first = false;
     }
   }
   await settle(300);
-  if (modalOpen()) { await dwait(2400); closeModal(); }
+  if (modalOpen()) { await dwait(2000); await closeM(); }
 }
 async function storyBattle(nd, highlight) {
   for (let attempt = 0; nodeStars(nd.id) < 3; attempt++) {
@@ -325,10 +435,7 @@ async function storyBattle(nd, highlight) {
     topUp("sanity", nodeCost(nd));
     const visible = attempt === 0 && (DEMO.mode === "watch" || (DEMO.mode === "highlights" && highlight));
     demoCap(`${nd.id} ${nd.name}${attempt ? " · again, for 3 stars" : ""}`, `Chapter ${nd.ch.no}: ${nd.ch.title}`);
-    await fight(() => launchNode(nd.id), visible, async () => {
-      ACT.openNode({ id: nd.id }); await dwait(1300);
-      ACT.startNode({ id: nd.id }); await dwait(1500);
-    });
+    await fight(() => launchNode(nd.id), visible, async () => { await nav("chapter", nd.ch.id); return tapsTo(`[data-act="openNode"][data-id="${nd.id}"]`, `#modal [data-act="startNode"]`); });
   }
 }
 // between chapters: a day passes, the mail is claimed, and the other modes catch up to the story
@@ -340,7 +447,11 @@ async function interlude(ch) {
   await towerRun(lv + 8, ch.no === 2);
   if (ch.no >= 3) await ranked(3, ch.no === 3);
   await boosters(ch.no % 4 === 1);
-  if (ch.no === 1 || ch.no === 6) { demoCap("Daily Training rewards", "Home"); route("home"); missionsModal(); await dwait(1500); closeModal(); }
+  if (ch.no === 1 || ch.no === 6) {
+    demoCap("Daily Training rewards", "Home"); await nav("home"); await press(`.stage [data-act="missions"]`, () => missionsModal()); await dwait(1000);
+    for (let i = 0; i < 8 && findEl(`#modal [data-act="claimDaily"]`); i++) { await tap(`#modal [data-act="claimDaily"]`); await dwait(500); }
+    await tap(`#modal [data-act="claimAllDaily"]`); await dwait(900); await closeM();
+  }
   claimAll(); pruneParts();
   if (ch.no === 5) await showMail("A Mystery Gift");
 }
@@ -354,7 +465,7 @@ async function streetBattles(maxLv, showFirst) {
       if (attempt) pickTeam("hunt", foes, foeLv(foes) + 4 + attempt * 8, r => r.win); else prepTeam("hunt", foes, foeLv(foes) + 4);
       topUp("sanity", HUNT_COST[l - 1]);
       demoCap(`${h.code}-${l} ${h.n}`, "Street Battles");
-      await fight(() => launchHunt(h.id, l), visible, async () => { route("hunt", h.id); await dwait(1300); ACT.huntGo({ h: h.id, l }); await dwait(1300); });
+      await fight(() => launchHunt(h.id, l), visible, async () => { await nav("hunt", h.id); return tapsTo(`[data-act="huntLv"][data-h="${h.id}"][data-l="${l}"]`, `[data-act="huntGo"]`); });
       shown = true;
     }
   }
@@ -368,7 +479,7 @@ async function towerRun(maxLv, showFirst) {
       const foes = rivalTeam(T.waves, T.lv), visible = !shown && DEMO.mode !== "fast";
       if (attempt) pickTeam("tower", foes, foeLv(foes) + 4 + attempt * 8, r => r.win); else prepTeam("tower", foes, foeLv(foes) + 4);
       demoCap(`Floor ${f}${f % 5 === 0 ? " · Champion" : ""}`, "BBA Tower");
-      await fight(() => launchTower(f), visible, async () => { route("tower"); await dwait(1300); ACT.towerGo({ f }); await dwait(1300); });
+      await fight(() => launchTower(f), visible, async () => { await nav("tower"); return tapsTo(`[data-act="towerGo"][data-f="${f}"]`); });
       shown = true;
     }
   }
@@ -390,20 +501,20 @@ async function ranked(wins, showFirst, toTop) {
     const visible = !shown && DEMO.mode !== "fast";
     demoCap(`${o.cls || ""} ${o.name}`.trim(), `Ranked Battles · #${S.arena.rank}`);
     DEMO.quiet = !visible;
-    const r = await fight(() => launchArena(k), visible, async () => { route("arena"); await dwait(1400); ACT.arenaGo({ k }); await dwait(1300); }, !visible);
+    const r = await fight(() => launchArena(k), visible, async () => { await nav("arena"); return tapsTo(`[data-act="arenaGo"][data-k="${k}"]`); }, !visible);
     DEMO.quiet = false;
     if (r.win) won++;
     shown = true;
     if (!visible && tries % 10 === 9) { montage("Climbing the world ranking", [["Rank", 1500 - S.arena.rank, 1499], ["Ranked Battles won", S.stats.versus, 100]]); await yieldUI(); }
   }
   montage();
-  if (toTop) { route("arena"); demoCap("World ranking #1", "Ranked Battles"); await dwait(1800); }
+  if (toTop) { await nav("arena"); demoCap("World ranking #1", "Ranked Battles"); await dwait(1800); }
 }
 // Random Boosters: spend tickets and BeyPoints, showing a reveal now and then
 async function boosters(show) {
   const can = () => S.permit >= 10 || S.orundum >= 6000;
   if (!can()) return;
-  if (show && DEMO.mode !== "fast") { demoCap("Random Boosters ×10", "Booster shop"); route("hh"); await dwait(1200); await ACT.pull({ n: 10 }); await settle(); }
+  if (show && DEMO.mode !== "fast") { demoCap("Random Boosters ×10", "Booster shop"); await nav("hh"); await dwait(900); await press(`[data-act="pull"][data-n="10"]`, () => ACT.pull({ n: 10 })); await settle(); }
   while (can()) { if (S.permit >= 10) S.permit -= 10; else S.orundum -= 6000; headhunt(10, true); }
   claimAll();
 }
@@ -411,7 +522,7 @@ async function boosters(show) {
 // ---------- after the story ----------
 async function collectAll() {
   demoCap("Collecting every Beyblade", "Random Boosters");
-  route("ops"); UI.all = true; rerender(); await dwait(1200);
+  await nav("ops"); if (!UI.all) await press(`[data-act="toggleAll"]`, () => ACT.toggleAll()); await dwait(1100);
   let n = 0;
   while (OP_KEYS.some(k => !S.ops[k] && k !== MYSTERY_OP) && n++ < 400) {
     topUp("orundum", 6000); S.orundum -= 6000; headhunt(10, true);
@@ -427,14 +538,14 @@ async function growth() {
     trainOp(k, 120);
     const p = S.ops[k];
     for (const s of [0, 1, 2]) while (p.sk[s] < 7 && p.elite >= 1) { const c = skillCost(p.sk[s]); topUp("summ", c.summ); topUp("lmd", c.lmd); if (!skillUp(k, s)) break; }
-    if (i === 0) { UI.opTab = "upgrade"; route("op", k); await dwait(1600); }
+    if (i === 0) { await nav("op", k); await press(`[data-act="opTab"][data-t="upgrade"]`, () => ACT.opTab({ t: "upgrade" })); await dwait(1500); }
     if (i % 4 === 3) await yieldUI();
   }
   // tune parts to +15: the ones fitted first, then the best spares
   const order = S.parts.slice().sort((a, b) => !!b.eq - !!a.eq || b.rar - a.rar);
   for (const pt of order.slice(0, 40)) while (pt.lvl < 15) { topUp("lmd", partCost(pt)); if (!tunePart(pt)) break; }
   for (const k of keys) fitBest(k);
-  UI.opTab = "runes"; route("op", keys[0]); await dwait(1600);
+  await nav("op", keys[0]); await press(`[data-act="opTab"][data-t="runes"]`, () => ACT.opTab({ t: "runes" })); await dwait(1500);
   claimAll();
 }
 // the long tail: thousands of battles and a year of logins, fast-forwarded through the real engine
@@ -447,7 +558,7 @@ async function grind() {
     ["Days logged in", S.stats.loginDays, goal("login")], ["Blader Rank", S.lvl, goal("plv")]];
   demoCap("Fast-forwarding a year of Beyblading", "Street Battles, Ranked Battles, Boosters");
   const h = HUNTS[HUNTS.length - 1], l = 6;
-  route("hunt", h.id);
+  await nav("hunt", h.id);
   const need = () => S.stats.wins < goal("wins") || S.stats.kills < goal("kills") || S.stats.arcs < goal("arcs") || S.stats.flawless < goal("flawless") || S.stats.patrols < goal("patrol") || S.lvl < goal("plv");
   prepTeam("hunt", huntTeam(h, l), 120);
   let n = 0;
@@ -486,14 +597,14 @@ async function finalSweep() {
   }
   claimAll();
   // the finale
-  demoCap("Every BBA Record", "100%"); UI.achCat = "All"; route("ach"); await dwait(2200);
-  demoCap("Every Beyblade", "100%"); UI.all = true; route("ops"); await dwait(2200); UI.all = false;
-  demoCap("The Blader Card", "100%"); route("settings"); await dwait(2600);
+  demoCap("Every BBA Record", "100%"); UI.achCat = "All"; await nav("ach"); await dwait(2200);
+  demoCap("Every Beyblade", "100%"); await nav("ops"); if (!UI.all) await press(`[data-act="toggleAll"]`, () => ACT.toggleAll()); await dwait(2200);
+  demoCap("The Blader Card", "100%"); await nav("settings"); await dwait(2600);
 }
 function demoFinish() {
   if (!DEMO.on) return;
   DEMO.done = true; DEMO.paused = false;
-  const sh = $("#demoshield"); if (sh) sh.remove();
+  for (const id of ["demoshield", "democursor"]) { const el = $("#" + id); if (el) el.remove(); }
   const mins = Math.round((Date.now() - DEMO.t0) / 60000), tops = Object.entries(DEMO.topups).filter(([, n]) => n > 0);
   demoCap(`Demo complete: ${completionPct()}%`, "Tap ✕ to go back to your own save");
   openModal(`<div class="stack" style="text-align:center;align-items:center"><div class="eyebrow">Demo complete</div><h2>${completionPct()}% complete</h2>
@@ -519,7 +630,7 @@ function demoStart(mode) {
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { /* storage unavailable */ }
   const sound = S.settings.sound, title = $("#title"), fromTitle = !!(title && !title.hidden);
   Object.assign(DEMO, { on: true, saved: JSON.stringify(S), mode: DEMO_MODES[mode] ? mode : "highlights", paused: false, stop: false, done: false, topups: {},
-    shown: 0, simmed: 0, days: 0, log: [], t0: Date.now(), sim: false, quiet: false, result: null, closed: false, cap: "", sub: "" });
+    shown: 0, simmed: 0, days: 0, log: [], cq: null, apBusy: false, launching: false, t0: Date.now(), sim: false, quiet: false, result: null, closed: false, cap: "", sub: "" });
   DAY_SHIFT = 0;
   S = migrate(newSave()); S.settings.sound = sound; S.settings.auto = true; S.settings.speed = 3;
   UI.team = null; UI.opTab = "info"; UI.all = false;
@@ -539,7 +650,8 @@ function demoEnd() {
   if (BT.on) closeBattle();
   for (const id of ["dlg", "gacha"]) { const el = $("#" + id); el.hidden = true; el.innerHTML = ""; }
   closeModal(); montage();
-  for (const id of ["demobar", "demoshield"]) { const el = $("#" + id); if (el) el.remove(); }
+  for (const id of ["demobar", "demoshield", "democursor"]) { const el = $("#" + id); if (el) el.remove(); }
+  for (const el of $$(".demotap")) el.remove();
   document.body.classList.remove("demo");
   const real = JSON.parse(DEMO.saved);
   DEMO.on = false; DEMO.saved = null; DAY_SHIFT = 0;

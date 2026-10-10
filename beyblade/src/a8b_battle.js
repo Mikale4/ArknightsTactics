@@ -400,7 +400,7 @@ async function launchPhase() {
   await bwait(900);
   for (const n of ["3", "2", "1"]) { banner(n, "Get ready", "ds"); sfx("count"); await bwait(400); }
   hideBanner();
-  const q = BT.B.auto ? .75 : await launchMeter();
+  const q = BT.B.auto && !DEMO.on ? .75 : await launchMeter();
   banner("LET IT RIP!", "", "ls", 900); sfx("go");
   BT.letterboxT = 0;
   return q;
@@ -442,6 +442,7 @@ function startBattle(cfg) {
     waits: [], tweens: [], orbit: false, home: null, shake: 0, shx: 0, shy: 0, flash: 0, letterbox: 1, letterboxT: 1, live: false, acc: 0, alpha: 0,
     cur: { A: null, E: null }, hud: {}, ctl: null, hudDirty: true, banT: 0, meterTick: null, onOver: null, step: stepBattle });
   BT.vus = new Map();
+  if (DEMO.on) B.pilot = demoPilot;
   BT.env = buildEnv(cfg.env || "bba");
   const root = $("#battle");
   root.innerHTML = `<div class="bwrap">

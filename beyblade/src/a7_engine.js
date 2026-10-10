@@ -497,26 +497,30 @@ function makeBattle(cfg) {
 
   // ---------- AI ----------
   const REACT = { balanced: .14, aggressive: .3, safe: .08 };
+  // B.pilot (set by the demo) receives your side's AI decisions ("atk", "s2", "s3", "tag:<uid>") and presses the button
+  // itself; one decision at a time
   function ai(side) {
     const S = B.side[side], u = activeOf(side); if (!u || B.freeze) return;
+    if (side === "A" && B.pilot && B.pilotBusy) return;
+    const go = (a, fn) => { if (side === "A" && B.pilot) { B.pilotBusy = true; B.pilot(a); } else fn(); };
     const t = rivalOf(u), style = side === "A" ? B.aiStyle : "balanced";
     const react = REACT[style] || .14;
     // tag out a Beyblade that's spinning down when a fresher partner is ready
     const fresh = S.units.filter(m => canTag(side, m)).sort((a, b) => b.hp / b.max.hp - a.hp / a.max.hp)[0];
     const sf = spinFrac(u);
-    if (fresh && sf < (style === "safe" ? .4 : .3) && spinFrac(fresh) > sf + .25 && R() < .05) { tagIn(side, fresh); return; }
+    if (fresh && sf < (style === "safe" ? .4 : .3) && spinFrac(fresh) > sf + .25 && R() < .05) { go("tag:" + fresh.uid, () => tagIn(side, fresh)); return; }
     if (!t) return;
     const d = Math.hypot(t.x - u.x, t.z - u.z);
     const s2 = u.skills.find(s => s.slot === 2), s3 = u.skills.find(s => s.slot === 3);
     if (ready(u, 3) && !has(t, "INVINCIBLE")) {
       const nearRim = Math.hypot(t.x, t.z) > DISH_R * .62;
-      if (B.mc[side] >= 200 || spinFrac(t) < .45 || nearRim || style === "aggressive" || R() < .01) { useSkill(u, 3); return; }
+      if (B.mc[side] >= 200 || spinFrac(t) < .45 || nearRim || style === "aggressive" || R() < .01) { go("s3", () => useSkill(u, 3)); return; }
     }
     if (ready(u, 2) && s2) {
       const support = !(s2.mult > 0), heals = (s2.effects || []).some(e => /heal/i.test(e.type));
-      if (support ? (!heals || sf < .75 || teamOf(u).some(m => m.hp < m.max.hp * .6)) : (d < 620 && R() < react * 1.5)) { useSkill(u, 2); return; }
+      if (support ? (!heals || sf < .75 || teamOf(u).some(m => m.hp < m.max.hp * .6)) : (d < 620 && R() < react * 1.5)) { go("s2", () => useSkill(u, 2)); return; }
     }
-    if (ready(u, 1) && d < 560 && R() < react) useSkill(u, 1);
+    if (ready(u, 1) && d < 560 && R() < react) go("atk", () => useSkill(u, 1));
   }
 
   // ---------- the loop ----------
