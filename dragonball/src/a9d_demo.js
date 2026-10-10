@@ -569,7 +569,8 @@ async function grind() {
     ["Wins without a knockout", S.stats.flawless, goal("flawless")], ["Training Grounds wins", S.stats.patrols, goal("patrol")], ["Rankings wins", S.stats.versus, goal("versus")],
     ["Summons", S.gacha.total, goal("pulls")], ["5★ from Summons", S.stats.fives, goal("luck")], ["Days logged in", S.stats.loginDays, goal("login")], ["Rank", S.lvl, goal("plv")]];
   demoCap("Fast-forwarding a year of training", "Training Grounds, Rankings, Summons");
-  const h = HUNTS[HUNTS.length - 1], l = 6;
+  // Kami's Lookout: the Saiyans of the past fire beams back, so beam struggles happen too
+  const h = HUNTS.find(x => x.id === "lookout"), l = 6;
   await nav("hunt", h.id);
   const need = () => S.stats.wins < goal("wins") || S.stats.kills < goal("kills") || S.stats.arcs < goal("arcs") || (S.stats.perfects || 0) < goal("perfects") || (S.stats.struggles || 0) < goal("struggles") || S.stats.flawless < goal("flawless") || S.stats.patrols < goal("patrol") || S.lvl < goal("plv");
   prepTeam("hunt", huntTeam(h, l), 120);

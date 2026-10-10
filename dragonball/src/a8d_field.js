@@ -324,7 +324,8 @@ function launchGame(nd) {
     const r = cv.parentElement.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1), W = r.width, H = r.height;
     if (cv.width !== Math.round(W * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); cv.style.width = W + "px"; cv.style.height = H + "px"; }
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const top = 90, bot = H - 130, sc = (bot - top) / GH, cam = G.x - W * .3 / sc, sx = x => (x - cam) * sc, sy = y => bot - y * sc;
+    // runs show more of the road ahead; flights use the whole height for the lane
+    const top = 90, bot = H - 130, sc = C.mode === "run" ? Math.min((bot - top) / GH, W / 520) : (bot - top) / GH, cam = G.x - W * .3 / sc, sx = x => (x - cam) * sc, sy = y => bot - y * sc;
     const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, env.sky[0]); gr.addColorStop(.6, env.sky[1]); gr.addColorStop(1, env.sky[2]); g.fillStyle = gr; g.fillRect(0, 0, W, H);
     const layer = (lc, par, h) => { if (!lc) return; const off = ((cam * sc * par) % BG_W + BG_W) % BG_W; for (let x = -off; x < W; x += BG_W) g.drawImage(lc, x, bot - h, BG_W, h); };
     layer(env.farCv, .2, 260); layer(env.nearCv, .5, 180);
@@ -359,7 +360,8 @@ function launchGame(nd) {
     }
     // the player
     const px = sx(G.x), py = sy(G.y);
-    g.save(); g.globalAlpha = G.inv && Math.floor(T * 12) % 2 ? .4 : 1; g.translate(px, py + (C.mode === "fly" ? 18 * sc : 0)); g.scale(sc * .8, sc * .8);
+    const ps = sc * (C.mode === "run" ? 1.1 : .8);
+    g.save(); g.globalAlpha = G.inv && Math.floor(T * 12) % 2 ? .4 : 1; g.translate(px, py + (C.mode === "fly" ? 18 * sc : 0)); g.scale(ps, ps);
     drawFigure(g, lead.fig, C.mode === "run" ? { name: G.y > 0 ? "fly" : "run", time: T } : C.water ? { name: "swim", time: T, air: true } : { name: "fly", time: T, air: true });
     if (G.got) drawDragonBall(g, 30, -40, 10, 4, .6);
     g.restore();

@@ -96,6 +96,8 @@ function syncVUs(dt) {
     const u = vu.u;
     if (u.status === "bench" && vu.shown) { vu.alt += 900 * s; vu.x -= vu.face * 600 * s; if (vu.alt > 600) { vu.shown = false; } continue; }
     if (!vu.shown) continue;
+    // a knocked-out fighter falls, lies there a moment, then fades away
+    if (u.status === "out") { vu.koT = (vu.koT || 0) + dt; if (vu.koT > 1600) { vu.alpha = Math.max(0, 1 - (vu.koT - 1600) / 600); if (vu.koT > 2200) vu.gone = true; } }
     // fighters hover; giants and a fallen fighter stand on the ground
     const baseAlt = u.status === "out" ? 0 : grounded(u) ? 0 : 70 + Math.sin(BT.clock / 500 + vu.ph) * 8;
     vu.alt += (baseAlt - vu.alt) * (1 - Math.exp(-s * (u.status === "out" ? 3 : 6)));
@@ -267,7 +269,9 @@ function measureHUD() {
   const w = $(".bwrap"); if (!w) return;
   const r = w.getBoundingClientRect(), hud = $(".bhud"), ctl = $("#bCtl");
   BT.mTop = hud ? hud.getBoundingClientRect().bottom - r.top + 6 : 96;
-  BT.mBot = ctl && ctl.offsetHeight ? Math.min(r.height * .55, ctl.offsetHeight + 6) : 150;
+  const land = r.width / r.height > 1.3, planning = ctl && ctl.classList.contains("planning");
+  BT.mRight = land && planning ? ctl.offsetWidth : 0;
+  BT.mBot = land && planning ? 40 : ctl && ctl.offsetHeight ? Math.min(r.height * .55, ctl.offsetHeight + 6) : 150;
 }
 function sizeCanvas() {
   const cv = BT.cv; if (!cv) return;

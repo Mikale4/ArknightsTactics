@@ -5,17 +5,17 @@
 //  Node types: story · battle · side · chest (a capsule) · boss · event (a minigame)
 // =====================================================================
 // story bosses: tougher versions of playable fighters [unit, HP multiplier, ATK multiplier, next form]
-bossOf("b_raditz", "raditz-s", 2.6, 1.0); bossOf("b_piccolo", "piccolo-s", 2.2, .9); bossOf("b_nappa", "nappa-s", 2.8, 1.02);
-bossOf("b_ape", "vegeta-o", 2.4, 1.05); bossOf("b_vegeta", "vegeta-s", 2.3, 1.04, "b_ape"); bossOf("b_vegeta2", "vegeta-s", 1.6, .96);
+bossOf("b_raditz", "raditz-s", 2.0, .95); bossOf("b_piccolo", "piccolo-s", 1.8, .9); bossOf("b_nappa", "nappa-s", 2.4, 1.0);
+bossOf("b_ape", "vegeta-o", 2.0, 1.02); bossOf("b_vegeta", "vegeta-s", 2.0, 1.02, "b_ape"); bossOf("b_vegeta2", "vegeta-s", 1.6, .96);
 bossOf("b_cui", "cui-s", 2.4, 1.0); bossOf("b_dodoria", "dodoria-s", 2.6, 1.0); bossOf("b_zarbonm", "zarbon-m", 2.0, 1.02); bossOf("b_zarbon", "zarbon-s", 1.8, 1.0, "b_zarbonm");
 bossOf("b_zarbon2", "zarbon-m", 2.6, 1.05); bossOf("b_guldo", "guldo-s", 2.4, 1.0); bossOf("b_recoome", "recoome-s", 2.8, 1.04); bossOf("b_burter", "burter-s", 2.2, 1.0);
 bossOf("b_jeice", "jeice-s", 2.2, 1.0); bossOf("b_ginyu", "ginyu-s", 2.8, 1.06); bossOf("b_frieza1", "frieza-1", 2.6, 1.04); bossOf("b_frieza3", "frieza-3", 2.2, 1.06);
 bossOf("b_frieza2", "frieza-2", 2.2, 1.04, "b_frieza3"); bossOf("b_frieza4", "frieza-4", 3.0, 1.1); bossOf("b_frieza5", "frieza-5", 2.4, 1.12); bossOf("b_frieza4b", "frieza-4", 2.0, 1.08, "b_frieza5");
 bossOf("b_appule", "appule-s", 2.0, 1.0);
 // bosses that aren't collectable fighters
-ENEMY.b_goz = { ...ENEMY.ogre, n: "Goz", boss: 1, m: { hp: 2.2, atk: .78, def: .9, spd: 100 }, techs: [...ENEMY.ogre.techs, ET("Ogre Slam", "melee", 25, 2.6, { hits: 1, heavy: 1 })] };
-ENEMY.b_mez = { ...ENEMY.ogre2, n: "Mez", boss: 1, m: { hp: 2.0, atk: .86, def: .8, spd: 106 }, techs: [...ENEMY.ogre2.techs, ET("Ogre Barrage", "ki", 25, 2.2, { hits: 4 })] };
-ENEMY.b_pastsaiyan = { ...ENEMY.pastsaiyan, n: "Saiyan Elite of the Past", boss: 1, m: { hp: 2.4, atk: .95, def: .8, spd: 112 }, fig: { ...ENEMY.pastsaiyan.fig, hs: "bardock", armor: "#5a5a6a", pad: "#c8a050" } };
+ENEMY.b_goz = { ...ENEMY.ogre, n: "Goz", boss: 1, m: { hp: 1.8, atk: .78, def: .9, spd: 100 }, techs: [...ENEMY.ogre.techs, ET("Ogre Slam", "melee", 25, 2.6, { hits: 1, heavy: 1 })] };
+ENEMY.b_mez = { ...ENEMY.ogre2, n: "Mez", boss: 1, m: { hp: 1.7, atk: .86, def: .8, spd: 106 }, techs: [...ENEMY.ogre2.techs, ET("Ogre Barrage", "ki", 25, 2.2, { hits: 4 })] };
+ENEMY.b_pastsaiyan = { ...ENEMY.pastsaiyan, n: "Saiyan Elite of the Past", boss: 1, m: { hp: 2.0, atk: .95, def: .8, spd: 112 }, fig: { ...ENEMY.pastsaiyan.fig, hs: "bardock", armor: "#5a5a6a", pad: "#c8a050" } };
 ENEMY.b_dino = { ...ENEMY.dino, n: "King Tyrannosaurus", boss: 1, m: { hp: 2.4, atk: .8, def: .9, spd: 96 }, fig: { ...ENEMY.dino.fig, skin: "#4a7a2a", h: 2.0 } };
 for (const k of ["b_goz", "b_mez", "b_pastsaiyan", "b_dino"]) { ENEMY[k].key = k; ENEMY[k].enemy = true; ENEMY[k].passives = []; }
 
@@ -400,7 +400,7 @@ for (const ep of STORY) ep.chapters.forEach((ch, ci) => {
 });
 // Stamina per stage, and the turn goal for the third star
 const nodeCost = nd => nd.type === "story" || nd.type === "chest" || nd.type === "event" ? 0 : 6 + Math.floor(nd.lv / 10) * 2;
-const nodeTurnGoal = nd => 4 + 2 * Math.min(TEAM_SIZE, nd.waves ? nd.waves.flat().length : 1) + (nd.type === "boss" ? 4 : 0) + (nd.waves && nd.waves.flat().some(s => s.e && ENEMY[s.e].next) ? 4 : 0);
+const nodeTurnGoal = nd => 4 + 2 * Math.min(TEAM_SIZE, nd.waves ? nd.waves.flat().length : 1) + (nd.type === "boss" ? 3 : 0) + (nd.waves && nd.waves.flat().some(s => s.e && ENEMY[s.e].next) ? 4 : 0);
 
 // ---------- Training Grounds (hunts): proficiency scrolls and training gear ----------
 const HUNTS = [

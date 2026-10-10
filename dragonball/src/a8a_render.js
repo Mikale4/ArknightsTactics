@@ -78,13 +78,14 @@ function buildEnv(name) {
 // ---------- camera ----------
 // the ground sits low in the space between the HUD and the controls (eased, so the planner opening doesn't jolt it)
 const groundY = () => BT.mTop + (BT.H - BT.mTop - (BT.mBotS || BT.mBot)) * .86;
-const toSX = x => BT.W / 2 + (x - BT.cam.x) * BT.cam.z;
+// in landscape the planner sits on the right, so the fight centres in the space to its left
+const toSX = x => (BT.W - (BT.mRightS || 0)) / 2 + (x - BT.cam.x) * BT.cam.z;
 function fitCam(dt, cut) {
   const vs = [...BT.vus.values()].filter(v => v.shown && !v.gone);
   if (!vs.length) return;
   const xs = vs.map(v => v.x), lo = Math.min(...xs), hi = Math.max(...xs);
   const span = hi - lo + 220, room = BT.H - BT.mTop - (BT.mBotS || BT.mBot);
-  const tz = clamp(Math.min((BT.W - 30) / span, room / 230), .4, 1.05), tx = (lo + hi) / 2;
+  const tz = clamp(Math.min((BT.W - (BT.mRightS || 0) - 30) / span, room / 230), .4, 1.05), tx = (lo + hi) / 2;
   const k = cut ? 1 : 1 - Math.exp(-dt * 4);
   BT.cam.x += (tx - BT.cam.x) * k; BT.cam.z += (tz - BT.cam.z) * k;
 }
@@ -181,7 +182,7 @@ function poseOf(vu) {
   return { name: "victory", t: k, time: T, air };
 }
 function vuAnchor(vu) {
-  const sc = figScale() * (vu.u.boss && !grounded(vu.u) ? 1.12 : 1), x = toSX(vu.x), y = groundY() - vu.alt * BT.cam.z;
+  const sc = figScale() * (vu.u.boss && !grounded(vu.u) ? 1.12 : 1) * (grounded(vu.u) ? .62 : 1), x = toSX(vu.x), y = groundY() - vu.alt * BT.cam.z;
   return { x, y, sc };
 }
 function drawVU(g, vu, dt) {
@@ -194,7 +195,7 @@ function drawVU(g, vu, dt) {
   if (u.status !== "out") drawAura(g, x, y, h * 1.05, auraCol, auraK * vu.alpha);
   // afterimage when vanishing
   if (vu.vanishT > 0) { vu.alpha = clamp(Math.abs(vu.vanishT - 220) / 220, 0, 1); }
-  else vu.alpha = Math.min(1, vu.alpha + dt / 200);
+  else if (u.status !== "out") vu.alpha = Math.min(1, vu.alpha + dt / 200);
   const pose = poseOf(vu);
   g.save(); g.globalAlpha = vu.alpha; g.translate(x, y); g.scale(vu.face * sc, sc);
   if (vu.flash > 0) { g.filter = `brightness(${1 + vu.flash / 120})`; }
@@ -296,7 +297,8 @@ function floatText(uid, s, cls) {
   const vu = BT.vus.get(uid); if (!vu) return;
   const { x, y, sc } = vuAnchor(vu);
   const n = BT.floats.filter(f => BT.clock - f.t0 < 500 && f.uid === uid).length;
-  BT.floats.push({ uid, s: String(s), cls, x: x + (R() - .5) * 20, y: y - figTall(vu.u.def.fig) * sc - 10 - n * 18, t0: BT.clock });
+  const w = String(s).length * 7 + 20;
+  BT.floats.push({ uid, s: String(s), cls, x: clamp(x + (R() - .5) * 20, w, BT.W - (BT.mRightS || 0) - w), y: Math.max(BT.mTop + 20, y - figTall(vu.u.def.fig) * sc - 10 - n * 18), t0: BT.clock });
 }
 const FLOAT_C = { dmg: "#ffffff", crit: "#ffd34d", heal: "#5dfc9b", buff: "#7ad0ff", debuff: "#ff7a7a", txt: "#e8edf7" };
 function drawFloats(g) {
@@ -335,7 +337,9 @@ function frame(now) {
 function render(dt) {
   const g = BT.g; if (!g) return;
   g.setTransform(BT.dpr, 0, 0, BT.dpr, 0, 0);
-  BT.mBotS = BT.mBotS == null ? BT.mBot : BT.mBotS + (BT.mBot - BT.mBotS) * (1 - Math.exp(-dt / 1000 * 5));
+  const kk = 1 - Math.exp(-dt / 1000 * 5);
+  BT.mBotS = BT.mBotS == null ? BT.mBot : BT.mBotS + (BT.mBot - BT.mBotS) * kk;
+  BT.mRightS = (BT.mRightS || 0) + ((BT.mRight || 0) - (BT.mRightS || 0)) * kk;
   fitCam(dt / 1000);
   BT.shake = Math.max(0, BT.shake - dt * .03);
   const sx = (R() - .5) * BT.shake, sy = (R() - .5) * BT.shake;

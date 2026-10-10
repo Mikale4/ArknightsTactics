@@ -15,7 +15,7 @@ const GUARD_MAX = 100, GUARD_COST = 24, GUARD_PCOST = 6, GUARD_REGEN = 12;
 const PERFECT_WIN = .2, GUARD_WIN = .55, GUARD_CD = .5;     // seconds before impact
 const HOLD_MAX = .9;                                        // seconds of holding POWER for a full-power attack
 const PLAN_SLOTS = 3, TURN_LIMIT = 30, TURN_MAX_T = 14;
-const DMG_K = 1.15;
+const DMG_K = 1.75;
 const STUN_S = { BLIND: 2.4, FREEZE: 2.0 };
 const WIND = { melee: .42, ki: .36, beam: 1.0, finger: .8, disc: .7, bomb: 2.2, flash: .5, freeze: .55, buff: .5, heal: .6, swap: .8 };
 const RECOVER = { melee: .28, ki: .26, beam: .5, finger: .35, disc: .3, bomb: .55, flash: .3, freeze: .3, buff: .25, heal: .3, swap: .4 };

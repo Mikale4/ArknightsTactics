@@ -10,6 +10,7 @@ Single-file HTML games, served by GitHub Pages from `main` (https://mikale4.gith
 | `melty-blood/` | **Melty Blood RPG**: Melty Blood as a turn-based squad RPG, forked from `mobile/`'s engine. All art is procedural; S3 skills are Arc Drives paid with the Magic Circuit gauge. See `melty-blood/README.md`. |
 | `pokemon/` | **Pokémon Kanto Squad**: the 151 Kanto Pokémon on the same engine, everything in Pokémon terminology. Showdown's animated Black/White sprites (packed and embedded at build), PokeAPI data, Gym Badges, evolution, Safari Zone. See `pokemon/README.md`. |
 | `beyblade/` | **Beyblade: Let It Rip!**: the original anime (Season 1, V-Force, G-Revolution, English dub names) on the same engine. 82 Beyblades from 52 Bladers, every version (S, F, V, V2, G, GT, MS) its own unit; Attack/Defense/Endurance/Balance types; Bit-Beast attacks paid with Bit Power; Ring Out / Sleep Out. All art procedural. See `beyblade/README.md`. |
+| `dragonball/` | **Dragon Ball Z: Legend of the Z Fighters**: the Saiyan Saga to the end of the Frieza Saga, played like Goku Gekitōden (Game Boy): side-scrolling chapter fields, planned command turns fought in real time (POWER gauge, timed GUARD, VANISH, ki), beam struggles, transforming bosses, minigames. All art procedural. See `dragonball/README.md`. |
 | `assets/sprites/`, `assets/heads/` | Trimmed WebP operator art (`<slug>.webp`, slug = lowercase name, non-alphanumerics → `-`). Used in menus and dialogue. |
 | `assets/data/operators.json` | Operator roster source (UTF-8 BOM; load with `utf-8-sig`). |
 
@@ -22,6 +23,7 @@ sh galactic-heroes/src/build.sh
 sh melty-blood/src/build.sh
 sh pokemon/src/build.sh            # embeds pokemon/sprites/*.png as base64
 sh beyblade/src/build.sh
+sh dragonball/src/build.sh
 ```
 
 `mobile/src` parts, in build order (each relies on globals from earlier ones):
@@ -67,6 +69,17 @@ Captain skill, Blader Ability, Upgrade, Bit-Beast Sync, Customize Parts, Random 
 Ranked Battles, Hobby Shop, Mailbox, Mystery Gift, BBA Records, Blader Card, Attack Ring, Weight Disk, Spin Gear, Blade Base, tag in. Tests:
 `node beyblade/tests/{phone,figures,sim,demo}.js`.
 
+`dragonball/src` uses the Beyblade order without `a3c_parts.js`/`a5b_bey.js`, plus `a5b_dbz.js` (cards, Dragon Balls, Shenron) after
+`a5_art.js` (a new side-view fighter renderer: hair styles, armour, Namekians, Frieza's forms, the Great Ape) and `a8d_field.js`
+(the chapter fields and the minigames) after `a8b_battle.js`. Characters are `CHARS` in `a3a_roster.js` (each with `vers`: `style`,
+`rar`, `season`, `kit` of techniques made with `tq(name, kind, ki, mult, opts)`, `talent`, `leader`, `fig` overrides); units are keyed
+`<char>-<version>` (e.g. `goku-k`, `frieza-4`). Battles: `makeBattle({allies, foes})`, `B.start()`, then per turn `B.plan(cmds)` +
+`B.go()` and `B.tick()` per 1/30 s; inputs `B.hold(on)`, `B.guard()`, `B.vanish()`, `B.mash()`. Bosses are `bossOf(id, unit, hp, atk, next)`
+in `a4_story.js` (`next` = the form it transforms into). Stage types include `event` (a minigame, `game` = `GAMES` key). Proficiency
+(Melee/Ki/Guard) replaces parts. Every visible term must be Dragon Ball terminology (glossary in `dragonball/README.md`). Like Beyblade's,
+`a9d_demo.js` plays to 100%; keep `completionParts()` and the demo in step with new content and run `node dragonball/tests/demo.js`.
+Tests: `node dragonball/tests/{phone,figures,sim,demo}.js`.
+
 ## Terminology (the Arknights game's UI must use real Arknights terms)
 Internal identifiers kept their old names; only visible text changed:
 `rune` → **Module** (tiers T1–T5) · `hunt` → **Supplies** (codes SN/SC/FW-1…6) · `tower` → **Stationary Security Service** ·
@@ -95,5 +108,5 @@ npm run serve           # then open http://localhost:8000/mobile/
 Check screenshots at 390×844 portrait and 844×390 landscape after visual changes.
 
 ## Open items
-- `mobile/`, `galactic-heroes/`, `melty-blood/`, `pokemon/` and `beyblade/` live on branch `claude/swgoh-mobile-game-html-ajhk0t`; Pages only serves them after a merge to `main`.
+- `mobile/`, `galactic-heroes/`, `melty-blood/`, `pokemon/`, `beyblade/` and `dragonball/` live on branch `claude/swgoh-mobile-game-html-ajhk0t`; Pages only serves them after a merge to `main`.
 - The owner wanted Galactic Heroes in its own repo named `star-wars-test`; it still needs creating on GitHub. Its content is `galactic-heroes/`.

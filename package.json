@@ -1,9 +1,9 @@
 {
   "name": "arknights-tactics",
   "private": true,
-  "description": "Single-file HTML games: Arknights Tactics (original and mobile), Galactic Heroes, Melty Blood RPG, Pokémon Kanto Squad and Beyblade: Let It Rip!.",
+  "description": "Single-file HTML games: Arknights Tactics (original and mobile), Galactic Heroes, Melty Blood RPG, Pokémon Kanto Squad, Beyblade: Let It Rip! and Dragon Ball Z: Legend of the Z Fighters.",
   "scripts": {
-    "build": "sh mobile/src/build.sh && sh galactic-heroes/src/build.sh && sh melty-blood/src/build.sh && sh pokemon/src/build.sh && sh beyblade/src/build.sh",
+    "build": "sh mobile/src/build.sh && sh galactic-heroes/src/build.sh && sh melty-blood/src/build.sh && sh pokemon/src/build.sh && sh beyblade/src/build.sh && sh dragonball/src/build.sh",
     "build:mobile": "sh mobile/src/build.sh",
     "build:gh": "sh galactic-heroes/src/build.sh",
     "test:mobile": "node mobile/tests/phone.js",
@@ -19,7 +19,12 @@
     "build:beyblade": "sh beyblade/src/build.sh",
     "test:beyblade": "node beyblade/tests/phone.js",
     "test:beyblade:figures": "node beyblade/tests/figures.js",
-    "test:beyblade:balance": "node beyblade/tests/sim.js"
+    "test:beyblade:balance": "node beyblade/tests/sim.js",
+    "build:dragonball": "sh dragonball/src/build.sh",
+    "test:dragonball": "node dragonball/tests/phone.js",
+    "test:dragonball:figures": "node dragonball/tests/figures.js",
+    "test:dragonball:balance": "node dragonball/tests/sim.js",
+    "test:dragonball:demo": "node dragonball/tests/demo.js"
   },
   "devDependencies": {
     "playwright": "1.56.1"

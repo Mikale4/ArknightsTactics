@@ -32,6 +32,7 @@ const MODE = process.env.MODE || 'fast', LIMIT = +(process.env.LIMIT || 1500);
   }
   await page.waitForTimeout(1500); await page.screenshot({ path: SH + 'demo_3_done.png' });
   console.log('completion', await page.evaluate(() => JSON.stringify(completionParts().map(x => [x.n, x.v, x.max]))));
+  console.log('records left', await page.evaluate(() => JSON.stringify(ACH.filter(a => (S.achv[a.id] || 0) < a.tiers.length).map(a => [a.id, a.v(), a.tiers[S.achv[a.id] || 0][0]]))));
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem(SAVE_KEY)));
   console.log('real save untouched during the demo:', stored.name === 'Real Player' && stored.lmd === 12345);
   await page.evaluate(() => ACT.demoExit()); await page.waitForTimeout(800);

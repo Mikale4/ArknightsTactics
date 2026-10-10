@@ -257,8 +257,8 @@ function sceneBG(env) {
   const gr = g.createLinearGradient(0, 0, 0, gy); gr.addColorStop(0, E2.sky[0]); gr.addColorStop(.6, E2.sky[1]); gr.addColorStop(1, E2.sky[2]); g.fillStyle = gr; g.fillRect(0, 0, W, H);
   if (E2.fx === "stars") for (const [x, y, s2] of E2.stars) { g.fillStyle = "#fff"; g.globalAlpha = .7; g.fillRect(x * W, y * gy, s2 * 1.4, s2 * 1.4); }
   g.globalAlpha = 1;
-  if (E2.farCv) g.drawImage(E2.farCv, -300, gy - 360, BG_W * 1.1, 360);
-  if (E2.nearCv) g.drawImage(E2.nearCv, -500, gy - 260, BG_W * 1.1, 260);
+  if (E2.farCv) g.drawImage(E2.farCv, -80, gy - 360, BG_W * 1.1, 360);
+  if (E2.nearCv) g.drawImage(E2.nearCv, -90, gy - 260, BG_W * 1.1, 260);
   if (E2.ground) { const g2 = g.createLinearGradient(0, gy, 0, H); g2.addColorStop(0, E2.ground[0]); g2.addColorStop(1, E2.ground[1]); g.fillStyle = g2; g.fillRect(0, gy, W, H - gy); }
   g.fillStyle = "rgba(0,0,0,.25)"; g.fillRect(0, 0, W, H);
   return SCENE_BG[env] = toURL(cv);
