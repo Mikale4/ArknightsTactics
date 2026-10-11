@@ -613,12 +613,21 @@ function figFull(id, f) {
   if (!EART[id]) { const tall = figTall(f), sc = Math.min(2.2, 300 / tall); EART[id] = { url: toURL(figCanvas(f, 240, 340, sc, 112, 330, null, { name: f.villain ? "cross" : "idle", time: .4 })) }; }
   return EART[id];
 }
-function figHead(id, f, bg) {
-  if (!EHEAD[id]) {
-    const H = f.h || 1, M = metrics(f), big = f.body === "ape" ? 3.4 : f.body === "dino" ? 2.6 : 1;
-    const top = f.body === "ape" ? 96 * H : f.body === "dino" ? 70 * H : (M.thigh + M.shin + M.torso + M.neck + M.headR * .85) * H;
-    const sc = 64 / ((M.headR * 2.9) * H * big);
-    EHEAD[id] = toURL(figCanvas(f, 128, 128, sc, 58 - (f.body === "dino" ? 30 * H * sc : 0), 66 + top * sc, bg, { name: "stand", time: .4 }));
+// the head and shoulders on a 128px square (menu icons, and the heads that move around the battle map)
+function headCanvas(f, bg) {
+  const pose = { name: "stand", time: .4 };
+  if (f.body === "ape" || f.body === "dino") {
+    // the giants: find the head with a dry run, then frame it close
+    const pr = document.createElement("canvas"); pr.width = pr.height = 4;
+    const A = drawFigure(pr.getContext("2d"), f, pose), hc = A.head, sc = 22 / ((f.body === "ape" ? 26 : 17) * (f.h || 1));
+    return figCanvas(f, 128, 128, sc, 60 - hc[0] * sc, 66 - hc[1] * sc, bg, pose);
   }
+  const H = f.h || 1, M = metrics(f), big = 1;
+  const top = (M.thigh + M.shin + M.torso + M.neck + M.headR * .85) * H;
+  const sc = 64 / ((M.headR * 2.9) * H * big);
+  return figCanvas(f, 128, 128, sc, 58, 66 + top * sc, bg, pose);
+}
+function figHead(id, f, bg) {
+  if (!EHEAD[id]) EHEAD[id] = toURL(headCanvas(f, bg));
   return EHEAD[id];
 }

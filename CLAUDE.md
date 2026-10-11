@@ -70,12 +70,15 @@ Ranked Battles, Hobby Shop, Mailbox, Mystery Gift, BBA Records, Blader Card, Att
 `node beyblade/tests/{phone,figures,sim,demo}.js`.
 
 `dragonball/src` uses the Beyblade order without `a3c_parts.js`/`a5b_bey.js`, plus `a5b_dbz.js` (cards, Dragon Balls, Shenron) after
-`a5_art.js` (a new side-view fighter renderer: hair styles, armour, Namekians, Frieza's forms, the Great Ape) and `a8d_field.js`
+`a5_art.js` (a new side-view fighter renderer: hair styles, armour, Namekians, Frieza's forms, the Great Ape; menus, cards and the
+field) and `a8d_field.js`
 (the chapter fields and the minigames) after `a8b_battle.js`. Characters are `CHARS` in `a3a_roster.js` (each with `vers`: `style`,
 `rar`, `season`, `kit` of techniques made with `tq(name, kind, ki, mult, opts)`, `talent`, `leader`, `fig` overrides); units are keyed
 `<char>-<version>` (e.g. `goku-k`, `frieza-4`). Battles: `makeBattle({allies, foes})`, `B.start()`, then per turn `B.plan(cmds)` +
 `B.go()` and `B.tick()` per 1/30 s; inputs `B.hold(on)`, `B.guard()`, `B.vanish()`, `B.mash()`. Bosses are `bossOf(id, unit, hp, atk, next)`
-in `a4_story.js` (`next` = the form it transforms into). Stage types include `event` (a minigame, `game` = `GAMES` key). Proficiency
+in `a4_story.js` (`next` = the form it transforms into). As in Gekitōden, battles are drawn from above: units have map x/y
+(`ARENA_X`×`ARENA_Y`), and `a8a_render.js` shows each fighter as its head (`headCanvas`) moving around an overhead map of the
+place (`MAP_PAINT`, keyed like `ENVS`); in portrait the map is rotated so your fighter starts at the bottom. Stage types include `event` (a minigame, `game` = `GAMES` key). Proficiency
 (Melee/Ki/Guard) replaces parts. Every visible term must be Dragon Ball terminology (glossary in `dragonball/README.md`). Like Beyblade's,
 `a9d_demo.js` plays to 100%; keep `completionParts()` and the demo in step with new content and run `node dragonball/tests/demo.js`.
 Tests: `node dragonball/tests/{phone,figures,sim,demo}.js`.

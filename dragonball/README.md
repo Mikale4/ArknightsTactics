@@ -2,7 +2,8 @@
 
 A phone-first Dragon Ball Z game that plays like the Game Boy's **Dragon Ball Z: Goku Gekitōden** (Bandai, 1995).
 Each chapter has a side-scrolling field to walk, jump and fly across. Battles are planned command turns fought out in
-real time: a power gauge, timed guards, Vanish and a ki gauge that runs dry. The story runs from Raditz's arrival to
+real time on a small map seen from above, with the two fighters' heads moving around it: a power gauge, timed guards,
+Vanish and a ki gauge that runs dry. The story runs from Raditz's arrival to
 Super Saiyan Goku on a dying Namek, covering the whole Saiyan Saga, the Frieza Saga and the filler arcs in between.
 The rest of the game shares its shell with Beyblade: Let It Rip!, Melty Blood RPG and Arknights Tactics Mobile.
 That shell gives it a Summon gacha, training, battle modes, a Mailbox, achievements and a hands-free demo.
@@ -33,18 +34,26 @@ Unofficial, non-commercial fan game: every fighter, place and effect is drawn by
   - Wandering enemies patrol the cleared part of the map. Run into one (or tap it) for a quick fight that costs no
     Stamina and pays EXP, Zeni and sometimes a Scroll.
 - **Battles (Goku Gekitōden's system):**
+  - **The battle screen:** as in Gekitōden, the fight is seen from above on a small map of the place (the wasteland,
+    HFIL, King Kai's planet, Kami's Lookout, Namek and its seas, Frieza's ship, Namek's last minutes, the Tournament
+    ring and more). Each fighter is a head in a ring (blue for yours, red for the enemy) that flies around the map:
+    dashing in for a Rush, backing off, getting knocked back along the line of a hit, and circling the other fighter
+    between moves. Ki blasts, beams, discs and energy balls fly between the heads; a dotted line shows the range. On a
+    tall phone the map stands on its end with your fighter at the bottom; in landscape the action buttons move to the
+    screen's edges.
   - **Plan:** each turn, pick up to three commands (Rush, Ki Blast, the fighter's techniques, Power Up, Close In,
     Back Off, Switch), then GO. Each command shows its ki cost and the ki you'll have left. There's a 15-second
     timer; Settings can GO automatically once three are picked.
   - **Act:** the commands play out in real time while the enemy carries out its own plan.
-    - **Hold POWER** while an attack winds up to hit up to 30% harder (it costs more ki).
+    - **Hold POWER** while an attack winds up to hit up to 30% harder (it costs more ki); a ring fills around your
+      fighter's head.
     - **Tap GUARD** as the ring around your fighter closes. A perfect guard (gold) stops all the damage and gives ki;
       a normal guard stops 70%. Guarding wears down the guard gauge, and at zero the guard breaks.
     - **VANISH** dodges an attack completely for 20 ki.
     - Below zero ki a fighter is exhausted: it can't guard or vanish until ki recovers.
     - The turn ends when your commands are done.
   - **Distance:** Rush needs close range (the fighter dashes in), Ki Blasts weaken from far away, and long range
-    leaves more time to see attacks coming.
+    leaves more time to see attacks coming. Distance is measured across the map in any direction.
   - **Techniques:**
     - **Beams** (Kamehameha, Galick Gun, Masenko): two fired at once clash in a **beam struggle**; mash POWER.
     - **Finger beams** pierce a normal guard (Special Beam Cannon, Death Beam).
@@ -133,7 +142,7 @@ The game is built from `src/` by `sh dragonball/src/build.sh` (never edit `index
 `a1_head.html` CSS · `a2_core.js` utils, icons, items, statuses · `a3a_roster.js` characters and techniques ·
 `a3b_kits.js` unit table and enemies · `a4_story.js` story, modes, shop · `a5_art.js` fighter renderer ·
 `a5b_dbz.js` cards, Dragon Balls, Shenron · `a6_state.js` save and progression · `a7_engine.js` battle rules ·
-`a8a_render.js` battle renderer · `a8c_sfx.js` sounds · `a8b_battle.js` battle director and HUD ·
+`a8a_render.js` battle map (overhead places, heads, shots) · `a8c_sfx.js` sounds · `a8b_battle.js` battle director and HUD ·
 `a8d_field.js` field and minigames · `a9a`/`a9b` screens · `a9c_meta.js` Mailbox, Z Records, Scouter Card, title ·
 `a9d_demo.js` demo · `a10_boot.js` launchers, actions, boot.
 

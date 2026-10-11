@@ -411,6 +411,11 @@ p{margin:0}
 @keyframes bandin{0%{transform:skewY(-8deg) scaleY(0)}20%{transform:skewY(-8deg) scaleY(1)}85%{opacity:.9}100%{opacity:0}}
 @keyframes lines{from{background-position:0 0}to{background-position:-300px 0}}
 @keyframes artin{0%{transform:translateX(-40%);opacity:0}25%{transform:translateX(0);opacity:1}80%{transform:translateX(6%);opacity:1}100%{transform:translateX(12%);opacity:0}}
+.cutin img.hd{height:auto;width:min(40vw,200px);aspect-ratio:1;bottom:auto;top:50%;left:5%;margin-top:calc(min(40vw,200px) / -2);border-radius:50%;border:4px solid var(--ec);box-shadow:0 0 0 3px #000a,0 0 30px var(--ec);filter:none}
+.cutin img.hd{animation:hdin .95s cubic-bezier(.2,.8,.2,1) both}
+.cutin.foe img.hd{left:auto;right:5%;animation-name:hdinf}
+@keyframes hdin{0%{transform:translateX(-60%) scale(.7);opacity:0}25%{transform:none;opacity:1}80%{transform:translateX(6%);opacity:1}100%{transform:translateX(12%);opacity:0}}
+@keyframes hdinf{0%{transform:translateX(60%) scale(-.7,.7);opacity:0}25%{transform:scaleX(-1);opacity:1}80%{transform:translateX(-6%) scaleX(-1);opacity:1}100%{transform:translateX(-12%) scaleX(-1);opacity:0}}
 @keyframes skin{0%{transform:translateX(30%);opacity:0}25%{transform:none;opacity:1}85%{opacity:1}100%{opacity:0}}
 /* runes */
 .rune{position:relative;display:grid;grid-template-columns:40px 1fr auto;gap:10px;align-items:center;padding:8px 10px;background:var(--hull2);border:1px solid var(--line);border-radius:8px;text-align:left;color:var(--text);width:100%}
@@ -537,6 +542,10 @@ p{margin:0}
   .bctl.planning{left:auto;top:86px;width:min(480px,56%);display:flex;align-items:flex-end;background:linear-gradient(270deg,#000e 70%,#0008 90%,transparent)}
   .bctl.planning .plan{width:100%}
   .actb{width:60px;height:60px}.actb.pow{width:78px;height:78px}.actb.van{width:48px;height:48px}
+  /* acting: the buttons move out to the edges, leaving the middle to the map */
+  .bctl.acting{background:none}
+  .bctl.acting .bacts{max-width:none;width:100%;flex:1}
+  .bctl.acting .qline{align-self:flex-end;background:linear-gradient(0deg,#000c,#0000);border-radius:12px 12px 0 0;padding:6px 8px 4px;flex:0 1 auto}
 }
 /* ================= field (side-scrolling chapter map) ================= */
 .field{position:relative;margin:0 -16px;height:clamp(250px,46vh,420px);overflow:hidden;border-top:1px solid var(--line);border-bottom:1px solid var(--line);touch-action:none}
@@ -2339,13 +2348,22 @@ function figFull(id, f) {
   if (!EART[id]) { const tall = figTall(f), sc = Math.min(2.2, 300 / tall); EART[id] = { url: toURL(figCanvas(f, 240, 340, sc, 112, 330, null, { name: f.villain ? "cross" : "idle", time: .4 })) }; }
   return EART[id];
 }
-function figHead(id, f, bg) {
-  if (!EHEAD[id]) {
-    const H = f.h || 1, M = metrics(f), big = f.body === "ape" ? 3.4 : f.body === "dino" ? 2.6 : 1;
-    const top = f.body === "ape" ? 96 * H : f.body === "dino" ? 70 * H : (M.thigh + M.shin + M.torso + M.neck + M.headR * .85) * H;
-    const sc = 64 / ((M.headR * 2.9) * H * big);
-    EHEAD[id] = toURL(figCanvas(f, 128, 128, sc, 58 - (f.body === "dino" ? 30 * H * sc : 0), 66 + top * sc, bg, { name: "stand", time: .4 }));
+// the head and shoulders on a 128px square (menu icons, and the heads that move around the battle map)
+function headCanvas(f, bg) {
+  const pose = { name: "stand", time: .4 };
+  if (f.body === "ape" || f.body === "dino") {
+    // the giants: find the head with a dry run, then frame it close
+    const pr = document.createElement("canvas"); pr.width = pr.height = 4;
+    const A = drawFigure(pr.getContext("2d"), f, pose), hc = A.head, sc = 22 / ((f.body === "ape" ? 26 : 17) * (f.h || 1));
+    return figCanvas(f, 128, 128, sc, 60 - hc[0] * sc, 66 - hc[1] * sc, bg, pose);
   }
+  const H = f.h || 1, M = metrics(f), big = 1;
+  const top = (M.thigh + M.shin + M.torso + M.neck + M.headR * .85) * H;
+  const sc = 64 / ((M.headR * 2.9) * H * big);
+  return figCanvas(f, 128, 128, sc, 58, 66 + top * sc, bg, pose);
+}
+function figHead(id, f, bg) {
+  if (!EHEAD[id]) EHEAD[id] = toURL(headCanvas(f, bg));
   return EHEAD[id];
 }
 // =====================================================================
@@ -2684,11 +2702,14 @@ function nextNode() {
 //  fast: at below zero a fighter is exhausted and can't guard or vanish. Two beams fired at once clash in a beam
 //  struggle. The turn ends when your commands are done. One fighter per side fights at a time; the others can be
 //  switched in. Bosses that are beaten may transform and come back at full health.
+//  The fight happens on a map seen from above: each fighter has an x/y position, dashes in and backs off across it,
+//  gets knocked back along the line of a hit, and circles the other one between moves.
 //  Pure logic: the battle director (a8b_battle.js) and the demo's simulations drive it with tick().
 // =====================================================================
 let UID = 0;
 const DT = 1 / 30;
-const NEAR = 150, FAR = 540, MIDR = 330, ARENA_X = 720;      // distances in world units
+const NEAR = 150, FAR = 540, MIDR = 330, ARENA_X = 720, ARENA_Y = 420;   // distances in world units; the map is 2·ARENA_X × 2·ARENA_Y
+const ORBIT = .3;                                                          // radians per second a waiting fighter circles its foe
 const KI_MAX = 100, KI_MIN = -40, KI_REGEN = 4, KI_TURN = 10, VANISH_KI = 20;
 const GUARD_MAX = 100, GUARD_COST = 24, GUARD_PCOST = 6, GUARD_REGEN = 12;
 const PERFECT_WIN = .2, GUARD_WIN = .55, GUARD_CD = .5;     // seconds before impact
@@ -2716,7 +2737,20 @@ function makeBattle(cfg) {
   const curOf = s => { const c = B.side[s].cur; return c && c.status === "field" ? c : null; };
   const foeOf = u => curOf(foeSide(u.team));
   const hpFrac = u => clamp(u.hp / u.max.hp, 0, 1);
-  const dist = () => { const a = curOf("A"), e = curOf("E"); return a && e ? Math.abs(e.x - a.x) : FAR; };
+  const gap = (u, v) => Math.hypot(v.x - u.x, v.y - u.y);
+  const dist = () => { const a = curOf("A"), e = curOf("E"); return a && e ? gap(a, e) : FAR; };
+  const dirTo = (u, v) => { const dx = v.x - u.x, dy = v.y - u.y, d = Math.hypot(dx, dy) || 1; return [dx / d, dy / d]; };
+  const inMap = p => { p.x = clamp(p.x, -ARENA_X, ARENA_X); p.y = clamp(p.y, -ARENA_Y, ARENA_Y); return p; };
+  // a point `want` away from o, as close to the angle `base` as the walls allow
+  function spotFrom(o, base, want) {
+    let best = null, bd = -1;
+    for (const da of [0, .45, -.45, .9, -.9, 1.4, -1.4, 2, -2, Math.PI]) {
+      const a = base + da, p = inMap({ x: o.x + Math.cos(a) * want, y: o.y + Math.sin(a) * want }), d = Math.hypot(p.x - o.x, p.y - o.y);
+      if (d >= want * .94) return p;
+      if (d > bd) { bd = d; best = p; }
+    }
+    return best;
+  }
   const human = u => u.team === "A" && !B.auto;
 
   // ---------- units ----------
@@ -2735,7 +2769,7 @@ function makeBattle(cfg) {
     }
     const u = { uid: ++UID, key: spec.op || spec.en, def, isOp: !!spec.op, team, slot, n: def.n, el: def.el, cls: def.cls, race: def.race || "", boss: !!def.boss, LV: spec.LV || 1,
       max: { ...st }, hp: st.hp, ki: 30, guard: GUARD_MAX, eff: [], techs: def.techs, sk, prof, passives: def.passives || [], leader: def.leader || null,
-      status: "bench", x: 0, y: 0, act: null, stunT: 0, stunK: null, staggerT: 0, flags: {}, once: {}, broken: false, form: 0,
+      status: "bench", x: 0, y: 0, orb: R() < .5 ? 1 : -1, act: null, stunT: 0, stunK: null, staggerT: 0, flags: {}, once: {}, broken: false, form: 0,
       cnt: { m: 0, k: 0, g: 0 } };
     const ks = pv(u, "KI_START"); if (ks) u.ki += ks.amount;
     return u;
@@ -2853,8 +2887,8 @@ function makeBattle(cfg) {
     if (S2.cur && S2.cur.status === "field") S2.cur.status = "bench";
     S2.cur = u; u.status = "field"; u.act = null; u.stunT = 0;
     const foe = curOf(foeSide(side));
-    u.x = foe ? foe.x + (side === "A" ? -MIDR : MIDR) : side === "A" ? -MIDR / 2 : MIDR / 2;
-    u.x = clamp(u.x, -ARENA_X, ARENA_X);
+    const p = foe ? spotFrom(foe, (side === "A" ? Math.PI : 0) + (R() - .5) * .9, MIDR) : { x: side === "A" ? -MIDR / 2 : MIDR / 2, y: (R() - .5) * 120 };
+    u.x = p.x; u.y = p.y;
     if (!u.flags.entered) {
       u.flags.entered = true;
       const sb = pv(u, "START_BUFF"); if (sb) for (const w of sb.what) addEff(u, w, sb.turns, true);
@@ -2955,7 +2989,7 @@ function makeBattle(cfg) {
     u.act = act;
     if (c.kind === "move") { act.ph = "move"; act.d = 1.2; ev({ k: "act", u: u.uid, ph: "move", c: c.id }); return; }
     if (c.kind === "charge") { act.ph = "charge"; act.d = 1.0 / Math.sqrt(spdF(u)); ev({ k: "act", u: u.uid, ph: "charge" }); return; }
-    if (c.kind === "melee" && foe && Math.abs(foe.x - u.x) > NEAR + 6) { act.ph = "dash"; act.d = 1.2; ev({ k: "act", u: u.uid, ph: "dash" }); return; }
+    if (c.kind === "melee" && foe && gap(u, foe) > NEAR + 6) { act.ph = "dash"; act.d = 1.2; ev({ k: "act", u: u.uid, ph: "dash" }); return; }
     beginWind(u, act);
   }
   function beginWind(u, act) {
@@ -2976,8 +3010,8 @@ function makeBattle(cfg) {
     if (c.kind === "buff") { for (const e of c.fx || []) for (const x of e.on === "team" ? B.side[u.team].units : [u]) addEff(x, e.what, e.turns); ev({ k: "act", u: u.uid, ph: "buff" }); return; }
     if (c.kind === "heal") { for (const x of B.side[u.team].units) if (alive(x)) heal(x, x.max.hp * c.heal); ev({ k: "act", u: u.uid, ph: "buff" }); return; }
     if (!foe) return;
-    const d = Math.abs(foe.x - u.x), sp = SPEED[c.kind] || 0;
-    const atk = { id: ++B.seq, from: u, to: foe, c, kind: c.kind, pow, hits: c.hits || 1, t0: B.t, impactAt: B.t + (sp ? d / sp : .06) + (c.kind === "beam" ? .12 : 0), done: false, vanished: false, resp: null, x: u.x, dir: Math.sign(foe.x - u.x) || 1 };
+    const d = gap(u, foe), sp = SPEED[c.kind] || 0, [dx, dy] = dirTo(u, foe);
+    const atk = { id: ++B.seq, from: u, to: foe, c, kind: c.kind, pow, hits: c.hits || 1, t0: B.t, impactAt: B.t + (sp ? d / sp : .06) + (c.kind === "beam" ? .12 : 0), done: false, vanished: false, resp: null, x: u.x, y: u.y, dx, dy };
     if (c.kind === "melee") atk.impactAt = B.t + .07;
     if (c.selfHit) { u.hp = Math.max(1, u.hp - u.max.hp * c.selfHit); ev({ k: "txt", u: u.uid, s: "SELF-DESTRUCT", c: "debuff" }); }
     // a beam fired into a beam that's winding up: both fire, and the beams clash
@@ -2985,7 +3019,7 @@ function makeBattle(cfg) {
       const fa = foe.act; fa.pow = Math.max(fa.pow, fa.want * .7);
       gainKi(foe, -kiCost(foe, fa.c, fa.pow));
       fa.ph = "clash"; act.ph = "clash";
-      const atk2 = { id: ++B.seq, from: foe, to: u, c: fa.c, kind: "beam", pow: fa.pow, hits: 1, t0: B.t, impactAt: 1e9, done: false, vanished: false, resp: null, x: foe.x, dir: -atk.dir };
+      const atk2 = { id: ++B.seq, from: foe, to: u, c: fa.c, kind: "beam", pow: fa.pow, hits: 1, t0: B.t, impactAt: 1e9, done: false, vanished: false, resp: null, x: foe.x, y: foe.y, dx: -dx, dy: -dy };
       atk.impactAt = 1e9;
       B.atks.push(atk, atk2);
       B.struggle = { A: u.team === "A" ? atk : atk2, E: u.team === "A" ? atk2 : atk, pos: .5, t: 0, dur: 2.4, mashA: 0, mashE: 0 };
@@ -3065,8 +3099,8 @@ function makeBattle(cfg) {
     if (tar.status !== "field" || !alive(att)) return;
     if (atk.vanished) {
       ev({ k: "miss", atk: atk.id, u: tar.uid });
-      // the defender reappears right next to the attacker
-      if (atk.kind === "melee" || atk.kind === "disc" || atk.kind === "bomb") tar.x = clamp(att.x + (tar.team === "A" ? -NEAR : NEAR) * .8, -ARENA_X, ARENA_X);
+      // the defender reappears right beside the attacker
+      if (atk.kind === "melee" || atk.kind === "disc" || atk.kind === "bomb") { const p = spotFrom(att, Math.atan2(tar.y - att.y, tar.x - att.x) + (R() < .5 ? 1 : -1) * (1 + R() * .8), NEAR * .8); tar.x = p.x; tar.y = p.y; }
       return;
     }
     if (atk.kind === "melee" && pv(tar, "AFTERIMAGE") && R() < pv(tar, "AFTERIMAGE").chance && tar.stunT <= 0) { ev({ k: "miss", atk: atk.id, u: tar.uid }); ev({ k: "txt", u: tar.uid, s: "AFTERIMAGE", c: "buff" }); return; }
@@ -3105,7 +3139,7 @@ function makeBattle(cfg) {
     else if (resp === "guard") ev({ k: "txt", u: tar.uid, s: "GUARD", c: "txt" });
     // knockback, stagger and effects (a perfect guard stops them all)
     if (mult > 0) {
-      tar.x = clamp(tar.x + atk.dir * (KNOCK[atk.kind] || 30) * mult * (1 + atk.pow * .4), -ARENA_X, ARENA_X);
+      const kb = (KNOCK[atk.kind] || 30) * mult * (1 + atk.pow * .4); tar.x += atk.dx * kb; tar.y += atk.dy * kb; inMap(tar);
       if ((atk.c.heavy || bomb || atk.kind === "beam") && mult >= .5 && tar.act && (tar.act.ph === "wind" || tar.act.ph === "charge")) { tar.act = null; ev({ k: "txt", u: tar.uid, s: "INTERRUPTED", c: "debuff" }); }
       if (tar.act && tar.act.ph === "charge" && mult >= .3) { tar.act = null; }
       for (const e of atk.c.fx || []) if (e.on === "target" && R() < (e.chance ?? 1)) addEff(tar, e.what, e.turns);
@@ -3137,6 +3171,14 @@ function makeBattle(cfg) {
   }
 
   // ---------- one tick of the action phase ----------
+  // a fighter with a moment to spare circles its foe, keeping the same distance; at a wall it turns back
+  function circle(u, foe, k) {
+    if (!foe) return;
+    const r = gap(u, foe), a = Math.atan2(u.y - foe.y, u.x - foe.x) + u.orb * ORBIT * k * spdF(u) ** .5 * DT;
+    const nx = foe.x + Math.cos(a) * r, ny = foe.y + Math.sin(a) * r;
+    if (Math.abs(nx) > ARENA_X || Math.abs(ny) > ARENA_Y) { u.orb = -u.orb; return; }
+    u.x = nx; u.y = ny;
+  }
   function stepUnit(u) {
     const foe = foeOf(u), dt = DT;
     if (u.stunT > 0) { u.stunT -= dt; if (u.stunT <= 0) { u.stunK = null; ev({ k: "unstun", u: u.uid }); } return; }
@@ -3146,27 +3188,31 @@ function makeBattle(cfg) {
     if (u.staggerT > 0) { u.staggerT -= dt; return; }
     const S2 = B.side[u.team];
     if (!u.act) {
-      if (!S2.q.length) return;
+      if (!S2.q.length) { circle(u, foe, 1); return; }
       startCmd(u, S2.q.shift());
       return;
     }
     const a = u.act; a.t += dt;
-    const face = foe ? Math.sign(foe.x - u.x) || (u.team === "A" ? 1 : -1) : u.team === "A" ? 1 : -1;
-    const fly = (target, speed) => { const d = target - u.x, step = speed * dt; if (Math.abs(d) <= step) { u.x = target; return true; } u.x += Math.sign(d) * step; return false; };
+    // fly toward a point on the map; true once there
+    const fly = (tx, ty, speed) => { const dx = tx - u.x, dy = ty - u.y, d = Math.hypot(dx, dy), step = speed * dt; if (d <= step) { u.x = tx; u.y = ty; return true; } u.x += dx / d * step; u.y += dy / d * step; return false; };
+    const closeIn = (r, speed) => { const [dx, dy] = dirTo(u, foe); return fly(foe.x - dx * r, foe.y - dy * r, speed); };
     if (a.ph === "move") {
       const sp = 820 * spdF(u) * (u.ki < 0 ? .7 : 1);
       if (!foe) { u.act = null; return; }
-      const tgt = a.c.to === "near" ? foe.x - face * NEAR : clamp(foe.x - face * FAR, -ARENA_X, ARENA_X);
-      if (fly(tgt, sp) || a.t > a.d) { u.act = null; ev({ k: "act", u: u.uid, ph: "idle" }); }
+      // backing off: pick the open spot FAR away once, then keep that offset from the foe
+      if (a.c.to !== "near" && !a.off) { const p = spotFrom(foe, Math.atan2(u.y - foe.y, u.x - foe.x), FAR); a.off = [p.x - foe.x, p.y - foe.y]; }
+      const there = a.c.to === "near" ? closeIn(NEAR, sp) : (() => { const p = inMap({ x: foe.x + a.off[0], y: foe.y + a.off[1] }); return fly(p.x, p.y, sp); })();
+      if (there || a.t > a.d) { u.act = null; ev({ k: "act", u: u.uid, ph: "idle" }); }
       return;
     }
     if (a.ph === "dash") {
       const sp = 950 * spdF(u) * (u.el === "Striker" ? 2 : 1);
       if (!foe) { u.act = null; return; }
-      if (fly(foe.x - face * (NEAR - 20), sp) || a.t > a.d) beginWind(u, a);
+      if (closeIn(NEAR - 20, sp) || a.t > a.d) beginWind(u, a);
       return;
     }
     if (a.ph === "charge") {
+      circle(u, foe, .6);
       const g = a.c.gain / a.d * dt; gainKi(u, g);
       if (a.t >= a.d) { u.act = null; ev({ k: "act", u: u.uid, ph: "idle" }); }
       return;
@@ -3175,13 +3221,15 @@ function makeBattle(cfg) {
       const holding = !a.noPow && (human(u) ? B.input.hold : a.pow < a.want);
       if (holding) a.pow = Math.min(1, a.pow + dt / HOLD_MAX);
       if (a.c.kind === "bomb") a.pow = Math.min(1, a.t / a.d);
-      // melee keeps its man in reach while it winds up
-      if (a.c.kind === "melee" && foe && Math.abs(foe.x - u.x) > NEAR + 10) fly(foe.x - face * (NEAR - 20), 900 * spdF(u));
+      // melee keeps its man in reach while it winds up; ranged attacks strafe a little while they aim
+      if (a.c.kind === "melee" && foe && gap(u, foe) > NEAR + 10) closeIn(NEAR - 20, 900 * spdF(u));
+      else if (a.c.kind !== "melee") circle(u, foe, .35);
       const ready = a.t >= a.d && (a.noPow || (human(u) ? !B.input.hold || a.pow >= 1 : a.pow >= a.want || a.pow >= 1));
       if (ready) fire(u, a);
       return;
     }
     if (a.ph === "clash") return;
+    if (a.c.kind !== "melee") circle(u, foe, .5);
     if (a.ph === "rec" && a.t >= a.d) { u.act = null; ev({ k: "act", u: u.uid, ph: "idle" }); }
   }
   B.tick = () => {
@@ -3217,12 +3265,14 @@ function makeBattle(cfg) {
   return B;
 }
 // =====================================================================
-//  BATTLE RENDERER — a 2D side view on canvas: parallax backdrops from the show's places, the two fighters (drawn by
-//  drawFigure), auras, ki blasts, beams and their struggles, giant energy balls, impacts and floating numbers.
-//  World x comes from the engine (units); the camera follows the pair and zooms with their distance.
+//  BATTLE RENDERER — Goku Gekitōden's battle screen: the fight seen from above on a small map of the place, with
+//  the two fighters' heads moving around it. Auras, ki blasts, beams and their struggles, discs, giant energy balls,
+//  impacts and floating numbers are drawn between the heads. World x/y come from the engine; on a tall screen the
+//  map stands on its end, so your fighter starts at the bottom. The place art below (ENVS, bgLayer, buildEnv) also
+//  backs the story scenes and the chapter fields.
 // =====================================================================
 const BT = { on: false, cv: null, g: null, W: 0, H: 0, dpr: 1, clock: 0, speed: 1, paused: false, vus: new Map(), parts: [], floats: [], shots: [], rings: [],
-  cam: { x: 0, z: 1 }, shake: 0, flash: 0, flashCol: "#ffffff", waits: [], tweens: [], env: null, acc: 0, last: 0, mTop: 96, mBot: 150 };
+  shake: 0, flash: 0, flashCol: "#ffffff", waits: [], tweens: [], env: null, acc: 0, last: 0, mTop: 96, mBot: 150 };
 const BG_W = 2400;
 
 // ---------- places ----------
@@ -3293,57 +3343,320 @@ function buildEnv(name) {
     stars: Array.from({ length: 70 }, (_, i) => { const r = seeded(sd + i * 13); return [r(), r() * .7, .5 + r() * 1.5]; }) };
 }
 
-// ---------- camera ----------
-// the ground sits low in the space between the HUD and the controls (eased, so the planner opening doesn't jolt it)
-const groundY = () => BT.mTop + (BT.H - BT.mTop - (BT.mBotS || BT.mBot)) * .86;
-// in landscape the planner sits on the right, so the fight centres in the space to its left
-const toSX = x => (BT.W - (BT.mRightS || 0)) / 2 + (x - BT.cam.x) * BT.cam.z;
-function fitCam(dt, cut) {
-  const vs = [...BT.vus.values()].filter(v => v.shown && !v.gone);
-  if (!vs.length) return;
-  const xs = vs.map(v => v.x), lo = Math.min(...xs), hi = Math.max(...xs);
-  const span = hi - lo + 220, room = BT.H - BT.mTop - (BT.mBotS || BT.mBot);
-  const tz = clamp(Math.min((BT.W - (BT.mRightS || 0) - 30) / span, room / 230), .4, 1.05), tx = (lo + hi) / 2;
-  const k = cut ? 1 : 1 - Math.exp(-dt * 4);
-  BT.cam.x += (tx - BT.cam.x) * k; BT.cam.z += (tz - BT.cam.z) * k;
+// ---------- the map, seen from above ----------
+const MAP_PAD = 90;                                        // scenery around the edge of the arena, in world units
+const MAP_W = 2 * (ARENA_X + MAP_PAD), MAP_H = 2 * (ARENA_Y + MAP_PAD), MAP_RES = .8;
+const MP = { rot: false, s: .3, cx: 0, cy: 0, px: 0, py: 0 };
+// fit the map in the space between the HUD and the controls; when that's too small (a wide, short screen) zoom in
+// and follow the fighters
+function mapFit(dt, cut) {
+  const top = BT.mTop + 2, bot = BT.H - (BT.mBotS == null ? BT.mBot : BT.mBotS) - 2, w = Math.max(80, BT.W - (BT.mRightS || 0) - 12), h = Math.max(60, bot - top);
+  MP.rot = BT.H > BT.W * 1.1;
+  const sw = MP.rot ? MAP_H : MAP_W, sh = MP.rot ? MAP_W : MAP_H, s0 = Math.min(w / sw, h / sh);
+  const s = Math.max(s0, Math.min(.27, w / sw, h / sh * 1.7));
+  let tx = 0, ty = 0;
+  const vs = [...BT.vus.values()].filter(v => v.shown && !v.gone && v.u.status === "field");
+  if (vs.length && s > s0 + .002) {
+    const mx = vs.reduce((a, v) => a + v.x, 0) / vs.length, my = vs.reduce((a, v) => a + v.y, 0) / vs.length;
+    const vx = (MP.rot ? h : w) / s, vy = (MP.rot ? w : h) / s;            // how much of the map shows along world x and y
+    tx = vx < MAP_W ? clamp(mx, -(MAP_W - vx) / 2, (MAP_W - vx) / 2) : 0;
+    ty = vy < MAP_H ? clamp(my, -(MAP_H - vy) / 2, (MAP_H - vy) / 2) : 0;
+  }
+  const k = cut ? 1 : 1 - Math.exp(-dt * 3);
+  MP.px += (tx - MP.px) * k; MP.py += (ty - MP.py) * k;
+  MP.s = s; MP.cx = 6 + w / 2; MP.cy = top + h / 2; MP.view = [6, top, w, h];
+}
+const toScr = (x, y) => { x -= MP.px; y -= MP.py; return MP.rot ? [MP.cx + y * MP.s, MP.cy - x * MP.s] : [MP.cx + x * MP.s, MP.cy + y * MP.s]; };
+const zf = () => MP.s / .32;                                  // effect sizes follow the map's scale
+function mapRect() { const a = toScr(-MAP_W / 2, -MAP_H / 2), b = toScr(MAP_W / 2, MAP_H / 2); return [Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.abs(b[0] - a[0]), Math.abs(b[1] - a[1])]; }
+
+// the place, painted once from above (world units, origin at the centre of the arena)
+const MAPART = {};
+function blobAt(g, x, y, rx, ry, col, rot = 0) { g.fillStyle = col; g.beginPath(); g.ellipse(x, y, Math.max(.1, rx), Math.max(.1, ry), rot, 0, Math.PI * 2); g.fill(); }
+function speckle(g, r, cols, n, size, a = .3) { for (let i = 0; i < n; i++) { g.globalAlpha = a * (.5 + r()); blobAt(g, (r() - .5) * MAP_W, (r() - .5) * MAP_H, size * (.4 + r()), size * (.3 + r() * .6), cols[i % cols.length], r() * 3); } g.globalAlpha = 1; }
+function lumpPath(g, x, y, s, r, sq = .85) { const n = 7 + Math.floor(r() * 4), pts = []; for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2, rr = s * (.72 + r() * .38); pts.push([x + Math.cos(a) * rr, y + Math.sin(a) * rr * sq]); } return pts; }
+function polyFill(g, pts, col, dx = 0, dy = 0) { g.fillStyle = col; g.beginPath(); pts.forEach(([px, py], i) => i ? g.lineTo(px + dx, py + dy) : g.moveTo(px + dx, py + dy)); g.closePath(); g.fill(); }
+// a rock or a mesa from above, lit from the top left
+function rockTop(g, x, y, s, col, r) {
+  const pts = lumpPath(g, x, y, s, r);
+  polyFill(g, pts, "rgba(0,0,0,.3)", s * .22, s * .28);
+  polyFill(g, pts, col);
+  blobAt(g, x - s * .18, y - s * .2, s * .48, s * .34, shade(col, .2), -.4);
+  g.strokeStyle = shade(col, -.4); g.lineWidth = 3; g.beginPath(); pts.forEach(([px, py], i) => i ? g.lineTo(px, py) : g.moveTo(px, py)); g.closePath(); g.stroke();
+}
+function treeTop(g, x, y, s, col) {
+  blobAt(g, x + s * .25, y + s * .3, s, s * .9, "rgba(0,0,0,.28)");
+  blobAt(g, x, y, s, s * .95, shade(col, -.3));
+  blobAt(g, x - s * .1, y - s * .1, s * .86, s * .8, col);
+  blobAt(g, x - s * .3, y - s * .32, s * .38, s * .3, shade(col, .28));
+}
+function waterTop(g, x, y, rx, ry, col, r) {
+  blobAt(g, x, y, rx + 14, ry + 12, shade(col, .45));
+  blobAt(g, x, y, rx, ry, col);
+  g.strokeStyle = shade(col, .5); g.globalAlpha = .55; g.lineWidth = 3;
+  for (let i = 0; i < 6; i++) { const wx = x + (r() - .5) * rx * 1.2, wy = y + (r() - .5) * ry * 1.1; g.beginPath(); g.arc(wx, wy, 18 + r() * 14, Math.PI * 1.1, Math.PI * 1.9); g.stroke(); }
+  g.globalAlpha = 1;
+}
+function domeTop(g, x, y, s, col, cap) { blobAt(g, x + s * .2, y + s * .25, s, s, "rgba(0,0,0,.28)"); blobAt(g, x, y, s, s, col); blobAt(g, x - s * .25, y - s * .25, s * .45, s * .4, shade(col, .25)); if (cap) blobAt(g, x, y, s * .3, s * .3, cap); }
+// spots near the edge of the arena (so the middle stays clear for the fight)
+const edgeSpot = (r, inset = 0) => { const side = Math.floor(r() * 4), t = r() * 2 - 1, mx = ARENA_X + MAP_PAD * .4 - inset, my = ARENA_Y + MAP_PAD * .4 - inset; return side === 0 ? [t * mx, -my] : side === 1 ? [t * mx, my] : side === 2 ? [-mx, t * my] : [mx, t * my]; };
+const anySpot = r => [(r() - .5) * MAP_W * .96, (r() - .5) * MAP_H * .96];
+// a wandering line (a river, a crack, a lava flow), drawn as a smooth curve in layers from wide and dim to thin and bright
+function flowLine(g, r, len, wander, layers) {
+  let [x, y] = anySpot(r), a = r() * Math.PI * 2; const pts = [[x, y]];
+  for (let k = 0; k < len; k++) { a += (r() - .5) * wander; x += Math.cos(a) * 70; y += Math.sin(a) * 70; pts.push([x, y]); }
+  g.lineCap = "round"; g.lineJoin = "round";
+  for (const [lw, col] of layers) { g.strokeStyle = col; g.lineWidth = lw; g.beginPath(); g.moveTo(pts[0][0], pts[0][1]);
+    for (let k = 1; k < pts.length - 1; k++) g.quadraticCurveTo(pts[k][0], pts[k][1], (pts[k][0] + pts[k + 1][0]) / 2, (pts[k][1] + pts[k + 1][1]) / 2);
+    g.stroke(); }
+}
+const MAP_PAINT = {
+  wasteland(g, E2, r) {
+    speckle(g, r, ["#d8aa78", "#b0845a", "#e8c89a"], 160, 40);
+    g.strokeStyle = "rgba(90,50,30,.35)"; g.lineWidth = 3;
+    for (let i = 0; i < 14; i++) { let [x, y] = anySpot(r); g.beginPath(); g.moveTo(x, y); for (let k = 0; k < 5; k++) { x += (r() - .5) * 120; y += (r() - .5) * 80; g.lineTo(x, y); } g.stroke(); }
+    for (let i = 0; i < 9; i++) { const [x, y] = edgeSpot(r); rockTop(g, x, y, 60 + r() * 70, "#a8704a", r); }
+    for (let i = 0; i < 12; i++) { const [x, y] = anySpot(r); rockTop(g, x, y, 12 + r() * 16, "#9a6a48", r); }
+  },
+  kamehouse(g, E2, r) {
+    g.fillStyle = "#2a7ad8"; g.fillRect(-MAP_W / 2, -MAP_H / 2, MAP_W, MAP_H);
+    g.strokeStyle = "rgba(255,255,255,.35)"; g.lineWidth = 3; for (let i = 0; i < 70; i++) { const [x, y] = anySpot(r); g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + 20, y - 8, x + 40, y); g.stroke(); }
+    blobAt(g, 0, 0, 640, 380, "#7ac8e8"); blobAt(g, 0, 0, 560, 320, "#f2e2b0"); speckle(g, r, ["#e8d090", "#fff2c8"], 60, 30, .25);
+    // Kame House from above: the red roof with its ridge, the pink walls peeking out, and a palm
+    const hx = -520, hy = -250;
+    g.fillStyle = "rgba(0,0,0,.25)"; g.fillRect(hx - 60, hy - 40, 140, 110); g.fillStyle = "#f2a0b8"; g.fillRect(hx - 76, hy - 56, 152, 112);
+    g.fillStyle = "#d8302a"; g.fillRect(hx - 70, hy - 50, 140, 100); g.fillStyle = "#a81a14"; g.fillRect(hx - 70, hy - 4, 140, 8);
+    for (const [px, py] of [[480, 210], [560, -140], [-420, 230]]) { g.strokeStyle = "#2a8a3a"; g.lineWidth = 16; g.lineCap = "round"; for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2; g.beginPath(); g.moveTo(px, py); g.quadraticCurveTo(px + Math.cos(a + .3) * 40, py + Math.sin(a + .3) * 40, px + Math.cos(a) * 70, py + Math.sin(a) * 70); g.stroke(); } blobAt(g, px, py, 12, 12, "#7a5a2a"); }
+  },
+  snakeway(g, E2, r) {
+    speckle(g, r, ["#fff2c8", "#f2c85a", "#ffe8a8"], 120, 70, .45);
+    // Snake Way winds across the clouds
+    const road = x => Math.sin(x / 260) * 160;
+    g.lineCap = "round"; g.strokeStyle = "rgba(0,0,0,.2)"; g.lineWidth = 150; g.beginPath(); for (let x = -MAP_W / 2 - 40; x <= MAP_W / 2 + 40; x += 30) x === -MAP_W / 2 - 40 ? g.moveTo(x + 14, road(x) + 18) : g.lineTo(x + 14, road(x) + 18); g.stroke();
+    g.strokeStyle = "#c89a2a"; g.lineWidth = 140; g.beginPath(); for (let x = -MAP_W / 2 - 40; x <= MAP_W / 2 + 40; x += 30) x === -MAP_W / 2 - 40 ? g.moveTo(x, road(x)) : g.lineTo(x, road(x)); g.stroke();
+    g.strokeStyle = "#e8c85a"; g.lineWidth = 110; g.stroke();
+    g.fillStyle = "#c89a3a"; for (let x = -MAP_W / 2; x < MAP_W / 2; x += 46) for (const o of [-28, 0, 28]) blobAt(g, x + (o ? 23 : 0), road(x) + o, 13, 9, "rgba(168,120,40,.55)");
+  },
+  hfil(g, E2, r) {
+    speckle(g, r, ["#6a2a1e", "#a8442a", "#4a1a14"], 140, 50, .4);
+    for (let i = 0; i < 9; i++) flowLine(g, r, 4 + Math.floor(r() * 4), 1.2, [[20, "rgba(255,90,20,.22)"], [7, "#ff7a1a"], [2.5, "#ffd27a"]]);
+    for (let i = 0; i < 12; i++) { const [x, y] = edgeSpot(r); rockTop(g, x, y, 30 + r() * 50, "#5a1e18", r); }
+  },
+  kingkai(g, E2, r) {
+    g.fillStyle = "#0a0a24"; g.fillRect(-MAP_W / 2, -MAP_H / 2, MAP_W, MAP_H); g.fillStyle = "#fff"; for (let i = 0; i < 120; i++) { const [x, y] = anySpot(r); g.globalAlpha = .4 + r() * .6; g.fillRect(x, y, 3, 3); } g.globalAlpha = 1;
+    // King Kai's tiny planet fills the map
+    const gr = g.createRadialGradient(-120, -140, 100, 0, 0, 900); gr.addColorStop(0, "#7ad86a"); gr.addColorStop(.8, "#3a9a3a"); gr.addColorStop(1, "#1a5a22");
+    g.fillStyle = gr; g.beginPath(); g.ellipse(0, 0, 860, 600, 0, 0, Math.PI * 2); g.fill();
+    speckle(g, r, ["#5ab84a", "#8ae07a"], 80, 30, .3);
+    domeTop(g, -560, -300, 80, "#f2e6c8", "#d8302a");
+    treeTop(g, 600, -300, 60, "#3a9a3a"); treeTop(g, -620, 320, 44, "#3a9a3a");
+    g.fillStyle = "#d8302a"; g.fillRect(470, 250, 110, 56); g.fillStyle = "#f2f2f6"; g.fillRect(495, 258, 50, 40);
+    g.strokeStyle = "#8a5a2a"; g.lineWidth = 4; g.beginPath(); g.ellipse(-300, 330, 60, 30, 0, 0, Math.PI * 2); g.stroke();       // Bubbles' running track
+  },
+  forest(g, E2, r) {
+    speckle(g, r, ["#4a7a2a", "#6a9a3a", "#3a5a22"], 160, 50, .35);
+    g.strokeStyle = "#7ac0e8"; g.lineWidth = 120; g.lineCap = "round"; g.beginPath(); g.moveTo(-MAP_W / 2 - 50, 420); g.bezierCurveTo(-300, 260, 200, 520, MAP_W / 2 + 50, 360); g.stroke();
+    g.strokeStyle = "#4a8ad8"; g.lineWidth = 90; g.stroke();
+    for (let i = 0; i < 22; i++) { const [x, y] = edgeSpot(r); treeTop(g, x, y, 40 + r() * 40, r() < .5 ? "#2a6a2a" : "#3a7a2a"); }
+    for (let i = 0; i < 5; i++) { const [x, y] = anySpot(r); rockTop(g, x, y * .7, 28 + r() * 20, "#8a9a7a", r); }
+  },
+  lookout(g, E2, r) {
+    g.fillStyle = "#7ab8f8"; g.fillRect(-MAP_W / 2, -MAP_H / 2, MAP_W, MAP_H); speckle(g, r, ["#ffffff", "#e8f4ff"], 60, 90, .6);
+    // the round white floor of the Lookout, tiled
+    blobAt(g, 14, 20, 850, 560, "rgba(0,0,0,.25)"); blobAt(g, 0, 0, 840, 550, "#c8ccd8"); blobAt(g, 0, 0, 820, 532, "#f2f2f6");
+    g.save(); g.beginPath(); g.ellipse(0, 0, 820, 532, 0, 0, Math.PI * 2); g.clip(); g.strokeStyle = "rgba(120,130,150,.25)"; g.lineWidth = 2;
+    for (let x = -840; x <= 840; x += 80) { g.beginPath(); g.moveTo(x, -560); g.lineTo(x, 560); g.stroke(); } for (let y = -560; y <= 560; y += 80) { g.beginPath(); g.moveTo(-840, y); g.lineTo(840, y); g.stroke(); } g.restore();
+    domeTop(g, -620, -330, 110, "#e8d8a0", "#f2f2f6");
+    for (const [x, y] of [[560, -380], [640, 300], [-640, 340], [300, 440]]) { blobAt(g, x, y, 36, 36, "#8a5a2a"); treeTop(g, x, y, 30, "#2a7a2a"); }
+  },
+  space(g, E2, r) {
+    g.fillStyle = "#04050e"; g.fillRect(-MAP_W / 2, -MAP_H / 2, MAP_W, MAP_H);
+    speckle(g, r, ["#2a1a5a", "#1a3a6a", "#4a1a4a"], 30, 220, .25);
+    g.fillStyle = "#fff"; for (let i = 0; i < 220; i++) { const [x, y] = anySpot(r); g.globalAlpha = .3 + r() * .7; const z = 1 + r() * 3; g.fillRect(x, y, z, z); } g.globalAlpha = 1;
+    const gr = g.createRadialGradient(560, -380, 20, 620, -320, 260); gr.addColorStop(0, "#8ac8f8"); gr.addColorStop(1, "#0a1a3a"); g.fillStyle = gr; g.beginPath(); g.arc(620, -320, 230, 0, Math.PI * 2); g.fill();
+  },
+  arlia(g, E2, r) {
+    speckle(g, r, ["#7a5a6a", "#4a3a42", "#8a6a7a"], 160, 50, .35);
+    blobAt(g, 300, 180, 160, 110, "rgba(30,20,26,.45)"); blobAt(g, 290, 170, 130, 86, "rgba(90,70,84,.5)");
+    for (let i = 0; i < 16; i++) { const [x, y] = edgeSpot(r); rockTop(g, x, y, 24 + r() * 46, "#4a2a4a", r); }
+  },
+  namek(g, E2, r) {
+    speckle(g, r, ["#5ac8a0", "#3a9a7a", "#7ad8b0"], 160, 50, .35);
+    waterTop(g, -520, 300, 220, 120, "#2a8a9a", r); waterTop(g, 600, -330, 180, 100, "#2a8a9a", r);
+    for (let i = 0; i < 14; i++) { const [x, y] = edgeSpot(r); treeTop(g, x, y, 26 + r() * 20, "#3aa8a0"); }
+    domeTop(g, 520, 330, 60, "#f2f2f0"); domeTop(g, 610, 280, 40, "#f2f2f0");
+  },
+  frieza(g, E2, r) {
+    MAP_PAINT.namek(g, E2, r);
+    // Frieza's ship, parked at the edge
+    const x = -560, y = -300;
+    blobAt(g, x + 30, y + 36, 200, 200, "rgba(0,0,0,.3)"); blobAt(g, x, y, 200, 200, "#9aa0b0"); blobAt(g, x, y, 176, 176, "#d8dce6"); blobAt(g, x - 40, y - 50, 80, 60, "#f2f4f8");
+    for (let k = 0; k < 12; k++) { const a = k / 12 * Math.PI * 2; blobAt(g, x + Math.cos(a) * 150, y + Math.sin(a) * 150, 12, 12, "#3a4a6a"); }
+  },
+  namekdie(g, E2, r) {
+    speckle(g, r, ["#3a1810", "#5a2418", "#1a0a08"], 160, 50, .45);
+    for (let i = 0; i < 4; i++) flowLine(g, r, 8 + Math.floor(r() * 6), .7, [[64, "rgba(255,90,20,.22)"], [34, "#c8401a"], [22, "#ff6a1a"], [8, "#ffd27a"]]);
+    for (let i = 0; i < 8; i++) flowLine(g, r, 3 + Math.floor(r() * 3), 1.4, [[10, "rgba(255,90,20,.25)"], [3, "#ff8a2a"]]);
+    for (let i = 0; i < 12; i++) { const [x, y] = edgeSpot(r); rockTop(g, x, y, 26 + r() * 40, "#2a0e0a", r); }
+  },
+  tournament(g, E2, r) {
+    g.fillStyle = "#5aa84a"; g.fillRect(-MAP_W / 2, -MAP_H / 2, MAP_W, MAP_H);
+    for (let i = 0; i < 700; i++) { const t = r(), side = Math.floor(r() * 4), x = side < 2 ? (t - .5) * MAP_W : side === 2 ? -MAP_W / 2 + r() * 50 : MAP_W / 2 - r() * 50, y = side >= 2 ? (t - .5) * MAP_H : side === 0 ? -MAP_H / 2 + r() * 50 : MAP_H / 2 - r() * 50; blobAt(g, x, y, 7, 7, ["#c8502a", "#2a6ad8", "#f2c14e", "#3a9a4a", "#f2f2f6", "#8a3a8a"][Math.floor(r() * 6)]); }
+    // the stone ring
+    g.fillStyle = "rgba(0,0,0,.3)"; g.fillRect(-ARENA_X + 18, -ARENA_Y + 24, ARENA_X * 2, ARENA_Y * 2);
+    g.fillStyle = "#d8d0c0"; g.fillRect(-ARENA_X, -ARENA_Y, ARENA_X * 2, ARENA_Y * 2);
+    for (let x = -ARENA_X; x < ARENA_X; x += 120) for (let y = -ARENA_Y; y < ARENA_Y; y += 120) { g.fillStyle = r() < .5 ? "#cfc6b4" : "#e2dacb"; g.fillRect(x + 3, y + 3, 114, 114); }
+  },
+  gravity(g, E2, r) {
+    g.fillStyle = "#4a4a52"; g.fillRect(-MAP_W / 2, -MAP_H / 2, MAP_W, MAP_H);
+    for (let x = -MAP_W / 2; x < MAP_W / 2; x += 160) for (let y = -MAP_H / 2; y < MAP_H / 2; y += 160) { g.fillStyle = r() < .5 ? "#5a5a62" : "#55555d"; g.fillRect(x + 4, y + 4, 152, 152); g.fillStyle = "#3a3a40"; for (const [a, b] of [[16, 16], [140, 16], [16, 140], [140, 140]]) blobAt(g, x + a, y + b, 5, 5, "#3a3a40"); }
+    domeTop(g, 0, -ARENA_Y - 40, 70, "#6a6a72", "#ff3a2a");
+  },
+  city(g, E2, r) {
+    g.fillStyle = "#8a9098"; g.fillRect(-MAP_W / 2, -MAP_H / 2, MAP_W, MAP_H);
+    g.fillStyle = "#5a5e66"; for (const x of [-420, 0, 420]) g.fillRect(x - 50, -MAP_H / 2, 100, MAP_H); for (const y of [-260, 260]) g.fillRect(-MAP_W / 2, y - 50, MAP_W, 100);
+    g.strokeStyle = "#f2e2a0"; g.lineWidth = 4; g.setLineDash([30, 30]); for (const x of [-420, 0, 420]) { g.beginPath(); g.moveTo(x, -MAP_H / 2); g.lineTo(x, MAP_H / 2); g.stroke(); } g.setLineDash([]);
+    for (let i = 0; i < 10; i++) { const [x, y] = edgeSpot(r); domeTop(g, x, y, 40 + r() * 40, r() < .5 ? "#f2f2f6" : "#c8c8d8"); }
+  },
+};
+function mapArt(E2) {
+  if (MAPART[E2.key]) return MAPART[E2.key];
+  const cv = document.createElement("canvas"); cv.width = Math.round(MAP_W * MAP_RES); cv.height = Math.round(MAP_H * MAP_RES);
+  const g = cv.getContext("2d"), r = seeded(hash(E2.key) + 3);
+  g.scale(MAP_RES, MAP_RES); g.translate(MAP_W / 2, MAP_H / 2);
+  const gr = g.createLinearGradient(0, -MAP_H / 2, 0, MAP_H / 2); gr.addColorStop(0, (E2.ground || ["#3a3a4a"])[0]); gr.addColorStop(1, (E2.ground || ["#3a3a4a", "#1a1a2a"])[1]);
+  g.fillStyle = gr; g.fillRect(-MAP_W / 2, -MAP_H / 2, MAP_W, MAP_H);
+  (MAP_PAINT[E2.key] || MAP_PAINT.wasteland)(g, E2, r);
+  // the arena: a faint grid inside a frame, the scenery around it shaded a little
+  g.fillStyle = "rgba(0,0,0,.22)"; g.fillRect(-MAP_W / 2, -MAP_H / 2, MAP_W, MAP_PAD); g.fillRect(-MAP_W / 2, MAP_H / 2 - MAP_PAD, MAP_W, MAP_PAD);
+  g.fillRect(-MAP_W / 2, -ARENA_Y, MAP_PAD, ARENA_Y * 2); g.fillRect(MAP_W / 2 - MAP_PAD, -ARENA_Y, MAP_PAD, ARENA_Y * 2);
+  g.strokeStyle = "rgba(255,255,255,.1)"; g.lineWidth = 2;
+  for (let x = -ARENA_X + 120; x < ARENA_X; x += 120) { g.beginPath(); g.moveTo(x, -ARENA_Y); g.lineTo(x, ARENA_Y); g.stroke(); }
+  for (let y = -ARENA_Y + 120; y < ARENA_Y; y += 120) { g.beginPath(); g.moveTo(-ARENA_X, y); g.lineTo(ARENA_X, y); g.stroke(); }
+  g.strokeStyle = "rgba(0,0,0,.45)"; g.lineWidth = 12; g.strokeRect(-ARENA_X, -ARENA_Y, ARENA_X * 2, ARENA_Y * 2);
+  g.strokeStyle = "rgba(255,255,255,.55)"; g.lineWidth = 4; g.strokeRect(-ARENA_X, -ARENA_Y, ARENA_X * 2, ARENA_Y * 2);
+  return MAPART[E2.key] = cv;
+}
+function drawMap(g) {
+  const E2 = BT.env;
+  const gr = g.createLinearGradient(0, 0, 0, BT.H); gr.addColorStop(0, shade(E2.sky[0], -.55)); gr.addColorStop(1, shade((E2.ground || E2.sky)[1], -.6));
+  g.fillStyle = gr; g.fillRect(0, 0, BT.W, BT.H);
+  const [ox, oy] = toScr(0, 0);
+  // zoomed in on a short screen, the map shows through a window between the HUD and the controls
+  g.save(); if (MP.view) { const [vx, vy, vw, vh] = MP.view; g.beginPath(); g.rect(vx - 6, vy - 2, vw + 12, vh + 4); g.clip(); }
+  g.translate(ox, oy); if (MP.rot) g.rotate(-Math.PI / 2); g.scale(MP.s, MP.s);
+  g.shadowColor = "rgba(0,0,0,.6)"; g.shadowBlur = 18;
+  g.drawImage(mapArt(E2), -MAP_W / 2, -MAP_H / 2, MAP_W, MAP_H);
+  g.restore();
 }
 
-// ---------- drawing ----------
-function drawSky(g) {
-  const E2 = BT.env, W = BT.W, H = BT.H, gy = groundY();
-  const gr = g.createLinearGradient(0, 0, 0, gy); gr.addColorStop(0, E2.sky[0]); gr.addColorStop(.6, E2.sky[1]); gr.addColorStop(1, E2.sky[2]);
-  g.fillStyle = gr; g.fillRect(0, 0, W, H);
-  if (E2.fx === "stars" || E2.key === "space") for (const [x, y, s] of E2.stars) { g.globalAlpha = .4 + .4 * Math.sin(BT.clock / 600 + x * 30); g.fillStyle = "#fff"; g.fillRect(x * W, y * gy, s, s); }
-  g.globalAlpha = 1;
-  // Namek has three suns
-  if (E2.key === "namek" || E2.key === "frieza") for (const [x, y, s] of [[.2, .16, 16], [.72, .1, 11], [.88, .22, 8]]) { const sx = x * W - BT.cam.x * .02; g.fillStyle = "rgba(255,255,230,.35)"; g.beginPath(); g.arc(sx, y * gy, s * 2, 0, 7); g.fill(); g.fillStyle = "#fffbe0"; g.beginPath(); g.arc(sx, y * gy, s, 0, 7); g.fill(); }
-  const layer = (cv, par, y0, h) => { if (!cv) return; const off = ((BT.cam.x * par) % BG_W + BG_W) % BG_W; for (let x = -off; x < W; x += BG_W) g.drawImage(cv, x, y0, BG_W, h); };
-  layer(E2.farCv, .15, gy - 320 * .9, 320 * .9);
-  layer(E2.nearCv, .4, gy - 240 * .75, 240 * .75);
-  if (E2.ground) {
-    const g2 = g.createLinearGradient(0, gy, 0, H); g2.addColorStop(0, E2.ground[0]); g2.addColorStop(1, E2.ground[1]);
-    g.fillStyle = g2; g.fillRect(0, gy, W, H - gy);
-    g.strokeStyle = shade(E2.ground[1], -.2); g.globalAlpha = .35; g.lineWidth = 2;
-    const off = (BT.cam.x * BT.cam.z) % 90;
-    for (let x = -off - 90; x < W + 90; x += 90) { g.beginPath(); g.moveTo(x, gy + 10); g.lineTo(x - 40, H); g.stroke(); }
-    g.globalAlpha = 1;
-  }
+// ---------- the fighters: heads on the map ----------
+const HEADS = {};
+const headArt = u => HEADS[u.key] || (HEADS[u.key] = headCanvas(u.def.fig, null));
+const TEAM_COL = { A: "#3ad0ff", E: "#ff4a3a" };
+// the visual unit: smoothed map position, facing and timers set by battle events
+function addVU(u) {
+  const vu = { uid: u.uid, u, team: u.team, x: u.x, y: u.y, hov: 6, shown: false, gone: false, face: u.team === "A" ? 1 : -1, alpha: 1, hitT: 0, guardT: 0, perfect: false,
+    aura: 0, auraCol: u.def.aura || "#f2f2ff", vanishT: 0, flash: 0, koT: 0, ph: R() * 6, trail: [] };
+  BT.vus.set(u.uid, vu);
+  return vu;
 }
-// an aura: flickering flame tongues around the figure
-function drawAura(g, x, y, h, col, k) {
+const grounded = u => u.def.fig && (u.def.fig.body === "ape" || u.def.fig.body === "dino");
+const tokenR = u => clamp(MP.s * 64, 13, 32) * (grounded(u) ? 1.3 : u.boss ? 1.12 : 1);
+// where a head is drawn on screen (it floats a little above its shadow)
+function vuPos(vu) { const [x, y] = toScr(vu.x, vu.y); return { x, y: y - vu.hov, gx: x, gy: y, r: tokenR(vu.u) }; }
+// an aura from above: flame tongues all around the head
+function tokenAura(g, x, y, r, col, k) {
   if (k <= 0) return;
   const t = BT.clock / 1000;
-  g.save(); g.globalCompositeOperation = "lighter"; g.globalAlpha = .55 * k;
-  const gr = g.createRadialGradient(x, y - h * .5, h * .1, x, y - h * .45, h * .85); gr.addColorStop(0, col); gr.addColorStop(1, "rgba(0,0,0,0)");
-  g.fillStyle = gr; g.beginPath(); g.ellipse(x, y - h * .45, h * .55, h * .78, 0, 0, Math.PI * 2); g.fill();
-  g.globalAlpha = .45 * k; g.fillStyle = col;
-  for (let i = 0; i < 9; i++) {
-    const a = -Math.PI / 2 + (i - 4) * .28, fl = Math.sin(t * 13 + i * 2.1) * .5 + .5, len = h * (.45 + fl * .35);
-    const bx = x + Math.cos(a) * h * .3, by = y - h * .35 + Math.sin(a) * h * .3;
-    g.beginPath(); g.moveTo(bx - h * .08, by); g.quadraticCurveTo(bx + Math.cos(a) * len * .5, by + Math.sin(a) * len * .5, bx + Math.cos(a) * len, by + Math.sin(a) * len); g.quadraticCurveTo(bx + Math.cos(a) * len * .4 + h * .05, by + Math.sin(a) * len * .4, bx + h * .08, by); g.fill();
+  g.save(); g.globalCompositeOperation = "lighter";
+  const gr = g.createRadialGradient(x, y, r * .6, x, y, r * 2.1); gr.addColorStop(0, col); gr.addColorStop(1, "rgba(0,0,0,0)");
+  g.globalAlpha = .5 * k; g.fillStyle = gr; g.beginPath(); g.arc(x, y, r * 2.1, 0, Math.PI * 2); g.fill();
+  g.globalAlpha = .55 * k; g.fillStyle = col;
+  for (let i = 0; i < 14; i++) {
+    const a = i / 14 * Math.PI * 2 + t * .7, fl = Math.sin(t * 14 + i * 2.3) * .5 + .5, len = r * (.4 + fl * .6), nx = Math.cos(a), ny = Math.sin(a), w = r * .3;
+    const bx = x + nx * r * .9, by = y + ny * r * .9;
+    g.beginPath(); g.moveTo(bx - ny * w, by + nx * w);
+    g.quadraticCurveTo(bx + nx * len * .6 - ny * w * .3, by + ny * len * .6 + nx * w * .3, bx + nx * len, by + ny * len);
+    g.quadraticCurveTo(bx + nx * len * .5 + ny * w * .3, by + ny * len * .5 - nx * w * .3, bx + ny * w, by - nx * w); g.fill();
   }
   g.restore();
 }
+function drawToken(g, vu, dt) {
+  if (!vu.shown || vu.gone) return;
+  const u = vu.u, B = BT.B, P = vuPos(vu), { x, y, r } = P, out = u.status === "out";
+  if (vu.vanishT > 0) vu.alpha = clamp(Math.abs(vu.vanishT - 220) / 220, 0, 1);
+  else if (!out && u.status !== "bench") vu.alpha = Math.min(1, vu.alpha + dt / 200);
+  // shadow on the ground, and a streak behind a fast-moving head
+  g.save(); g.globalAlpha = .32 * vu.alpha; g.fillStyle = "#000"; g.beginPath(); g.ellipse(P.gx + vu.hov * .5, P.gy + r * .35 + vu.hov * .3, r * .9, r * .45, 0, 0, Math.PI * 2); g.fill(); g.restore();
+  vu.trail.push([vu.x, vu.y]); if (vu.trail.length > 6) vu.trail.shift();
+  const [tx0, ty0] = vu.trail[0], fast = Math.hypot(vu.x - tx0, vu.y - ty0) * MP.s > r * .9;
+  if (fast && !out) { g.save(); g.globalCompositeOperation = "lighter"; vu.trail.forEach(([wx, wy], i) => { const [px, py] = toScr(wx, wy); g.globalAlpha = .07 + i * .04; g.fillStyle = vu.auraCol; g.beginPath(); g.arc(px, py - vu.hov, r * (.6 + i * .06), 0, Math.PI * 2); g.fill(); }); g.restore(); }
+  // aura: powering up, a special winding up, a beam struggle, Kaioken, Super Saiyan
+  const kai = u.status === "field" && B.has(u, "KAIOKEN");
+  const auraK = Math.max(vu.aura, u.act && (u.act.ph === "charge" || (u.act.ph === "wind" && !u.act.c.basic) || u.act.ph === "clash") ? 1 : 0, kai ? .8 : 0, u.def.fig.hs === "ssj" ? .45 : 0);
+  if (!out) tokenAura(g, x, y, r, kai ? "#ff3a2a" : vu.auraCol, auraK * vu.alpha);
+  // the head in its ring
+  const shake = vu.hitT > 0 ? (R() - .5) * 7 * (vu.hitT / 380) : 0;
+  g.save(); g.globalAlpha = vu.alpha; g.translate(x + shake, y);
+  if (out) g.rotate(.45);
+  g.fillStyle = out ? "#5a5a62" : TEAM_COL[u.team]; g.beginPath(); g.arc(0, 0, r + 3, 0, Math.PI * 2); g.fill();
+  g.lineWidth = 1.5; g.strokeStyle = "rgba(0,0,0,.65)"; g.stroke();
+  g.save(); g.beginPath(); g.arc(0, 0, r, 0, Math.PI * 2); g.clip();
+  const bg = u.isOp || u.boss ? ICON_BG[u.el] : ICON_BG.enemy;
+  const gr = g.createRadialGradient(-r * .25, -r * .3, 1, 0, 0, r * 1.2); gr.addColorStop(0, bg[0]); gr.addColorStop(.7, bg[1]); gr.addColorStop(1, bg[2]);
+  g.fillStyle = gr; g.fillRect(-r, -r, r * 2, r * 2);
+  if (out) g.filter = "grayscale(1) brightness(.6)"; else if (vu.flash > 0) g.filter = `brightness(${1 + vu.flash / 90})`;
+  const S = r * 2.25; g.scale(vu.face, 1); g.drawImage(headArt(u), -S / 2, -S * .47, S, S);
+  g.restore();
+  if (vu.hitT > 0 && !out) { g.globalCompositeOperation = "lighter"; g.globalAlpha = vu.alpha * vu.hitT / 380 * .45; g.fillStyle = "#ffffff"; g.beginPath(); g.arc(0, 0, r, 0, Math.PI * 2); g.fill(); g.globalCompositeOperation = "source-over"; }
+  g.globalAlpha = vu.alpha * .35; g.fillStyle = "#fff"; g.beginPath(); g.ellipse(-r * .35, -r * .5, r * .32, r * .16, -.6, 0, Math.PI * 2); g.fill();
+  g.restore();
+  if (out) return;
+  // a guard: a shield on the side the blow came from
+  if (vu.guardT > 0) {
+    const foe = B.foeOf(u), fv = foe && BT.vus.get(foe.uid), a = fv ? Math.atan2(vuPos(fv).y - y, vuPos(fv).x - x) : 0;
+    g.save(); g.globalAlpha = Math.min(1, vu.guardT / 200); g.lineCap = "round";
+    g.strokeStyle = vu.perfect ? "#ffd34d" : "#7ad0ff"; g.lineWidth = 5; g.beginPath(); g.arc(x, y, r + 8, a - 1.05, a + 1.05); g.stroke();
+    g.strokeStyle = "#ffffff"; g.lineWidth = 2; g.beginPath(); g.arc(x, y, r + 8, a - .8, a + .8); g.stroke(); g.restore();
+  }
+  // stunned: stars (Solar Flare) or frost (Time Freeze, Telekinesis) circling the head
+  if (u.stunT > 0) {
+    const t = BT.clock / 300;
+    for (let i = 0; i < 3; i++) { const a = t + i * 2.1, sx = x + Math.cos(a) * r * 1.1, sy = y - r * .2 + Math.sin(a) * r * .45;
+      g.fillStyle = u.stunK === "FREEZE" ? "#bfe8ff" : u.stunK === "BREAK" ? "#7ad0ff" : "#ffe14a"; g.font = `900 ${Math.round(r * .7)}px sans-serif`; g.textAlign = "center"; g.fillText(u.stunK === "FREEZE" ? "❄" : "★", sx, sy); }
+  }
+  // the power gauge around your fighter's head while it winds up
+  if (u.team === "A" && u.act && u.act.ph === "wind" && !u.act.noPow && !B.auto) {
+    g.save(); g.lineWidth = 4; g.lineCap = "round";
+    g.strokeStyle = "rgba(0,0,0,.55)"; g.beginPath(); g.arc(x, y, r + 9, 0, Math.PI * 2); g.stroke();
+    g.strokeStyle = u.act.pow >= 1 ? "#ffd34d" : "#ff8a1a"; g.beginPath(); g.arc(x, y, r + 9, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * u.act.pow); g.stroke(); g.restore();
+  }
+}
+// the line of sight between the two fighters (it shows the range)
+function drawRange(g) {
+  const B = BT.B, a = B.curOf("A"), e = B.curOf("E"); if (!a || !e) return;
+  const va = BT.vus.get(a.uid), ve = BT.vus.get(e.uid); if (!va || !ve || !va.shown || !ve.shown) return;
+  const p = vuPos(va), q = vuPos(ve), d = B.dist();
+  g.save(); g.setLineDash([3, 6]); g.lineWidth = 1.5; g.globalAlpha = .45;
+  g.strokeStyle = d <= NEAR + 30 ? "#ffd34d" : d >= FAR - 60 ? "#7ad0ff" : "#ffffff";
+  g.beginPath(); g.moveTo(p.gx, p.gy); g.lineTo(q.gx, q.gy); g.stroke(); g.restore();
+}
+// incoming attacks on the player's fighter: a ring that closes at the moment of impact (tap GUARD as it closes)
+function drawGuardRing(g) {
+  const B = BT.B; if (!B || B.auto || B.phase !== "act") return;
+  const inc = B.incoming(); if (!inc || UNGUARDABLE.has(inc.kind) && inc.kind !== "disc") return;
+  const vu = BT.vus.get(inc.to.uid); if (!vu || !vu.shown) return;
+  const left = inc.impactAt - B.t; if (left > GUARD_WIN + .5 || left < 0) return;
+  const { x, y, r: tr } = vuPos(vu), r0 = tr + 6, r = r0 + left * 110;
+  const perfect = left <= PERFECT_WIN, ok = left <= GUARD_WIN;
+  g.save(); g.lineWidth = 3;
+  g.strokeStyle = inc.kind === "disc" ? "#ff5a5a" : perfect ? "#ffd34d" : ok ? "#7ad0ff" : "rgba(255,255,255,.6)";
+  g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.stroke();
+  g.globalAlpha = .5; g.strokeStyle = "#ffffff"; g.setLineDash([4, 5]); g.beginPath(); g.arc(x, y, r0, 0, Math.PI * 2); g.stroke();
+  g.restore();
+}
+// ---------- shots: ki blasts, beams, discs, energy balls, flying between the heads ----------
 function glowBall(g, x, y, r, col, core = "#ffffff") {
   g.save(); g.globalCompositeOperation = "lighter";
   const gr = g.createRadialGradient(x, y, 0, x, y, r * 2.2); gr.addColorStop(0, core); gr.addColorStop(.3, col); gr.addColorStop(1, "rgba(0,0,0,0)");
@@ -3357,185 +3670,110 @@ function beamLine(g, x0, y0, x1, y1, w, col) {
   for (const [lw, a, c] of [[w * 2.4, .25, col], [w * 1.4, .5, col], [w * .6, 1, "#ffffff"]]) { g.globalAlpha = a; g.strokeStyle = c; g.lineWidth = lw; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); }
   g.restore();
 }
-// the visual unit: smoothed position, pose bookkeeping and timers set by battle events
-function addVU(u) {
-  const vu = { uid: u.uid, u, team: u.team, x: u.x, alt: 0, shown: false, gone: false, face: u.team === "A" ? 1 : -1, alpha: 1, hitT: 0, guardT: 0, hitN: 0,
-    aura: 0, auraCol: u.def.aura || "#f2f2ff", vanishT: 0, flash: 0, enterT: 0, koT: 0, ph: R() * 6, swing: 0, anchors: null };
-  BT.vus.set(u.uid, vu);
-  return vu;
+// from the front of one head to the other
+function shotEnds(from, to) {
+  const a = vuPos(from), b = vuPos(to), dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 1, ux = dx / d, uy = dy / d;
+  return { p0: [a.x + ux * a.r * .9, a.y + uy * a.r * .9], p1: [b.x, b.y], ux, uy, a, b };
 }
-const grounded = u => u.def.fig && (u.def.fig.body === "ape" || u.def.fig.body === "dino");
-const figScale = () => BT.cam.z * (BT.H > BT.W * 1.3 ? 1.5 : 1.15);
-function poseOf(vu) {
-  const u = vu.u, a = u.act, T = BT.clock / 1000;
-  if (u.status === "out") return { name: "ko", time: T, air: true };
-  const air = !grounded(u);
-  if (vu.hitT > 0) return { name: "hit", t: 1 - vu.hitT / 380, time: T, air };
-  if (vu.guardT > 0) return { name: "guard", t: 1, time: T, air };
-  if (u.stunT > 0) return { name: "hit", t: .3 + Math.sin(T * 6) * .1, time: T, air };
-  if (!a) return { name: "idle", time: T, air, ph: vu.ph };
-  const k = a.d ? clamp(a.t / a.d, 0, 1) : 0, kind = a.c.kind;
-  if (a.ph === "move") return { name: a.c.to === "near" ? "dash" : "back", time: T, air: true };
-  if (a.ph === "dash") return { name: "dash", time: T, air: true };
-  if (a.ph === "charge") return { name: "charge", t: k, time: T, air };
-  if (a.ph === "clash") return { name: "beam", t: 1, time: T, air };
-  if (a.ph === "wind") {
-    if (kind === "melee") return { name: a.c.kick ? "kick" : "punch", t: .15 * k, time: T, air, alt: 0 };
-    if (kind === "ki") return { name: "blast", t: .05, time: T, air };
-    if (kind === "beam" || kind === "swap") return { name: "beamWind", t: k, time: T, air };
-    if (kind === "finger" || kind === "freeze") return { name: "fingerWind", t: k, time: T, air };
-    if (kind === "bomb") return { name: "overhead", t: k, time: T, air };
-    if (kind === "disc") return { name: "disc", t: k, time: T, air };
-    if (kind === "flash") return { name: "flash", t: k, time: T, air };
-    return { name: "charge", t: k, time: T, air };
-  }
-  // recovering: the follow-through of what was just fired
-  if (kind === "melee") { const hits = a.c.hits || 1, per = a.d / Math.max(1, hits), i = Math.min(hits - 1, Math.floor(a.t / per)); return { name: a.c.kick || (i % 3 === 2 && hits > 2) ? "kick" : a.c.heavy && hits <= 2 ? "smash" : "punch", t: (a.t - i * per) / per, time: T, air, alt: i }; }
-  if (kind === "ki") return { name: "blast", t: k, time: T, air, alt: Math.floor(a.t / .1) };
-  if (kind === "beam" || kind === "swap") return { name: "beam", t: 1, time: T, air };
-  if (kind === "finger" || kind === "freeze") return { name: "finger", t: 1, time: T, air };
-  if (kind === "bomb") return { name: "overhead", t: k, throw: 1, time: T, air };
-  if (kind === "disc") return { name: "disc", t: k, throw: 1, time: T, air };
-  if (kind === "flash") return { name: "flash", t: 1, time: T, air };
-  return { name: "victory", t: k, time: T, air };
-}
-function vuAnchor(vu) {
-  const sc = figScale() * (vu.u.boss && !grounded(vu.u) ? 1.12 : 1) * (grounded(vu.u) ? .62 : 1), x = toSX(vu.x), y = groundY() - vu.alt * BT.cam.z;
-  return { x, y, sc };
-}
-function drawVU(g, vu, dt) {
-  if (!vu.shown || vu.gone) return;
-  const u = vu.u, { x, y, sc } = vuAnchor(vu), f = u.def.fig, h = figTall(f) * sc;
-  // shadow on the ground
-  g.save(); g.globalAlpha = .25 * vu.alpha; g.fillStyle = "#000"; g.beginPath(); g.ellipse(x, groundY() + 2, 26 * sc * (f.bulk || 1), 6 * sc, 0, 0, Math.PI * 2); g.fill(); g.restore();
-  const auraK = Math.max(vu.aura, u.act && (u.act.ph === "charge" || (u.act.ph === "wind" && !u.act.c.basic) || u.act.ph === "clash") ? 1 : 0, u.status === "field" && BT.B.has(u, "KAIOKEN") ? .8 : 0, f.hs === "ssj" ? .45 : 0);
-  const auraCol = BT.B.has(u, "KAIOKEN") ? "#ff3a2a" : vu.auraCol;
-  if (u.status !== "out") drawAura(g, x, y, h * 1.05, auraCol, auraK * vu.alpha);
-  // afterimage when vanishing
-  if (vu.vanishT > 0) { vu.alpha = clamp(Math.abs(vu.vanishT - 220) / 220, 0, 1); }
-  else if (u.status !== "out") vu.alpha = Math.min(1, vu.alpha + dt / 200);
-  const pose = poseOf(vu);
-  g.save(); g.globalAlpha = vu.alpha; g.translate(x, y); g.scale(vu.face * sc, sc);
-  if (vu.flash > 0) { g.filter = `brightness(${1 + vu.flash / 120})`; }
-  vu.anchors = drawFigure(g, f, pose);
-  g.restore();
-  // the power gauge over the player's fighter while it winds up
-  if (u.team === "A" && u.act && u.act.ph === "wind" && !u.act.noPow && !BT.B.auto) {
-    const w = 46, bx = x - w / 2, by = y - h - 16;
-    g.fillStyle = "rgba(0,0,0,.55)"; g.fillRect(bx - 2, by - 2, w + 4, 8);
-    g.fillStyle = u.act.pow >= 1 ? "#ffd34d" : "#ff8a1a"; g.fillRect(bx, by, w * u.act.pow, 4);
-  }
-}
-// incoming attacks on the player's fighter: a ring that closes at the moment of impact (tap GUARD as it closes)
-function drawGuardRing(g) {
-  const B = BT.B; if (!B || B.auto || B.phase !== "act") return;
-  const inc = B.incoming(); if (!inc || UNGUARDABLE.has(inc.kind) && inc.kind !== "disc") return;
-  const vu = BT.vus.get(inc.to.uid); if (!vu || !vu.shown) return;
-  const left = inc.impactAt - B.t; if (left > GUARD_WIN + .5 || left < 0) return;
-  const { x, y, sc } = vuAnchor(vu), cy = y - 50 * sc, r0 = 34 * sc, r = r0 + left * 120 * sc;
-  const perfect = left <= PERFECT_WIN, ok = left <= GUARD_WIN;
-  g.save(); g.lineWidth = 3;
-  g.strokeStyle = inc.kind === "disc" ? "#ff5a5a" : perfect ? "#ffd34d" : ok ? "#7ad0ff" : "rgba(255,255,255,.6)";
-  g.beginPath(); g.arc(x, cy, r, 0, Math.PI * 2); g.stroke();
-  g.globalAlpha = .5; g.strokeStyle = "#ffffff"; g.setLineDash([4, 5]); g.beginPath(); g.arc(x, cy, r0, 0, Math.PI * 2); g.stroke();
-  g.restore();
-}
-// ---------- shots: ki blasts, beams, discs, energy balls ----------
-function handPos(vu, which = "handf") {
-  const { x, y, sc } = vuAnchor(vu), A = vu.anchors;
-  const p = A && (A.mouth || A[which] || A.hand) || [30, -60];
-  return [x + p[0] * sc * vu.face, y + p[1] * sc];
-}
-function chestPos(vu) { const { x, y, sc } = vuAnchor(vu), A = vu.anchors, p = A && A.chest || [0, -55]; return [x + p[0] * sc * vu.face, y + p[1] * sc]; }
+const frontOf = vu => { const u = vu.u, foe = BT.B.foeOf(u), fv = foe && BT.vus.get(foe.uid), p = vuPos(vu); if (!fv) return [p.x, p.y]; const q = vuPos(fv), d = Math.hypot(q.x - p.x, q.y - p.y) || 1; return [p.x + (q.x - p.x) / d * p.r, p.y + (q.y - p.y) / d * p.r]; };
 function addShot(s) { BT.shots.push({ t0: BT.clock, ...s }); }
 function drawShots(g) {
-  const B = BT.B;
+  const B = BT.B, z = zf();
   for (const s of BT.shots) {
     const from = BT.vus.get(s.from), to = BT.vus.get(s.to); if (!from || !to) { s.dead = 1; continue; }
-    const atk = B.atks.find(a => a.id === s.atk), col = s.col;
-    const p0 = handPos(from, s.kind === "bomb" || s.kind === "disc" ? "handf" : "handf"), p1 = chestPos(to);
+    const atk = B.atks.find(a => a.id === s.atk), col = s.col, E = shotEnds(from, to), { p0, p1, ux, uy } = E, nx = -uy, ny = ux;
     let k = atk ? clamp((B.t - atk.t0) / Math.max(.01, atk.impactAt - atk.t0), 0, 1) : 1;
-    if (atk && atk.vanished) s.over = 1;
     const age = BT.clock - s.t0;
     if (s.kind === "ki" || s.kind === "freeze") {
-      for (let i = 0; i < s.hits; i++) { const kk = clamp(k * 1.15 - i * .12, 0, 1); if (kk <= 0 || kk >= 1 && atk && atk.done) continue; const px = lerp(p0[0], p1[0], kk), py = lerp(p0[1], p1[1], kk) + Math.sin(i * 2) * 8 * BT.cam.z; glowBall(g, px, py, (s.kind === "freeze" ? 6 : 7 + s.pow * 4) * BT.cam.z, col); }
+      for (let i = 0; i < s.hits; i++) { const kk = clamp(k * 1.15 - i * .12, 0, 1); if (kk <= 0 || kk >= 1 && atk && atk.done) continue; const w = Math.sin(i * 2.3) * 7 * z; glowBall(g, lerp(p0[0], p1[0], kk) + nx * w, lerp(p0[1], p1[1], kk) + ny * w, (s.kind === "freeze" ? 4 : 4.5 + s.pow * 2.5) * z, col); }
     } else if (s.kind === "beam" || s.kind === "swap") {
       const clash = B.struggle && (B.struggle.A.id === s.atk || B.struggle.E.id === s.atk);
-      let end = k;
-      if (clash) { const aV = BT.vus.get(B.struggle.A.from.uid), eV = BT.vus.get(B.struggle.E.from.uid); const pa = handPos(aV), pe = handPos(eV); const cx = lerp(pa[0], pe[0], B.struggle.pos), cy = lerp(pa[1], pe[1], B.struggle.pos);
-        beamLine(g, p0[0], p0[1], cx, cy, (12 + s.pow * 6) * BT.cam.z, col); glowBall(g, cx, cy, (22 + Math.sin(BT.clock / 40) * 4) * BT.cam.z, "#ffffff"); s.clashed = 1; continue; }
-      if (atk && atk.done) end = 1;
-      const tail = atk && atk.done ? clamp((BT.clock - (s.doneAt || (s.doneAt = BT.clock))) / 300, 0, 1) : 0;
-      const ex = lerp(p0[0], p1[0], end), ey = lerp(p0[1], p1[1], end), sx = lerp(p0[0], p1[0], tail), sy = lerp(p0[1], p1[1], tail);
+      if (clash) {
+        const pa = frontOf(BT.vus.get(B.struggle.A.from.uid)), pe = frontOf(BT.vus.get(B.struggle.E.from.uid)), cx = lerp(pa[0], pe[0], B.struggle.pos), cy = lerp(pa[1], pe[1], B.struggle.pos);
+        beamLine(g, p0[0], p0[1], cx, cy, (7 + s.pow * 3) * z, col); glowBall(g, cx, cy, (12 + Math.sin(BT.clock / 40) * 2.5) * z, "#ffffff"); s.clashed = 1; continue;
+      }
+      const end = atk && !atk.done ? k : 1;
+      const tail = atk && !atk.done ? 0 : clamp((BT.clock - (s.doneAt || (s.doneAt = BT.clock))) / 300, 0, 1);
       if (tail >= 1) { s.dead = 1; continue; }
-      beamLine(g, sx, sy, ex, ey, (s.kind === "swap" ? 6 : 13 + s.pow * 7) * BT.cam.z * (1 - tail * .5), col);
-      glowBall(g, ex, ey, (14 + s.pow * 6) * BT.cam.z, col);
+      const ex = lerp(p0[0], p1[0], end), ey = lerp(p0[1], p1[1], end), sx = lerp(p0[0], p1[0], tail), sy = lerp(p0[1], p1[1], tail);
+      beamLine(g, sx, sy, ex, ey, (s.kind === "swap" ? 3.5 : 7 + s.pow * 4) * z * (1 - tail * .5), col);
+      glowBall(g, ex, ey, (8 + s.pow * 3) * z, col);
     } else if (s.kind === "finger") {
-      const tail = atk && atk.done ? clamp((BT.clock - (s.doneAt || (s.doneAt = BT.clock))) / 200, 0, 1) : 0;
+      const tail = atk && !atk.done ? 0 : clamp((BT.clock - (s.doneAt || (s.doneAt = BT.clock))) / 200, 0, 1);
       if (tail >= 1) { s.dead = 1; continue; }
       const ex = lerp(p0[0], p1[0], k), ey = lerp(p0[1], p1[1], k);
-      beamLine(g, p0[0], p0[1], ex, ey, 4 * BT.cam.z, col);
-      if (s.spiral) { g.save(); g.strokeStyle = col; g.lineWidth = 2; g.globalAlpha = .8; g.beginPath(); for (let t2 = 0; t2 <= 1; t2 += .02) { const px = lerp(p0[0], ex, t2), py = lerp(p0[1], ey, t2) + Math.sin(t2 * 40 + BT.clock / 30) * 7 * BT.cam.z; t2 ? g.lineTo(px, py) : g.moveTo(px, py); } g.stroke(); g.restore(); }
+      beamLine(g, p0[0], p0[1], ex, ey, 2.5 * z, col);
+      if (s.spiral) { g.save(); g.strokeStyle = col; g.lineWidth = 2; g.globalAlpha = .85; g.beginPath(); for (let t2 = 0; t2 <= 1; t2 += .02) { const w = Math.sin(t2 * 40 + BT.clock / 30) * 5 * z, px = lerp(p0[0], ex, t2) + nx * w, py = lerp(p0[1], ey, t2) + ny * w; t2 ? g.lineTo(px, py) : g.moveTo(px, py); } g.stroke(); g.restore(); }
     } else if (s.kind === "disc") {
-      for (let i = 0; i < s.hits; i++) { const kk = clamp(k - i * .15, 0, 1); const px = lerp(p0[0], p1[0], kk), py = lerp(p0[1], p1[1], kk) - Math.sin(kk * Math.PI) * 30 * BT.cam.z;
-        g.save(); g.translate(px, py); g.rotate(BT.clock / 40); g.globalCompositeOperation = "lighter"; g.fillStyle = col; g.globalAlpha = .9; g.beginPath(); g.ellipse(0, 0, 22 * BT.cam.z, 6 * BT.cam.z, 0, 0, 7); g.fill(); g.fillStyle = "#fff"; g.beginPath(); g.ellipse(0, 0, 14 * BT.cam.z, 3 * BT.cam.z, 0, 0, 7); g.fill(); g.restore(); }
+      for (let i = 0; i < s.hits; i++) { const kk = clamp(k - i * .15, 0, 1), w = Math.sin(kk * Math.PI) * 26 * z * (i % 2 ? -1 : 1), px = lerp(p0[0], p1[0], kk) + nx * w, py = lerp(p0[1], p1[1], kk) + ny * w;
+        g.save(); g.translate(px, py); g.rotate(BT.clock / 40); g.globalCompositeOperation = "lighter"; g.fillStyle = col; g.globalAlpha = .9; g.beginPath(); g.ellipse(0, 0, 12 * z, 12 * z, 0, 0, 7); g.fill(); g.fillStyle = "#fff"; g.beginPath(); g.ellipse(0, 0, 7 * z, 7 * z, 0, 0, 7); g.fill();
+        g.strokeStyle = "#fff"; g.lineWidth = 1.5; for (let q = 0; q < 3; q++) { g.beginPath(); g.arc(0, 0, 12 * z, q * 2.1, q * 2.1 + .7); g.stroke(); } g.restore(); }
     } else if (s.kind === "bomb") {
-      const r = (36 + s.pow * 20) * BT.cam.z, top = [handPos(from)[0], handPos(from)[1] - r * 1.1];
-      const px = lerp(top[0], p1[0], k), py = lerp(top[1], p1[1], k);
-      glowBall(g, px, py, r, col, shade(col, .6));
+      const rr = (18 + s.pow * 10) * z, top = [E.a.x, E.a.y - E.a.r - rr * .9];
+      glowBall(g, lerp(top[0], p1[0], k), lerp(top[1], p1[1], k), rr, col, shade(col, .6));
     }
-    if (atk && atk.done && s.kind !== "beam" && s.kind !== "finger") s.dead = 1;
+    if (atk && atk.done && s.kind !== "beam" && s.kind !== "swap" && s.kind !== "finger") s.dead = 1;
+    if (!atk && s.kind !== "beam" && s.kind !== "swap" && s.kind !== "finger") s.dead = 1;
     if (age > 9000) s.dead = 1;
   }
   BT.shots = BT.shots.filter(s => !s.dead);
 }
-// the energy gathering over the head while a bomb winds up
+// energy gathering while an attack winds up: a ball growing over the head for the big ones, a glow in front for beams
 function drawCharging(g) {
+  const z = zf();
   for (const vu of BT.vus.values()) {
-    const u = vu.u, a = u.act; if (!vu.shown || !a || a.ph !== "wind") continue;
-    const k = clamp(a.t / a.d, 0, 1), col = u.def.kiCol || "#7ad0ff";
-    if (a.c.kind === "bomb") { const p = handPos(vu); glowBall(g, p[0], p[1] - 40 * BT.cam.z * k, (8 + 40 * k) * BT.cam.z, col, shade(col, .6)); }
-    else if (a.c.kind === "beam" || a.c.kind === "finger") { const p = handPos(vu); glowBall(g, p[0], p[1], (3 + 9 * k) * BT.cam.z, col); }
-    else if (a.c.kind === "disc") { const p = handPos(vu); g.save(); g.translate(p[0], p[1] - 14 * BT.cam.z); g.fillStyle = col; g.globalAlpha = .9; g.beginPath(); g.ellipse(0, 0, 20 * BT.cam.z * k, 5 * BT.cam.z, 0, 0, 7); g.fill(); g.restore(); }
+    const u = vu.u, a = u.act; if (!vu.shown || !a || a.ph !== "wind" || u.status !== "field") continue;
+    const k = clamp(a.t / a.d, 0, 1), col = u.def.kiCol || "#7ad0ff", p = vuPos(vu);
+    if (a.c.kind === "bomb") { const rr = (4 + 24 * k) * z; glowBall(g, p.x, p.y - p.r - rr * .9, rr, col, shade(col, .6)); }
+    else if (a.c.kind === "beam" || a.c.kind === "finger" || a.c.kind === "swap") { const f = frontOf(vu); glowBall(g, f[0], f[1], (2 + 6 * k) * z, col); }
+    else if (a.c.kind === "disc") { g.save(); g.translate(p.x, p.y - p.r - 8 * z); g.rotate(BT.clock / 50); g.fillStyle = col; g.globalAlpha = .9; g.beginPath(); g.ellipse(0, 0, 12 * z * k + 1, 12 * z * k + 1, 0, 0, 7); g.fill(); g.restore(); }
   }
 }
 // ---------- particles and floating text ----------
+// sparks fly out flat across the map and slow down
 function sparks(x, y, col, n = 12, k = 1) {
-  for (let i = 0; i < n; i++) { const a = R() * Math.PI * 2, v = (60 + R() * 260) * k; BT.parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 40, t: 0, life: 300 + R() * 300, col, s: 2 + R() * 3 }); }
+  const z = zf();
+  for (let i = 0; i < n; i++) { const a = R() * Math.PI * 2, v = (50 + R() * 200) * k * z; BT.parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, t: 0, life: 260 + R() * 280, col, s: 2 + R() * 2.5 }); }
 }
 function ringAt(x, y, col, max = 80, dur = 360) { BT.rings.push({ x, y, col, max, dur, t0: BT.clock }); }
 function drawParts(g, dt) {
-  const s = dt / 1000;
-  for (const p of BT.parts) { p.t += dt; p.x += p.vx * s; p.y += p.vy * s; p.vy += 300 * s; g.globalAlpha = clamp(1 - p.t / p.life, 0, 1); g.fillStyle = p.col; g.fillRect(p.x, p.y, p.s, p.s); }
+  const s = dt / 1000, drag = Math.exp(-s * 3);
+  for (const p of BT.parts) { p.t += dt; p.x += p.vx * s; p.y += p.vy * s; p.vx *= drag; p.vy *= drag; g.globalAlpha = clamp(1 - p.t / p.life, 0, 1); g.fillStyle = p.col; g.fillRect(p.x, p.y, p.s, p.s); }
   g.globalAlpha = 1; BT.parts = BT.parts.filter(p => p.t < p.life);
-  for (const r of BT.rings) { const k = (BT.clock - r.t0) / r.dur; if (k >= 1) { r.dead = 1; continue; } g.strokeStyle = r.col; g.globalAlpha = 1 - k; g.lineWidth = 4 * (1 - k) + 1; g.beginPath(); g.arc(r.x, r.y, r.max * k * BT.cam.z, 0, Math.PI * 2); g.stroke(); }
+  const z = zf() * .62;
+  for (const r of BT.rings) { const k = (BT.clock - r.t0) / r.dur; if (k >= 1) { r.dead = 1; continue; } g.strokeStyle = r.col; g.globalAlpha = 1 - k; g.lineWidth = 4 * (1 - k) + 1; g.beginPath(); g.arc(r.x, r.y, r.max * k * z, 0, Math.PI * 2); g.stroke(); }
   g.globalAlpha = 1; BT.rings = BT.rings.filter(r => !r.dead);
 }
 function floatText(uid, s, cls) {
   const vu = BT.vus.get(uid); if (!vu) return;
-  const { x, y, sc } = vuAnchor(vu);
+  const { x, y, r } = vuPos(vu);
   const n = BT.floats.filter(f => BT.clock - f.t0 < 500 && f.uid === uid).length;
   const w = String(s).length * 7 + 20;
-  BT.floats.push({ uid, s: String(s), cls, x: clamp(x + (R() - .5) * 20, w, BT.W - (BT.mRightS || 0) - w), y: Math.max(BT.mTop + 20, y - figTall(vu.u.def.fig) * sc - 10 - n * 18), t0: BT.clock });
+  BT.floats.push({ uid, s: String(s), cls, w, dx: (R() - .5) * 16, dy: -r - 12 - n * 18, x, y, t0: BT.clock });
 }
 const FLOAT_C = { dmg: "#ffffff", crit: "#ffd34d", heal: "#5dfc9b", buff: "#7ad0ff", debuff: "#ff7a7a", txt: "#e8edf7" };
 function drawFloats(g) {
   for (const f of BT.floats) {
     const k = (BT.clock - f.t0) / 1100; if (k >= 1) { f.dead = 1; continue; }
     g.globalAlpha = k < .8 ? 1 : (1 - k) / .2;
-    const big = f.cls === "crit" || f.cls === "dmg";
-    g.font = `900 ${big ? 22 : 14}px "Russo One", Impact, sans-serif`; g.textAlign = "center";
-    g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.8)"; g.strokeText(f.s, f.x, f.y - k * 34); g.fillStyle = FLOAT_C[f.cls] || "#fff"; g.fillText(f.s, f.x, f.y - k * 34);
+    const big = f.cls === "crit" || f.cls === "dmg", vu = BT.vus.get(f.uid);
+    // the text rides along with its fighter's head (and stays on screen)
+    if (vu && vu.shown && !vu.gone) { const p = vuPos(vu); f.x = p.x; f.y = p.y; }
+    const fx = clamp(f.x + f.dx, f.w, BT.W - (BT.mRightS || 0) - f.w), fy = Math.max(BT.mTop + 20, f.y + f.dy);
+    g.font = `900 ${big ? 20 : 13}px "Russo One", Impact, sans-serif`; g.textAlign = "center";
+    g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.8)"; g.strokeText(f.s, fx, fy - k * 30); g.fillStyle = FLOAT_C[f.cls] || "#fff"; g.fillText(f.s, fx, fy - k * 30);
   }
   g.globalAlpha = 1; BT.floats = BT.floats.filter(f => !f.dead);
 }
-// weather of the place: dust, embers, lightning on a dying Namek
+// weather over the map: embers in HFIL, dust in the wasteland, lightning on a dying Namek
 function weather(g) {
-  const E2 = BT.env, t = BT.clock / 1000, W = BT.W, gy = groundY();
-  if (E2.fx === "embers") { g.fillStyle = "#ffb04a"; for (let i = 0; i < 26; i++) { const x = ((i * 97 + t * 30 * (1 + i % 3)) % W), y = gy - ((i * 53 + t * 40) % gy); g.globalAlpha = .5; g.fillRect(x, y, 2, 2); } }
-  if (E2.fx === "lightning" && Math.sin(t * 1.3) > .985) { g.fillStyle = "rgba(255,240,220,.25)"; g.fillRect(0, 0, W, BT.H); }
-  if (E2.fx === "dust") { g.fillStyle = "#f2e2c8"; for (let i = 0; i < 14; i++) { const x = (i * 131 + t * 60) % W, y = gy - 10 - (i * 37) % 80; g.globalAlpha = .25; g.beginPath(); g.arc(x, y, 3, 0, 7); g.fill(); } }
-  g.globalAlpha = 1;
+  const E2 = BT.env, t = BT.clock / 1000, [mx, my, mw, mh] = mapRect();
+  g.save(); g.beginPath(); g.rect(mx, my, mw, mh); g.clip(); if (MP.view) { const [vx, vy, vw, vh] = MP.view; g.beginPath(); g.rect(vx - 6, vy - 2, vw + 12, vh + 4); g.clip(); }
+  if (E2.fx === "embers") { g.fillStyle = "#ffb04a"; for (let i = 0; i < 26; i++) { const x = mx + (i * 97 + t * 14 * (1 + i % 3)) % mw, y = my + mh - (i * 53 + t * 26) % mh; g.globalAlpha = .55; g.fillRect(x, y, 2, 2); } }
+  if (E2.fx === "dust") { g.fillStyle = "#f2e2c8"; for (let i = 0; i < 16; i++) { const x = mx + (i * 131 + t * 40) % mw, y = my + (i * 71) % mh; g.globalAlpha = .22; g.beginPath(); g.arc(x, y, 3, 0, 7); g.fill(); } }
+  if (E2.fx === "clouds" || E2.fx === "gulls") { g.fillStyle = "#ffffff"; for (let i = 0; i < 4; i++) { const x = mx + (i * 263 + t * 12) % (mw + 200) - 100, y = my + (i * 97) % mh; g.globalAlpha = .12; g.beginPath(); g.ellipse(x, y, 70, 30, 0, 0, 7); g.fill(); } }
+  if (E2.fx === "lightning" && Math.sin(t * 1.3) > .985) { g.globalAlpha = 1; g.fillStyle = "rgba(255,240,220,.25)"; g.fillRect(mx, my, mw, mh); }
+  g.restore();
 }
 
 // ---------- frame ----------
@@ -3558,14 +3796,16 @@ function render(dt) {
   const kk = 1 - Math.exp(-dt / 1000 * 5);
   BT.mBotS = BT.mBotS == null ? BT.mBot : BT.mBotS + (BT.mBot - BT.mBotS) * kk;
   BT.mRightS = (BT.mRightS || 0) + ((BT.mRight || 0) - (BT.mRightS || 0)) * kk;
-  fitCam(dt / 1000);
+  mapFit(dt / 1000);
   BT.shake = Math.max(0, BT.shake - dt * .03);
-  const sx = (R() - .5) * BT.shake, sy = (R() - .5) * BT.shake;
+  const sx = (R() - .5) * BT.shake * .6, sy = (R() - .5) * BT.shake * .6;
   g.save(); g.translate(sx, sy);
-  drawSky(g);
+  drawMap(g);
   weather(g);
-  const list = [...BT.vus.values()].sort((a, b) => (a.u.status === "out") - (b.u.status === "out"));
-  for (const vu of list) drawVU(g, vu, dt);
+  drawRange(g);
+  // fallen fighters underneath, then the one being hit, then the attacker on top
+  const list = [...BT.vus.values()].sort((a, b) => (b.u.status === "out") - (a.u.status === "out") || (b.hitT > 0) - (a.hitT > 0));
+  for (const vu of list) drawToken(g, vu, dt);
   drawCharging(g);
   drawShots(g);
   drawParts(g, dt);
@@ -3631,7 +3871,7 @@ function sfx(kind) {
 }
 
 // =====================================================================
-//  BATTLE DIRECTOR — runs the engine, turns its events into animation, and owns the HUD: both fighters' HP, ki
+//  BATTLE DIRECTOR — runs the engine, turns its events into animation on the battle map, and owns the HUD: both fighters' HP, ki
 //  and guard gauges, the turn planner (pick up to three commands, then GO), and the action buttons: hold POWER to
 //  charge an attack, tap GUARD as the ring closes, VANISH to dodge, and mash POWER in a beam struggle.
 // =====================================================================
@@ -3649,12 +3889,12 @@ function banner(name, sub, cls, ms) {
   if (ms) BT.banT = setTimeout(() => { if (b.isConnected) b.className = "bban"; }, ms / Math.max(1, BT.speed * .8));
 }
 function hideBanner() { const b = $("#bBan"); if (b) b.className = "bban"; }
-// a technique's name across the screen, with the fighter's portrait
+// a technique's name across the screen, with the fighter's head
 function cutIn(u, name) {
   const w = $(".bwrap"); if (!w) return;
   const col = u.def.kiCol || "#7ad0ff", el = document.createElement("div");
   el.className = "cutin" + (u.team === "E" ? " foe" : ""); el.style.setProperty("--ec", col);
-  el.innerHTML = `<div class="band"></div><div class="lines"></div><img src="${artOf(u).full}" alt=""><div class="sk"><small>${esc(u.n)}</small><b>${esc(name)}</b></div>`;
+  el.innerHTML = `<div class="band"></div><div class="lines"></div><img class="hd" src="${artOf(u).head}" alt=""><div class="sk"><small>${esc(u.n)}</small><b>${esc(name)}</b></div>`;
   w.appendChild(el);
   setTimeout(() => el.remove(), 1000 / Math.max(1, BT.speed * .7));
 }
@@ -3663,7 +3903,8 @@ function cutIn(u, name) {
 function onEv(e) {
   const B = BT.B, vu = e.u ? VU(e.u) : null;
   if (e.k === "enter") {
-    const v = vu; v.shown = true; v.gone = false; v.x = v.u.x - v.face * 420; v.alt = 260; v.alpha = 1;
+    // a fighter flies in from its own end of the map
+    const v = vu; v.shown = true; v.gone = false; v.x = v.u.x + (v.team === "A" ? -520 : 520); v.y = v.u.y; v.alpha = 1; v.trail = [];
     BT.hudDirty = true;
     if (BT.live) { floatText(e.u, v.u.n.toUpperCase(), "buff"); sfx("vanish"); }
   } else if (e.k === "turn") { BT.hudDirty = true; BT.planOpen = false; }
@@ -3679,29 +3920,34 @@ function onEv(e) {
     sfx(e.kind === "ki" || e.kind === "freeze" ? "ki" : e.kind === "disc" ? "zap" : "beam");
   } else if (e.k === "hit") {
     const tv = VU(e.u); if (!tv) return;
-    const p = chestPos(tv);
-    if (e.resp === "perfect") { tv.guardT = 320; ringAt(p[0], p[1], "#ffd34d", 90); sparks(p[0], p[1], "#ffe08a", 14); sfx("perfect"); }
-    else if (e.resp === "guard") { tv.guardT = 320; ringAt(p[0], p[1], "#7ad0ff", 70); sparks(p[0], p[1], "#bfe8ff", 10); sfx("guard"); BT.shake = Math.max(BT.shake, 4); }
-    else { tv.hitT = 380; tv.flash = 120; sparks(p[0], p[1], e.kind === "melee" ? "#ffffff" : VU(e.from).u.def.kiCol || "#ffd34d", e.heavy ? 26 : 14, e.heavy ? 1.6 : 1); if (e.heavy || e.kind === "bomb") { ringAt(p[0], p[1], "#ffffff", 140, 500); BT.shake = Math.max(BT.shake, e.kind === "bomb" ? 18 : 10); }
+    const p = vuPos(tv), fv = VU(e.from), q = fv ? vuPos(fv) : p, d = Math.hypot(q.x - p.x, q.y - p.y) || 1;
+    // the impact lands on the side of the head facing the blow
+    const ix = p.x + (q.x - p.x) / d * p.r * .8, iy = p.y + (q.y - p.y) / d * p.r * .8;
+    if (e.resp === "perfect") { tv.guardT = 320; tv.perfect = true; ringAt(ix, iy, "#ffd34d", 90); sparks(ix, iy, "#ffe08a", 14); sfx("perfect"); }
+    else if (e.resp === "guard") { tv.guardT = 320; tv.perfect = false; ringAt(ix, iy, "#7ad0ff", 70); sparks(ix, iy, "#bfe8ff", 10); sfx("guard"); BT.shake = Math.max(BT.shake, 4); }
+    else { tv.hitT = 380; tv.flash = 120; sparks(ix, iy, e.kind === "melee" ? "#ffffff" : VU(e.from).u.def.kiCol || "#ffd34d", e.heavy ? 26 : 14, e.heavy ? 1.6 : 1); if (e.heavy || e.kind === "bomb") { ringAt(p.x, p.y, "#ffffff", 140, 500); BT.shake = Math.max(BT.shake, e.kind === "bomb" ? 18 : 10); }
       sfx(e.crit ? "crit" : e.kind === "melee" ? "punch" : e.kind === "bomb" ? "boom" : "hit"); BT.shake = Math.max(BT.shake, 5); }
     if (e.dmg > 0) floatText(e.u, fmtFull(e.dmg), e.crit ? "crit" : "dmg");
     BT.hudDirty = true;
-  } else if (e.k === "vanish") { vu.vanishT = 440; const p = chestPos(vu); sparks(p[0], p[1], "#ffffff", 8, .6); sfx("vanish"); }
+  } else if (e.k === "vanish") { vu.vanishT = 440; const p = vuPos(vu); sparks(p.x, p.y, "#ffffff", 8, .6); sfx("vanish"); }
   else if (e.k === "ko") { banner("KO", vu.u.n, vu.team === "A" ? "ds" : "ls", 1100); sfx("ko"); BT.shake = 12; BT.hudDirty = true; }
   else if (e.k === "transform") {
     BT.flash = 700; BT.flashCol = "#ffffff"; vu.auraCol = vu.u.def.aura || vu.auraCol; vu.aura = 1;
     banner(vu.u.n, `${ENEMY[e.from] ? ENEMY[e.from].n : "It"} transforms!`, "ds", 2000); sfx("transform"); BT.shake = 16; BT.hudDirty = true;
-    const p = chestPos(vu); ringAt(p[0], p[1], vu.auraCol, 220, 800);
+    const p = vuPos(vu); ringAt(p.x, p.y, vu.auraCol, 220, 800);
   } else if (e.k === "zenkai") { BT.flash = 300; BT.flashCol = "#ffd34d"; vu.aura = 1; sfx("transform"); }
-  else if (e.k === "clash") { banner("BEAM STRUGGLE", BT.B.auto ? "" : "Mash POWER!", "ls", 1600); sfx("beam"); BT.shake = 6; BT.hudDirty = true; }
+  else if (e.k === "clash") {
+    // both beams meet between the fighters
+    const S2 = BT.B.struggle; if (S2) for (const a of [S2.A, S2.E]) addShot({ atk: a.id, from: a.from.uid, to: a.to.uid, kind: "beam", hits: 1, pow: a.pow, col: a.from.def.kiCol || "#7ad0ff" });
+    banner("BEAM STRUGGLE", BT.B.auto ? "" : "Mash POWER!", "ls", 1600); sfx("beam"); BT.shake = 6; BT.hudDirty = true; }
   else if (e.k === "clashPos") { BT.shake = Math.max(BT.shake, 3); }
   else if (e.k === "clashEnd") { BT.shake = 14; sfx("boom"); BT.hudDirty = true; }
   else if (e.k === "heal") { floatText(e.u, "+" + fmtFull(e.n), "heal"); sfx("heal"); BT.hudDirty = true; }
   else if (e.k === "txt") floatText(e.u, e.s, e.c);
   else if (e.k === "stun") { if (e.s === "BLIND") { BT.flash = 420; BT.flashCol = "#ffffff"; } }
-  else if (e.k === "guardBreak") { const p = chestPos(vu); sparks(p[0], p[1], "#7ad0ff", 20, 1.4); sfx("crit"); }
+  else if (e.k === "guardBreak") { const p = vuPos(vu); sparks(p.x, p.y, "#7ad0ff", 20, 1.4); sfx("crit"); }
   else if (e.k === "swap") { BT.flash = 500; BT.flashCol = "#b07bff"; sfx("warp"); BT.hudDirty = true; }
-  else if (e.k === "guardUp") { vu.guardT = Math.max(vu.guardT, 240); }
+  else if (e.k === "guardUp") { vu.guardT = Math.max(vu.guardT, 240); vu.perfect = false; }
   else if (e.k === "aura") { vu.aura = 1; }
   else if (e.k === "over") { if (BT.onOver) BT.onOver(); }
 }
@@ -3723,22 +3969,30 @@ function stepBattle(dt) {
   if (BT.hudDirty || (BT.hudT = (BT.hudT || 0) + dt) > 90) { BT.hudT = 0; updHUD(); }
 }
 function syncVUs(dt) {
-  const s = dt / 1000;
+  const s = dt / 1000, B = BT.B;
   for (const vu of BT.vus.values()) {
     const u = vu.u;
-    if (u.status === "bench" && vu.shown) { vu.alt += 900 * s; vu.x -= vu.face * 600 * s; if (vu.alt > 600) { vu.shown = false; } continue; }
+    // switched out: it flies off its own end of the map
+    if (u.status === "bench" && vu.shown) { vu.x += (vu.team === "A" ? -1 : 1) * 1500 * s; vu.alpha = Math.max(0, vu.alpha - s * 2.5); if (vu.alpha <= 0) vu.shown = false; continue; }
     if (!vu.shown) continue;
-    // a knocked-out fighter falls, lies there a moment, then fades away
+    // a knocked-out fighter drops to the ground, lies there a moment, then fades away
     if (u.status === "out") { vu.koT = (vu.koT || 0) + dt; if (vu.koT > 1600) { vu.alpha = Math.max(0, 1 - (vu.koT - 1600) / 600); if (vu.koT > 2200) vu.gone = true; } }
-    // fighters hover; giants and a fallen fighter stand on the ground
-    const baseAlt = u.status === "out" ? 0 : grounded(u) ? 0 : 70 + Math.sin(BT.clock / 500 + vu.ph) * 8;
-    vu.alt += (baseAlt - vu.alt) * (1 - Math.exp(-s * (u.status === "out" ? 3 : 6)));
-    let tx = u.x;
-    // a melee strike lunges in so the fists connect
-    if (u.act && u.act.c.kind === "melee" && (u.act.ph === "rec" || u.act.ph === "wind")) tx += Math.sign(BT.B.foeOf(u) ? BT.B.foeOf(u).x - u.x : vu.face) * 55;
-    vu.x += (tx - vu.x) * (1 - Math.exp(-s * 14));
-    const foe = u.status === "field" && BT.B.foeOf(u); if (foe) vu.face = Math.sign(foe.x - u.x) || vu.face;
-    for (const k of ["hitT", "guardT", "vanishT", "flash"]) if (vu[k] > 0) vu[k] = Math.max(0, vu[k] - dt);
+    // heads float over their shadows; giants and the fallen are on the ground
+    const hov = u.status === "out" || grounded(u) ? 1 : 6 + Math.sin(BT.clock / 450 + vu.ph) * 2.5;
+    vu.hov += (hov - vu.hov) * (1 - Math.exp(-s * 6));
+    let tx = u.x, ty = u.y;
+    const foe = u.status === "field" && B.foeOf(u);
+    // a melee strike lunges in so the heads collide, once for every blow of a combo
+    if (foe && u.act && u.act.c.kind === "melee" && (u.act.ph === "rec" || u.act.ph === "wind")) {
+      const a = u.act, dx = foe.x - u.x, dy = foe.y - u.y, d = Math.hypot(dx, dy) || 1, hits = a.c.hits || 1;
+      const lunge = a.ph === "wind" ? 10 * clamp(a.t / a.d, 0, 1) : 30 * Math.sin(Math.PI * clamp((a.t % (a.d / hits)) / (a.d / hits), 0, 1));
+      tx += dx / d * lunge; ty += dy / d * lunge;
+    }
+    const k = 1 - Math.exp(-s * 14);
+    vu.x += (tx - vu.x) * k; vu.y += (ty - vu.y) * k;
+    // the head looks toward its foe on screen
+    if (foe) { const a = toScr(u.x, u.y), b = toScr(foe.x, foe.y); if (Math.abs(b[0] - a[0]) > 3) vu.face = Math.sign(b[0] - a[0]); }
+    for (const k2 of ["hitT", "guardT", "vanishT", "flash"]) if (vu[k2] > 0) vu[k2] = Math.max(0, vu[k2] - dt);
     if (vu.aura > 0) vu.aura = Math.max(0, vu.aura - s * .8);
   }
 }
@@ -3903,7 +4157,8 @@ function measureHUD() {
   BT.mTop = hud ? hud.getBoundingClientRect().bottom - r.top + 6 : 96;
   const land = r.width / r.height > 1.3, planning = ctl && ctl.classList.contains("planning");
   BT.mRight = land && planning ? ctl.offsetWidth : 0;
-  BT.mBot = land && planning ? 40 : ctl && ctl.offsetHeight ? Math.min(r.height * .55, ctl.offsetHeight + 6) : 150;
+  // in landscape the action buttons sit at the screen's edges, so only the queue line takes room under the map
+  BT.mBot = land ? (planning ? 40 : 62) : ctl && ctl.offsetHeight ? Math.min(r.height * .55, ctl.offsetHeight + 6) : 150;
 }
 function sizeCanvas() {
   const cv = BT.cv; if (!cv) return;
@@ -3921,7 +4176,8 @@ function startBattle(cfg) {
   const B = makeBattle({ allies: cfg.allies, foes: cfg.foes, auto: S.settings.auto || DEMO.on, aiStyle: S.settings.ai });
   Object.assign(BT, { B, cfg, quit: false, paused: !!(DEMO.on && DEMO.paused), speed: DEMO.on ? (DEMO.mode === "watch" ? 1.5 : 2) : SPEEDS[clamp((S.settings.speed || 1) - 1, 0, 2)], clock: 0, last: 0,
     parts: [], floats: [], shots: [], rings: [], waits: [], tweens: [], shake: 0, flash: 0, live: false, acc: 0, hudDirty: true, banT: 0, onOver: null, step: stepBattle, planOpen: false, pick: [], planT: null,
-    cam: { x: 0, z: 1 } });
+    mBotS: null, mRightS: 0 });
+  MP.px = 0; MP.py = 0;
   BT.vus = new Map();
   if (DEMO.on) B.pilot = demoPilot;
   BT.env = buildEnv(cfg.env || "wasteland");
@@ -3983,7 +4239,7 @@ async function runBattle() {
   const B = BT.B;
   B.start();
   for (const e of B.ev) onEv(e); B.ev.length = 0;
-  fitCam(0, true);
+  mapFit(0, true);
   updHUD();
   const boss = B.side.E.units.find(u => u.boss);
   banner(BT.cfg.title || "Battle", boss ? `${boss.n} is here` : "Battle start", "ds", 1400);

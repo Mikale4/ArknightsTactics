@@ -1,5 +1,5 @@
 // =====================================================================
-//  BATTLE DIRECTOR — runs the engine, turns its events into animation, and owns the HUD: both fighters' HP, ki
+//  BATTLE DIRECTOR — runs the engine, turns its events into animation on the battle map, and owns the HUD: both fighters' HP, ki
 //  and guard gauges, the turn planner (pick up to three commands, then GO), and the action buttons: hold POWER to
 //  charge an attack, tap GUARD as the ring closes, VANISH to dodge, and mash POWER in a beam struggle.
 // =====================================================================
@@ -17,12 +17,12 @@ function banner(name, sub, cls, ms) {
   if (ms) BT.banT = setTimeout(() => { if (b.isConnected) b.className = "bban"; }, ms / Math.max(1, BT.speed * .8));
 }
 function hideBanner() { const b = $("#bBan"); if (b) b.className = "bban"; }
-// a technique's name across the screen, with the fighter's portrait
+// a technique's name across the screen, with the fighter's head
 function cutIn(u, name) {
   const w = $(".bwrap"); if (!w) return;
   const col = u.def.kiCol || "#7ad0ff", el = document.createElement("div");
   el.className = "cutin" + (u.team === "E" ? " foe" : ""); el.style.setProperty("--ec", col);
-  el.innerHTML = `<div class="band"></div><div class="lines"></div><img src="${artOf(u).full}" alt=""><div class="sk"><small>${esc(u.n)}</small><b>${esc(name)}</b></div>`;
+  el.innerHTML = `<div class="band"></div><div class="lines"></div><img class="hd" src="${artOf(u).head}" alt=""><div class="sk"><small>${esc(u.n)}</small><b>${esc(name)}</b></div>`;
   w.appendChild(el);
   setTimeout(() => el.remove(), 1000 / Math.max(1, BT.speed * .7));
 }
@@ -31,7 +31,8 @@ function cutIn(u, name) {
 function onEv(e) {
   const B = BT.B, vu = e.u ? VU(e.u) : null;
   if (e.k === "enter") {
-    const v = vu; v.shown = true; v.gone = false; v.x = v.u.x - v.face * 420; v.alt = 260; v.alpha = 1;
+    // a fighter flies in from its own end of the map
+    const v = vu; v.shown = true; v.gone = false; v.x = v.u.x + (v.team === "A" ? -520 : 520); v.y = v.u.y; v.alpha = 1; v.trail = [];
     BT.hudDirty = true;
     if (BT.live) { floatText(e.u, v.u.n.toUpperCase(), "buff"); sfx("vanish"); }
   } else if (e.k === "turn") { BT.hudDirty = true; BT.planOpen = false; }
@@ -47,29 +48,34 @@ function onEv(e) {
     sfx(e.kind === "ki" || e.kind === "freeze" ? "ki" : e.kind === "disc" ? "zap" : "beam");
   } else if (e.k === "hit") {
     const tv = VU(e.u); if (!tv) return;
-    const p = chestPos(tv);
-    if (e.resp === "perfect") { tv.guardT = 320; ringAt(p[0], p[1], "#ffd34d", 90); sparks(p[0], p[1], "#ffe08a", 14); sfx("perfect"); }
-    else if (e.resp === "guard") { tv.guardT = 320; ringAt(p[0], p[1], "#7ad0ff", 70); sparks(p[0], p[1], "#bfe8ff", 10); sfx("guard"); BT.shake = Math.max(BT.shake, 4); }
-    else { tv.hitT = 380; tv.flash = 120; sparks(p[0], p[1], e.kind === "melee" ? "#ffffff" : VU(e.from).u.def.kiCol || "#ffd34d", e.heavy ? 26 : 14, e.heavy ? 1.6 : 1); if (e.heavy || e.kind === "bomb") { ringAt(p[0], p[1], "#ffffff", 140, 500); BT.shake = Math.max(BT.shake, e.kind === "bomb" ? 18 : 10); }
+    const p = vuPos(tv), fv = VU(e.from), q = fv ? vuPos(fv) : p, d = Math.hypot(q.x - p.x, q.y - p.y) || 1;
+    // the impact lands on the side of the head facing the blow
+    const ix = p.x + (q.x - p.x) / d * p.r * .8, iy = p.y + (q.y - p.y) / d * p.r * .8;
+    if (e.resp === "perfect") { tv.guardT = 320; tv.perfect = true; ringAt(ix, iy, "#ffd34d", 90); sparks(ix, iy, "#ffe08a", 14); sfx("perfect"); }
+    else if (e.resp === "guard") { tv.guardT = 320; tv.perfect = false; ringAt(ix, iy, "#7ad0ff", 70); sparks(ix, iy, "#bfe8ff", 10); sfx("guard"); BT.shake = Math.max(BT.shake, 4); }
+    else { tv.hitT = 380; tv.flash = 120; sparks(ix, iy, e.kind === "melee" ? "#ffffff" : VU(e.from).u.def.kiCol || "#ffd34d", e.heavy ? 26 : 14, e.heavy ? 1.6 : 1); if (e.heavy || e.kind === "bomb") { ringAt(p.x, p.y, "#ffffff", 140, 500); BT.shake = Math.max(BT.shake, e.kind === "bomb" ? 18 : 10); }
       sfx(e.crit ? "crit" : e.kind === "melee" ? "punch" : e.kind === "bomb" ? "boom" : "hit"); BT.shake = Math.max(BT.shake, 5); }
     if (e.dmg > 0) floatText(e.u, fmtFull(e.dmg), e.crit ? "crit" : "dmg");
     BT.hudDirty = true;
-  } else if (e.k === "vanish") { vu.vanishT = 440; const p = chestPos(vu); sparks(p[0], p[1], "#ffffff", 8, .6); sfx("vanish"); }
+  } else if (e.k === "vanish") { vu.vanishT = 440; const p = vuPos(vu); sparks(p.x, p.y, "#ffffff", 8, .6); sfx("vanish"); }
   else if (e.k === "ko") { banner("KO", vu.u.n, vu.team === "A" ? "ds" : "ls", 1100); sfx("ko"); BT.shake = 12; BT.hudDirty = true; }
   else if (e.k === "transform") {
     BT.flash = 700; BT.flashCol = "#ffffff"; vu.auraCol = vu.u.def.aura || vu.auraCol; vu.aura = 1;
     banner(vu.u.n, `${ENEMY[e.from] ? ENEMY[e.from].n : "It"} transforms!`, "ds", 2000); sfx("transform"); BT.shake = 16; BT.hudDirty = true;
-    const p = chestPos(vu); ringAt(p[0], p[1], vu.auraCol, 220, 800);
+    const p = vuPos(vu); ringAt(p.x, p.y, vu.auraCol, 220, 800);
   } else if (e.k === "zenkai") { BT.flash = 300; BT.flashCol = "#ffd34d"; vu.aura = 1; sfx("transform"); }
-  else if (e.k === "clash") { banner("BEAM STRUGGLE", BT.B.auto ? "" : "Mash POWER!", "ls", 1600); sfx("beam"); BT.shake = 6; BT.hudDirty = true; }
+  else if (e.k === "clash") {
+    // both beams meet between the fighters
+    const S2 = BT.B.struggle; if (S2) for (const a of [S2.A, S2.E]) addShot({ atk: a.id, from: a.from.uid, to: a.to.uid, kind: "beam", hits: 1, pow: a.pow, col: a.from.def.kiCol || "#7ad0ff" });
+    banner("BEAM STRUGGLE", BT.B.auto ? "" : "Mash POWER!", "ls", 1600); sfx("beam"); BT.shake = 6; BT.hudDirty = true; }
   else if (e.k === "clashPos") { BT.shake = Math.max(BT.shake, 3); }
   else if (e.k === "clashEnd") { BT.shake = 14; sfx("boom"); BT.hudDirty = true; }
   else if (e.k === "heal") { floatText(e.u, "+" + fmtFull(e.n), "heal"); sfx("heal"); BT.hudDirty = true; }
   else if (e.k === "txt") floatText(e.u, e.s, e.c);
   else if (e.k === "stun") { if (e.s === "BLIND") { BT.flash = 420; BT.flashCol = "#ffffff"; } }
-  else if (e.k === "guardBreak") { const p = chestPos(vu); sparks(p[0], p[1], "#7ad0ff", 20, 1.4); sfx("crit"); }
+  else if (e.k === "guardBreak") { const p = vuPos(vu); sparks(p.x, p.y, "#7ad0ff", 20, 1.4); sfx("crit"); }
   else if (e.k === "swap") { BT.flash = 500; BT.flashCol = "#b07bff"; sfx("warp"); BT.hudDirty = true; }
-  else if (e.k === "guardUp") { vu.guardT = Math.max(vu.guardT, 240); }
+  else if (e.k === "guardUp") { vu.guardT = Math.max(vu.guardT, 240); vu.perfect = false; }
   else if (e.k === "aura") { vu.aura = 1; }
   else if (e.k === "over") { if (BT.onOver) BT.onOver(); }
 }
@@ -91,22 +97,30 @@ function stepBattle(dt) {
   if (BT.hudDirty || (BT.hudT = (BT.hudT || 0) + dt) > 90) { BT.hudT = 0; updHUD(); }
 }
 function syncVUs(dt) {
-  const s = dt / 1000;
+  const s = dt / 1000, B = BT.B;
   for (const vu of BT.vus.values()) {
     const u = vu.u;
-    if (u.status === "bench" && vu.shown) { vu.alt += 900 * s; vu.x -= vu.face * 600 * s; if (vu.alt > 600) { vu.shown = false; } continue; }
+    // switched out: it flies off its own end of the map
+    if (u.status === "bench" && vu.shown) { vu.x += (vu.team === "A" ? -1 : 1) * 1500 * s; vu.alpha = Math.max(0, vu.alpha - s * 2.5); if (vu.alpha <= 0) vu.shown = false; continue; }
     if (!vu.shown) continue;
-    // a knocked-out fighter falls, lies there a moment, then fades away
+    // a knocked-out fighter drops to the ground, lies there a moment, then fades away
     if (u.status === "out") { vu.koT = (vu.koT || 0) + dt; if (vu.koT > 1600) { vu.alpha = Math.max(0, 1 - (vu.koT - 1600) / 600); if (vu.koT > 2200) vu.gone = true; } }
-    // fighters hover; giants and a fallen fighter stand on the ground
-    const baseAlt = u.status === "out" ? 0 : grounded(u) ? 0 : 70 + Math.sin(BT.clock / 500 + vu.ph) * 8;
-    vu.alt += (baseAlt - vu.alt) * (1 - Math.exp(-s * (u.status === "out" ? 3 : 6)));
-    let tx = u.x;
-    // a melee strike lunges in so the fists connect
-    if (u.act && u.act.c.kind === "melee" && (u.act.ph === "rec" || u.act.ph === "wind")) tx += Math.sign(BT.B.foeOf(u) ? BT.B.foeOf(u).x - u.x : vu.face) * 55;
-    vu.x += (tx - vu.x) * (1 - Math.exp(-s * 14));
-    const foe = u.status === "field" && BT.B.foeOf(u); if (foe) vu.face = Math.sign(foe.x - u.x) || vu.face;
-    for (const k of ["hitT", "guardT", "vanishT", "flash"]) if (vu[k] > 0) vu[k] = Math.max(0, vu[k] - dt);
+    // heads float over their shadows; giants and the fallen are on the ground
+    const hov = u.status === "out" || grounded(u) ? 1 : 6 + Math.sin(BT.clock / 450 + vu.ph) * 2.5;
+    vu.hov += (hov - vu.hov) * (1 - Math.exp(-s * 6));
+    let tx = u.x, ty = u.y;
+    const foe = u.status === "field" && B.foeOf(u);
+    // a melee strike lunges in so the heads collide, once for every blow of a combo
+    if (foe && u.act && u.act.c.kind === "melee" && (u.act.ph === "rec" || u.act.ph === "wind")) {
+      const a = u.act, dx = foe.x - u.x, dy = foe.y - u.y, d = Math.hypot(dx, dy) || 1, hits = a.c.hits || 1;
+      const lunge = a.ph === "wind" ? 10 * clamp(a.t / a.d, 0, 1) : 30 * Math.sin(Math.PI * clamp((a.t % (a.d / hits)) / (a.d / hits), 0, 1));
+      tx += dx / d * lunge; ty += dy / d * lunge;
+    }
+    const k = 1 - Math.exp(-s * 14);
+    vu.x += (tx - vu.x) * k; vu.y += (ty - vu.y) * k;
+    // the head looks toward its foe on screen
+    if (foe) { const a = toScr(u.x, u.y), b = toScr(foe.x, foe.y); if (Math.abs(b[0] - a[0]) > 3) vu.face = Math.sign(b[0] - a[0]); }
+    for (const k2 of ["hitT", "guardT", "vanishT", "flash"]) if (vu[k2] > 0) vu[k2] = Math.max(0, vu[k2] - dt);
     if (vu.aura > 0) vu.aura = Math.max(0, vu.aura - s * .8);
   }
 }
@@ -271,7 +285,8 @@ function measureHUD() {
   BT.mTop = hud ? hud.getBoundingClientRect().bottom - r.top + 6 : 96;
   const land = r.width / r.height > 1.3, planning = ctl && ctl.classList.contains("planning");
   BT.mRight = land && planning ? ctl.offsetWidth : 0;
-  BT.mBot = land && planning ? 40 : ctl && ctl.offsetHeight ? Math.min(r.height * .55, ctl.offsetHeight + 6) : 150;
+  // in landscape the action buttons sit at the screen's edges, so only the queue line takes room under the map
+  BT.mBot = land ? (planning ? 40 : 62) : ctl && ctl.offsetHeight ? Math.min(r.height * .55, ctl.offsetHeight + 6) : 150;
 }
 function sizeCanvas() {
   const cv = BT.cv; if (!cv) return;
@@ -289,7 +304,8 @@ function startBattle(cfg) {
   const B = makeBattle({ allies: cfg.allies, foes: cfg.foes, auto: S.settings.auto || DEMO.on, aiStyle: S.settings.ai });
   Object.assign(BT, { B, cfg, quit: false, paused: !!(DEMO.on && DEMO.paused), speed: DEMO.on ? (DEMO.mode === "watch" ? 1.5 : 2) : SPEEDS[clamp((S.settings.speed || 1) - 1, 0, 2)], clock: 0, last: 0,
     parts: [], floats: [], shots: [], rings: [], waits: [], tweens: [], shake: 0, flash: 0, live: false, acc: 0, hudDirty: true, banT: 0, onOver: null, step: stepBattle, planOpen: false, pick: [], planT: null,
-    cam: { x: 0, z: 1 } });
+    mBotS: null, mRightS: 0 });
+  MP.px = 0; MP.py = 0;
   BT.vus = new Map();
   if (DEMO.on) B.pilot = demoPilot;
   BT.env = buildEnv(cfg.env || "wasteland");
@@ -351,7 +367,7 @@ async function runBattle() {
   const B = BT.B;
   B.start();
   for (const e of B.ev) onEv(e); B.ev.length = 0;
-  fitCam(0, true);
+  mapFit(0, true);
   updHUD();
   const boss = B.side.E.units.find(u => u.boss);
   banner(BT.cfg.title || "Battle", boss ? `${boss.n} is here` : "Battle start", "ds", 1400);

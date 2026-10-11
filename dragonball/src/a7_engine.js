@@ -5,11 +5,14 @@
 //  fast: at below zero a fighter is exhausted and can't guard or vanish. Two beams fired at once clash in a beam
 //  struggle. The turn ends when your commands are done. One fighter per side fights at a time; the others can be
 //  switched in. Bosses that are beaten may transform and come back at full health.
+//  The fight happens on a map seen from above: each fighter has an x/y position, dashes in and backs off across it,
+//  gets knocked back along the line of a hit, and circles the other one between moves.
 //  Pure logic: the battle director (a8b_battle.js) and the demo's simulations drive it with tick().
 // =====================================================================
 let UID = 0;
 const DT = 1 / 30;
-const NEAR = 150, FAR = 540, MIDR = 330, ARENA_X = 720;      // distances in world units
+const NEAR = 150, FAR = 540, MIDR = 330, ARENA_X = 720, ARENA_Y = 420;   // distances in world units; the map is 2·ARENA_X × 2·ARENA_Y
+const ORBIT = .3;                                                          // radians per second a waiting fighter circles its foe
 const KI_MAX = 100, KI_MIN = -40, KI_REGEN = 4, KI_TURN = 10, VANISH_KI = 20;
 const GUARD_MAX = 100, GUARD_COST = 24, GUARD_PCOST = 6, GUARD_REGEN = 12;
 const PERFECT_WIN = .2, GUARD_WIN = .55, GUARD_CD = .5;     // seconds before impact
@@ -37,7 +40,20 @@ function makeBattle(cfg) {
   const curOf = s => { const c = B.side[s].cur; return c && c.status === "field" ? c : null; };
   const foeOf = u => curOf(foeSide(u.team));
   const hpFrac = u => clamp(u.hp / u.max.hp, 0, 1);
-  const dist = () => { const a = curOf("A"), e = curOf("E"); return a && e ? Math.abs(e.x - a.x) : FAR; };
+  const gap = (u, v) => Math.hypot(v.x - u.x, v.y - u.y);
+  const dist = () => { const a = curOf("A"), e = curOf("E"); return a && e ? gap(a, e) : FAR; };
+  const dirTo = (u, v) => { const dx = v.x - u.x, dy = v.y - u.y, d = Math.hypot(dx, dy) || 1; return [dx / d, dy / d]; };
+  const inMap = p => { p.x = clamp(p.x, -ARENA_X, ARENA_X); p.y = clamp(p.y, -ARENA_Y, ARENA_Y); return p; };
+  // a point `want` away from o, as close to the angle `base` as the walls allow
+  function spotFrom(o, base, want) {
+    let best = null, bd = -1;
+    for (const da of [0, .45, -.45, .9, -.9, 1.4, -1.4, 2, -2, Math.PI]) {
+      const a = base + da, p = inMap({ x: o.x + Math.cos(a) * want, y: o.y + Math.sin(a) * want }), d = Math.hypot(p.x - o.x, p.y - o.y);
+      if (d >= want * .94) return p;
+      if (d > bd) { bd = d; best = p; }
+    }
+    return best;
+  }
   const human = u => u.team === "A" && !B.auto;
 
   // ---------- units ----------
@@ -56,7 +72,7 @@ function makeBattle(cfg) {
     }
     const u = { uid: ++UID, key: spec.op || spec.en, def, isOp: !!spec.op, team, slot, n: def.n, el: def.el, cls: def.cls, race: def.race || "", boss: !!def.boss, LV: spec.LV || 1,
       max: { ...st }, hp: st.hp, ki: 30, guard: GUARD_MAX, eff: [], techs: def.techs, sk, prof, passives: def.passives || [], leader: def.leader || null,
-      status: "bench", x: 0, y: 0, act: null, stunT: 0, stunK: null, staggerT: 0, flags: {}, once: {}, broken: false, form: 0,
+      status: "bench", x: 0, y: 0, orb: R() < .5 ? 1 : -1, act: null, stunT: 0, stunK: null, staggerT: 0, flags: {}, once: {}, broken: false, form: 0,
       cnt: { m: 0, k: 0, g: 0 } };
     const ks = pv(u, "KI_START"); if (ks) u.ki += ks.amount;
     return u;
@@ -174,8 +190,8 @@ function makeBattle(cfg) {
     if (S2.cur && S2.cur.status === "field") S2.cur.status = "bench";
     S2.cur = u; u.status = "field"; u.act = null; u.stunT = 0;
     const foe = curOf(foeSide(side));
-    u.x = foe ? foe.x + (side === "A" ? -MIDR : MIDR) : side === "A" ? -MIDR / 2 : MIDR / 2;
-    u.x = clamp(u.x, -ARENA_X, ARENA_X);
+    const p = foe ? spotFrom(foe, (side === "A" ? Math.PI : 0) + (R() - .5) * .9, MIDR) : { x: side === "A" ? -MIDR / 2 : MIDR / 2, y: (R() - .5) * 120 };
+    u.x = p.x; u.y = p.y;
     if (!u.flags.entered) {
       u.flags.entered = true;
       const sb = pv(u, "START_BUFF"); if (sb) for (const w of sb.what) addEff(u, w, sb.turns, true);
@@ -276,7 +292,7 @@ function makeBattle(cfg) {
     u.act = act;
     if (c.kind === "move") { act.ph = "move"; act.d = 1.2; ev({ k: "act", u: u.uid, ph: "move", c: c.id }); return; }
     if (c.kind === "charge") { act.ph = "charge"; act.d = 1.0 / Math.sqrt(spdF(u)); ev({ k: "act", u: u.uid, ph: "charge" }); return; }
-    if (c.kind === "melee" && foe && Math.abs(foe.x - u.x) > NEAR + 6) { act.ph = "dash"; act.d = 1.2; ev({ k: "act", u: u.uid, ph: "dash" }); return; }
+    if (c.kind === "melee" && foe && gap(u, foe) > NEAR + 6) { act.ph = "dash"; act.d = 1.2; ev({ k: "act", u: u.uid, ph: "dash" }); return; }
     beginWind(u, act);
   }
   function beginWind(u, act) {
@@ -297,8 +313,8 @@ function makeBattle(cfg) {
     if (c.kind === "buff") { for (const e of c.fx || []) for (const x of e.on === "team" ? B.side[u.team].units : [u]) addEff(x, e.what, e.turns); ev({ k: "act", u: u.uid, ph: "buff" }); return; }
     if (c.kind === "heal") { for (const x of B.side[u.team].units) if (alive(x)) heal(x, x.max.hp * c.heal); ev({ k: "act", u: u.uid, ph: "buff" }); return; }
     if (!foe) return;
-    const d = Math.abs(foe.x - u.x), sp = SPEED[c.kind] || 0;
-    const atk = { id: ++B.seq, from: u, to: foe, c, kind: c.kind, pow, hits: c.hits || 1, t0: B.t, impactAt: B.t + (sp ? d / sp : .06) + (c.kind === "beam" ? .12 : 0), done: false, vanished: false, resp: null, x: u.x, dir: Math.sign(foe.x - u.x) || 1 };
+    const d = gap(u, foe), sp = SPEED[c.kind] || 0, [dx, dy] = dirTo(u, foe);
+    const atk = { id: ++B.seq, from: u, to: foe, c, kind: c.kind, pow, hits: c.hits || 1, t0: B.t, impactAt: B.t + (sp ? d / sp : .06) + (c.kind === "beam" ? .12 : 0), done: false, vanished: false, resp: null, x: u.x, y: u.y, dx, dy };
     if (c.kind === "melee") atk.impactAt = B.t + .07;
     if (c.selfHit) { u.hp = Math.max(1, u.hp - u.max.hp * c.selfHit); ev({ k: "txt", u: u.uid, s: "SELF-DESTRUCT", c: "debuff" }); }
     // a beam fired into a beam that's winding up: both fire, and the beams clash
@@ -306,7 +322,7 @@ function makeBattle(cfg) {
       const fa = foe.act; fa.pow = Math.max(fa.pow, fa.want * .7);
       gainKi(foe, -kiCost(foe, fa.c, fa.pow));
       fa.ph = "clash"; act.ph = "clash";
-      const atk2 = { id: ++B.seq, from: foe, to: u, c: fa.c, kind: "beam", pow: fa.pow, hits: 1, t0: B.t, impactAt: 1e9, done: false, vanished: false, resp: null, x: foe.x, dir: -atk.dir };
+      const atk2 = { id: ++B.seq, from: foe, to: u, c: fa.c, kind: "beam", pow: fa.pow, hits: 1, t0: B.t, impactAt: 1e9, done: false, vanished: false, resp: null, x: foe.x, y: foe.y, dx: -dx, dy: -dy };
       atk.impactAt = 1e9;
       B.atks.push(atk, atk2);
       B.struggle = { A: u.team === "A" ? atk : atk2, E: u.team === "A" ? atk2 : atk, pos: .5, t: 0, dur: 2.4, mashA: 0, mashE: 0 };
@@ -386,8 +402,8 @@ function makeBattle(cfg) {
     if (tar.status !== "field" || !alive(att)) return;
     if (atk.vanished) {
       ev({ k: "miss", atk: atk.id, u: tar.uid });
-      // the defender reappears right next to the attacker
-      if (atk.kind === "melee" || atk.kind === "disc" || atk.kind === "bomb") tar.x = clamp(att.x + (tar.team === "A" ? -NEAR : NEAR) * .8, -ARENA_X, ARENA_X);
+      // the defender reappears right beside the attacker
+      if (atk.kind === "melee" || atk.kind === "disc" || atk.kind === "bomb") { const p = spotFrom(att, Math.atan2(tar.y - att.y, tar.x - att.x) + (R() < .5 ? 1 : -1) * (1 + R() * .8), NEAR * .8); tar.x = p.x; tar.y = p.y; }
       return;
     }
     if (atk.kind === "melee" && pv(tar, "AFTERIMAGE") && R() < pv(tar, "AFTERIMAGE").chance && tar.stunT <= 0) { ev({ k: "miss", atk: atk.id, u: tar.uid }); ev({ k: "txt", u: tar.uid, s: "AFTERIMAGE", c: "buff" }); return; }
@@ -426,7 +442,7 @@ function makeBattle(cfg) {
     else if (resp === "guard") ev({ k: "txt", u: tar.uid, s: "GUARD", c: "txt" });
     // knockback, stagger and effects (a perfect guard stops them all)
     if (mult > 0) {
-      tar.x = clamp(tar.x + atk.dir * (KNOCK[atk.kind] || 30) * mult * (1 + atk.pow * .4), -ARENA_X, ARENA_X);
+      const kb = (KNOCK[atk.kind] || 30) * mult * (1 + atk.pow * .4); tar.x += atk.dx * kb; tar.y += atk.dy * kb; inMap(tar);
       if ((atk.c.heavy || bomb || atk.kind === "beam") && mult >= .5 && tar.act && (tar.act.ph === "wind" || tar.act.ph === "charge")) { tar.act = null; ev({ k: "txt", u: tar.uid, s: "INTERRUPTED", c: "debuff" }); }
       if (tar.act && tar.act.ph === "charge" && mult >= .3) { tar.act = null; }
       for (const e of atk.c.fx || []) if (e.on === "target" && R() < (e.chance ?? 1)) addEff(tar, e.what, e.turns);
@@ -458,6 +474,14 @@ function makeBattle(cfg) {
   }
 
   // ---------- one tick of the action phase ----------
+  // a fighter with a moment to spare circles its foe, keeping the same distance; at a wall it turns back
+  function circle(u, foe, k) {
+    if (!foe) return;
+    const r = gap(u, foe), a = Math.atan2(u.y - foe.y, u.x - foe.x) + u.orb * ORBIT * k * spdF(u) ** .5 * DT;
+    const nx = foe.x + Math.cos(a) * r, ny = foe.y + Math.sin(a) * r;
+    if (Math.abs(nx) > ARENA_X || Math.abs(ny) > ARENA_Y) { u.orb = -u.orb; return; }
+    u.x = nx; u.y = ny;
+  }
   function stepUnit(u) {
     const foe = foeOf(u), dt = DT;
     if (u.stunT > 0) { u.stunT -= dt; if (u.stunT <= 0) { u.stunK = null; ev({ k: "unstun", u: u.uid }); } return; }
@@ -467,27 +491,31 @@ function makeBattle(cfg) {
     if (u.staggerT > 0) { u.staggerT -= dt; return; }
     const S2 = B.side[u.team];
     if (!u.act) {
-      if (!S2.q.length) return;
+      if (!S2.q.length) { circle(u, foe, 1); return; }
       startCmd(u, S2.q.shift());
       return;
     }
     const a = u.act; a.t += dt;
-    const face = foe ? Math.sign(foe.x - u.x) || (u.team === "A" ? 1 : -1) : u.team === "A" ? 1 : -1;
-    const fly = (target, speed) => { const d = target - u.x, step = speed * dt; if (Math.abs(d) <= step) { u.x = target; return true; } u.x += Math.sign(d) * step; return false; };
+    // fly toward a point on the map; true once there
+    const fly = (tx, ty, speed) => { const dx = tx - u.x, dy = ty - u.y, d = Math.hypot(dx, dy), step = speed * dt; if (d <= step) { u.x = tx; u.y = ty; return true; } u.x += dx / d * step; u.y += dy / d * step; return false; };
+    const closeIn = (r, speed) => { const [dx, dy] = dirTo(u, foe); return fly(foe.x - dx * r, foe.y - dy * r, speed); };
     if (a.ph === "move") {
       const sp = 820 * spdF(u) * (u.ki < 0 ? .7 : 1);
       if (!foe) { u.act = null; return; }
-      const tgt = a.c.to === "near" ? foe.x - face * NEAR : clamp(foe.x - face * FAR, -ARENA_X, ARENA_X);
-      if (fly(tgt, sp) || a.t > a.d) { u.act = null; ev({ k: "act", u: u.uid, ph: "idle" }); }
+      // backing off: pick the open spot FAR away once, then keep that offset from the foe
+      if (a.c.to !== "near" && !a.off) { const p = spotFrom(foe, Math.atan2(u.y - foe.y, u.x - foe.x), FAR); a.off = [p.x - foe.x, p.y - foe.y]; }
+      const there = a.c.to === "near" ? closeIn(NEAR, sp) : (() => { const p = inMap({ x: foe.x + a.off[0], y: foe.y + a.off[1] }); return fly(p.x, p.y, sp); })();
+      if (there || a.t > a.d) { u.act = null; ev({ k: "act", u: u.uid, ph: "idle" }); }
       return;
     }
     if (a.ph === "dash") {
       const sp = 950 * spdF(u) * (u.el === "Striker" ? 2 : 1);
       if (!foe) { u.act = null; return; }
-      if (fly(foe.x - face * (NEAR - 20), sp) || a.t > a.d) beginWind(u, a);
+      if (closeIn(NEAR - 20, sp) || a.t > a.d) beginWind(u, a);
       return;
     }
     if (a.ph === "charge") {
+      circle(u, foe, .6);
       const g = a.c.gain / a.d * dt; gainKi(u, g);
       if (a.t >= a.d) { u.act = null; ev({ k: "act", u: u.uid, ph: "idle" }); }
       return;
@@ -496,13 +524,15 @@ function makeBattle(cfg) {
       const holding = !a.noPow && (human(u) ? B.input.hold : a.pow < a.want);
       if (holding) a.pow = Math.min(1, a.pow + dt / HOLD_MAX);
       if (a.c.kind === "bomb") a.pow = Math.min(1, a.t / a.d);
-      // melee keeps its man in reach while it winds up
-      if (a.c.kind === "melee" && foe && Math.abs(foe.x - u.x) > NEAR + 10) fly(foe.x - face * (NEAR - 20), 900 * spdF(u));
+      // melee keeps its man in reach while it winds up; ranged attacks strafe a little while they aim
+      if (a.c.kind === "melee" && foe && gap(u, foe) > NEAR + 10) closeIn(NEAR - 20, 900 * spdF(u));
+      else if (a.c.kind !== "melee") circle(u, foe, .35);
       const ready = a.t >= a.d && (a.noPow || (human(u) ? !B.input.hold || a.pow >= 1 : a.pow >= a.want || a.pow >= 1));
       if (ready) fire(u, a);
       return;
     }
     if (a.ph === "clash") return;
+    if (a.c.kind !== "melee") circle(u, foe, .5);
     if (a.ph === "rec" && a.t >= a.d) { u.act = null; ev({ k: "act", u: u.uid, ph: "idle" }); }
   }
   B.tick = () => {
