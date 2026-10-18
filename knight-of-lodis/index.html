@@ -46,6 +46,14 @@ button{font:inherit;color:inherit}
 .phase.enemy b{color:var(--foe)}
 .chip{font-size:12px;padding:3px 10px;border-radius:12px;background:rgba(10,18,36,.72);border:1px solid var(--edge-dim);color:var(--muted);white-space:nowrap}
 .chip b{color:var(--ink);font-weight:700}
+.autorow{display:flex;gap:6px}
+.spdbtn{padding:5px 11px 6px;font:800 14px var(--f-ui);color:var(--ink);cursor:pointer;font-variant-numeric:tabular-nums;min-width:44px}
+.spdbtn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.autobtn{display:inline-flex;align-items:center;gap:8px;padding:5px 14px 6px;font:400 16px var(--f-display);letter-spacing:.05em;color:var(--gold);cursor:pointer}
+.autobtn i{width:8px;height:8px;border-radius:50%;background:var(--muted);transition:background .2s,box-shadow .2s}
+.autobtn[aria-pressed="true"]{background:linear-gradient(180deg,#3a5a2e,#1f3a1c);border-color:#9dffa8;color:#eaffe8}
+.autobtn[aria-pressed="true"] i{background:#7dff9a;box-shadow:0 0 8px #7dff9a}
+.autobtn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 
 .camctl{position:absolute;right:max(12px,env(safe-area-inset-right,0px));top:46%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;pointer-events:none}
 .camctl button{pointer-events:auto;width:40px;height:40px;border-radius:50%;border:1px solid var(--edge-dim);background:rgba(17,31,60,.82);
@@ -91,7 +99,7 @@ button{font:inherit;color:inherit}
   .cmds h3{grid-column:1/-1}
   .cmd{justify-content:center;flex-direction:column;gap:0;padding:7px 4px;font-size:14px;text-align:center}
 }
-@media (max-height:480px){ .status{flex-basis:300px} #portrait{width:60px;height:60px} .cmds{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-height:480px){ .camctl{top:138px;transform:none;gap:6px} .camctl button{width:36px;height:36px;font-size:18px} .status{flex-basis:300px} #portrait{width:60px;height:60px} .cmds{grid-template-columns:repeat(2,minmax(0,1fr))} }
 
 .banner{position:absolute;left:0;right:0;top:34%;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none;opacity:0;
   padding:16px max(16px,env(safe-area-inset-right,0px)) 16px max(16px,env(safe-area-inset-left,0px));
@@ -124,6 +132,10 @@ button{font:inherit;color:inherit}
       <div class="topR">
         <div class="win phase" id="phase"><span id="turnN">Turn 1 · 7 vs 7</span><b id="phaseN">Player Phase</b></div>
         <div class="chip" id="tileChip"><b>Dirt road</b> · Height 1</div>
+        <div class="autorow">
+          <button class="win spdbtn" id="spdBtn" title="Battle speed (S)" aria-label="Battle speed">1×</button>
+          <button class="win autobtn" id="autoBtn" aria-pressed="false" title="Let your side fight on its own (A)"><i></i><span>Auto</span></button>
+        </div>
       </div>
     </header>
     <footer class="bottom">
@@ -148,7 +160,7 @@ button{font:inherit;color:inherit}
     <button id="zoomOut" aria-label="Zoom out" title="Zoom out">−</button>
   </div>
   <div id="floats"></div>
-  <div class="win toast" id="hint">Tap a unit to command it. Drag to pan, pinch or +/− to zoom, ⟲ ⟳ (or twist two fingers) to turn the map.</div>
+  <div class="win toast" id="hint">Tap a unit to command it, or turn on Auto to watch. Drag to pan, pinch or +/− to zoom, ⟲ ⟳ (or twist two fingers) to turn the map.</div>
   <div class="banner" id="banner"></div>
   <div class="loading" id="loading">Raising the battlefield…</div>
 </div>
@@ -804,7 +816,7 @@ async function act(u, tgt, a) {
 }
 
 // ---------- HUD ----------
-const G = { turn: 1, phase: "player", mode: "idle", sel: null, busy: true, reach: null, act: null, over: false };
+const G = { turn: 1, phase: "player", mode: "idle", sel: null, busy: true, reach: null, act: null, over: false, auto: false, speed: 1 };
 const pr = (() => { const c = $("#portrait"); const r = new THREE.WebGLRenderer({ canvas: c, antialias: true, alpha: true }); r.setPixelRatio(1); r.setSize(152, 152, false); r.outputColorSpace = THREE.SRGBColorSpace; r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 1.2; return r; })();
 const pScene = new THREE.Scene(), pCam = new THREE.PerspectiveCamera(26, 1, .1, 100);
 pScene.add(new THREE.HemisphereLight(0xe6f0ff, 0x5a4a3a, 1.6)); { const l = new THREE.DirectionalLight(0xfff0e0, 2.4); l.position.set(4, 8, 9); pScene.add(l); }
@@ -918,7 +930,7 @@ async function enemyPhase() {
   for (const e of units.filter(u => u.team === "E" && u.alive)) {
     if (!e.alive || G.over) continue;
     G.sel = e; showStatus(e); setCursor(e.x, e.z); focusOn(e); await wait(420);
-    await enemyAct(e);
+    await aiAct(e);
     if (checkEnd()) return;
     await wait(260);
   }
@@ -926,28 +938,96 @@ async function enemyPhase() {
   G.sel = null; showStatus(null); arrow.visible = false; G.phase = "player"; updPhase(); camS.tgtT.set(0, 9, 0);
   await banner("Player Phase", "Turn " + G.turn);
   G.busy = false; G.mode = "idle"; updPhase();
+  if (G.auto) autoPlayerPhase();
 }
-async function enemyAct(e) {
-  const R = reachable(e), stops = [...R.values()].filter(t => canStop(e, t.x, t.z)), allies = units.filter(u => u.team === "A" && u.alive);
-  const acts = actionsOf(e).filter(a => !a.heal && (!a.mp || e.mp >= a.mp));
+// how many foes could reach and strike (x, z) next turn: a rough count of the danger of standing there
+function threatAt(x, z, foes) {
+  let n = 0;
+  for (const f of foes) if (Math.abs(f.x - x) + Math.abs(f.z - z) <= f.move + (f.weapon === "bow" ? 5 : f.spells.length ? 4 : 1)) n++;
+  return n;
+}
+// one AI for both sides. The enemy charges: the best attack in reach, otherwise straight at the nearest foe. Your side
+// (on Auto) fights carefully: healers mend the badly hurt (Alphonse first), attacks weigh how many foes could strike
+// back, Alphonse keeps out of harm's way (losing him loses the battle), and with nothing to hit the line holds just
+// out of the enemy's reach, then presses on from turn 4. The enemy Knight is everyone's first target; he holds the
+// ruined hill and only steps down (two tiles at most) to strike.
+async function aiAct(u) {
+  const foes = units.filter(x => x.alive && x.team !== u.team), friends = units.filter(x => x.alive && x.team === u.team);
+  const careful = u.team === "A", wounded = u.hp < u.hpMax * .55, holds = !careful && u.leader;   // the enemy commander holds the hill
+  const R = reachable(u), stops = u.moved ? [R.get(u.x + "," + u.z)] : [...R.values()].filter(t => canStop(u, t.x, t.z) && (!holds || t.c <= 2));
+  const acts = u.acted ? [] : actionsOf(u).filter(a => !a.mp || u.mp >= a.mp);
   let best = null;
-  for (const st of stops) for (const a of acts) for (const t of allies) {
-    if (!canHit(e, st.x, st.z, t, a)) continue;
-    const dmg = damageOf(e, t, a, st.x, st.z, false);
-    const score = dmg + (t.hp <= dmg ? 70 : 0) + (t.hero ? 12 : 0) - st.c * 1.5 + levelOf(st.x, st.z) * 2 + (a.kind === "spell" ? 4 : 0);
-    if (!best || score > best.score) best = { st, a, t, score };
+  for (const st of stops) {
+    const risk = careful ? threatAt(st.x, st.z, foes) * (u.hero ? (wounded ? 30 : 14) : wounded ? 9 : 4) : 0;
+    for (const a of acts) for (const t of a.heal ? friends : foes) {
+      const at = t === u ? { x: st.x, z: st.z, fly: u.fly } : t;            // a healer can heal itself wherever it stops
+      if (!canHit(u, st.x, st.z, at, a)) continue;
+      let score;
+      if (a.heal) {
+        const miss = t.hpMax - t.hp; if (miss < t.hpMax * (t.hero ? .2 : .35)) continue;
+        score = Math.min(miss, u.mag * a.power) * 1.3 + (t.hero ? 40 : 0) - st.c - risk * .5;
+      } else {
+        const dmg = damageOf(u, t, a, st.x, st.z, false), kill = t.hp <= dmg;
+        score = dmg + (kill ? 70 : 0) + (t.leader ? (careful ? 30 : 14) : 0) + (t.hero ? 14 : 0) - st.c * 1.5 + levelOf(st.x, st.z) * 2 + (a.kind === "spell" ? 4 : 0) - risk;
+        if (careful && u.hero && wounded && !kill) continue;                     // a hurt Alphonse only strikes to finish
+      }
+      if (careful && score < 8) continue;
+      if (!best || score > best.score) best = { st, a, t, score };
+    }
   }
   if (best) {
-    if (best.st.x !== e.x || best.st.z !== e.z) await walk(e, pathTo(R, best.st.x, best.st.z));
-    setCursor(best.t.x, best.t.z); await act(e, best.t, best.a); return;
+    if (best.st.x !== u.x || best.st.z !== u.z) await walk(u, pathTo(R, best.st.x, best.st.z));
+    setCursor(best.t.x, best.t.z); await act(u, best.t, best.a); return;
   }
-  // nobody in reach: close in on the nearest ally
-  const near = allies.sort((a, b) => (Math.abs(a.x - e.x) + Math.abs(a.z - e.z)) - (Math.abs(b.x - e.x) + Math.abs(b.z - e.z)))[0];
-  if (!near) return;
-  const dist = t => Math.abs(t.x - near.x) + Math.abs(t.z - near.z);
-  const st = stops.sort((a, b) => dist(a) - dist(b) || a.c - b.c)[0];
-  if (st && (st.x !== e.x || st.z !== e.z)) await walk(e, pathTo(R, st.x, st.z));
-  faceDir(e, near.x - e.x, near.z - e.z);
+  if (u.moved || !foes.length) return;
+  if (holds) { const f = foes.slice().sort((a, b) => Math.abs(a.x - u.x) + Math.abs(a.z - u.z) - Math.abs(b.x - u.x) - Math.abs(b.z - u.z))[0]; faceDir(u, f.x - u.x, f.z - u.z); return; }
+  const md = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.z - b.z), nearFoe = t => Math.min(...foes.map(f => md(f, t)));
+  const healer = actionsOf(u).some(a => a.heal), front = friends.filter(f => f !== u).sort((a, b) => nearFoe(a) - nearFoe(b))[0];
+  let st;
+  if (careful) {
+    const healers = friends.filter(f => f !== u && actionsOf(f).some(a => a.heal)), line = G.turn >= 4 ? 2 : 5;
+    const value = p => {
+      let v = -threatAt(p.x, p.z, foes) * (u.hero || wounded ? 12 : 5) + levelOf(p.x, p.z) * 1.5 - p.c * .3;
+      if ((wounded || u.hero) && healers.length) v -= Math.min(...healers.map(h => md(h, p))) * (wounded ? 3 : 1);
+      if (healer && front) v -= Math.abs(md(p, front) - 2) * 2; else if (!wounded) v -= Math.abs(nearFoe(p) - line) * 2;
+      return v;
+    };
+    st = stops.slice().sort((a, b) => value(b) - value(a))[0];
+  } else {
+    // the enemy closes in on the nearest foe
+    const goal = foes.slice().sort((a, b) => md(a, u) - md(b, u))[0];
+    st = stops.slice().sort((a, b) => md(a, goal) - md(b, goal) || a.c - b.c)[0];
+  }
+  if (st && (st.x !== u.x || st.z !== u.z)) await walk(u, pathTo(R, st.x, st.z));
+  const f0 = foes.slice().sort((a, b) => md(a, u) - md(b, u))[0];
+  faceDir(u, f0.x - u.x, f0.z - u.z);
+}
+// Auto: your units take their turns one by one with the same AI, then the enemy phase follows; it keeps going until
+// Auto is switched off (control comes back after the unit that is acting) or the battle ends
+async function autoPlayerPhase() {
+  if (!G.auto || G.phase !== "player" || G.busy || G.over) return;
+  G.busy = true; G.sel = null; G.mode = "idle"; clearTiles(); renderCmds(); updPhase();
+  for (const u of units.filter(x => x.team === "A" && x.alive && !x.done)) {
+    if (!G.auto || G.over) break;
+    if (!u.alive) continue;
+    G.sel = u; showStatus(u); setCursor(u.x, u.z); focusOn(u); await wait(380);
+    await aiAct(u);
+    u.moved = u.acted = u.done = true; refreshRing(u);
+    if (checkEnd()) return;
+    await wait(220);
+  }
+  G.sel = null; showStatus(null); arrow.visible = false; G.busy = false;
+  if (!G.auto) { G.mode = "idle"; updPhase(); renderCmds(); return; }
+  await enemyPhase();
+}
+function kickAuto() {
+  if (!G.auto || G.over || G.phase !== "player") return;
+  if (G.busy) setTimeout(kickAuto, 300); else autoPlayerPhase();
+}
+function setAuto(on) {
+  G.auto = on; const b = $("#autoBtn");
+  b.setAttribute("aria-pressed", String(on)); b.querySelector("span").textContent = on ? "Auto on" : "Auto";
+  hideHint(); if (on) kickAuto();
 }
 function checkEnd() {
   updPhase();
@@ -968,6 +1048,7 @@ function restart() {
   Object.assign(G, { turn: 1, phase: "player", mode: "idle", sel: null, busy: false, reach: null, act: null, over: false });
   $("#banner").className = "banner"; clearTiles(); showStatus(null); renderCmds(); updPhase(); cursorFrame.visible = false;
   camS.tgtT.set(0, 9, 0);
+  if (G.auto) setTimeout(kickAuto, 500);
 }
 
 // ---------- input: tap to command, drag to pan, pinch to zoom, twist or buttons to turn ----------
@@ -1038,11 +1119,16 @@ $("#rotL").onclick = () => { camS.yawT -= Math.PI / 2; hideHint(); };
 $("#rotR").onclick = () => { camS.yawT += Math.PI / 2; hideHint(); };
 $("#zoomIn").onclick = () => { camS.zoomT = clamp(camS.zoomT * 1.25, .7, 3.6); };
 $("#zoomOut").onclick = () => { camS.zoomT = clamp(camS.zoomT / 1.25, .7, 3.6); };
+$("#autoBtn").onclick = () => setAuto(!G.auto);
+const setSpeed = n => { G.speed = n; $("#spdBtn").textContent = n + "×"; };
+$("#spdBtn").onclick = () => setSpeed(G.speed >= 3 ? 1 : G.speed + 1);
 $("#endPhase").onclick = () => { if (G.phase === "player" && !G.busy && !G.over) { deselect(); enemyPhase(); } };
 window.addEventListener("keydown", e => {
   if (e.key === "q" || e.key === "Q") camS.yawT -= Math.PI / 2;
   else if (e.key === "e" || e.key === "E") camS.yawT += Math.PI / 2;
   else if (e.key === "Escape" && !G.busy) deselect();
+  else if (e.key === "a" || e.key === "A") setAuto(!G.auto);
+  else if (e.key === "s" || e.key === "S") setSpeed(G.speed >= 3 ? 1 : G.speed + 1);
 });
 window.addEventListener("resize", resize);
 
@@ -1051,7 +1137,7 @@ let last = performance.now();
 const tmpV = new THREE.Vector3();
 function frame(now) {
   requestAnimationFrame(frame);
-  const dt = Math.min(50, now - last); last = now; clock += dt;
+  const dt = Math.min(50, now - last); last = now; clock += dt * G.speed;   // tweens and waits run on the game clock
   for (let i = tweens.length - 1; i >= 0; i--) { const tw = tweens[i], k = Math.min(1, (clock - tw.t0) / tw.dur); tw.fn(k); if (k >= 1) { tweens.splice(i, 1); tw.res(); } }
   const e = 1 - Math.exp(-dt / 1000 * 7), t = clock / 1000;
   camS.yaw += angDiff(camS.yawT, camS.yaw) * e; camS.zoom += (camS.zoomT - camS.zoom) * e; camS.tgt.lerp(camS.tgtT, e); camS.shift += (camS.shiftT - camS.shift) * e;
@@ -1097,7 +1183,7 @@ function boot() {
   $("#loading").classList.add("off"); setTimeout(() => $("#loading").remove(), 800);
   setTimeout(() => hideHint(), 12000);
   banner("Player Phase", "Turn 1 · Defeat the enemy Knight", 1900).then(() => { G.busy = false; updPhase(); });
-  window.LODIS = { G, units, select, command, onTap, enemyPhase, camS, tileWorld, doMove, doAct, actionsOf, reachable, restart };
+  window.LODIS = { G, units, select, command, onTap, enemyPhase, camS, tileWorld, doMove, doAct, actionsOf, reachable, restart, setAuto, setSpeed };
 }
 setTimeout(boot, 30);
 </script>

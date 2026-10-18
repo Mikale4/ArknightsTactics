@@ -21,6 +21,16 @@ mock-up.
 - **Drag** to pan, **pinch** or **+/−** to zoom, and **⟲ ⟳** or a two-finger twist to turn the map. On a desktop,
   right-drag or Shift-drag turns it and Q/E turn by 90°.
 - **End Phase** hands the turn to the enemy, who closes in and attacks.
+- **Auto** (or the A key) lets your side fight on its own, turn after turn, until you switch it off. Control comes
+  back after the unit that is acting. Your side plays carefully:
+  - The Cleric and the High Priest heal anyone badly hurt, Alphonse first.
+  - Before stepping somewhere to attack, a unit weighs how many enemies could strike back there.
+  - Alphonse stays out of harm's way, since losing him loses the battle.
+  - With nothing to hit, the line holds just out of reach and then presses on from turn 4.
+  - The enemy Knight is everyone's first target.
+
+  He holds the ruined hill and only steps down to strike. In testing, Auto won 5 of 6 battles, in 5 to 12 turns.
+- **1× / 2× / 3×** (or the S key) sets the battle speed.
 - You win when the enemy Knight falls and lose when Alphonse does.
 
 ## How it is built
