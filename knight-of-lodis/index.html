@@ -1,0 +1,1105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Knight of Lodis HD</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@400;500;700;800&family=IM+Fell+English+SC&display=swap">
+<style>
+/* Layout: a full-screen voxel diorama of the battlefield; the HUD floats over it in gilt-edged night-blue windows,
+   a nod to the Game Boy Advance game's blue windows, with the command list beside the unit's status. */
+:root{
+  --sky-top:#13203b; --sky-mid:#2d4a78; --sky-low:#c09670;
+  --win:rgba(17,31,60,.9); --win-hi:rgba(34,58,104,.92); --edge:#d6b25e; --edge-dim:rgba(214,178,94,.4);
+  --ink:#eef1f8; --muted:#a9b6d0; --ally:#5aa9ff; --foe:#ff6652; --hp:#68dd8c; --mp:#6ab3ff; --heal:#8affb4; --gold:#f0cf78;
+  --f-display:"IM Fell English SC","Cormorant SC",Georgia,"Times New Roman",serif;
+  --f-ui:"Alegreya Sans","Gill Sans","Trebuchet MS",system-ui,sans-serif;
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+html{height:100%;box-sizing:border-box;background:var(--sky-top)}
+*,*::before,*::after{box-sizing:inherit}
+body{height:100%;margin:0;background:var(--sky-top);color:var(--ink);font:15px/1.35 var(--f-ui);overflow:hidden;touch-action:none;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit}
+#app{position:relative;height:100%;overflow:hidden;
+  background:radial-gradient(130% 70% at 50% 115%,var(--sky-low) 0%,rgba(192,150,112,0) 62%),linear-gradient(180deg,var(--sky-top) 0%,var(--sky-mid) 72%,#4f6386 100%)}
+#view{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;outline:none}
+.vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 85% 75% at 50% 46%,rgba(5,8,18,0) 58%,rgba(5,8,18,.5) 100%)}
+
+.win{background:linear-gradient(180deg,var(--win-hi),var(--win));border:1px solid var(--edge);border-radius:6px;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.07),0 0 0 1px rgba(0,0,0,.55),0 10px 28px rgba(0,0,0,.42)}
+.hud{position:absolute;inset:0;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between;gap:10px;
+  padding-block:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.hud .win,.hud button{pointer-events:auto}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.brand{display:flex;flex-direction:column;gap:3px;min-width:0;text-shadow:0 2px 8px rgba(0,0,0,.65)}
+.brand b{font:400 clamp(19px,5vw,27px)/1 var(--f-display);color:var(--gold);letter-spacing:.03em;text-wrap:balance}
+.brand small{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.topR{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:none}
+.phase{padding:6px 12px 7px;display:flex;flex-direction:column;align-items:flex-end;line-height:1.1}
+.phase span{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-variant-numeric:tabular-nums}
+.phase b{font:400 18px var(--f-display);letter-spacing:.04em;color:var(--ally)}
+.phase.enemy b{color:var(--foe)}
+.chip{font-size:12px;padding:3px 10px;border-radius:12px;background:rgba(10,18,36,.72);border:1px solid var(--edge-dim);color:var(--muted);white-space:nowrap}
+.chip b{color:var(--ink);font-weight:700}
+
+.camctl{position:absolute;right:max(12px,env(safe-area-inset-right,0px));top:46%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.camctl button{pointer-events:auto;width:40px;height:40px;border-radius:50%;border:1px solid var(--edge-dim);background:rgba(17,31,60,.82);
+  font-size:20px;line-height:1;display:grid;place-items:center;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+.camctl button:hover{border-color:var(--edge)}
+.camctl button:focus-visible,.cmd:focus-visible,.endbtn:focus-visible,.banner button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+.bottom{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}
+.status{flex:1 1 320px;max-width:470px;display:flex;align-items:center;gap:12px;padding:10px 12px;min-width:0}
+#portrait{width:76px;height:76px;flex:none;border-radius:4px;border:1px solid var(--edge-dim);background:radial-gradient(circle at 50% 35%,#3f5f99,#14213d 75%)}
+.status.E #portrait{background:radial-gradient(circle at 50% 35%,#8a3a3a,#2a1018 75%)}
+.st{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.nm{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.nm b{font:400 23px/1 var(--f-display);letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nm span{font-variant-numeric:tabular-nums;color:var(--gold);font-weight:800;font-size:14px;white-space:nowrap}
+.cl{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.el{display:inline-flex;align-items:center;gap:5px}
+.el i{width:8px;height:8px;transform:rotate(45deg);background:var(--elc,#fff);box-shadow:0 0 6px var(--elc,#fff)}
+.side{padding:1px 7px;border-radius:9px;font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+.side.A{background:rgba(90,169,255,.16);color:var(--ally);border:1px solid rgba(90,169,255,.45)}
+.side.E{background:rgba(255,102,82,.16);color:var(--foe);border:1px solid rgba(255,102,82,.45)}
+.bar{display:grid;grid-template-columns:22px 1fr 64px;align-items:center;gap:8px;font-size:12px}
+.bar label{font-weight:800;letter-spacing:.06em;color:var(--muted)}
+.bar i{height:7px;border-radius:4px;background:rgba(0,0,0,.55);overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.bar em{display:block;height:100%;width:100%;background:var(--c);transition:width .35s ease}
+.bar.hp{--c:var(--hp)} .bar.mp{--c:var(--mp)}
+.bar span{font-variant-numeric:tabular-nums;text-align:right;font-weight:700}
+.stats{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+.cmds{display:grid;grid-template-columns:1fr;gap:3px;padding:6px;min-width:160px}
+.cmds h3{margin:2px 8px 4px;font:400 14px var(--f-display);color:var(--gold);letter-spacing:.06em}
+.cmd{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border-radius:4px;border:0;background:transparent;
+  color:var(--ink);font:700 15px var(--f-ui);text-align:left;cursor:pointer}
+.cmd:hover{background:rgba(255,255,255,.08)}
+.cmd.on{background:linear-gradient(90deg,rgba(214,178,94,.28),rgba(214,178,94,0));box-shadow:inset 3px 0 0 var(--gold)}
+.cmd[disabled]{opacity:.36;cursor:default;background:transparent}
+.cmd small{font-weight:500;color:var(--muted);font-size:12px;white-space:nowrap}
+.endbtn{margin-left:auto;padding:10px 18px;font:400 17px var(--f-display);color:var(--gold);cursor:pointer;letter-spacing:.04em}
+.endbtn[disabled]{opacity:.4;cursor:default}
+@media (max-width:640px){
+  .status{flex-basis:100%;max-width:none}
+  .cmds{grid-template-columns:repeat(3,minmax(0,1fr));flex:1 1 0;min-width:0}
+  .cmds h3{grid-column:1/-1}
+  .cmd{justify-content:center;flex-direction:column;gap:0;padding:7px 4px;font-size:14px;text-align:center}
+}
+@media (max-height:480px){ .status{flex-basis:300px} #portrait{width:60px;height:60px} .cmds{grid-template-columns:repeat(2,minmax(0,1fr))} }
+
+.banner{position:absolute;left:0;right:0;top:34%;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none;opacity:0;
+  padding:16px max(16px,env(safe-area-inset-right,0px)) 16px max(16px,env(safe-area-inset-left,0px));
+  background:linear-gradient(90deg,rgba(8,14,30,0),rgba(8,14,30,.8) 22%,rgba(8,14,30,.8) 78%,rgba(8,14,30,0))}
+.banner b{font:400 clamp(32px,9vw,58px)/1 var(--f-display);color:#fff4d6;letter-spacing:.06em;text-shadow:0 0 18px rgba(240,207,120,.55),0 3px 0 #000;text-align:center}
+.banner small{font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);text-align:center}
+.banner.show{animation:ban 1.6s ease both}
+.banner.stay{opacity:1;pointer-events:auto;animation:none}
+.banner button{margin-top:8px;padding:9px 20px;border-radius:6px;border:1px solid var(--edge);background:var(--win-hi);color:var(--gold);font:400 18px var(--f-display);cursor:pointer}
+@keyframes ban{0%{opacity:0;transform:scaleX(.7)}14%{opacity:1;transform:none}82%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){ @keyframes ban{0%{opacity:0}10%{opacity:1}85%{opacity:1}100%{opacity:0}} }
+
+#floats{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.float{position:absolute;left:0;top:0;font:800 23px/1 var(--f-ui);color:#fff;text-shadow:0 2px 0 #000,0 0 8px rgba(0,0,0,.8);white-space:nowrap;will-change:transform,opacity}
+.float.heal{color:var(--heal)} .float.miss{color:#cfd6e6;font-size:17px} .float.crit{color:var(--gold);font-size:27px} .float.say{font:400 17px var(--f-display);color:var(--gold)}
+.toast{position:absolute;left:50%;bottom:84px;transform:translateX(-50%);width:max-content;max-width:calc(100% - 32px);text-align:center;font-size:13px;padding:8px 14px;
+  pointer-events:none;transition:opacity .6s ease;color:var(--ink)}
+.toast.off{opacity:0}
+.loading{position:absolute;inset:0;display:grid;place-items:center;font:400 22px var(--f-display);color:var(--gold);background:var(--sky-top);transition:opacity .7s ease;text-align:center;padding:16px}
+.loading.off{opacity:0;pointer-events:none}
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="view" aria-label="Battlefield map. Tap a unit to select it."></canvas>
+  <div class="vignette"></div>
+  <div class="hud">
+    <header class="top">
+      <div class="brand"><b>The Knight of Lodis</b><small>HD voxel mock-up · fan work</small></div>
+      <div class="topR">
+        <div class="win phase" id="phase"><span id="turnN">Turn 1 · 7 vs 7</span><b id="phaseN">Player Phase</b></div>
+        <div class="chip" id="tileChip"><b>Dirt road</b> · Height 1</div>
+      </div>
+    </header>
+    <footer class="bottom">
+      <section class="win status" id="status" hidden aria-live="polite">
+        <canvas id="portrait" width="152" height="152" aria-hidden="true"></canvas>
+        <div class="st">
+          <div class="nm"><b id="sName">Alphonse</b><span id="sLv">Lv 9</span></div>
+          <div class="cl"><span id="sCls">Knight</span><span class="el" id="sEl"><i></i><span>Wind</span></span><span class="side A" id="sSide">Ally</span></div>
+          <div class="bar hp"><label>HP</label><i><em id="sHpB"></em></i><span id="sHp">118/118</span></div>
+          <div class="bar mp"><label>MP</label><i><em id="sMpB"></em></i><span id="sMp">24/24</span></div>
+          <div class="stats" id="sStats">ATK 46 · DEF 30 · Move 4 · Jump 2</div>
+        </div>
+      </section>
+      <nav class="win cmds" id="cmds" hidden aria-label="Commands"></nav>
+      <button class="win endbtn" id="endPhase">End Phase</button>
+    </footer>
+  </div>
+  <div class="camctl" aria-label="Camera">
+    <button id="rotL" aria-label="Turn the map left" title="Turn left">⟲</button>
+    <button id="rotR" aria-label="Turn the map right" title="Turn right">⟳</button>
+    <button id="zoomIn" aria-label="Zoom in" title="Zoom in">+</button>
+    <button id="zoomOut" aria-label="Zoom out" title="Zoom out">−</button>
+  </div>
+  <div id="floats"></div>
+  <div class="win toast" id="hint">Tap a unit to command it. Drag to pan, pinch or +/− to zoom, ⟲ ⟳ (or twist two fingers) to turn the map.</div>
+  <div class="banner" id="banner"></div>
+  <div class="loading" id="loading">Raising the battlefield…</div>
+</div>
+<script type="module">
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+
+// =====================================================================
+//  Tactics Ogre: The Knight of Lodis, as an HD voxel mock-up. A 14×12 tile battlefield is built from 1-unit voxels
+//  (8 per tile side, 4 per height level) and meshed with per-vertex ambient occlusion; units are sculpted at half that
+//  size. Alphonse, Eleanor, Ivanna and Rictor lead a few generic troops against a generic enemy force. It plays a
+//  little: select, move, attack, cast, wait, end the phase, and the enemy answers.
+// =====================================================================
+const $ = s => document.querySelector(s);
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const angDiff = (a, b) => { let d = (a - b) % (Math.PI * 2); if (d > Math.PI) d -= Math.PI * 2; if (d < -Math.PI) d += Math.PI * 2; return d; };
+
+// ---------- the battlefield ----------
+const TILE = 8, LEVEL = 4, BASE = 4, MW = 14, MD = 12;
+const VX = MW * TILE, VZ = MD * TILE, VY = 48;
+const OX = -VX / 2, OZ = -VZ / 2;
+const WATER_Y = BASE - .5;
+// heights per tile (0 = the stream bed) and terrain: Grass, Dirt road, Stone flags, Water, Bridge, Tree, Rock, Pillar
+const HROWS = ["22211100112344", "22111100112344", "21111100112334", "11111100112233", "11111110011233", "11111110011223",
+  "11111111111223", "21111100111223", "22111100112233", "32211100112333", "33221100122344", "33322100123344"];
+const TROWS = ["TGGGGTWWGGGGSS", "GGGGGGWWGTGPSS", "GGGRGGWWGGGGSS", "GGGGGGWWGGGGGP", "TGGGGGGWWGRGGG", "GGGGGGGWWGGGGG",
+  "DDDDDDDBBDDDDD", "GGGGGGWWGGGGGT", "GGGGRGWWGGGGGG", "GGGGGGWWGTGGPS", "GGTGGGWWGGTGSS", "GGGGTGWWGGGGSS"];
+const HT = HROWS.map(r => [...r].map(Number)), TT = TROWS.map(r => [...r]);
+const TERRAIN = { G: "Grass", D: "Dirt road", S: "Flagstones", W: "Shallow stream", B: "Bridge", T: "Forest", R: "Boulder", P: "Ruined pillar" };
+const BLOCKED = new Set(["T", "R", "P"]);
+const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+const inMap = (x, z) => x >= 0 && z >= 0 && x < MW && z < MD;
+const levelOf = (x, z) => TT[z][x] === "W" ? 0 : HT[z][x];
+const standY = (x, z) => TT[z][x] === "W" ? BASE - 2 : BASE + HT[z][x] * LEVEL;
+const tileWorld = (x, z) => new THREE.Vector3(OX + x * TILE + TILE / 2, standY(x, z), OZ + z * TILE + TILE / 2);
+
+// ---------- voxel helpers ----------
+function hash(x, y, z, s = 0) {
+  let h = (Math.imul(x | 0, 374761393) + Math.imul(y | 0, 668265263) + Math.imul(z | 0, 1442695041) + Math.imul(s | 0, 1274126177)) | 0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177); h ^= h >>> 16;
+  return (h >>> 0) / 4294967296;
+}
+function rng(seed) { let s = (seed >>> 0) || 1; return () => { s ^= s << 13; s >>>= 0; s ^= s >>> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; }; }
+function tint(hex, f) { const c = v => clamp(Math.round(v * f), 0, 255); return (c((hex >> 16) & 255) << 16) | (c((hex >> 8) & 255) << 8) | c(hex & 255); }
+const pickc = (arr, x, y, z, s) => arr[Math.floor(hash(x, y, z, s) * arr.length)];
+const jit = (hex, x, y, z, amt = .06) => tint(hex, 1 + (hash(x, y, z, 77) - .5) * 2 * amt);
+const LIN = Array.from({ length: 256 }, (_, i) => { const c = i / 255; return c <= .04045 ? c / 12.92 : Math.pow((c + .055) / 1.055, 2.4); });
+
+// faces: normal n, and two edges u, v with u × v = n (so each quad winds outward)
+const FACES = [
+  { n: [1, 0, 0], u: [0, 1, 0], v: [0, 0, 1] }, { n: [-1, 0, 0], u: [0, 0, 1], v: [0, 1, 0] },
+  { n: [0, 1, 0], u: [0, 0, 1], v: [1, 0, 0] }, { n: [0, -1, 0], u: [1, 0, 0], v: [0, 0, 1] },
+  { n: [0, 0, 1], u: [1, 0, 0], v: [0, 1, 0] }, { n: [0, 0, -1], u: [0, 1, 0], v: [1, 0, 0] },
+];
+const AO_K = [.46, .66, .84, 1];
+// every exposed face becomes a quad; each corner is darkened by the voxels around it (ambient occlusion)
+function meshVoxels(each, get, skipFloor) {
+  const P = [], N = [], C = [], I = []; let vc = 0;
+  each((x, y, z, c) => {
+    const r = LIN[(c >> 16) & 255], g = LIN[(c >> 8) & 255], b = LIN[c & 255];
+    for (const f of FACES) {
+      const [nx, ny, nz] = f.n;
+      if (get(x + nx, y + ny, z + nz)) continue;
+      if (skipFloor && ny < 0 && y === 0) continue;
+      const [ux, uy, uz] = f.u, [wx, wy, wz] = f.v;
+      const ox = x + (nx > 0 ? 1 : 0), oy = y + (ny > 0 ? 1 : 0), oz = z + (nz > 0 ? 1 : 0), bx = x + nx, by = y + ny, bz = z + nz;
+      const ao = [0, 0, 0, 0];
+      for (let k = 0; k < 4; k++) {
+        const a = k === 1 || k === 2 ? 1 : 0, bb = k >= 2 ? 1 : 0, su = a ? 1 : -1, sv = bb ? 1 : -1;
+        const s1 = get(bx + ux * su, by + uy * su, bz + uz * su) ? 1 : 0;
+        const s2 = get(bx + wx * sv, by + wy * sv, bz + wz * sv) ? 1 : 0;
+        const cc = get(bx + ux * su + wx * sv, by + uy * su + wy * sv, bz + uz * su + wz * sv) ? 1 : 0;
+        const o = s1 && s2 ? 0 : 3 - s1 - s2 - cc;
+        ao[k] = o;
+        P.push(ox + ux * a + wx * bb, oy + uy * a + wy * bb, oz + uz * a + wz * bb);
+        N.push(nx, ny, nz);
+        C.push(r * AO_K[o], g * AO_K[o], b * AO_K[o]);
+      }
+      if (ao[0] + ao[2] >= ao[1] + ao[3]) I.push(vc, vc + 1, vc + 2, vc, vc + 2, vc + 3);
+      else I.push(vc, vc + 1, vc + 3, vc + 1, vc + 2, vc + 3);
+      vc += 4;
+    }
+  });
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(P), 3));
+  geo.setAttribute("normal", new THREE.BufferAttribute(new Float32Array(N), 3));
+  geo.setAttribute("color", new THREE.BufferAttribute(new Float32Array(C), 3));
+  geo.setIndex(new THREE.BufferAttribute(new Uint32Array(I), 1));
+  geo.computeBoundingSphere(); geo.computeBoundingBox();
+  return geo;
+}
+
+// ---------- terrain voxels ----------
+const VOX = new Uint32Array(VX * VY * VZ);
+const vIdx = (x, y, z) => x + VX * (z + VZ * y);
+const vGet = (x, y, z) => (x < 0 || y < 0 || z < 0 || x >= VX || y >= VY || z >= VZ) ? 0 : VOX[vIdx(x, y, z)];
+const vSet = (x, y, z, hex) => { if (x < 0 || y < 0 || z < 0 || x >= VX || y >= VY || z >= VZ) return; VOX[vIdx(x, y, z)] = (hex & 0xffffff) | 0x1000000; };
+const PAL = {
+  grass: [0x5f9e3a, 0x67a83f, 0x578f35, 0x6db246], tuft: [0x7cc24f, 0x8bd257, 0x6fb444], dirt: [0x7a5634, 0x6c4b2e, 0x845d39],
+  road: [0xa47c4f, 0x96703f, 0xb08a5a], rock: [0x6f5d4b, 0x5f4f40, 0x7a6652, 0x695848], stone: [0xa9a596, 0x9e9a8b, 0xb3af9f],
+  grout: 0x77736a, moss: [0x6f8f48, 0x5f7f3c], sand: [0xc6b483, 0xb8a676, 0xd1c08f], pebble: [0x948e84, 0x7f7a71, 0xa7a196],
+  plank: [0x8a5a32, 0x7d5130, 0x94643a], trunk: [0x6b4a2f, 0x5a3d26], leaf: [0x3f7d2c, 0x4d8f34, 0x2f6a24, 0x5aa03c],
+  boulder: [0x8b8780, 0x7a766f, 0x9a968e], marble: [0xd2ccbb, 0xc0baa9, 0xdcd6c6], flower: [0xf2e46b, 0xffffff, 0xc88af0, 0xff8a8a],
+};
+function surfaceColor(t, x, y, z, lx, lz) {
+  let c;
+  if (t === "G" || t === "T" || t === "R") c = pickc(PAL.grass, x, y, z, 1);
+  else if (t === "D") c = hash(x, y, z, 2) < .06 ? pickc(PAL.pebble, x, y, z, 3) : pickc(PAL.road, x, y, z, 4);
+  else if (t === "S" || t === "P") c = (lx % 4 === 0 || lz % 4 === 0) ? PAL.grout : hash(x, y, z, 5) < .08 ? pickc(PAL.moss, x, y, z, 6) : pickc(PAL.stone, x, y, z, 7);
+  else c = hash(x, y, z, 8) < .16 ? pickc(PAL.pebble, x, y, z, 9) : pickc(PAL.sand, x, y, z, 10);
+  return lx === 0 || lz === 0 ? tint(c, .88) : c;       // a faint tile grid
+}
+function tree(cx, by, cz, seed) {
+  const r = rng(seed), th = 6 + Math.floor(r() * 3);
+  for (let y = by; y < by + th; y++) for (const [dx, dz] of [[0, 0], [1, 0], [0, 1], [1, 1]]) vSet(cx + dx, y, cz + dz, jit(pickc(PAL.trunk, cx + dx, y, cz + dz, 12), cx, y, cz));
+  for (const [dx, dz] of [[-1, 0], [2, 1], [1, -1], [0, 2]]) vSet(cx + dx, by, cz + dz, PAL.trunk[1]);
+  const blobs = [[0, th + 3, 0, 5.4, 4.3], [r() * 3 - 1.5, th + 6.5, r() * 3 - 1.5, 3.9, 3.2], [r() * 5 - 2.5, th + 1.5, r() * 5 - 2.5, 3.8, 2.8]];
+  for (const [ox, oy, oz, rr, ry] of blobs) for (let dx = -8; dx <= 9; dx++) for (let dy = -6; dy <= 6; dy++) for (let dz = -8; dz <= 9; dz++) {
+    const ex = (dx - .5 - ox) / rr, ey = dy / ry, ez = (dz - .5 - oz) / rr, x = cx + dx, y = Math.round(by + oy + dy), z = cz + dz;
+    if (ex * ex + ey * ey + ez * ez > 1 - hash(x, y, z, 13) * .32) continue;
+    let c = pickc(PAL.leaf, x, y, z, 14);
+    if (dy > ry * .3) c = tint(c, 1.16); else if (dy < -ry * .4) c = tint(c, .78);
+    vSet(x, y, z, c);
+  }
+}
+function boulder(cx, by, cz, seed) {
+  const r = rng(seed), rx = 3.2 + r(), rz = 3 + r();
+  for (let dx = -5; dx <= 5; dx++) for (let dy = 0; dy <= 5; dy++) for (let dz = -5; dz <= 5; dz++) {
+    const x = cx + dx, y = by + dy, z = cz + dz, e = (dx / rx) ** 2 + ((dy + .6) / 3.4) ** 2 + (dz / rz) ** 2;
+    if (e > 1 - hash(x, y, z, 15) * .2) continue;
+    vSet(x, y, z, dy >= 3 && hash(x, y, z, 16) < .6 ? pickc(PAL.moss, x, y, z, 17) : jit(pickc(PAL.boulder, x, y, z, 18), x, y, z, .08));
+  }
+}
+function pillar(tx, tz, seed) {
+  const r = rng(seed), by = BASE + HT[tz][tx] * LEVEL, x0 = tx * TILE + 2, z0 = tz * TILE + 2, hh = 7 + Math.floor(r() * 6);
+  for (let x = tx * TILE + 1; x <= tx * TILE + 6; x++) for (let z = tz * TILE + 1; z <= tz * TILE + 6; z++) vSet(x, by, z, pickc(PAL.marble, x, by, z, 19));
+  for (let y = by + 1; y <= by + hh; y++) for (let x = x0; x < x0 + 4; x++) for (let z = z0; z < z0 + 4; z++) {
+    if (y > by + hh - 2 && hash(x, y, z, 20) < .45) continue;                       // a broken top
+    const flute = (x === x0 || x === x0 + 3 || z === z0 || z === z0 + 3) && (x + z) % 2 === 0;
+    vSet(x, y, z, flute ? tint(PAL.marble[1], .9) : jit(PAL.marble[0], x, y, z, .05));
+  }
+  const fx = tx * TILE + (r() < .5 ? 0 : 5), fz = tz * TILE + 5;                    // a fallen drum beside it
+  for (let x = fx; x < fx + 3; x++) for (let y = by + 1; y <= by + 2; y++) for (let z = fz; z < fz + 2; z++) vSet(x, y, z, pickc(PAL.marble, x, y, z, 21));
+}
+function bridge(tx, tz) {
+  const deck = BASE + LEVEL - 1;
+  for (let lx = 0; lx < TILE; lx++) for (let lz = 0; lz < TILE; lz++) {
+    const x = tx * TILE + lx, z = tz * TILE + lz, board = Math.floor(x / 2);
+    vSet(x, deck, z, x % 2 === 1 && lz % 3 === 0 ? 0x5a3a1e : jit(PAL.plank[board % 3], x, deck, z, .05));
+    if (lz === 0 || lz === TILE - 1) { vSet(x, deck - 1, z, 0x5a3a1e); if (lx % 4 === 0) for (let y = deck + 1; y <= deck + 3; y++) vSet(x, y, z, 0x6b4428); vSet(x, deck + 3, z, 0x7d5130); }
+  }
+  for (const lx of [1, 6]) for (const lz of [0, TILE - 1]) for (let y = BASE - 2; y < deck; y++) vSet(tx * TILE + lx, y, tz * TILE + lz, 0x5a3a1e);
+}
+function buildTerrain() {
+  for (let tz = 0; tz < MD; tz++) for (let tx = 0; tx < MW; tx++) {
+    const t = TT[tz][tx], wet = t === "W" || t === "B", top = wet ? BASE - 2 : BASE + HT[tz][tx] * LEVEL, tf = 1 + (hash(tx, 0, tz, 21) - .5) * .07;
+    for (let lx = 0; lx < TILE; lx++) for (let lz = 0; lz < TILE; lz++) {
+      const x = tx * TILE + lx, z = tz * TILE + lz;
+      for (let y = 0; y < top; y++) {
+        const d = top - 1 - y; let c;
+        if (d === 0) c = tint(surfaceColor(t, x, y, z, lx, lz), tf);
+        else if (d === 1 && (t === "G" || t === "T" || t === "R")) c = hash(x, y, z, 5) < .55 ? pickc(PAL.grass, x, y, z, 6) : pickc(PAL.dirt, x, y, z, 7);
+        else if (d <= 3) c = wet ? pickc(PAL.sand, x, y, z, 8) : (t === "S" || t === "P") ? pickc(PAL.stone, x, y, z, 11) : pickc(PAL.dirt, x, y, z, 9);
+        else c = PAL.rock[(Math.floor(y / 2) + Math.floor(hash(Math.floor(x / 6), 0, Math.floor(z / 6), 3) * 2)) % PAL.rock.length];
+        vSet(x, y, z, jit(c, x, y, z));
+      }
+      // grass tufts and wildflowers, kept off the middle of the tile where a unit stands
+      if (t === "G" && !(lx >= 2 && lx <= 5 && lz >= 2 && lz <= 5)) {
+        const q = hash(x, 0, z, 11);
+        if (q < .13) { vSet(x, top, z, pickc(PAL.tuft, x, top, z, 12)); if (q < .03) vSet(x, top + 1, z, PAL.tuft[2]); }
+        else if (q > .982) vSet(x, top, z, pickc(PAL.flower, x, top, z, 13));
+      }
+      if (t === "D" && hash(x, 1, z, 14) < .015) vSet(x, top, z, pickc(PAL.pebble, x, top, z, 15));
+      if (t === "S" && hash(x, 2, z, 16) < .02 && !(lx >= 2 && lx <= 5 && lz >= 2 && lz <= 5)) vSet(x, top, z, pickc(PAL.marble, x, top, z, 17));
+    }
+    const by = BASE + HT[tz][tx] * LEVEL, seed = tx * 131 + tz * 17 + 5;
+    if (t === "T") tree(tx * TILE + 3 + Math.floor(hash(tx, 1, tz, 30) * 2), by, tz * TILE + 3 + Math.floor(hash(tx, 2, tz, 31) * 2), seed);
+    if (t === "R") boulder(tx * TILE + 4, by, tz * TILE + 4, seed);
+    if (t === "P") pillar(tx, tz, seed);
+    if (t === "B") bridge(tx, tz);
+  }
+}
+
+// ---------- unit sculpting (half-size voxels; the model faces +z, x 0..13, feet at y 0) ----------
+function VB() {
+  const m = new Map(), key = (x, y, z) => (x + 64) + (y + 64) * 256 + (z + 64) * 65536;
+  return {
+    set(x, y, z, c) { m.set(key(x, y, z), [x, y, z, (jit(c, x, y, z, .035) & 0xffffff) | 0x1000000]); },
+    raw(x, y, z, c) { m.set(key(x, y, z), [x, y, z, (c & 0xffffff) | 0x1000000]); },
+    get(x, y, z) { const e = m.get(key(x, y, z)); return e ? e[3] : 0; },
+    del(x, y, z) { m.delete(key(x, y, z)); },
+    box(x0, y0, z0, x1, y1, z1, c) { for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) for (let z = z0; z <= z1; z++) this.set(x, y, z, c); },
+    each(cb) { for (const [x, y, z, c] of m.values()) cb(x, y, z, c); },
+  };
+}
+function skirtShape(v, c, hem, bottom, flare) {
+  for (let y = bottom; y <= 9; y++) {
+    const t = (9 - y) / Math.max(1, 9 - bottom), rx = 4.3 + t * flare, rz = 3.2 + t * flare * .75;
+    for (let x = -3; x <= 16; x++) for (let z = -3; z <= 12; z++) if (((x + .5 - 7) / rx) ** 2 + ((z + .5 - 5) / rz) ** 2 <= 1) v.set(x, y, z, hem && y <= bottom + 1 ? hem : c);
+  }
+}
+function humanoid(o) {
+  const v = VB(), S = o.skin ?? 0xf1c9a5, legs = o.legs ?? 0x3b3f5c, boots = o.boots ?? 0x5a3d26;
+  for (const [a, b] of [[3, 5], [8, 10]]) {
+    v.box(a, 0, 3, b, 2, 7, boots);
+    v.box(a, 3, 3, b, 8, 6, legs);
+    if (o.greaves) v.box(a, 3, 7, b, 7, 7, o.greaves);
+  }
+  v.box(3, 8, 2, 10, 9, 7, o.belt ?? legs);
+  v.box(3, 10, 2, 10, 15, 7, o.torso);
+  const sl = o.sleeve ?? o.torso;
+  v.box(1, 10, 3, 2, 15, 6, sl); v.box(11, 10, 3, 12, 15, 6, sl);
+  v.box(1, 8, 3, 2, 9, 6, o.glove ?? S); v.box(11, 8, 3, 12, 9, 6, o.glove ?? S);
+  if (o.skirt) skirtShape(v, o.skirt, o.hem, o.skirtBottom ?? 1, o.flare ?? 2.4);
+  if (o.chest) v.box(4, 11, 8, 9, 15, 8, o.chest);
+  if (o.pauldron) { v.box(0, 14, 2, 2, 16, 7, o.pauldron); v.box(11, 14, 2, 13, 16, 7, o.pauldron); }
+  v.box(5, 16, 3, 8, 16, 6, S);
+  v.box(2, 17, 1, 11, 25, 9, S);
+  const eye = o.eye ?? 0x2b2433;
+  v.box(4, 20, 9, 5, 21, 9, eye); v.box(8, 20, 9, 9, 21, 9, eye);
+  v.raw(4, 21, 9, 0xf6f6ff); v.raw(8, 21, 9, 0xf6f6ff);
+  v.box(6, 18, 9, 7, 18, 9, o.mouth ?? tint(S, .74));
+  if (o.blush) { v.raw(3, 19, 9, o.blush); v.raw(10, 19, 9, o.blush); }
+  return v;
+}
+function hair(v, style, c) {
+  const H = (x, y, z) => v.set(x, y, z, c);
+  for (let x = 2; x <= 11; x++) for (let z = 1; z <= 9; z++) H(x, 26, z);
+  for (let y = 18; y <= 26; y++) for (let z = 0; z <= 9; z++) { H(1, y, z); H(12, y, z); }
+  for (let y = 17; y <= 26; y++) for (let x = 1; x <= 12; x++) H(x, y, 0);
+  for (let x = 2; x <= 11; x++) { H(x, 25, 9); H(x, 24, 9); }
+  for (let x = 2; x <= 11; x++) {                                   // a jagged fringe
+    let len = (x * 7 + 3) % 3 + (style === "spiky" ? 1 : 0);
+    if ([4, 5, 8, 9].includes(x)) len = Math.min(len, 2);
+    for (let y = 25; y >= 24 - len; y--) H(x, y, 10);
+  }
+  if (style === "spiky") {
+    for (const [x, z, hh] of [[3, 2, 3], [5, 1, 4], [7, 2, 5], [9, 1, 3], [10, 3, 3], [4, 5, 3], [6, 4, 4], [8, 6, 3], [11, 5, 2], [2, 6, 2], [5, 7, 2], [9, 8, 2], [7, 8, 2]])
+      for (let k = 1; k <= hh; k++) { H(x, 26 + k, z - (k > 2 ? 1 : 0)); if (k < hh) H(x + 1, 26 + k, z); }
+    for (const [y, x, l] of [[25, 4, 2], [23, 8, 3], [21, 5, 2], [24, 10, 2], [20, 9, 2], [22, 2, 2]]) for (let k = 1; k <= l; k++) { H(x, y - k + 1, -k); H(x + 1, y - k + 1, -k + 1); }
+  }
+  if (style === "long") {
+    for (let y = 9; y <= 26; y++) { const w = y < 13 ? 1 : 0; for (let x = 2 + w; x <= 11 - w; x++) H(x, y, -1); }
+    for (let y = 16; y <= 17; y++) for (let z = 2; z <= 9; z++) { H(1, y, z); H(12, y, z); }
+  }
+  if (style === "short") { H(4, 27, 5); H(5, 27, 5); H(5, 27, 4); H(6, 27, 3); }
+}
+function helm(v, c, o = {}) {
+  v.box(1, 23, 0, 12, 27, 10, c);
+  for (let x = 2; x <= 11; x++) for (let z = 1; z <= 9; z++) v.set(x, 28, z, c);
+  for (const x of [1, 12]) for (const z of [0, 10]) v.del(x, 27, z);
+  v.box(1, 18, 0, 1, 22, 9, c); v.box(12, 18, 0, 12, 22, 9, c); v.box(1, 18, 0, 12, 22, 0, c);
+  v.box(1, 23, 10, 12, 23, 10, tint(c, .76));
+  if (o.nasal) v.box(6, 19, 10, 7, 22, 10, c);
+  if (o.full) for (let x = 2; x <= 11; x++) for (let y = 17; y <= 22; y++) v.raw(x, y, 10, (y === 20 || y === 21) && x >= 3 && x <= 10 && x !== 6 && x !== 7 ? 0x0e1014 : tint(c, 1.05));
+  if (o.plume) for (let z = -1; z <= 8; z++) { const top = 30 + (z > 1 && z < 7 ? 1 : 0) - (z < 1 ? 1 : 0); for (let y = 29; y <= top; y++) { v.set(6, y, z, o.plume); v.set(7, y, z, o.plume); } }
+}
+function hood(v, c) {
+  v.box(1, 24, 0, 12, 27, 10, c);
+  v.box(1, 16, 0, 1, 23, 10, c); v.box(12, 16, 0, 12, 23, 10, c); v.box(1, 16, 0, 12, 23, 0, c);
+  v.box(5, 26, -1, 8, 27, -1, c); v.box(6, 25, -2, 7, 26, -2, c);
+  v.box(1, 15, 1, 12, 16, 8, c); v.box(0, 14, 1, 13, 14, 8, tint(c, .86));
+}
+function hat(v, c, band) {
+  for (let x = -1; x <= 14; x++) for (let z = -2; z <= 12; z++) if (((x + .5 - 7) / 7.4) ** 2 + ((z + .5 - 5.5) / 7) ** 2 <= 1) v.set(x, 26, z, c);
+  for (let k = 0; k < 12; k++) {
+    const r = 4.8 - k * .38, cz = 5.5 - Math.max(0, k - 6) * .55;
+    for (let x = 0; x <= 14; x++) for (let z = -4; z <= 11; z++) if ((x + .5 - 7) ** 2 + (z + .5 - cz) ** 2 <= r * r) v.set(x, 27 + k, z, k < 2 && band ? band : c);
+  }
+}
+function cape(v, c, clasp) {
+  for (let y = 2; y <= 15; y++) { const w = y < 8 ? 1 : 0; for (let x = 2 - w; x <= 11 + w; x++) { v.set(x, y, 1, c); if (y < 11) v.set(x, y, 0, tint(c, .9)); } }
+  v.box(1, 15, 1, 12, 16, 8, c); v.box(0, 14, 1, 13, 14, 7, tint(c, .88));
+  if (clasp) v.box(6, 15, 9, 7, 16, 9, clasp);
+}
+function sash(v, c) {
+  for (let y = 10; y <= 15; y++) { const x = Math.round(3 + (y - 10) * 1.3); for (const xx of [x, x + 1]) { v.set(xx, y, xx >= 4 && xx <= 9 && y >= 11 ? 8 : 7, c); v.set(xx, y, 2, c); } }
+}
+function ribbon(v, c) { v.box(3, 23, -2, 5, 25, -2, c); v.box(8, 23, -2, 10, 25, -2, c); v.box(6, 23, -2, 7, 25, -2, tint(c, .78)); v.box(5, 20, -2, 5, 22, -2, c); v.box(8, 20, -2, 8, 22, -2, c); }
+function sword(v, blade = 0xdfe5ee) {
+  v.box(0, 7, 4, 0, 10, 5, 0x5a3d26); v.box(0, 6, 4, 0, 6, 5, 0xd9b24a); v.box(0, 11, 2, 0, 11, 7, 0xd9b24a);
+  v.box(0, 12, 4, 0, 23, 4, tint(blade, 1.06)); v.box(0, 12, 5, 0, 23, 5, tint(blade, .9)); v.set(0, 24, 4, blade);
+}
+function staff(v, wood, top, kind) {
+  v.box(0, 0, 5, 0, 23, 5, wood);
+  if (kind === "orb") { for (let y = 23; y <= 27; y++) for (let x = -2; x <= 2; x++) for (let z = 3; z <= 7; z++) if ((x * x + (y - 25) ** 2 + (z - 5) ** 2) <= 4.6) v.set(x, y, z, top); v.raw(-1, 26, 6, 0xffffff); }
+  if (kind === "crystal") { v.box(0, 24, 4, 0, 27, 6, top); v.set(0, 28, 5, top); v.box(-1, 25, 5, 1, 26, 5, top); v.box(0, 23, 3, 0, 23, 7, 0xd9b24a); }
+  if (kind === "sun") { for (let a = 0; a < 24; a++) { const t = a / 24 * Math.PI * 2; v.set(0, Math.round(26 + 2.6 * Math.sin(t)), Math.round(5 + 2.6 * Math.cos(t)), top); } v.box(0, 25, 4, 0, 27, 6, tint(top, 1.1)); v.set(0, 30, 5, top); }
+}
+function spear(v) { v.box(0, 0, 5, 0, 27, 5, 0x5a3d26); v.box(0, 28, 4, 0, 29, 6, 0xcfd5de); v.set(0, 30, 5, 0xe8edf4); v.set(0, 31, 5, 0xe8edf4); v.box(0, 27, 4, 0, 27, 6, 0xd9b24a); }
+function bow(v) {
+  for (let y = 1; y <= 17; y++) { const t = (y - 9) / 8; v.set(13, y, Math.round(6 + 2.6 * (1 - t * t)), 0x7a4e2a); v.raw(13, y, 5, 0xe8e2d0); }
+}
+function quiver(v) { v.box(9, 8, -1, 10, 16, 0, 0x6b4a2f); v.box(9, 17, -1, 9, 18, -1, 0xf2f2f2); v.box(10, 17, -1, 10, 19, -1, 0xd84a3a); }
+function kiteShield(v, c, emblem) {
+  for (let y = 6; y <= 16; y++) { const half = y < 9 ? y - 5 : 3; for (let z = 5 - half; z <= 5 + half; z++) { v.set(13, y, z, tint(c, .85)); v.set(14, y, z, c); } }
+  v.box(14, 9, 5, 14, 15, 5, emblem); v.box(14, 13, 3, 14, 13, 7, emblem);
+}
+function roundShield(v, c, boss) {
+  for (let y = 6; y <= 16; y++) for (let z = 0; z <= 10; z++) if ((y - 11) ** 2 + (z - 5) ** 2 <= 13) { v.set(13, y, z, tint(c, .8)); v.set(14, y, z, (y - 11) ** 2 + (z - 5) ** 2 > 9 ? 0x8a8f98 : c); }
+  v.box(15, 10, 4, 15, 12, 6, boss);
+}
+function soldier(col) {
+  const v = humanoid({ skin: 0xefc6a2, torso: 0x7a5a3a, sleeve: col, glove: 0x5a3d26, legs: 0x4a3a2a, boots: 0x3a2a1c, belt: 0x3a2a1c });
+  v.box(5, 9, 8, 8, 15, 8, col); helm(v, 0xa9b1bb, { nasal: true }); sword(v, 0xd6dce6); roundShield(v, 0x8a5a32, col);
+  return { v };
+}
+function archer(hoodC, tunic) {
+  const v = humanoid({ skin: 0xefc6a2, torso: tunic, sleeve: tunic, glove: 0x6b4a2f, legs: 0x6a5038, boots: 0x4a3424, belt: 0x4a3424 });
+  hair(v, "short", 0x6a4a2a); hood(v, hoodC); quiver(v); bow(v);
+  return { v };
+}
+const MODELS = {
+  alphonse() {   // blue-violet hair, light armour, a gold sash
+    const v = humanoid({ skin: 0xf1c9a5, torso: 0x8fa3c4, chest: 0xc6d3e6, sleeve: 0x2f3f6b, glove: 0x6b4a2f, legs: 0x2f3f6b, boots: 0x6b4a2f, belt: 0xe2b84a, pauldron: 0xc6d3e6, greaves: 0xb3c2d8 });
+    hair(v, "spiky", 0x5d66c8); sash(v, 0xe2b84a); sword(v); return { v };
+  },
+  eleanor() {    // blonde, a white and blue dress, a green ribbon
+    const v = humanoid({ skin: 0xf6d4b8, torso: 0x3d6fc4, sleeve: 0xf4f2ea, glove: 0xf6d4b8, legs: 0xf4f2ea, boots: 0xc9b49a, belt: 0xf4f2ea, skirt: 0xf4f2ea, hem: 0x3d6fc4, skirtBottom: 1, blush: 0xf2a898 });
+    v.box(4, 15, 7, 9, 15, 8, 0xf4f2ea); v.box(6, 10, 8, 7, 14, 8, 0xf4f2ea);
+    hair(v, "long", 0xf2d470); ribbon(v, 0x3fae5a); staff(v, 0x8a5a32, 0x7ad0ff, "crystal"); return { v };
+  },
+  ivanna() {     // silver hair, red armour
+    const v = humanoid({ skin: 0xf0c6a6, torso: 0x9c2730, chest: 0xc4363e, sleeve: 0x7a1e26, glove: 0x9c2730, legs: 0x3a2a30, boots: 0x7a1e26, belt: 0xe0b04a, pauldron: 0xc4363e, greaves: 0xc4363e, blush: 0xe89a8a });
+    v.box(4, 15, 8, 9, 15, 8, 0xe0b04a); v.box(0, 16, 2, 2, 16, 7, 0xe0b04a); v.box(11, 16, 2, 13, 16, 7, 0xe0b04a);
+    hair(v, "long", 0xdde2ea); kiteShield(v, 0xcfd5de, 0xc4363e); sword(v); return { v };
+  },
+  rictor() {     // blonde, a blue cloak, a white shirt, green trousers
+    const v = humanoid({ skin: 0xf2caa8, torso: 0xf0ece2, sleeve: 0xf0ece2, glove: 0xf2caa8, legs: 0x4f7d3a, boots: 0x6b4a2f, belt: 0x6b4a2f });
+    hair(v, "short", 0xead070); cape(v, 0x2f5fae, 0xe0b04a); staff(v, 0xd9b24a, 0xffe08a, "sun"); return { v };
+  },
+  soldierA: () => soldier(0x3a5fa8), soldierE: () => soldier(0xa83a2a),
+  archerA: () => archer(0x4a7a3a, 0x5f8a44), archerE: () => archer(0x7a2a2a, 0x8a4a3a),
+  wizardA() {
+    const v = humanoid({ skin: 0xf1c9a5, torso: 0x3d3a8a, sleeve: 0x3d3a8a, legs: 0x3d3a8a, boots: 0x3a2a1c, belt: 0xe0b04a, skirt: 0x3d3a8a, hem: 0xe0b04a, skirtBottom: 0, flare: 1.8 });
+    hair(v, "short", 0x7a4a2a); hat(v, 0x3d3a8a, 0xe0b04a); staff(v, 0x6b4a2f, 0xff6a3a, "orb"); return { v };
+  },
+  witchE() {
+    const v = humanoid({ skin: 0xf0d8c8, torso: 0x5a2a6a, sleeve: 0x2a2232, legs: 0x2a2232, boots: 0x2a2232, belt: 0x2a2232, skirt: 0x5a2a6a, hem: 0x2a2232, skirtBottom: 0, flare: 2.6, eye: 0x7a2a8a, blush: 0xe8a0a8 });
+    hair(v, "long", 0x2c2236); hat(v, 0x2a2232, 0x8a3aa8); staff(v, 0x2a2232, 0x6aff9a, "orb"); return { v };
+  },
+  knightE() {
+    const steel = 0x6a717e, light = 0x9aa2b0;
+    const v = humanoid({ skin: 0xe8c0a0, torso: steel, chest: light, sleeve: steel, glove: light, legs: 0x4a505a, boots: steel, belt: 0x3a3a40, pauldron: light, greaves: light });
+    v.box(5, 4, 8, 8, 14, 8, 0xa82a2a); v.box(5, 4, 8, 8, 4, 8, 0xe0b04a); v.box(5, 4, 1, 8, 14, 1, 0xa82a2a);
+    helm(v, steel, { full: true, plume: 0xc8302a }); spear(v); return { v };
+  },
+  hawkman() {
+    const feather = 0x8a6a4a, light = 0xeadfca, talon = 0xe0b04a;
+    const v = humanoid({ skin: light, torso: feather, sleeve: feather, legs: 0x6b5238, boots: talon, glove: talon, belt: 0x4a3a2a, eye: 0x161616 });
+    v.box(4, 10, 8, 9, 14, 8, light);
+    for (let x = 2; x <= 11; x++) for (let y = 23; y <= 25; y++) for (let z = 1; z <= 9; z++) v.set(x, y, z, feather);
+    v.box(5, 18, 10, 8, 19, 11, 0xf0a020); v.box(6, 18, 12, 7, 18, 12, 0xd88a10); v.box(6, 17, 10, 7, 17, 10, 0xd88a10);
+    for (let k = 0; k < 4; k++) v.box(5, 26 + k, 4 - k, 8, 26 + k, 5 - k, k % 2 ? feather : tint(feather, 1.15));
+    for (const side of [-1, 1]) for (let i = 0; i < 10; i++) {
+      const x = side < 0 ? -i : 13 + i, top = 25 - Math.round(i * .5), bot = 9 + i;
+      for (let y = bot; y <= top; y++) { const c = y < bot + 2 ? light : (i % 2 ? feather : tint(feather, .82)); v.set(x, y, 0, c); if (i < 4) v.set(x, y, 1, c); }
+    }
+    spear(v); return { v };
+  },
+  gremlin() {
+    const skin = 0x8a78a8, dark = 0x4a3a5a, horn = 0xe8dcc0;
+    const v = humanoid({ skin, torso: skin, sleeve: skin, legs: skin, boots: tint(skin, .78), glove: tint(skin, .78), belt: 0x5a3a2a, eye: 0xff3a2a, mouth: 0x3a1a2a });
+    v.box(-2, 21, 4, 1, 22, 6, skin); v.set(-3, 23, 5, skin); v.box(12, 21, 4, 15, 22, 6, skin); v.set(16, 23, 5, skin);
+    v.box(3, 26, 4, 4, 27, 5, horn); v.set(3, 28, 4, horn); v.box(9, 26, 4, 10, 27, 5, horn); v.set(10, 28, 4, horn);
+    v.box(4, 6, 7, 9, 9, 8, 0x5a3a2a);
+    for (const side of [-1, 1]) for (let i = 0; i < 8; i++) {
+      const x = side < 0 ? 1 - i : 12 + i, top = 22 + (i < 4 ? i : 7 - i), bot = 12 + (i % 3 === 2 ? 3 : 1);
+      for (let y = bot; y <= top; y++) v.set(x, y, 0, y === top ? tint(dark, 1.4) : dark);
+    }
+    for (let k = 0; k < 6; k++) v.set(7, 5 + Math.round(Math.sin(k * .9) * 1.5), -1 - k, skin);
+    v.box(6, 5, -7, 8, 7, -7, dark);
+    return { v, scale: .42 };
+  },
+};
+
+// ---------- the armies ----------
+const SPELLS = {
+  "Heal": { name: "Heal", heal: true, min: 0, max: 3, mp: 8, power: 1.3, col: 0x8affb4 },
+  "Heal Plus": { name: "Heal Plus", heal: true, min: 0, max: 3, mp: 14, power: 1.9, col: 0xb4ffd0 },
+  "Exorcism": { name: "Exorcism", min: 1, max: 3, mp: 16, power: 1.3, col: 0xffe39a, fx: "pillar" },
+  "Fireball": { name: "Fireball", min: 1, max: 4, mp: 12, power: 1.5, col: 0xff7a2a, fx: "orb" },
+  "Ice Javelin": { name: "Ice Javelin", min: 1, max: 4, mp: 12, power: 1.45, col: 0x9fe0ff, fx: "shard" },
+};
+const ELEMENT_COL = { Earth: "#d2a052", Water: "#5ab0ff", Wind: "#7ddc93", Fire: "#ff7050" };
+const DEFS = [
+  { id: "alphonse", name: "Alphonse", cls: "Knight", team: "A", x: 3, z: 6, lv: 9, hp: 118, mp: 24, atk: 46, def: 30, mag: 16, move: 4, jump: 2, el: "Wind", weapon: "sword", model: "alphonse", hero: true },
+  { id: "eleanor", name: "Eleanor", cls: "Cleric", team: "A", x: 2, z: 5, lv: 8, hp: 84, mp: 66, atk: 22, def: 18, mag: 42, move: 4, jump: 2, el: "Water", weapon: "staff", spells: ["Heal"], model: "eleanor" },
+  { id: "ivanna", name: "Ivanna", cls: "Knight", team: "A", x: 4, z: 7, lv: 10, hp: 134, mp: 20, atk: 50, def: 38, mag: 14, move: 4, jump: 2, el: "Earth", weapon: "sword", model: "ivanna" },
+  { id: "rictor", name: "Rictor", cls: "High Priest", team: "A", x: 1, z: 6, lv: 12, hp: 104, mp: 84, atk: 24, def: 24, mag: 54, move: 4, jump: 2, el: "Earth", weapon: "staff", spells: ["Heal Plus", "Exorcism"], model: "rictor" },
+  { id: "soldier-a", name: "Soldier", cls: "Soldier", team: "A", x: 4, z: 5, lv: 7, hp: 96, mp: 12, atk: 40, def: 26, mag: 10, move: 4, jump: 2, el: "Fire", weapon: "sword", model: "soldierA" },
+  { id: "archer-a", name: "Archer", cls: "Archer", team: "A", x: 2, z: 8, lv: 7, hp: 80, mp: 16, atk: 38, def: 18, mag: 12, move: 4, jump: 3, el: "Wind", weapon: "bow", model: "archerA" },
+  { id: "wizard-a", name: "Wizard", cls: "Wizard", team: "A", x: 1, z: 4, lv: 7, hp: 70, mp: 60, atk: 16, def: 14, mag: 44, move: 3, jump: 2, el: "Fire", weapon: "staff", spells: ["Fireball"], model: "wizardA" },
+  { id: "knight-e", name: "Knight", cls: "Knight", team: "E", x: 11, z: 6, lv: 11, hp: 142, mp: 20, atk: 48, def: 40, mag: 14, move: 4, jump: 2, el: "Earth", weapon: "spear", model: "knightE", leader: true },
+  { id: "soldier-e1", name: "Soldier", cls: "Soldier", team: "E", x: 10, z: 5, lv: 8, hp: 98, mp: 12, atk: 41, def: 26, mag: 10, move: 4, jump: 2, el: "Fire", weapon: "sword", model: "soldierE" },
+  { id: "soldier-e2", name: "Soldier", cls: "Soldier", team: "E", x: 10, z: 7, lv: 8, hp: 98, mp: 12, atk: 41, def: 26, mag: 10, move: 4, jump: 2, el: "Earth", weapon: "sword", model: "soldierE" },
+  { id: "archer-e", name: "Archer", cls: "Archer", team: "E", x: 12, z: 1, lv: 8, hp: 82, mp: 16, atk: 39, def: 18, mag: 12, move: 4, jump: 3, el: "Wind", weapon: "bow", model: "archerE" },
+  { id: "witch-e", name: "Witch", cls: "Witch", team: "E", x: 12, z: 10, lv: 9, hp: 74, mp: 64, atk: 16, def: 14, mag: 45, move: 3, jump: 2, el: "Water", weapon: "staff", spells: ["Ice Javelin"], model: "witchE" },
+  { id: "hawk-e", name: "Hawkman", cls: "Hawkman", team: "E", x: 11, z: 3, lv: 9, hp: 96, mp: 18, atk: 42, def: 24, mag: 16, move: 5, jump: 9, el: "Wind", weapon: "spear", model: "hawkman", fly: true },
+  { id: "gremlin-e", name: "Gremlin", cls: "Gremlin", team: "E", x: 11, z: 9, lv: 8, hp: 72, mp: 30, atk: 36, def: 20, mag: 30, move: 5, jump: 9, el: "Fire", weapon: "claw", model: "gremlin", fly: true },
+];
+
+// ---------- renderer, lights, camera ----------
+const app = $("#app"), canvas = $("#view");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
+renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.18;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+const scene = new THREE.Scene();
+const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 900);
+scene.add(new THREE.HemisphereLight(0xd8e8ff, 0x6a5440, 1.25));
+const sun = new THREE.DirectionalLight(0xfff0d8, 2.6);
+sun.position.set(72, 120, -52); scene.add(sun, sun.target);
+sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -88, right: 88, top: 88, bottom: -88, near: 20, far: 360 });
+sun.shadow.bias = -.0004; sun.shadow.normalBias = .35;
+const fillL = new THREE.DirectionalLight(0x9cb8ff, .55); fillL.position.set(-60, 40, 80); scene.add(fillL);
+
+let SW = 1, SH = 1;
+const camS = { yaw: Math.PI / 4, yawT: Math.PI / 4, pitch: .6, zoom: 1, zoomT: 1, tgt: new THREE.Vector3(0, 9, 0), tgtT: new THREE.Vector3(0, 9, 0), shift: 0, shiftT: 0 };
+const viewH = () => Math.max(112, 166 / Math.max(.3, SW / SH)) / camS.zoom;
+function placeCamera() {
+  const r = 300, cp = Math.cos(camS.pitch);
+  camera.position.set(camS.tgt.x + r * cp * Math.sin(camS.yaw), camS.tgt.y + r * Math.sin(camS.pitch), camS.tgt.z + r * cp * Math.cos(camS.yaw));
+  camera.lookAt(camS.tgt);
+  const vh = viewH(), vw = vh * SW / SH, sh = camS.shift * vh / SH;   // shift: keep the map centred between the HUD's top and bottom
+  camera.left = -vw / 2; camera.right = vw / 2; camera.top = vh / 2 - sh; camera.bottom = -vh / 2 - sh;
+  camera.updateProjectionMatrix();
+}
+function measureHud() {
+  const r = app.getBoundingClientRect(), top = $(".top").getBoundingClientRect().bottom - r.top;
+  const st = $("#status"), bottoms = [$("#endPhase").getBoundingClientRect().top];
+  if (!st.hidden) bottoms.push(st.getBoundingClientRect().top);
+  if (!$("#cmds").hidden) bottoms.push($("#cmds").getBoundingClientRect().top);
+  const bot = r.bottom - Math.min(...bottoms);
+  camS.shiftT = (bot - top) / 2;
+}
+function resize() {
+  const r = app.getBoundingClientRect(); SW = Math.max(1, r.width); SH = Math.max(1, r.height);
+  renderer.setSize(SW, SH, false); measureHud();
+}
+
+// ---------- scene objects ----------
+let terrain, water, waterBase;
+const waterTiles = [];
+function buildWater() {
+  for (let z = 0; z < MD; z++) for (let x = 0; x < MW; x++) if (TT[z][x] === "W" || TT[z][x] === "B") waterTiles.push([x, z]);
+  const SEG = 4, P = [], I = [];
+  for (const [tx, tz] of waterTiles) {
+    const b0 = P.length / 3;
+    for (let j = 0; j <= SEG; j++) for (let i = 0; i <= SEG; i++) P.push(OX + tx * TILE + i * TILE / SEG, WATER_Y, OZ + tz * TILE + j * TILE / SEG);
+    for (let j = 0; j < SEG; j++) for (let i = 0; i < SEG; i++) { const a = b0 + j * (SEG + 1) + i, b = a + 1, c = a + SEG + 1, d = c + 1; I.push(a, c, b, b, c, d); }
+  }
+  const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(P), 3)); g.setIndex(I); g.computeVertexNormals();
+  waterBase = Float32Array.from(P);
+  water = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: 0x3a90d4, transparent: true, opacity: .66, roughness: .14, metalness: .08 }));
+  water.receiveShadow = true; water.renderOrder = 2; scene.add(water);
+}
+function waveWater(t) {
+  const pos = water.geometry.attributes.position;
+  for (let i = 0; i < pos.count; i++) { const x = waterBase[i * 3], z = waterBase[i * 3 + 2]; pos.array[i * 3 + 1] = WATER_Y + Math.sin(x * .55 + t * 1.7) * .1 + Math.cos(z * .45 - t * 1.3) * .1; }
+  pos.needsUpdate = true; water.geometry.computeVertexNormals();
+}
+// tile overlays: movement and target ranges (a fill and a frame per tile), the cursor frame
+const frameGeo = (() => { const s = new THREE.Shape([new THREE.Vector2(-3.75, -3.75), new THREE.Vector2(3.75, -3.75), new THREE.Vector2(3.75, 3.75), new THREE.Vector2(-3.75, 3.75)]);
+  s.holes.push(new THREE.Path([new THREE.Vector2(-3.05, -3.05), new THREE.Vector2(-3.05, 3.05), new THREE.Vector2(3.05, 3.05), new THREE.Vector2(3.05, -3.05)])); return new THREE.ShapeGeometry(s).rotateX(-Math.PI / 2); })();
+const ovFill = new THREE.InstancedMesh(new THREE.PlaneGeometry(7.3, 7.3).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ transparent: true, opacity: .3, depthWrite: false }), MW * MD);
+const ovFrame = new THREE.InstancedMesh(frameGeo, new THREE.MeshBasicMaterial({ transparent: true, opacity: 1, depthWrite: false }), MW * MD);
+for (const m of [ovFill, ovFrame]) { m.setColorAt(0, new THREE.Color(1, 1, 1)); m.count = 0; m.renderOrder = 5; m.frustumCulled = false; scene.add(m); }
+const tileY = (x, z) => TT[z][x] === "W" ? WATER_Y + .32 : standY(x, z) + .08;
+function showTiles(list) {
+  const m = new THREE.Matrix4(), c = new THREE.Color();
+  list.forEach((t, i) => { const p = tileWorld(t.x, t.z); m.makeTranslation(p.x, tileY(t.x, t.z), p.z); ovFill.setMatrixAt(i, m); ovFrame.setMatrixAt(i, m); c.set(t.col); ovFill.setColorAt(i, c); ovFrame.setColorAt(i, c); });
+  ovFill.count = ovFrame.count = list.length;
+  for (const o of [ovFill, ovFrame]) { o.instanceMatrix.needsUpdate = true; if (o.instanceColor) o.instanceColor.needsUpdate = true; }
+}
+const clearTiles = () => { ovFill.count = ovFrame.count = 0; };
+const cursorFrame = new THREE.Mesh(frameGeo, new THREE.MeshBasicMaterial({ color: 0xffd36a, transparent: true, opacity: .95, depthWrite: false }));
+cursorFrame.renderOrder = 6; cursorFrame.visible = false; scene.add(cursorFrame);
+const arrow = new THREE.Mesh(new THREE.ConeGeometry(1.25, 2.6, 4).rotateX(Math.PI), new THREE.MeshStandardMaterial({ color: 0xffd36a, emissive: 0x7a5410, roughness: .35, metalness: .4 }));
+arrow.visible = false; arrow.castShadow = true; scene.add(arrow);
+// particles: spell sparks, healing motes and the pollen drifting over the field
+const dotTex = (() => { const c = document.createElement("canvas"); c.width = c.height = 64; const g = c.getContext("2d"), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(.35, "rgba(255,255,255,.7)"); gr.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); })();
+const PMAX = 600, parts = [], pGeo = new THREE.BufferGeometry();
+pGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(PMAX * 3), 3)); pGeo.setAttribute("color", new THREE.BufferAttribute(new Float32Array(PMAX * 3), 3));
+const pts = new THREE.Points(pGeo, new THREE.PointsMaterial({ size: 9, map: dotTex, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+pts.frustumCulled = false; pts.renderOrder = 8; scene.add(pts);
+function emit(p, hex, n, spread = 1.5, up = 3, life = 900) {
+  const c = new THREE.Color(hex);
+  for (let i = 0; i < n && parts.length < PMAX; i++) {
+    const a = Math.random() * Math.PI * 2, s = Math.random() * spread;
+    parts.push({ x: p.x + Math.cos(a) * s * .6, y: p.y + (Math.random() - .3) * spread, z: p.z + Math.sin(a) * s * .6, vx: Math.cos(a) * s * 2.2, vy: up * (.4 + Math.random()), vz: Math.sin(a) * s * 2.2, age: 0, life: life * (.6 + Math.random() * .6), r: c.r, g: c.g, b: c.b });
+  }
+}
+const MOTES = 70, mGeo = new THREE.BufferGeometry(), motes = [];
+mGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(MOTES * 3), 3));
+const motePts = new THREE.Points(mGeo, new THREE.PointsMaterial({ size: 4, map: dotTex, color: 0xfff1c0, transparent: true, opacity: .55, depthWrite: false, blending: THREE.AdditiveBlending }));
+motePts.frustumCulled = false; if (!reduced) scene.add(motePts);
+for (let i = 0; i < MOTES; i++) motes.push({ x: (Math.random() - .5) * VX, y: 8 + Math.random() * 26, z: (Math.random() - .5) * VZ, ph: Math.random() * 6 });
+
+// ---------- units ----------
+const units = [];
+const TEAM_COL = { A: 0x5aa9ff, E: 0xff6652 };
+const ringGeo = new THREE.RingGeometry(2.4, 3.15, 40).rotateX(-Math.PI / 2);
+function makeUnit(d) {
+  const model = MODELS[d.model](), sc = model.scale ?? .5;
+  const geo = meshVoxels(cb => model.v.each(cb), (x, y, z) => model.v.get(x, y, z)); geo.translate(-7, 0, -5);
+  const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .62, metalness: .04 });
+  const body = new THREE.Mesh(geo, mat); body.scale.setScalar(sc); body.castShadow = body.receiveShadow = true;
+  const ring = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: TEAM_COL[d.team], transparent: true, opacity: .9, depthWrite: false }));
+  ring.position.y = .12; ring.renderOrder = 4;
+  const grp = new THREE.Group(); grp.add(ring, body); scene.add(grp);
+  const u = { ...d, spells: d.spells || [], hpMax: d.hp, mpMax: d.mp, body, ring, grp, mat, sc, ph: Math.random() * 6, flash: 0, yawT: 0, face: [d.team === "A" ? 1 : -1, 0] };
+  body.userData.unit = u;
+  units.push(u); resetUnit(u);
+  return u;
+}
+function resetUnit(u) {
+  const d = DEFS.find(x => x.id === u.id);
+  Object.assign(u, { x: d.x, z: d.z, hp: d.hp, mp: d.mp, alive: true, moved: false, acted: false, done: false, dying: false });
+  u.grp.visible = true; u.grp.position.copy(tileWorld(u.x, u.z)); u.body.rotation.set(0, 0, 0); u.body.position.set(0, 0, 0);
+  u.mat.transparent = false; u.mat.opacity = 1; u.ring.material.opacity = .9;
+  faceDir(u, u.team === "A" ? 1 : -1, 0, true); refreshRing(u);
+}
+const unitAt = (x, z) => units.find(u => u.alive && u.x === x && u.z === z);
+const hoverY = u => u.fly ? 2.6 : 0;
+const headPos = u => u.grp.position.clone().add(new THREE.Vector3(0, hoverY(u) + 28 * u.sc, 0));
+const chestPos = u => u.grp.position.clone().add(new THREE.Vector3(0, hoverY(u) + 13 * u.sc, 0));
+function faceDir(u, dx, dz, snap) {
+  if (!dx && !dz) return;
+  if (Math.abs(dx) >= Math.abs(dz)) { dx = Math.sign(dx); dz = 0; } else { dz = Math.sign(dz); dx = 0; }
+  u.face = [dx, dz]; u.yawT = Math.atan2(dx, dz); if (snap) u.body.rotation.y = u.yawT;
+}
+function refreshRing(u) { u.ring.material.color.setHex(u.done ? 0x8a93a6 : TEAM_COL[u.team]); u.ring.material.opacity = u.done ? .5 : .9; }
+
+// ---------- rules ----------
+function reachable(u) {
+  const best = new Map(), key = (x, z) => x + "," + z, q = [[u.x, u.z, 0]];
+  best.set(key(u.x, u.z), { c: 0, prev: null, x: u.x, z: u.z });
+  while (q.length) {
+    q.sort((a, b) => a[2] - b[2]);
+    const [x, z, c] = q.shift();
+    for (const [dx, dz] of DIRS) {
+      const nx = x + dx, nz = z + dz; if (!inMap(nx, nz)) continue;
+      const t = TT[nz][nx];
+      if (BLOCKED.has(t) && !u.fly) continue;
+      const occ = unitAt(nx, nz); if (occ && occ.team !== u.team) continue;
+      if (!u.fly && Math.abs(levelOf(nx, nz) - levelOf(x, z)) > u.jump) continue;
+      const nc = c + (!u.fly && t === "W" ? 2 : 1); if (nc > u.move) continue;
+      const k = key(nx, nz), b = best.get(k); if (b && b.c <= nc) continue;
+      best.set(k, { c: nc, prev: key(x, z), x: nx, z: nz }); q.push([nx, nz, nc]);
+    }
+  }
+  return best;
+}
+const canStop = (u, x, z) => !BLOCKED.has(TT[z][x]) && (!unitAt(x, z) || unitAt(x, z) === u);
+function pathTo(R, x, z) { const out = []; let k = x + "," + z; while (k) { const e = R.get(k); if (!e || e.prev === null) break; out.unshift([e.x, e.z]); k = e.prev; } return out; }
+function actionsOf(u) {
+  const a = [{ name: "Attack", kind: u.weapon === "bow" ? "bow" : "melee" }];
+  for (const s of u.spells) a.push({ ...SPELLS[s], kind: "spell" });
+  return a;
+}
+function canHit(u, fx, fz, tgt, act) {
+  const d = Math.abs(tgt.x - fx) + Math.abs(tgt.z - fz), dh = levelOf(tgt.x, tgt.z) - levelOf(fx, fz);
+  if (act.kind === "melee") return d === 1 && Math.abs(dh) <= (u.fly || tgt.fly ? 4 : 2);
+  if (act.kind === "bow") return d >= 2 && d <= 5 + (dh <= -2 ? 1 : 0);
+  return d >= act.min && d <= act.max;
+}
+const validTarget = (u, tgt, act) => tgt.alive && (act.heal ? tgt.team === u.team : tgt.team !== u.team) && canHit(u, u.x, u.z, tgt, act);
+function damageOf(a, d, act, fromX = a.x, fromZ = a.z, roll = true) {
+  const dh = levelOf(fromX, fromZ) - levelOf(d.x, d.z);
+  let v = act.kind === "spell" ? a.mag * act.power - d.mag * .35 : a.atk * (act.kind === "bow" ? .92 : 1) - d.def * .55;
+  v *= 1 + clamp(dh, -2, 3) * .07;
+  const bx = fromX - d.x, bz = fromZ - d.z; if (bx * d.face[0] + bz * d.face[1] < 0) v *= 1.2;   // struck from behind
+  return Math.max(1, Math.round(v * (roll ? .9 + Math.random() * .2 : 1)));
+}
+
+// ---------- tweens ----------
+let clock = 0;
+const tweens = [];
+const tween = (ms, fn) => new Promise(res => tweens.push({ t0: clock, dur: Math.max(1, ms), fn, res }));
+const wait = ms => tween(ms, () => {});
+async function walk(u, path) {
+  for (const [nx, nz] of path) {
+    const a = u.grp.position.clone(), b = tileWorld(nx, nz), climb = Math.abs(b.y - a.y) > .5;
+    faceDir(u, nx - u.x, nz - u.z); u.x = nx; u.z = nz;
+    const hop = climb ? 2.4 + Math.abs(b.y - a.y) * .45 : .8;
+    await tween(climb ? 300 : 185, k => u.grp.position.set(lerp(a.x, b.x, k), lerp(a.y, b.y, k) + Math.sin(Math.PI * k) * hop, lerp(a.z, b.z, k)));
+  }
+  u.grp.position.copy(tileWorld(u.x, u.z));
+}
+
+// ---------- effects ----------
+const floatsEl = $("#floats"), floats = [];
+function floatText(p, text, cls) { const el = document.createElement("div"); el.className = "float " + cls; el.textContent = text; floatsEl.appendChild(el); floats.push({ el, p: p.clone(), t0: clock }); }
+function hurt(u, dmg) {
+  u.hp = Math.max(0, u.hp - dmg); u.flash = 1; floatText(headPos(u), String(dmg), dmg >= 60 ? "crit" : "dmg");
+  const g = u.grp.position.clone(); tween(260, k => { u.grp.position.x = g.x + Math.sin(k * 30) * (1 - k) * .5; });
+  if (G.sel === u) showStatus(u);
+  if (u.hp <= 0) kill(u);
+}
+async function kill(u) {
+  u.alive = false; u.dying = true; u.mat.transparent = true;
+  floatText(headPos(u), "Defeated", "say");
+  await tween(700, k => { u.body.rotation.z = (u.face[0] || 1) * k * 1.4; u.body.position.y = -k * 2; u.mat.opacity = 1 - k; u.ring.material.opacity = .9 * (1 - k); });
+  u.grp.visible = false; u.dying = false;
+}
+async function lunge(u, tgt) {
+  const a = u.grp.position.clone(), d = tgt.grp.position.clone().sub(a).setY(0).normalize().multiplyScalar(2.6);
+  await tween(130, k => u.grp.position.set(a.x + d.x * k, a.y + Math.sin(Math.PI * k) * .6, a.z + d.z * k));
+  emit(chestPos(tgt), 0xffffff, 14, 1.2, 2, 420);
+  const back = tween(190, k => u.grp.position.set(a.x + d.x * (1 - k), a.y, a.z + d.z * (1 - k)));
+  return back;
+}
+async function projectile(from, to, hex, kind) {
+  const geo = kind === "arrow" ? new THREE.BoxGeometry(.28, .28, 3.2) : kind === "shard" ? new THREE.ConeGeometry(.7, 3.4, 6).rotateX(Math.PI / 2) : new THREE.SphereGeometry(1.1, 14, 10);
+  const mat = kind === "arrow" ? new THREE.MeshStandardMaterial({ color: 0x8a5a32 }) : new THREE.MeshBasicMaterial({ color: hex });
+  const m = new THREE.Mesh(geo, mat); scene.add(m);
+  const arc = kind === "arrow" ? 5 : kind === "orb" ? 4 : 1.2, prev = from.clone();
+  await tween(kind === "arrow" ? 380 : 440, k => {
+    m.position.lerpVectors(from, to, k); m.position.y += Math.sin(Math.PI * k) * arc;
+    if (kind !== "orb") m.lookAt(m.position.clone().add(m.position.clone().sub(prev))); prev.copy(m.position);
+    if (kind !== "arrow" && Math.random() < .7) emit(m.position, hex, 2, .5, 1, 400);
+  });
+  scene.remove(m); geo.dispose(); mat.dispose();
+}
+async function pillarOfLight(p, hex) {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 2.4, 34, 20, 1, true), new THREE.MeshBasicMaterial({ color: hex, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+  m.position.copy(p).add(new THREE.Vector3(0, 15, 0)); scene.add(m);
+  await tween(620, k => { m.material.opacity = Math.sin(Math.PI * k) * .75; m.scale.set(1 + k * .4, 1, 1 + k * .4); if (Math.random() < .5) emit(p.clone().add(new THREE.Vector3(0, 2, 0)), hex, 3, 2, 6, 700); });
+  scene.remove(m); m.geometry.dispose(); m.material.dispose();
+}
+async function act(u, tgt, a) {
+  faceDir(u, tgt.x - u.x, tgt.z - u.z); await wait(160);
+  if (a.kind === "spell") {
+    u.mp -= a.mp; emit(chestPos(u), a.col, 26, 1.6, 4, 700); floatText(headPos(u), a.name, "say"); await wait(380);
+    if (a.heal) { emit(tgt.grp.position.clone().add(new THREE.Vector3(0, 1, 0)), a.col, 40, 3, 7, 1100); await wait(300); const n = Math.round(u.mag * a.power * (.92 + Math.random() * .16)); tgt.hp = Math.min(tgt.hpMax, tgt.hp + n); floatText(headPos(tgt), "+" + n, "heal"); tgt.flash = .6; }
+    else {
+      if (a.fx === "pillar") await pillarOfLight(tgt.grp.position, a.col); else await projectile(chestPos(u), chestPos(tgt), a.col, a.fx);
+      emit(chestPos(tgt), a.col, 34, 2.4, 3, 800); hurt(tgt, damageOf(u, tgt, a));
+    }
+  } else {
+    if (a.kind === "bow") await projectile(chestPos(u), chestPos(tgt), 0, "arrow"); else await lunge(u, tgt);
+    const hit = Math.random() < (a.kind === "bow" ? .84 : .9);
+    if (hit) hurt(tgt, damageOf(u, tgt, a)); else floatText(headPos(tgt), "Miss", "miss");
+    if (a.kind === "melee") await wait(200);
+  }
+  if (G.sel) showStatus(G.sel);
+  u.acted = true;
+}
+
+// ---------- HUD ----------
+const G = { turn: 1, phase: "player", mode: "idle", sel: null, busy: true, reach: null, act: null, over: false };
+const pr = (() => { const c = $("#portrait"); const r = new THREE.WebGLRenderer({ canvas: c, antialias: true, alpha: true }); r.setPixelRatio(1); r.setSize(152, 152, false); r.outputColorSpace = THREE.SRGBColorSpace; r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 1.2; return r; })();
+const pScene = new THREE.Scene(), pCam = new THREE.PerspectiveCamera(26, 1, .1, 100);
+pScene.add(new THREE.HemisphereLight(0xe6f0ff, 0x5a4a3a, 1.6)); { const l = new THREE.DirectionalLight(0xfff0e0, 2.4); l.position.set(4, 8, 9); pScene.add(l); }
+let pMesh = null;
+function portrait(u) {
+  if (pMesh) pScene.remove(pMesh);
+  pMesh = new THREE.Mesh(u.body.geometry, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .6 })); pMesh.scale.setScalar(u.sc); pScene.add(pMesh);
+  const f = u.sc / .5, hy = 21.5 * u.sc;
+  pCam.position.set(4.4 * f, hy + 1.6 * f, 13.2 * f); pCam.lookAt(-.2 * f, hy - .1 * f, .5 * f); pr.render(pScene, pCam);
+}
+function showStatus(u) {
+  const st = $("#status");
+  if (!u) { st.hidden = true; measureHud(); return; }
+  st.hidden = false; st.className = "win status " + u.team;
+  $("#sName").textContent = u.name; $("#sLv").textContent = "Lv " + u.lv;
+  $("#sCls").textContent = u.cls + (u.leader ? " · Leader" : "");
+  const el = $("#sEl"); el.style.setProperty("--elc", ELEMENT_COL[u.el]); el.lastElementChild.textContent = u.el;
+  const side = $("#sSide"); side.className = "side " + u.team; side.textContent = u.team === "A" ? (u.done ? "Ally · Done" : "Ally") : "Enemy";
+  $("#sHp").textContent = `${u.hp}/${u.hpMax}`; $("#sHpB").style.width = (u.hp / u.hpMax * 100) + "%";
+  $("#sMp").textContent = `${u.mp}/${u.mpMax}`; $("#sMpB").style.width = (u.mpMax ? u.mp / u.mpMax * 100 : 0) + "%";
+  $("#sStats").textContent = `ATK ${u.atk} · DEF ${u.def} · MAG ${u.mag} · Move ${u.move} · ${u.fly ? "Flying" : "Jump " + u.jump}`;
+  if (st.dataset.id !== u.id) { st.dataset.id = u.id; portrait(u); }
+  measureHud();
+}
+function renderCmds() {
+  const nav = $("#cmds"), u = G.sel;
+  if (!u || u.team !== "A" || G.phase !== "player" || G.busy || u.done || !u.alive || G.over) { nav.hidden = true; measureHud(); return; }
+  const b = [];
+  b.push(`<button class="cmd ${G.mode === "move" ? "on" : ""}" data-c="move" ${u.moved ? "disabled" : ""}>Move<small>${u.moved ? "done" : u.move + " tiles"}</small></button>`);
+  actionsOf(u).forEach((a, i) => {
+    const off = u.acted || (a.mp && u.mp < a.mp), on = G.mode === "act" && G.act && G.act.name === a.name;
+    b.push(`<button class="cmd ${on ? "on" : ""}" data-c="act" data-i="${i}" ${off ? "disabled" : ""}>${a.name}<small>${a.kind === "spell" ? a.mp + " MP" : a.kind === "bow" ? "range 2–5" : "adjacent"}</small></button>`);
+  });
+  b.push(`<button class="cmd" data-c="wait">Wait<small>end turn</small></button>`);
+  nav.innerHTML = `<h3>${u.name}</h3>` + b.join("");
+  nav.hidden = false;
+  for (const btn of nav.querySelectorAll(".cmd")) btn.onclick = () => command(btn.dataset.c, +btn.dataset.i);
+  measureHud();
+}
+function updPhase() {
+  const al = units.filter(u => u.team === "A" && u.alive).length, en = units.filter(u => u.team === "E" && u.alive).length;
+  $("#turnN").textContent = `Turn ${G.turn} · ${al} vs ${en}`;
+  $("#phaseN").textContent = G.phase === "player" ? "Player Phase" : "Enemy Phase";
+  $("#phase").className = "win phase " + G.phase;
+  $("#endPhase").disabled = G.phase !== "player" || G.busy || G.over;
+}
+function tileChip(x, z) { const u = unitAt(x, z); $("#tileChip").innerHTML = `<b>${TERRAIN[TT[z][x]]}</b> · Height ${levelOf(x, z)}${u ? " · " + u.name : ""}`; }
+function setCursor(x, z) { const p = tileWorld(x, z); cursorFrame.position.set(p.x, tileY(x, z) + .06, p.z); cursorFrame.visible = true; tileChip(x, z); }
+async function banner(text, sub, ms = 1600) {
+  const b = $("#banner"); b.className = "banner"; b.innerHTML = `<small>${sub || ""}</small><b>${text}</b>`; void b.offsetWidth; b.className = "banner show";
+  await wait(ms);
+}
+let hintOn = true;
+function hideHint() { if (hintOn) { hintOn = false; $("#hint").classList.add("off"); } }
+
+// ---------- player commands ----------
+function focusOn(u) { const p = u.grp.position; camS.tgtT.set(clamp(p.x, -60, 60), p.y + 4, clamp(p.z, -52, 52)); }
+function select(u) {
+  G.sel = u; G.act = null; showStatus(u); setCursor(u.x, u.z); focusOn(u); clearTiles();
+  if (u.team === "E" && G.phase === "player" && !G.busy) {
+    const R = reachable(u);
+    showTiles([...R.values()].filter(t => canStop(u, t.x, t.z)).map(t => ({ x: t.x, z: t.z, col: 0xff8a5a })));
+    G.mode = "inspect";
+  } else G.mode = u.team === "A" && !u.done ? "unit" : "inspect";
+  renderCmds();
+}
+function deselect() { G.sel = null; G.mode = "idle"; G.act = null; clearTiles(); showStatus(null); renderCmds(); }
+function command(c, i) {
+  const u = G.sel; if (!u || G.busy) return;
+  if (c === "move") {
+    if (G.mode === "move") { G.mode = "unit"; clearTiles(); renderCmds(); return; }
+    G.mode = "move"; G.reach = reachable(u);
+    showTiles([...G.reach.values()].filter(t => canStop(u, t.x, t.z) && !(t.x === u.x && t.z === u.z)).map(t => ({ x: t.x, z: t.z, col: 0x5aa9ff })));
+  } else if (c === "act") {
+    const a = actionsOf(u)[i];
+    if (G.mode === "act" && G.act && G.act.name === a.name) { G.mode = "unit"; G.act = null; clearTiles(); renderCmds(); return; }
+    G.mode = "act"; G.act = a;
+    const list = [];
+    for (let z = 0; z < MD; z++) for (let x = 0; x < MW; x++) {
+      const dummy = { x, z, fly: false }; if (!canHit(u, u.x, u.z, dummy, a)) continue;
+      const t = unitAt(x, z), good = t && validTarget(u, t, a);
+      list.push({ x, z, col: good ? (a.heal ? 0x8affb4 : 0xffd36a) : (a.heal ? 0x3fae6a : 0xff6652) });
+    }
+    showTiles(list);
+  } else if (c === "wait") { finishUnit(u); return; }
+  renderCmds();
+}
+function finishUnit(u) {
+  u.done = true; refreshRing(u); deselect(); arrow.visible = false;
+  if (units.every(x => x.team !== "A" || !x.alive || x.done)) enemyPhase();
+}
+async function doMove(u, x, z) {
+  G.busy = true; clearTiles(); renderCmds(); updPhase();
+  await walk(u, pathTo(G.reach, x, z));
+  u.moved = true; G.busy = false; G.mode = "unit"; setCursor(u.x, u.z); updPhase();
+  if (u.acted) finishUnit(u); else { showStatus(u); renderCmds(); }
+}
+async function doAct(u, tgt, a) {
+  G.busy = true; clearTiles(); renderCmds(); updPhase();
+  await act(u, tgt, a);
+  G.busy = false; updPhase();
+  if (checkEnd()) return;
+  if (u.moved || !u.alive) finishUnit(u); else { G.mode = "unit"; G.act = null; showStatus(u); renderCmds(); }
+}
+
+// ---------- the enemy phase ----------
+async function enemyPhase() {
+  if (G.over) return;
+  G.phase = "enemy"; G.busy = true; G.sel = null; clearTiles(); showStatus(null); renderCmds(); updPhase();
+  await banner("Enemy Phase", "Turn " + G.turn);
+  for (const e of units.filter(u => u.team === "E" && u.alive)) {
+    if (!e.alive || G.over) continue;
+    G.sel = e; showStatus(e); setCursor(e.x, e.z); focusOn(e); await wait(420);
+    await enemyAct(e);
+    if (checkEnd()) return;
+    await wait(260);
+  }
+  G.turn++; for (const u of units) { u.moved = u.acted = u.done = false; refreshRing(u); }
+  G.sel = null; showStatus(null); arrow.visible = false; G.phase = "player"; updPhase(); camS.tgtT.set(0, 9, 0);
+  await banner("Player Phase", "Turn " + G.turn);
+  G.busy = false; G.mode = "idle"; updPhase();
+}
+async function enemyAct(e) {
+  const R = reachable(e), stops = [...R.values()].filter(t => canStop(e, t.x, t.z)), allies = units.filter(u => u.team === "A" && u.alive);
+  const acts = actionsOf(e).filter(a => !a.heal && (!a.mp || e.mp >= a.mp));
+  let best = null;
+  for (const st of stops) for (const a of acts) for (const t of allies) {
+    if (!canHit(e, st.x, st.z, t, a)) continue;
+    const dmg = damageOf(e, t, a, st.x, st.z, false);
+    const score = dmg + (t.hp <= dmg ? 70 : 0) + (t.hero ? 12 : 0) - st.c * 1.5 + levelOf(st.x, st.z) * 2 + (a.kind === "spell" ? 4 : 0);
+    if (!best || score > best.score) best = { st, a, t, score };
+  }
+  if (best) {
+    if (best.st.x !== e.x || best.st.z !== e.z) await walk(e, pathTo(R, best.st.x, best.st.z));
+    setCursor(best.t.x, best.t.z); await act(e, best.t, best.a); return;
+  }
+  // nobody in reach: close in on the nearest ally
+  const near = allies.sort((a, b) => (Math.abs(a.x - e.x) + Math.abs(a.z - e.z)) - (Math.abs(b.x - e.x) + Math.abs(b.z - e.z)))[0];
+  if (!near) return;
+  const dist = t => Math.abs(t.x - near.x) + Math.abs(t.z - near.z);
+  const st = stops.sort((a, b) => dist(a) - dist(b) || a.c - b.c)[0];
+  if (st && (st.x !== e.x || st.z !== e.z)) await walk(e, pathTo(R, st.x, st.z));
+  faceDir(e, near.x - e.x, near.z - e.z);
+}
+function checkEnd() {
+  updPhase();
+  const leader = units.find(u => u.leader), alph = units.find(u => u.id === "alphonse");
+  if (!leader.alive || !units.some(u => u.team === "E" && u.alive)) { endGame(true); return true; }
+  if (!alph.alive || !units.some(u => u.team === "A" && u.alive)) { endGame(false); return true; }
+  return false;
+}
+async function endGame(win) {
+  G.over = true; G.busy = true; G.sel = null; clearTiles(); renderCmds(); updPhase(); arrow.visible = false;
+  await wait(700);
+  const b = $("#banner"); b.className = "banner stay";
+  b.innerHTML = `<small>${win ? "The enemy Knight has fallen" : "Alphonse has fallen"}</small><b>${win ? "Victory" : "Defeat"}</b><button id="again">Fight again</button>`;
+  $("#again").onclick = restart;
+}
+function restart() {
+  for (const u of units) resetUnit(u);
+  Object.assign(G, { turn: 1, phase: "player", mode: "idle", sel: null, busy: false, reach: null, act: null, over: false });
+  $("#banner").className = "banner"; clearTiles(); showStatus(null); renderCmds(); updPhase(); cursorFrame.visible = false;
+  camS.tgtT.set(0, 9, 0);
+}
+
+// ---------- input: tap to command, drag to pan, pinch to zoom, twist or buttons to turn ----------
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+function pick(cx, cy) {
+  const r = canvas.getBoundingClientRect(); ndc.set((cx - r.left) / r.width * 2 - 1, -((cy - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+  const hu = ray.intersectObjects(units.filter(u => u.alive).map(u => u.body), false)[0];
+  if (hu) { const u = hu.object.userData.unit; return { unit: u, x: u.x, z: u.z }; }
+  const ht = ray.intersectObject(terrain, false)[0];
+  if (!ht) return null;
+  const p = ht.point.clone().addScaledVector(ht.face.normal, -.02), x = Math.floor((p.x - OX) / TILE), z = Math.floor((p.z - OZ) / TILE);
+  return inMap(x, z) ? { x, z, unit: unitAt(x, z) } : null;
+}
+function onTap(cx, cy) {
+  hideHint();
+  if (G.busy || G.over) return;
+  const hit = pick(cx, cy); if (!hit) return;
+  setCursor(hit.x, hit.z);
+  const u = G.sel;
+  if (G.mode === "move" && u) {
+    const e = G.reach.get(hit.x + "," + hit.z);
+    if (e && canStop(u, hit.x, hit.z) && !(hit.x === u.x && hit.z === u.z)) { doMove(u, hit.x, hit.z); return; }
+  }
+  if (G.mode === "act" && u && hit.unit && validTarget(u, hit.unit, G.act)) { doAct(u, hit.unit, G.act); return; }
+  if (hit.unit) { select(hit.unit); return; }
+  if (G.mode === "move" || G.mode === "act") { G.mode = "unit"; G.act = null; clearTiles(); renderCmds(); return; }
+  deselect(); setCursor(hit.x, hit.z);
+}
+const ptrs = new Map(); let drag = null, pinch = null, pinchEnd = 0, hoverT = 0;
+function panBy(dx, dy) {
+  const wpp = viewH() / SH, s = Math.sin(camS.yaw), c = Math.cos(camS.yaw), fy = 1 / Math.sin(camS.pitch);
+  camS.tgtT.x = clamp(camS.tgtT.x - c * dx * wpp - s * dy * wpp * fy, -62, 62);
+  camS.tgtT.z = clamp(camS.tgtT.z + s * dx * wpp - c * dy * wpp * fy, -54, 54);
+}
+const pdist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y), pang = (a, b) => Math.atan2(b.y - a.y, b.x - a.x);
+canvas.addEventListener("pointerdown", e => {
+  canvas.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (ptrs.size === 1) drag = { x0: e.clientX, y0: e.clientY, x: e.clientX, y: e.clientY, t: performance.now(), moved: false, rot: e.button === 2 || e.shiftKey };
+  else if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch = { d: pdist(a, b), z: camS.zoomT, ang: pang(a, b), yaw: camS.yawT }; drag = null; }
+});
+canvas.addEventListener("pointermove", e => {
+  if (!ptrs.has(e.pointerId)) {
+    if (e.pointerType === "mouse" && !G.busy && performance.now() - hoverT > 70) { hoverT = performance.now(); const h = pick(e.clientX, e.clientY); if (h) tileChip(h.x, h.z); }
+    return;
+  }
+  ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (pinch && ptrs.size >= 2) {
+    const [a, b] = [...ptrs.values()];
+    camS.zoomT = clamp(pinch.z * pdist(a, b) / Math.max(1, pinch.d), .7, 3.6);
+    camS.yawT = pinch.yaw - angDiff(pang(a, b), pinch.ang);
+  } else if (drag) {
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y; drag.x = e.clientX; drag.y = e.clientY;
+    if (Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) > 7) drag.moved = true;
+    if (drag.moved) { if (drag.rot) camS.yawT -= dx * .008; else panBy(dx, dy); hideHint(); }
+  }
+});
+function endPtr(e) {
+  if (!ptrs.has(e.pointerId)) return;
+  ptrs.delete(e.pointerId);
+  if (pinch && ptrs.size < 2) { pinch = null; pinchEnd = performance.now(); drag = null; }
+  if (drag && ptrs.size === 0) { if (!drag.moved && performance.now() - drag.t < 600 && performance.now() - pinchEnd > 250) onTap(e.clientX, e.clientY); drag = null; }
+}
+canvas.addEventListener("pointerup", endPtr); canvas.addEventListener("pointercancel", endPtr);
+canvas.addEventListener("contextmenu", e => e.preventDefault());
+canvas.addEventListener("wheel", e => { e.preventDefault(); camS.zoomT = clamp(camS.zoomT * Math.exp(-e.deltaY * .0012), .7, 3.6); }, { passive: false });
+$("#rotL").onclick = () => { camS.yawT -= Math.PI / 2; hideHint(); };
+$("#rotR").onclick = () => { camS.yawT += Math.PI / 2; hideHint(); };
+$("#zoomIn").onclick = () => { camS.zoomT = clamp(camS.zoomT * 1.25, .7, 3.6); };
+$("#zoomOut").onclick = () => { camS.zoomT = clamp(camS.zoomT / 1.25, .7, 3.6); };
+$("#endPhase").onclick = () => { if (G.phase === "player" && !G.busy && !G.over) { deselect(); enemyPhase(); } };
+window.addEventListener("keydown", e => {
+  if (e.key === "q" || e.key === "Q") camS.yawT -= Math.PI / 2;
+  else if (e.key === "e" || e.key === "E") camS.yawT += Math.PI / 2;
+  else if (e.key === "Escape" && !G.busy) deselect();
+});
+window.addEventListener("resize", resize);
+
+// ---------- frame ----------
+let last = performance.now();
+const tmpV = new THREE.Vector3();
+function frame(now) {
+  requestAnimationFrame(frame);
+  const dt = Math.min(50, now - last); last = now; clock += dt;
+  for (let i = tweens.length - 1; i >= 0; i--) { const tw = tweens[i], k = Math.min(1, (clock - tw.t0) / tw.dur); tw.fn(k); if (k >= 1) { tweens.splice(i, 1); tw.res(); } }
+  const e = 1 - Math.exp(-dt / 1000 * 7), t = clock / 1000;
+  camS.yaw += angDiff(camS.yawT, camS.yaw) * e; camS.zoom += (camS.zoomT - camS.zoom) * e; camS.tgt.lerp(camS.tgtT, e); camS.shift += (camS.shiftT - camS.shift) * e;
+  placeCamera();
+  for (const u of units) {
+    if (!u.grp.visible) continue;
+    if (!u.dying) u.body.position.y = hoverY(u) + (reduced ? 0 : Math.sin(t * 2.3 + u.ph) * (u.fly ? .45 : .1));
+    u.body.rotation.y += angDiff(u.yawT, u.body.rotation.y) * (1 - Math.exp(-dt / 1000 * 14));
+    if (u.flash > 0) { u.flash = Math.max(0, u.flash - dt / 260); u.mat.emissive.setScalar(u.flash * .75); }
+  }
+  if (G.sel && G.sel.alive) { arrow.visible = true; arrow.position.copy(headPos(G.sel)).add(tmpV.set(0, 3.2 + Math.sin(t * 4) * .5, 0)); arrow.rotation.y = t * 1.6; }
+  else arrow.visible = false;
+  ovFill.material.opacity = .4 + Math.sin(t * 4) * .08;
+  if (water) waveWater(t);
+  // particles
+  const pp = pGeo.attributes.position.array, pc = pGeo.attributes.color.array, s = dt / 1000;
+  for (let i = parts.length - 1; i >= 0; i--) { const p = parts[i]; p.age += dt; if (p.age >= p.life) { parts.splice(i, 1); continue; } p.x += p.vx * s; p.y += p.vy * s; p.z += p.vz * s; p.vx *= .96; p.vz *= .96; }
+  parts.forEach((p, i) => { const k = 1 - p.age / p.life; pp[i * 3] = p.x; pp[i * 3 + 1] = p.y; pp[i * 3 + 2] = p.z; pc[i * 3] = p.r * k; pc[i * 3 + 1] = p.g * k; pc[i * 3 + 2] = p.b * k; });
+  pGeo.setDrawRange(0, parts.length); pGeo.attributes.position.needsUpdate = pGeo.attributes.color.needsUpdate = true;
+  if (!reduced) { const mp = mGeo.attributes.position.array; motes.forEach((m, i) => { m.y += s * .9; if (m.y > 38) m.y = 8; mp[i * 3] = m.x + Math.sin(t * .4 + m.ph) * 3; mp[i * 3 + 1] = m.y; mp[i * 3 + 2] = m.z + Math.cos(t * .3 + m.ph) * 3; }); mGeo.attributes.position.needsUpdate = true; }
+  // floating numbers ride above their unit and fade
+  for (let i = floats.length - 1; i >= 0; i--) {
+    const f = floats[i], k = (clock - f.t0) / 1150;
+    if (k >= 1) { f.el.remove(); floats.splice(i, 1); continue; }
+    tmpV.copy(f.p); tmpV.y += k * 4; tmpV.project(camera);
+    f.el.style.transform = `translate(${(tmpV.x * .5 + .5) * SW}px,${(-tmpV.y * .5 + .5) * SH}px) translate(-50%,-50%) scale(${k < .12 ? .6 + k * 3.3 : 1})`;
+    f.el.style.opacity = k < .75 ? 1 : (1 - k) / .25;
+  }
+  renderer.render(scene, camera);
+}
+
+// ---------- boot ----------
+function boot() {
+  buildTerrain();
+  const geo = meshVoxels(cb => { for (let y = 0; y < VY; y++) for (let z = 0; z < VZ; z++) for (let x = 0; x < VX; x++) { const c = VOX[vIdx(x, y, z)]; if (c) cb(x, y, z, c); } }, vGet, true);
+  terrain = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .92, metalness: 0 }));
+  terrain.position.set(OX, 0, OZ); terrain.castShadow = terrain.receiveShadow = true; scene.add(terrain);
+  buildWater();
+  for (const d of DEFS) makeUnit(d);
+  if (SW / SH < .8) camS.zoom = camS.zoomT = 1.5;
+  resize(); placeCamera(); updPhase(); tileChip(3, 6);
+  requestAnimationFrame(frame);
+  $("#loading").classList.add("off"); setTimeout(() => $("#loading").remove(), 800);
+  setTimeout(() => hideHint(), 12000);
+  banner("Player Phase", "Turn 1 · Defeat the enemy Knight", 1900).then(() => { G.busy = false; updPhase(); });
+  window.LODIS = { G, units, select, command, onTap, enemyPhase, camS, tileWorld, doMove, doAct, actionsOf, reachable, restart };
+}
+setTimeout(boot, 30);
+</script>
+</body>
+</html>
